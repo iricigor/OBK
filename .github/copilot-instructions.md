@@ -9,6 +9,10 @@ When the user asks to defer or record an idea for later, add it to the repositor
 root `DEFERRED_IDEAS.md`, creating the document if it does not exist. Update an
 existing entry for the same idea rather than creating a duplicate.
 
+Give each idea a stable sequential identifier such as `DI-01` in its heading.
+For new entries, use the next unused number; do not renumber existing entries or
+reuse identifiers from removed ideas.
+
 Each entry should describe the idea, its deferred status, why it is deferred,
 known facts and uncertainties, and prerequisites or investigation needed before
 implementation. Include supporting references when available, and distinguish

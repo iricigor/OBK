@@ -3,7 +3,7 @@
 Ideas recorded here are not committed implementation work. Revisit them when
 their prerequisites are understood and their scope is agreed.
 
-## Komens message hierarchy (original messages and replies)
+## DI-01: Komens message hierarchy (original messages and replies)
 
 **Status:** Deferred pending verification of API response metadata.
 
