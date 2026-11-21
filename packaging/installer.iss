@@ -1,0 +1,36 @@
+#ifndef AppVersion
+  #error AppVersion must be supplied by the build script.
+#endif
+
+[Setup]
+AppId=OBK-369698EA-C752-47FB-A855-C323D53150A9{param:VerificationId|}
+AppName=OBK
+AppVersion={#AppVersion}
+AppPublisher=OBK contributors
+AppPublisherURL=https://github.com/iricigor/OBK
+DefaultDirName={localappdata}\Programs\OBK
+DefaultGroupName=OBK
+PrivilegesRequired=lowest
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+MinVersion=10.0
+OutputDir=..\dist
+OutputBaseFilename=OBK-{#AppVersion}-windows-x64-setup
+Compression=lzma2
+SolidCompression=yes
+WizardStyle=modern
+UninstallDisplayIcon={app}\runtime\pythonw.exe
+SetupLogging=yes
+UsePreviousLanguage=no
+CloseApplications=yes
+RestartApplications=no
+
+[Files]
+Source: "..\dist\stage\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\OBK"; Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I ""{app}\app\obk_app.py"""; WorkingDir: "{app}"
+Name: "{group}\Uninstall OBK"; Filename: "{uninstallexe}"
+
+[Run]
+Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I ""{app}\app\obk_app.py"""; Description: "Launch OBK"; Flags: nowait postinstall skipifsilent

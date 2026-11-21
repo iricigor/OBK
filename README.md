@@ -200,3 +200,88 @@ even if they came from school.
 The client does not call read-receipt,
 confirmation, hide, delete, or send endpoints; server-side effects of list
 retrieval still need independent verification.
+
+## Windows installer and releases
+
+Download `OBK-0.1.N-windows-x64-setup.exe` from this repository's
+[GitHub Releases](https://github.com/iricigor/OBK/releases). The installer bundles
+a private 64-bit CPython 3.14 runtime, Tkinter, and the Python runtime licenses.
+It does not use PyInstaller. Windows 10 or later is required; users do not need
+Python installed. Installation is per-user, normally under
+`%LOCALAPPDATA%\Programs\OBK`, with a Start-menu shortcut. It does not change
+system Python, PATH, or Python file associations.
+
+Installers are **unsigned**: Windows or SmartScreen may warn about an unknown
+publisher. Verify the download's origin and compare its SHA-256 hash with the
+release's `SHA256SUMS.txt` before deciding whether to run it:
+
+```powershell
+Get-FileHash .\OBK-0.1.0-windows-x64-setup.exe -Algorithm SHA256
+```
+
+Reinstalling a newer version upgrades the same application directory.
+Uninstalling removes the app and its private runtime but deliberately preserves
+`%LOCALAPPDATA%\OBK`, including the encrypted archive and any decrypted opened
+copies. Delete that data separately only if you intend to lose it.
+Close OBK and external attachment viewers before upgrading or uninstalling.
+
+### Pipeline behavior
+
+Pull requests targeting `main` run **Validation** on Windows: all mocked tests,
+an installer build, and silent install/start/uninstall verification. The
+`windows-installer` workflow artifact contains the installer and its checksum
+for manual verification; PR artifacts use placeholder version `0.1.0` and are
+not published releases. The same validation supports GitHub's merge queue.
+
+After each push to `main` (including a PR merge), **Release** repeats those
+checks and publishes the installer only after they pass. Numbered releases
+start at `v0.1.0`, then increment the patch number. The tag targets the exact
+validated commit, not whichever commit happens to be latest on `main`.
+Release runs are serialized with a queue of up to 100 pending runs so multiple
+merges do not compete for a version; GitHub does not guarantee dispatch order.
+Direct pushes to `main` also trigger releases.
+
+Publication creates a draft release, uploads both assets, and only then makes
+it public. Retry a failed run from the Actions UI: a draft for the same commit
+is resumed, while an already published release is not duplicated. A failed
+build does not create a release. Do not manually repurpose pipeline tags or
+change their target commits.
+
+Validation starts automatically; branch protection and mandatory merge checks
+are intentionally not configured. Review the
+**windows / Tests and installer smoke test** result before merging.
+Release validation still prevents a failed build from being published.
+Enabling Actions and allowing the release workflow `contents: write` are
+necessary. Its version-selection
+job needs write permission to see unfinished draft releases for retries;
+the publication job uses it to create releases and upload assets.
+
+### Local build and verification
+
+Development still runs directly from source using the commands above.
+To build an installer, install 64-bit CPython 3.14 with Tcl/Tk and Inno Setup 6
+(6.3 or later). From the repository root:
+
+```powershell
+python -m unittest discover -s .\tools -p "test_*.py"
+python .\packaging\build_installer.py --version 0.1.0
+.\packaging\verify_installer.ps1 -Installer .\dist\OBK-0.1.0-windows-x64-setup.exe
+```
+
+For a non-default compiler location, pass `--iscc "C:\path\to\ISCC.exe"` to the
+build script. Build output is under `dist`, which is not committed. Only the
+three application modules, README, and selected runtime files are packaged;
+user data, third-party site-packages, and repository tests are excluded.
+
+The app's `--smoke-test` mode creates and destroys the offline window, checks
+SQLite initialization and Windows DPAPI encryption/decryption, and then exits.
+It uses a temporary database and never opens the real archive, shows login, or
+contacts a school. `--smoke-result` optionally writes a machine-readable result
+for verification of the windowed runtime. Errors fail the process rather than
+reporting success. Installer verification uses a unique directory and uninstall
+registration, without creating shortcuts or changing an existing OBK install.
+
+For manual verification, run the installer normally, launch **OBK** from the
+Start menu, and confirm the login popup appears. Use **Read offline** without
+credentials to check startup, then close the app and uninstall it. No existing
+Python installation should be needed.
