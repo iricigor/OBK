@@ -1,5 +1,7 @@
 """Windows-first, read-only Komens desktop client."""
 
+import argparse
+import json
 import os
 import queue
 import tempfile
@@ -661,7 +663,45 @@ class KomensWindow:
         self.root.after(100, self.poll)
 
 
+def verify_installation():
+    """Exercise the installed GUI and encrypted store without real account data."""
+    with tempfile.TemporaryDirectory(prefix="obk-smoke-") as directory:
+        store = LocalStore(Path(directory) / "smoke.sqlite3")
+        value = {"installation_check": "OBK"}
+        if store.decode(store.encode(value)) != value:
+            raise ProbeError("Windows protection round-trip failed.")
+        root = tk.Tk()
+        try:
+            app = KomensWindow(root, store, show_login=False)
+            app.activate_account("https://school.example", "installation-check")
+            root.update()
+            if not root.winfo_ismapped() or app.login is not None:
+                raise ProbeError("The offline application window did not start.")
+        finally:
+            for callback in root.tk.call("after", "info"):
+                root.after_cancel(callback)
+            root.destroy()
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--smoke-test", action="store_true")
+    parser.add_argument("--smoke-result", type=Path)
+    arguments = parser.parse_args()
+    if arguments.smoke_result and not arguments.smoke_test:
+        parser.error("--smoke-result requires --smoke-test")
+    if arguments.smoke_test:
+        try:
+            verify_installation()
+        except Exception as error:
+            if arguments.smoke_result:
+                arguments.smoke_result.write_text(
+                    json.dumps({"ok": False, "error": str(error)}), encoding="utf-8"
+                )
+            raise
+        if arguments.smoke_result:
+            arguments.smoke_result.write_text(json.dumps({"ok": True}), encoding="utf-8")
+        return
     root = tk.Tk()
     try:
         KomensWindow(root)

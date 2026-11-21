@@ -5,9 +5,25 @@ from pathlib import Path
 from unittest.mock import patch
 
 from api_probe import ProbeError
-from obk_app import KomensWindow
+from obk_app import KomensWindow, verify_installation
 from obk_core import FOLDERS, LocalStore, SchoolYear
 from test_obk_core import TestProtection, message
+
+
+class InstallationVerificationTests(unittest.TestCase):
+    def test_verification_uses_temporary_store_without_login_or_network(self):
+        with patch("obk_app.LocalStore", wraps=LocalStore) as constructor, \
+                patch("obk_app.KomensClient") as client, \
+                patch("obk_app.LoginDialog") as login:
+            verify_installation()
+        self.assertFalse(constructor.call_args.args[0].exists())
+        client.assert_not_called()
+        login.assert_not_called()
+
+    def test_verification_propagates_protection_failure(self):
+        with patch("obk_app.LocalStore", side_effect=ProbeError("Protection unavailable")):
+            with self.assertRaisesRegex(ProbeError, "Protection unavailable"):
+                verify_installation()
 
 
 class KomensWindowTests(unittest.TestCase):

@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: numbered-windows-release
+  queue: max
+
+jobs:
+  version:
+    runs-on: windows-2025
+    timeout-minutes: 5
+    # GitHub only includes draft releases for callers with push access.
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      published: ${{ steps.version.outputs.published }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Choose next patch version or resume this commit's release
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $pages = gh api "repos/$env:GITHUB_REPOSITORY/releases" --paginate --slurp | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot list releases.' }
+          $releases = @($pages | ForEach-Object { $_ } | Where-Object { $_.tag_name -match '^v0\.1\.(0|[1-9][0-9]*)$' })
+          $existing = @($releases | Where-Object { $_.target_commitish -eq $env:GITHUB_SHA })
+          if ($existing.Count -gt 1) { throw 'Multiple releases point at this commit.' }
+          if ($existing.Count -eq 1) {
+            $version = $existing[0].tag_name.Substring(1)
+            $published = (-not $existing[0].draft).ToString().ToLowerInvariant()
+          } else {
+            $patch = 0
+            foreach ($release in $releases) {
+              $patch = [Math]::Max($patch, [int]($release.tag_name.Split('.')[-1]) + 1)
+            }
+            $version = "0.1.$patch"
+            $published = 'false'
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "published=$published" >> $env:GITHUB_OUTPUT
+  build:
+    needs: version
+    if: needs.version.outputs.published != 'true'
+    uses: ./.github/workflows/windows-build.yml
+    with:
+      version: ${{ needs.version.outputs.version }}
+  publish:
+    needs: [version, build]
+    runs-on: windows-2025
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: windows-installer
+          path: dist
+      - name: Publish verified installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APP_VERSION: ${{ needs.version.outputs.version }}
+        shell: pwsh
+        run: |
+          $tag = "v$env:APP_VERSION"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY --json isDraft > $null 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --draft --generate-notes --title "OBK $tag"
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot create draft release.' }
+          }
+          gh release upload $tag ".\dist\OBK-$env:APP_VERSION-windows-x64-setup.exe" ".\dist\SHA256SUMS.txt" --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot upload release assets; release remains draft.' }
+          gh release edit $tag --repo $env:GITHUB_REPOSITORY --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot publish release.' }
