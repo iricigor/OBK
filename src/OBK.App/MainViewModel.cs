@@ -21,6 +21,7 @@ public sealed class MainViewModel : ObservableObject
     private string status = "Sign in to download messages, or read your archive offline.";
     private FolderRow? selectedFolder;
     private MessageRow? selectedMessage;
+    private readonly Dictionary<string, string> selectedMessageIds = [];
     private IReadOnlyList<FolderRow> navigation = [];
     private IReadOnlyList<MessageRow> messages = [];
     private IReadOnlyList<AttachmentRow> attachments = [];
@@ -122,6 +123,8 @@ public sealed class MainViewModel : ObservableObject
         set
         {
             if (!Set(ref selectedMessage, value)) return;
+            if (value is not null && selectedFolder is { } folder)
+                selectedMessageIds[folder.Key] = value.Message.Id;
             RefreshMessage();
         }
     }
@@ -159,6 +162,9 @@ public sealed class MainViewModel : ObservableObject
                 var items = archive?.Folders ?? Folders.Empty();
                 return (archive, items, info: ReadAttachmentInfo(normalized, username, items));
             });
+            if (Account is not { } previous || previous.Url != normalized ||
+                previous.Username != username || year != nextYear)
+                selectedMessageIds.Clear();
             Account = new(normalized, username);
             year = nextYear;
             folders = result.items;
@@ -216,9 +222,17 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             var source = folders[key];
-            var rows = await Task.Run(() => source.Select(m => new MessageRow(m, key)).ToArray());
+            selectedMessageIds.TryGetValue(key, out var rememberedId);
+            var result = await Task.Run(() =>
+            {
+                var rows = source.Select(m => new MessageRow(m, key)).ToArray();
+                var selected = rows.FirstOrDefault(r => r.Message.Id == rememberedId) ??
+                    rows.MaxBy(r => r.Message.Date);
+                return (rows, selected);
+            });
             if (version != folderVersion) return;
-            Messages = rows;
+            Messages = result.rows;
+            SelectedMessage = result.selected;
             Notify(nameof(EmptyFolder));
         }
         catch (ObkException error) { if (version == folderVersion) ReportError(error.Message); }

@@ -37,9 +37,20 @@ public sealed class PresentationTests
                         folders["received"].Add(new Message
                         {
                             Id = "second", Title = "Second", Text = "<p>Second content</p>",
+                            SentDate = SchoolYear.Current().Start.AddDays(2).ToString("O"), Read = true, Attachments = []
+                        });
+                        folders["sent"].Add(new Message
+                        {
+                            Id = "sent-old", Title = "Older sent message", Text = "Older sent content",
                             SentDate = SchoolYear.Current().Start.ToString("O"), Read = true, Attachments = []
                         });
+                        folders["sent"].Add(new Message
+                        {
+                            Id = "sent-new", Title = "Newest sent message", Text = "Newest sent content",
+                            SentDate = SchoolYear.Current().Start.AddDays(3).ToString("O"), Read = true, Attachments = []
+                        });
                         storage.SaveArchive("https://school.example", "test", SchoolYear.Current(), "Test school", folders);
+                        storage.SaveArchive("https://school.example", "other", SchoolYear.Current(), "Other account", folders);
                         foreach (var attachment in attachments)
                         {
                             using var input = new MemoryStream([1, 2, 3]);
@@ -52,10 +63,16 @@ public sealed class PresentationTests
                     var vm = new MainViewModel(store, theme, () => { },
                         (row, action) => { exported = row.Attachment.Identifier + ":" + action; return Task.CompletedTask; },
                         _ => Task.CompletedTask);
+                    async Task WaitForFolderAsync()
+                    {
+                        await vm.FolderReady;
+                        await vm.MessageReady;
+                    }
                     await vm.InitializeAsync();
                     await vm.ActivateAccountAsync("https://school.example", "test");
-                    await vm.FolderReady;
+                    await WaitForFolderAsync();
                     Assert.Equal(2, vm.Messages.Count);
+                    Assert.Equal("second", vm.SelectedMessage?.Message.Id);
                     vm.SelectedMessage = vm.Messages[0];
                     await vm.MessageReady;
                     Assert.Equal(3, vm.VisibleAttachments.Count);
@@ -72,6 +89,27 @@ public sealed class PresentationTests
                     Assert.False(vm.Messages[0].Message.Read);
                     Assert.True(vm.Messages[0].Unread);
 
+                    vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "sent");
+                    await WaitForFolderAsync();
+                    Assert.Equal("sent-new", vm.SelectedMessage?.Message.Id);
+                    vm.SelectedMessage = vm.Messages.Single(m => m.Message.Id == "sent-old");
+                    vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "received");
+                    await WaitForFolderAsync();
+                    Assert.Equal("first", vm.SelectedMessage?.Message.Id);
+                    vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "sent");
+                    await WaitForFolderAsync();
+                    Assert.Equal("sent-old", vm.SelectedMessage?.Message.Id);
+                    vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "noticeboard");
+                    await WaitForFolderAsync();
+                    Assert.Null(vm.SelectedMessage);
+                    Assert.Empty(vm.Body);
+                    vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "received");
+                    await WaitForFolderAsync();
+                    Assert.Equal("first", vm.SelectedMessage?.Message.Id);
+                    await vm.ActivateAccountAsync("https://school.example", "test");
+                    await WaitForFolderAsync();
+                    Assert.Equal("first", vm.SelectedMessage?.Message.Id);
+
                     vm.SelectedMessage = vm.Messages[1];
                     vm.SelectedMessage = vm.Messages[0];
                     vm.SelectedMessage = vm.Messages[1];
@@ -81,10 +119,36 @@ public sealed class PresentationTests
                     Assert.False(vm.HasAttachments);
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "sent");
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "received");
-                    await vm.FolderReady;
+                    await WaitForFolderAsync();
                     Assert.Equal("Inbox", vm.FolderTitle);
                     Assert.Equal(2, vm.Messages.Count);
+                    Assert.Equal("second", vm.SelectedMessage?.Message.Id);
+                    Assert.Contains("Second content", string.Concat(vm.Body.Select(p => p.Text)));
+
+                    vm.SelectedMessage = vm.Messages[0];
+                    await vm.ActivateAccountAsync("https://school.example", "other");
+                    await WaitForFolderAsync();
+                    Assert.Equal("second", vm.SelectedMessage?.Message.Id);
+                    vm.SelectedMessage = vm.Messages[0];
+                    await vm.ActivateAccountAsync("https://school.example", "other", new SchoolYear(SchoolYear.Current().StartYear + 1));
+                    await WaitForFolderAsync();
                     Assert.Null(vm.SelectedMessage);
+                    await vm.ActivateAccountAsync("https://school.example", "other", SchoolYear.Current());
+                    await WaitForFolderAsync();
+                    Assert.Equal("second", vm.SelectedMessage?.Message.Id);
+                    await vm.ActivateAccountAsync("https://school.example", "test");
+                    await WaitForFolderAsync();
+                    vm.SelectedMessage = vm.Messages[0];
+                    await Task.Run(() =>
+                    {
+                        var archive = store.LoadArchive("https://school.example", "test", SchoolYear.Current()) ??
+                            throw new InvalidOperationException("Test archive is missing.");
+                        archive.Folders["received"].RemoveAll(m => m.Id == "first");
+                        store.SaveArchive("https://school.example", "test", SchoolYear.Current(), "Test school", archive.Folders);
+                    });
+                    await vm.ActivateAccountAsync("https://school.example", "test");
+                    await WaitForFolderAsync();
+                    Assert.Equal("second", vm.SelectedMessage?.Message.Id);
 
                     var surface = new Border();
                     var text = new TextBlock();

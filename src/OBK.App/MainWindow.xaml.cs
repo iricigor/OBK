@@ -44,7 +44,15 @@ public partial class MainWindow : Window
         DataContext = ViewModel;
         ViewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(MainViewModel.SelectedMessage)) ReadingScroll.ScrollToTop();
+            if (e.PropertyName != nameof(MainViewModel.SelectedMessage)) return;
+            ReadingScroll.ScrollToTop();
+            if (ViewModel.SelectedMessage is { } row)
+            {
+                _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+                {
+                    if (ReferenceEquals(ViewModel.SelectedMessage, row)) Messages.ScrollIntoView(row);
+                }));
+            }
         };
     }
 
@@ -278,7 +286,11 @@ public partial class MainWindow : Window
     internal async Task VerifyOfflineReaderAsync()
     {
         await ViewModel.FolderReady;
+        await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        if (ViewModel.SelectedMessage?.Message.Id != "fixture-second" ||
+            !ReferenceEquals(Messages.SelectedItem, ViewModel.SelectedMessage))
+            throw new ObkException("The newest message was not selected when opening the folder.");
         Messages.SelectedIndex = 0;
         await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
@@ -305,5 +317,15 @@ public partial class MainWindow : Window
         await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         ReadingScroll.ScrollToTop();
+        ViewModel.SelectedFolder = ViewModel.Navigation.Single(f => f.Key == "sent");
+        await ViewModel.FolderReady;
+        await ViewModel.MessageReady;
+        ViewModel.SelectedFolder = ViewModel.Navigation.Single(f => f.Key == "received");
+        await ViewModel.FolderReady;
+        await ViewModel.MessageReady;
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        if (ViewModel.SelectedMessage?.Message.Id != "installation-check" ||
+            !ReferenceEquals(Messages.SelectedItem, ViewModel.SelectedMessage))
+            throw new ObkException("Folder navigation did not restore the previously selected message.");
     }
 }

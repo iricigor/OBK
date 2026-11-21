@@ -149,6 +149,11 @@ The Fluent workspace has three columns: school/folder navigation, a virtualized
 message list, and a reading pane. **Inbox**, **Sent**, and **Noticeboard** show
 actual archive counts; unread dots reflect the cached server read state.
 Selecting a message does not mark it read or send any server requests.
+Switching folders restores the last selected message in that folder for the
+current app session. On a first visit, or if that message is no longer present,
+the newest message by sent date is selected and scrolled into view. Empty
+folders remain unselected. Selection memory resets when changing accounts or
+school years; it is not saved when the app closes.
 Drag the divider between the list and reading pane to resize them. The layout
 adapts down to an 880-pixel-wide window while retaining all three columns.
 The Sent folder is for reading previously sent messages, not composing or
