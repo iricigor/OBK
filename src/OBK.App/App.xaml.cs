@@ -10,7 +10,7 @@ namespace OBK.App;
 
 public partial class App : Application
 {
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
         DispatcherUnhandledException += UnexpectedError;
@@ -25,7 +25,7 @@ public partial class App : Application
         }
         if (!smoke)
         {
-            try { new MainWindow(new LocalStore()).Show(); }
+            try { new MainWindow(await Task.Run(() => new LocalStore())).Show(); }
             catch (ObkException error)
             {
                 MessageBox.Show(error.Message, "OBK cannot start", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -36,7 +36,7 @@ public partial class App : Application
         var directory = Path.Combine(Path.GetTempPath(), "obk-smoke-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var store = new LocalStore(Path.Combine(directory, "smoke.sqlite3"));
+            var store = await Task.Run(() => new LocalStore(Path.Combine(directory, "smoke.sqlite3")));
             if (LocalStore.Decode<string>(LocalStore.Encode("installation-check")) != "installation-check")
                 throw new ObkException("Windows protection round-trip failed.");
             var year = SchoolYear.Current();
@@ -46,24 +46,50 @@ public partial class App : Application
                 Id = "installation-check", Title = "Installation check",
                 Text = "<p>Offline content with <strong>formatting</strong>.</p><script>never execute</script>",
                 SentDate = year.Start.ToString("O"), Read = false,
-                Attachments = [new Attachment { Id = "not-downloaded", Name = "agenda.pdf" }]
+                Sender = JsonSerializer.SerializeToElement(new { Name = "Test School Office" }),
+                Attachments = Enumerable.Range(1, 5).Select(i => new Attachment { Id = $"fixture-{i}", Name = $"offline-agenda-{i}.pdf" })
+                    .Append(new Attachment { Id = "not-downloaded", Name = "not-downloaded.pdf" }).ToList()
+            });
+            folders["received"].Add(new Message
+            {
+                Id = "fixture-second", Title = "Offline reading, folders and attachments",
+                Text = string.Concat(Enumerable.Range(1, 60).Select(i => $"<p>Synthetic offline content, paragraph {i}. No school is contacted.</p>")),
+                SentDate = year.Start.AddDays(1).ToString("O"), Read = true,
+                Sender = JsonSerializer.SerializeToElement(new { Name = "Test School Office" }), Attachments = []
             });
             store.SaveLogin("https://school.example", "installation-check", "", false);
             store.SaveArchive("https://school.example", "installation-check", year, "Installation check school", folders);
+            await Task.Run(async () =>
+            {
+                foreach (var attachment in folders["received"][0].Attachments.Take(5))
+                {
+                    using var source = new MemoryStream(new byte[459712]);
+                    await store.SaveAttachmentAsync("https://school.example", "installation-check", attachment, source, expectedSize: 459712, contentType: "application/pdf");
+                }
+            });
             var window = new MainWindow(store, showLogin: false);
             MainWindow = window;
             window.Show();
-            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(async () =>
             {
                 var exitCode = 0;
                 try
                 {
                     if (!window.IsVisible || window.ActualWidth <= 0) throw new ObkException("The offline window did not start.");
-                    window.VerifyOfflineReader();
+                    await window.InitializeAsync();
+                    await window.VerifyOfflineReaderAsync();
                     window.UpdateLayout();
                     if (resultPath is not null)
                     {
                         Capture(window, Path.ChangeExtension(resultPath, ".png"));
+                        await window.ViewModel.Theme.ToggleAsync();
+                        if (((SolidColorBrush)window.Background).Color != Color.FromRgb(32, 32, 32) ||
+                            ((SolidColorBrush)window.ContentReader.Foreground).Color != Colors.White)
+                            throw new ObkException("Theme resources did not update the live window and message text.");
+                        await window.ViewModel.Theme.InitializeAsync();
+                        if (!window.ViewModel.Theme.IsDark) throw new ObkException("The selected theme was not persisted.");
+                        window.UpdateLayout();
+                        Capture(window, Path.ChangeExtension(resultPath, ".dark.png"));
                         window.Width = 880;
                         window.Height = 620;
                         window.UpdateLayout();
