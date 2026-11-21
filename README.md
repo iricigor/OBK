@@ -1,6 +1,14 @@
 # OBK
 Offline Bakaláři Komens
 
+## School directory maintenance (planned)
+
+A gzip-compressed Bakaláři school-directory snapshot and a manually triggered
+refresh pipeline are planned. Changed data will be proposed through pull
+requests, not committed directly to `main`. The dataset is intentionally unused
+by the application; no UI, runtime refresh, or installer integration is planned
+in this change. Gzip is compression, not confidentiality protection.
+
 ## Purpose and scope
 
 OBK is a read-only Bakaláři Komens client that downloads messages for offline
