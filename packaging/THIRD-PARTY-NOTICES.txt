@@ -1,0 +1,17 @@
+OBK Windows distribution dependencies
+
+The self-contained application includes .NET and WPF (MIT license),
+Microsoft.Data.Sqlite and System.Security.Cryptography.ProtectedData (MIT),
+SQLitePCLRaw (Apache-2.0), SQLite (public domain), and AngleSharp (MIT).
+
+Source and license texts:
+https://github.com/dotnet/runtime/blob/main/LICENSE.TXT
+https://github.com/dotnet/runtime/blob/main/THIRD-PARTY-NOTICES.TXT
+https://github.com/dotnet/wpf/blob/main/LICENSE.TXT
+https://github.com/dotnet/efcore/blob/main/LICENSE.txt
+https://github.com/ericsink/SQLitePCL.raw/blob/master/LICENSE.TXT
+https://sqlite.org/copyright.html
+https://github.com/AngleSharp/AngleSharp/blob/main/LICENSE
+
+The installer build also copies the dependency license texts alongside this
+notice. The historical Python API tester is not part of the distribution.

@@ -1,0 +1,25 @@
+<Window x:Class="OBK.App.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource {x:Type Window}}"
+        Title="Sign in to your school" Width="520" SizeToContent="Height"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Closing="WindowClosing">
+    <StackPanel Margin="24">
+        <TextBlock Text="Sign in to Komens" FontSize="24" FontWeight="Bold" Margin="0,0,0,8"/>
+        <TextBlock Text="Download the current school year for offline reading." TextWrapping="Wrap" Margin="0,0,0,18"/>
+        <Label Content="School base URL (HTTPS)" Target="{Binding ElementName=SchoolUrl}" Padding="0"/>
+        <TextBox x:Name="SchoolUrl" Margin="0,4,0,12" AutomationProperties.Name="School base URL (HTTPS)"/>
+        <Label Content="Username" Target="{Binding ElementName=Username}" Padding="0"/>
+        <TextBox x:Name="Username" Margin="0,4,0,12" AutomationProperties.Name="Username"/>
+        <Label Content="Password" Target="{Binding ElementName=Password}" Padding="0"/>
+        <PasswordBox x:Name="Password" Margin="0,4,0,12" AutomationProperties.Name="Password"/>
+        <CheckBox x:Name="Remember" Content="Remember credentials on this Windows account" Unchecked="RememberUnchecked" Margin="0,4,0,8"/>
+        <CheckBox x:Name="FullRefresh" Content="Full school-year refresh (otherwise fetch new messages)" Margin="0,0,0,12"/>
+        <TextBlock Text="Saved credentials and message content are encrypted in the local database using Windows user protection. No sending or confirmations." TextWrapping="Wrap" Margin="0,0,0,16"/>
+        <TextBlock x:Name="Status" TextWrapping="Wrap" Margin="0,0,0,12"/>
+        <DockPanel>
+            <Button x:Name="OfflineButton" Content="Read offline" Click="ReadOffline" IsCancel="True" DockPanel.Dock="Left"/>
+            <Button x:Name="SignInButton" Content="Sign in and sync" Click="SignIn" IsDefault="True" HorizontalAlignment="Right"/>
+        </DockPanel>
+    </StackPanel>
+</Window>

@@ -6,15 +6,10 @@ Offline Bakaláři Komens
 OBK is a read-only Bakaláři Komens client that downloads messages for offline
 reading. Sending messages is out of scope.
 
-The agreed replacement for the Python/Tkinter Windows client is C#/.NET with
-WPF, published self-contained. The migration will preserve the existing
-encrypted SQLite archive and read-only behavior, and update Windows installer
-validation and release packaging. WPF is Windows-only; future platforms will
-need a separate presentation implementation.
-
-The first release targets Windows desktop, building on the Python/Tkinter API
-tester with SQLite storage. Later releases are planned for macOS, Linux,
-Android, and iOS; their implementation stack is not yet decided.
+The Windows client uses C#/.NET 10 LTS with WPF and SQLite storage, published
+self-contained. Users need neither Python/Tkinter nor a separately installed
+.NET runtime. WPF is Windows-only; planned macOS, Linux, Android, and iOS
+releases will need a separate presentation implementation.
 
 ## Data access plan
 
@@ -127,21 +122,23 @@ that message retrieval has no implicit read-state side effects. It never calls
 the message modification endpoints. These remaining checks are required before
 building the offline client.
 
-Run its local, mocked tests without school credentials:
+This historical tester remains an optional development tool, not part of the
+production app, installer, or validation/release pipelines. Run its mocked
+tests without school credentials:
 
 ```powershell
-python -m unittest discover -s .\tools -p "test_*.py"
+python -m unittest discover -s .\tools -p "test_api_probe.py"
 ```
 
 ## Windows desktop client
 
-Run the three-pane application from the repository root:
+Run the three-pane application from source with the .NET 10 SDK:
 
 ```powershell
-python .\tools\obk_app.py
+dotnet run --project .\src\OBK.App\OBK.App.csproj
 ```
 
-It uses Python 3.10 or later with Tkinter and has no third-party dependencies.
+The installed application does not require any development tools.
 At startup, a login popup asks for the school HTTPS base URL, username, and
 password. **Remember credentials on this Windows account** is off by default.
 When enabled, the next login popup is prefilled; it does not sign in silently.
@@ -184,8 +181,8 @@ survive a later sync failure and are reused on retry.
 Saved credentials, cached messages, and attachment data/metadata are encrypted with Windows DPAPI,
 scoped to the current Windows user. Account indexes (school URL and username),
 school name, and sync timestamps are database metadata, not encrypted.
-Credentials are never stored as plaintext or logged. Python cannot guarantee
-immediate erasure of sensitive process memory. DPAPI is not protection against
+Credentials are never stored as plaintext or logged. Immediate erasure of
+sensitive managed process memory is not guaranteed. DPAPI is not protection against
 software already running as the same Windows user, and another Windows account
 cannot simply copy the database and decrypt it.
 
@@ -203,6 +200,17 @@ delete them when no longer needed. Copies receive Windows' Internet-zone
 marking to retain downloaded-file security prompts. Only open files you trust,
 even if they came from school.
 
+### Existing Python-client archives
+
+The .NET client uses the same database path, table schema, JSON field names,
+DPAPI current-user scope, and encrypted attachment chunks as the former Python
+client. Existing messages, attachments, remembered credentials, and account
+settings are read in place; no destructive migration or redownload is required.
+Account URL spellings remain unchanged to preserve archive lookup keys.
+Unknown message and attachment fields are retained when saving.
+Close the old client before upgrading, and use the same Windows account.
+Unreadable or damaged data produces an explicit error, never a plaintext fallback.
+
 The client does not call read-receipt,
 confirmation, hide, delete, or send endpoints; server-side effects of list
 retrieval still need independent verification.
@@ -211,11 +219,11 @@ retrieval still need independent verification.
 
 Download `OBK-0.1.N-windows-x64-setup.exe` from this repository's
 [GitHub Releases](https://github.com/iricigor/OBK/releases). The installer bundles
-a private 64-bit CPython 3.14 runtime, Tkinter, and the Python runtime licenses.
-It does not use PyInstaller. Windows 10 or later is required; users do not need
-Python installed. Installation is per-user, normally under
+the self-contained 64-bit .NET/WPF app, SQLite, an inert HTML parser, and
+dependency licenses. Windows 10 or later is required; users do not need Python,
+Tkinter, or .NET installed separately. Installation is per-user, normally under
 `%LOCALAPPDATA%\Programs\OBK`, with a Start-menu shortcut. It does not change
-system Python, PATH, or Python file associations.
+PATH or file associations.
 
 Installers are **unsigned**: Windows or SmartScreen may warn about an unknown
 publisher. Verify the download's origin and compare its SHA-256 hash with the
@@ -225,7 +233,8 @@ release's `SHA256SUMS.txt` before deciding whether to run it:
 Get-FileHash .\OBK-0.1.0-windows-x64-setup.exe -Algorithm SHA256
 ```
 
-Reinstalling a newer version upgrades the same application directory.
+Reinstalling a newer version upgrades the same application directory and removes
+the old bundled Python `runtime` and `app` directories if present.
 Uninstalling removes the app and its private runtime but deliberately preserves
 `%LOCALAPPDATA%\OBK`, including the encrypted archive and any decrypted opened
 copies. Delete that data separately only if you intend to lose it.
@@ -233,7 +242,8 @@ Close OBK and external attachment viewers before upgrading or uninstalling.
 
 ### Pipeline behavior
 
-Pull requests targeting `main` run **Validation** on Windows: all mocked tests,
+Pull requests targeting `main` run **Validation** on Windows: .NET mocked API,
+cache-format compatibility, DPAPI and attachment tests,
 an installer build, and silent install/start/uninstall verification. The
 `windows-installer` workflow artifact contains the installer and its checksum
 for manual verification; PR artifacts use placeholder version `0.1.0` and are
@@ -264,30 +274,33 @@ the publication job uses it to create releases and upload assets.
 
 ### Local build and verification
 
-Development still runs directly from source using the commands above.
-To build an installer, install 64-bit CPython 3.14 with Tcl/Tk and Inno Setup 6
+Development runs from source using the .NET command above.
+To build an installer, install the .NET 10 SDK and Inno Setup 6
 (6.3 or later). From the repository root:
 
 ```powershell
-python -m unittest discover -s .\tools -p "test_*.py"
-python .\packaging\build_installer.py --version 0.1.0
+dotnet test .\tests\OBK.Tests\OBK.Tests.csproj -c Release
+.\packaging\build_installer.ps1 -Version 0.1.0
 .\packaging\verify_installer.ps1 -Installer .\dist\OBK-0.1.0-windows-x64-setup.exe
 ```
 
-For a non-default compiler location, pass `--iscc "C:\path\to\ISCC.exe"` to the
-build script. Build output is under `dist`, which is not committed. Only the
-three application modules, README, and selected runtime files are packaged;
-user data, third-party site-packages, and repository tests are excluded.
+For a non-default compiler location, pass `-Iscc "C:\path\to\ISCC.exe"` to the
+build script. Build output is under `dist`, which is not committed.
+The script uses `dotnet publish -c Release -r win-x64 --self-contained true`.
+The published app, README, and dependency license texts are packaged; Python
+tools, user data, and repository tests are excluded. NuGet restore and license
+downloads need internet access at build time, not for offline reading.
 
 The app's `--smoke-test` mode creates and destroys the offline window, checks
-SQLite initialization and Windows DPAPI encryption/decryption, and then exits.
-It uses a temporary database and never opens the real archive, shows login, or
-contacts a school. `--smoke-result` optionally writes a machine-readable result
-for verification of the windowed runtime. Errors fail the process rather than
+SQLite initialization, Windows DPAPI, and synthetic message rendering, then exits.
+It uses a temporary database and never opens the real archive or contacts a school.
+`--smoke-result` optionally writes a machine-readable result plus PNG snapshots
+of the reader at normal/minimum sizes and a synthetic login window, for verification
+of the installed executable. Errors fail the process rather than
 reporting success. Installer verification uses a unique directory and uninstall
 registration, without creating shortcuts or changing an existing OBK install.
 
 For manual verification, run the installer normally, launch **OBK** from the
 Start menu, and confirm the login popup appears. Use **Read offline** without
 credentials to check startup, then close the app and uninstall it. No existing
-Python installation should be needed.
+Python or separately installed .NET runtime should be needed.

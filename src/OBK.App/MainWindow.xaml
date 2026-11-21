@@ -1,0 +1,94 @@
+<Window x:Class="OBK.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource {x:Type Window}}"
+        Title="OBK - Offline Komens" Width="1180" Height="800" MinWidth="880" MinHeight="620"
+        Loaded="WindowLoaded" Closing="WindowClosing">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" BorderBrush="#CDD3D8" BorderThickness="0,0,0,1" Padding="18,14">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="ForgetButton" Content="Forget credentials" Click="ForgetCredentials" Margin="0,0,8,0"/>
+                    <Button x:Name="SyncButton" Content="Sign in / Sync" Click="OpenLogin"/>
+                </StackPanel>
+                <TextBlock Text="OBK" FontSize="24" FontWeight="Bold" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+                <TextBlock x:Name="YearLabel" Margin="24,0" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+        <Grid DockPanel.Dock="Bottom" Margin="18,8">
+            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock x:Name="Status" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            <ProgressBar x:Name="Progress" Grid.Column="1" Width="110" Height="8" Margin="12,0,0,0" IsIndeterminate="True" Visibility="Collapsed"/>
+        </Grid>
+        <Grid Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="235" MinWidth="130"/>
+                <ColumnDefinition Width="6"/>
+                <ColumnDefinition Width="*" MinWidth="480"/>
+            </Grid.ColumnDefinitions>
+            <TreeView x:Name="FolderTree" SelectedItemChanged="FolderChanged" Padding="8">
+                <TreeViewItem x:Name="SchoolNode" Header="Your school" IsExpanded="True">
+                    <TreeViewItem x:Name="InboxNode" Header="Inbox" Tag="received" IsSelected="True" Padding="4,6"/>
+                    <TreeViewItem x:Name="SentNode" Header="Sent" Tag="sent" Padding="4,6"/>
+                    <TreeViewItem x:Name="NoticeboardNode" Header="Noticeboard" Tag="noticeboard" Padding="4,6"/>
+                </TreeViewItem>
+            </TreeView>
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="#CDD3D8"/>
+            <Grid Grid.Column="2" Margin="8,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*" MinHeight="130"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="3*" MinHeight="160"/>
+                </Grid.RowDefinitions>
+                <DockPanel>
+                    <TextBlock x:Name="ListTitle" DockPanel.Dock="Top" FontSize="18" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="ListCaption" DockPanel.Dock="Top" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <DataGrid x:Name="Messages" AutoGenerateColumns="False" IsReadOnly="True"
+                              CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single"
+                              SelectionUnit="FullRow" HeadersVisibility="Column" RowHeight="28"
+                              GridLinesVisibility="Horizontal" SelectionChanged="MessageChanged">
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Unread}" Value="True">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="65"/>
+                            <DataGridTextColumn Header="Subject" Binding="{Binding Subject}" Width="2*" MinWidth="180"/>
+                            <DataGridTextColumn Header="From / To" Binding="{Binding Person}" Width="*" MinWidth="100"/>
+                            <DataGridTextColumn Header="Sent" Binding="{Binding Sent}" Width="145"/>
+                            <DataGridTextColumn Header="Files" Binding="{Binding Files}" Width="45"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <GridSplitter Grid.Row="1" Height="6" HorizontalAlignment="Stretch" Background="#CDD3D8"/>
+                <DockPanel Grid.Row="2" Margin="0,16,0,0">
+                    <TextBlock x:Name="Subject" DockPanel.Dock="Top" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="Metadata" DockPanel.Dock="Top" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <StackPanel x:Name="AttachmentPanel" DockPanel.Dock="Bottom" Margin="0,10,0,0" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/><ColumnDefinition/>
+                                <ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="AttachmentTitle" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox x:Name="AttachmentList" Grid.Column="1" DisplayMemberPath="SafeName" SelectionChanged="AttachmentChanged"
+                                      AutomationProperties.Name="Attachments" MinHeight="32" VerticalContentAlignment="Center"/>
+                            <Button x:Name="OpenAttachmentButton" Grid.Column="2" Content="Open" Click="OpenAttachment" Margin="8,0,0,0"/>
+                            <Button x:Name="SaveAttachmentButton" Grid.Column="3" Content="Save a copy" Click="SaveAttachment" Margin="8,0,0,0"/>
+                        </Grid>
+                        <TextBlock x:Name="AttachmentStatus" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <RichTextBox x:Name="ContentReader" IsReadOnly="True" IsDocumentEnabled="False"
+                                 VerticalScrollBarVisibility="Auto" Padding="16,12" FontSize="15"
+                                 Background="White" BorderBrush="#CDD3D8"
+                                 AutomationProperties.Name="Message content"/>
+                </DockPanel>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

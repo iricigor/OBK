@@ -19,7 +19,7 @@ OutputBaseFilename=OBK-{#AppVersion}-windows-x64-setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-UninstallDisplayIcon={app}\runtime\pythonw.exe
+UninstallDisplayIcon={app}\OBK.exe
 SetupLogging=yes
 UsePreviousLanguage=no
 CloseApplications=yes
@@ -28,9 +28,13 @@ RestartApplications=no
 [Files]
 Source: "..\dist\stage\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\runtime"
+Type: filesandordirs; Name: "{app}\app"
+
 [Icons]
-Name: "{group}\OBK"; Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I ""{app}\app\obk_app.py"""; WorkingDir: "{app}"
+Name: "{group}\OBK"; Filename: "{app}\OBK.exe"; WorkingDir: "{app}"
 Name: "{group}\Uninstall OBK"; Filename: "{uninstallexe}"
 
 [Run]
-Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I ""{app}\app\obk_app.py"""; Description: "Launch OBK"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\OBK.exe"; Description: "Launch OBK"; Flags: nowait postinstall skipifsilent
