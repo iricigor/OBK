@@ -132,6 +132,12 @@ python -m unittest discover -s .\tools -p "test_api_probe.py"
 
 ## Windows desktop client
 
+The planned Fluent UI redesign retains WPF, offline storage, and synchronization
+while introducing reactive Light/Dark themes, a three-column message workspace,
+and attachment cards with direct opening, export, and Windows drag-and-drop.
+The redesign is tracked separately and remains pending implementation and user
+verification.
+
 Run the three-pane application from source with the .NET 10 SDK:
 
 ```powershell
