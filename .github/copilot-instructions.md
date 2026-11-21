@@ -3,6 +3,13 @@
 Follow this workflow for code changes in this repository. Do not treat a request
 to implement something as approval to skip brainstorming or user verification.
 
+## Workflow naming
+
+When adding or renaming a GitHub Actions workflow, prefix its display `name:`
+with a relevant emoji and a space, while preserving clear text after it. Use
+semantic emojis for the workflow's purpose, such as testing 🧪, building 🔨,
+or release 🚀.
+
 ## 1. Brainstorm before code work
 
 Discuss the problem, possible solutions, tradeoffs, and proposed scope with the
