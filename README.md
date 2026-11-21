@@ -1,6 +1,84 @@
 # OBK
 Offline Bakaláři Komens
 
+## School directory maintenance
+
+`data\schools.json.gz` is a gzip-compressed UTF-8 JSON snapshot of the public
+[Bakaláři directory](https://sluzby.bakalari.cz/api/v1/municipality). It is
+intentionally unused by the application and is not included in the installer.
+There are no user-facing controls, startup downloads, or scheduled refreshes.
+
+The decoded format contains `formatVersion` (currently 1), `source`, `fetchedAt`
+(UTC), `municipalityCount`, `expectedSchoolCount` (named groups only),
+`schoolCount` (unique collected records), `invalidUrlCount`, `complete`,
+`excludedMunicipalities`, `diagnostics`, `municipalities`, and `schools`.
+Each municipality has its upstream `name` and `schoolCount`, `retrieved`, and
+`returnedSchoolCount` (usable records before deduplication). Each school has
+`id`, `name`, the exact upstream `schoolUrl`, `urlValid`, and
+`municipalityMatches`. Lookups can include neighboring towns: these matches are
+query associations, not verified geographic assignments. Schools are deduplicated
+by ID. Conflicting duplicates retain the first record in stable municipality
+order and produce a diagnostic.
+
+URLs are directory data, not verified API availability. Legacy HTTP URLs and
+malformed URL strings are retained verbatim, not repaired or contacted; malformed
+values have `urlValid: false`.
+
+The upstream index includes an unnamed municipality whose schools cannot be
+retrieved through its lookup API. This agreed exclusion is recorded with its
+advertised count and reason in `excludedMunicipalities`, not silently discarded.
+Refreshes are best-effort: individual lookup failures and malformed school
+records are skipped, with warnings and metadata diagnostics. A second index
+check detects changes during collection, but failure of this recheck does not
+discard usable records. The unique total is compared with the index's advertised
+named-group count; mismatches produce diagnostics, not a failed refresh.
+`complete` is false if there are diagnostics, exclusions, or malformed URLs.
+This cannot establish that the upstream directory itself lists every school
+using Bakaláři.
+
+The initial index must be valid and at least one usable school must be collected;
+otherwise the refresh fails and preserves the previous snapshot. A partial
+refresh may contain fewer schools than the previous snapshot: inspect coverage
+and diagnostics in the update PR before merging. Failed towns are not backfilled
+with stale records.
+
+Maintainers can run **📚 School directory refresh** from GitHub Actions using
+**Run workflow**. It refreshes from `main`, commits only changed compressed data
+to a new maintenance branch, and opens a pull request; it never commits directly
+to `main`. Review or close a pending directory-update PR before running again.
+Enable **Allow GitHub Actions to create and approve pull requests** in the
+repository's **Settings > Actions > General > Workflow permissions**. No school
+credentials or additional secret are needed.
+
+PRs created with `GITHUB_TOKEN` do not automatically trigger other workflows.
+Run **🧪 Validation** manually on the maintenance branch and review its result
+before merging. A failed publication step reports an error; inspect any pushed
+maintenance branch before retrying.
+
+Local maintenance needs Python 3.10 or later, with no third-party dependencies
+(Python remains development tooling, not an application runtime):
+
+```powershell
+python -m unittest discover -s .\tools -p "test_school_directory.py"
+python .\tools\refresh_school_directory.py
+```
+
+The tool uses four concurrent requests with 30-second timeouts, performs no
+school-login requests, and writes the compressed file atomically after collection.
+An unchanged directory and diagnostics preserve the previous retrieval timestamp
+and bytes, so merely running a refresh does not produce an update PR.
+
+To inspect the snapshot locally without saving a plaintext duplicate:
+
+```powershell
+python -c "import gzip,json; d=json.load(gzip.open(r'data\schools.json.gz','rt',encoding='utf-8')); print(d['fetchedAt'], d['schoolCount'], d['municipalityCount']); print(d['excludedMunicipalities'])"
+```
+
+Gzip hides school names from basic plaintext crawling, but it is **not encryption
+or access control**. Anyone with the file can decompress it. Do not publish a
+plaintext duplicate alongside it; compression does not hide names in upstream
+public sources or elsewhere on a website.
+
 ## Purpose and scope
 
 OBK is a read-only Bakaláři Komens client that downloads messages for offline
