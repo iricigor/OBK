@@ -115,9 +115,18 @@ public partial class App : Application
                             login.CredentialsPanel.Visibility != Visibility.Visible ||
                             !login.SchoolUrl.Text.Contains("zssteken", StringComparison.OrdinalIgnoreCase))
                             throw new ObkException("Selecting a school search result did not populate its URL.");
+                        login.Username.Text = "school-account";
+                        login.Password.Password = "secret";
+                        login.ChildName.Text = "Child";
+                        login.Remember.IsChecked = true;
                         login.UpdateLayout();
                         Capture(login, Path.ChangeExtension(resultPath, ".login.png"));
-                        login.Username.Text = "not-saved";
+                        login.ChangeSchoolButton.RaiseEvent(
+                            new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                        await Dispatcher.Yield(DispatcherPriority.Input);
+                        if (login.Username.Text.Length != 0 || login.Password.Password.Length != 0 ||
+                            login.ChildName.Text.Length != 0 || login.Remember.IsChecked == true)
+                            throw new ObkException("Changing schools did not clear the previous account fields.");
                         login.Close();
                         if (store.LastAccount()!.Username != "installation-check")
                             throw new ObkException("Closing the sign-in window changed the active offline account.");

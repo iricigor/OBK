@@ -65,8 +65,8 @@ public partial class LoginWindow : Window
         ManualUrlButton.IsEnabled = schoolDirectory is not null && !busy;
         BackToSchoolSearchButton.IsEnabled = schoolDirectory is not null && !busy;
         SchoolMatches.IsEnabled = SchoolUrl.IsEnabled = Username.IsEnabled = ChildName.IsEnabled =
-            Password.IsEnabled = Remember.IsEnabled = FullRefresh.IsEnabled = UseManualUrlButton.IsEnabled =
-            ChangeSchoolButton.IsEnabled = AdvancedOptions.IsEnabled = !busy;
+            Password.IsEnabled = Remember.IsEnabled = UseManualUrlButton.IsEnabled =
+            ChangeSchoolButton.IsEnabled = !busy;
         SignInButton.IsEnabled = OfflineButton.IsEnabled = schoolConfirmed && !busy;
     }
 
@@ -82,12 +82,12 @@ public partial class LoginWindow : Window
             if (username.Length == 0) throw new ObkException("Enter your Komens username.");
             if (password.Length == 0) throw new ObkException("Enter your Komens password.");
             var remember = Remember.IsChecked == true;
-            var fullRefresh = FullRefresh.IsChecked == true;
             var childName = OptionalLabel(ChildName.Text);
             SetBusy(true);
             if (!remember) await Task.Run(app.Store.ForgetCredentials);
             Status.Text = $"Connecting to {SelectedSchoolName.Text}...";
-            await app.SynchronizeAsync(this, url, username, password, remember, fullRefresh, childName, selectedSchoolName);
+            await app.SynchronizeAsync(this, url, username, password, remember, false, childName,
+                selectedSchoolName);
         }
         catch (ObkException error) { Status.Text = error.Message; SetBusy(false); }
     }
@@ -282,12 +282,14 @@ public partial class LoginWindow : Window
 
     private void OpenManualUrl(object sender, RoutedEventArgs e)
     {
+        ClearAccountFields();
         ShowManualUrl();
         SchoolUrl.Focus();
     }
 
     private void BackToSchoolSearch(object sender, RoutedEventArgs e)
     {
+        ClearAccountFields();
         schoolConfirmed = false;
         SchoolChooserPanel.Visibility = Visibility.Visible;
         ManualUrlPanel.Visibility = Visibility.Collapsed;
@@ -349,6 +351,7 @@ public partial class LoginWindow : Window
 
     private void ChangeSchool(object sender, RoutedEventArgs e)
     {
+        ClearAccountFields();
         schoolConfirmed = false;
         SchoolChooserPanel.Visibility = Visibility.Visible;
         ManualUrlPanel.Visibility = Visibility.Collapsed;
@@ -382,6 +385,14 @@ public partial class LoginWindow : Window
     {
         if (SignInButton is null) return;
         SignInButton.IsEnabled = OfflineButton.IsEnabled = schoolConfirmed && !busy;
+    }
+
+    private void ClearAccountFields()
+    {
+        Username.Text = "";
+        Password.Clear();
+        ChildName.Text = "";
+        Remember.IsChecked = false;
     }
 
     private static string? OptionalLabel(string value) => value.Trim() is { Length: > 0 } label ? label : null;

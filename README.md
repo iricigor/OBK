@@ -224,9 +224,10 @@ At startup, a login popup searches the bundled school directory by school name,
 town, or school-specific URL text. Once fewer than seven schools match, selecting
 one confirms the school in a summary card. Users can also enter the school's
 website manually. Credentials remain hidden until the school is confirmed.
-The popup then asks for username and password. Optional **Profile and sync
-options** contain the child name and full school-year refresh. The child name is
-shown near the OBK title instead of the school name when supplied.
+The popup then asks for username, password, and an optional child name. The
+child name is shown near the OBK title instead of the school name when supplied.
+Changing the selected school clears the account-specific credential and child
+fields so they cannot be reused unintentionally.
 **Remember credentials on this Windows account** is off by default. When
 enabled, the next login popup is prefilled; it does not sign in silently.
 The action footer stays visible while the form scrolls, with **Read offline**
