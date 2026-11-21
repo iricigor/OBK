@@ -3,75 +3,151 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Style="{StaticResource {x:Type Window}}"
-        Title="Sign in to your school" Width="520" SizeToContent="Height"
+        Title="Sign in to your school" Width="560" MaxHeight="780" SizeToContent="Height"
         ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner" Closing="WindowClosing">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="40" ResizeBorderThickness="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
     <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
-    <DockPanel>
-        <Grid DockPanel.Dock="Top" Height="40">
-            <TextBlock Text="OBK" Foreground="{DynamicResource TextSecondary}" FontSize="12" VerticalAlignment="Center" Margin="24,0"/>
-            <Button HorizontalAlignment="Right" Width="40" Height="40" Style="{StaticResource SubtleButton}"
-                    Click="CloseWindow" ToolTip="Close" AutomationProperties.Name="Close sign in" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <TextBlock Style="{StaticResource Icon}" Text="&#xE8BB;" FontSize="10"/>
-            </Button>
-        </Grid>
-    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="720">
-    <StackPanel Margin="24,8,24,24">
-        <TextBlock Text="Sign in to Komens" FontSize="24" FontWeight="Bold" Margin="0,0,0,8"/>
-        <TextBlock Text="Find your school, then download the current school year for offline reading." TextWrapping="Wrap" Margin="0,0,0,18"/>
-        <StackPanel x:Name="SchoolSearchPanel">
-            <Label Content="Find your school" Target="{Binding ElementName=SchoolSearch}" Padding="0"/>
-            <TextBox x:Name="SchoolSearch" Margin="0,4,0,6" AutomationProperties.Name="Find your school"
-                     TextChanged="SchoolSearchChanged" IsEnabled="False"
-                     ToolTip="Search by school name, town, or part of the school URL"/>
-            <TextBlock x:Name="SchoolSearchStatus" Text="Loading the bundled school directory..." TextWrapping="Wrap"
-                       Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
-            <ListBox x:Name="SchoolMatches" MaxHeight="160" Margin="0,0,0,8" Visibility="Collapsed"
-                     SelectionChanged="SchoolSelected" AutomationProperties.Name="Matching schools"
-                     ItemContainerStyle="{StaticResource SelectableRow}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="10,8">
-                            <StackPanel>
-                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                <TextBlock Text="{Binding Towns}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                           TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
-                                <TextBlock Text="{Binding SchoolUrl}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
-                                           TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </StackPanel>
-        <StackPanel x:Name="ManualUrlPanel" Visibility="Collapsed">
-            <Label Content="School base URL (HTTPS)" Target="{Binding ElementName=SchoolUrl}" Padding="0"/>
-            <TextBox x:Name="SchoolUrl" Margin="0,4,0,6" AutomationProperties.Name="School base URL (HTTPS)"
-                     TextChanged="SchoolUrlChanged"/>
-            <TextBlock Text="Use the school's HTTPS address, without /login." Foreground="{DynamicResource TextSecondary}"
-                       FontSize="12" Margin="0,0,0,8"/>
-        </StackPanel>
-        <Button x:Name="ManualUrlButton" Content="Enter URL manually" Click="ToggleManualUrl"
-                Style="{StaticResource SubtleButton}" HorizontalAlignment="Left" Padding="0,4" Margin="0,0,0,12"/>
-        <Label Content="Username" Target="{Binding ElementName=Username}" Padding="0"/>
-        <TextBox x:Name="Username" Margin="0,4,0,12" AutomationProperties.Name="Username"/>
-        <Label Content="Child name (optional)" Target="{Binding ElementName=ChildName}" Padding="0"/>
-        <TextBox x:Name="ChildName" Margin="0,4,0,12" AutomationProperties.Name="Child name (optional)"
-                 ToolTip="Shown near the OBK title instead of the school name"/>
-        <Label Content="Password" Target="{Binding ElementName=Password}" Padding="0"/>
-        <PasswordBox x:Name="Password" Margin="0,4,0,12" AutomationProperties.Name="Password"/>
-        <CheckBox x:Name="Remember" Content="Remember credentials on this Windows account" Unchecked="RememberUnchecked" Margin="0,4,0,8"/>
-        <CheckBox x:Name="FullRefresh" Content="Full school-year refresh (otherwise fetch new messages)" Margin="0,0,0,12"/>
-        <TextBlock Text="Saved credentials and message content are encrypted in the local database using Windows user protection. No sending or confirmations." TextWrapping="Wrap" Margin="0,0,0,16"/>
-        <TextBlock x:Name="Status" TextWrapping="Wrap" Margin="0,0,0,12"/>
         <DockPanel>
-            <Button x:Name="OfflineButton" Content="Read offline" Click="ReadOffline" DockPanel.Dock="Left"/>
-            <Button x:Name="SignInButton" Content="Sign in and sync" Click="SignIn" IsDefault="True" HorizontalAlignment="Right" Style="{StaticResource PrimaryButton}"/>
+            <Grid DockPanel.Dock="Top" Height="40">
+                <TextBlock Text="OBK" Foreground="{DynamicResource TextSecondary}" FontSize="12" VerticalAlignment="Center" Margin="24,0"/>
+                <Button HorizontalAlignment="Right" Width="40" Height="40" Style="{StaticResource SubtleButton}"
+                        Click="CloseWindow" ToolTip="Close without signing in" AutomationProperties.Name="Close sign in"
+                        shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE8BB;" FontSize="10"/>
+                </Button>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
+                    <StackPanel Margin="24,8,24,20">
+                        <TextBlock Text="Sign in to Komens" FontSize="24" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <TextBlock Text="Choose your school, sign in, and sync messages for offline reading."
+                                   TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,22"/>
+
+                        <StackPanel x:Name="SchoolChooserPanel">
+                            <Label Content="School" Target="{Binding ElementName=SchoolSearch}" Padding="0"/>
+                            <TextBox x:Name="SchoolSearch" Margin="0,4,0,6" AutomationProperties.Name="School"
+                                     AutomationProperties.HelpText="Search by school name, town, or website"
+                                     TextChanged="SchoolSearchChanged" PreviewKeyDown="SchoolSearchKeyDown" IsEnabled="False"/>
+                            <TextBlock x:Name="SchoolSearchStatus" Text="Loading the bundled school directory..."
+                                       TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"
+                                       AutomationProperties.LiveSetting="Polite"/>
+                            <ListBox x:Name="SchoolMatches" MaxHeight="210" Margin="0,0,0,8" Visibility="Collapsed"
+                                     AutomationProperties.Name="Matching schools" PreviewKeyDown="SchoolMatchesKeyDown"
+                                     PreviewMouseLeftButtonUp="SchoolMatchesMouseUp"
+                                     ItemContainerStyle="{StaticResource SelectableRow}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding Towns}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                           TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+                                                <TextBlock Text="{Binding SchoolUrl}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                                           TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button x:Name="ManualUrlButton" Content="Can't find your school? Enter its website"
+                                    Click="OpenManualUrl" Style="{StaticResource SubtleButton}" HorizontalAlignment="Left"
+                                    Padding="0,4" Margin="0,0,0,4"/>
+                        </StackPanel>
+
+                        <StackPanel x:Name="ManualUrlPanel" Visibility="Collapsed">
+                            <Label Content="School website (HTTPS)" Target="{Binding ElementName=SchoolUrl}" Padding="0"/>
+                            <TextBox x:Name="SchoolUrl" Margin="0,4,0,6" AutomationProperties.Name="School website (HTTPS)"
+                                     TextChanged="SchoolUrlChanged" PreviewKeyDown="SchoolUrlKeyDown"/>
+                            <TextBlock Text="Use the school's HTTPS address. Do not include /login."
+                                       Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="BackToSchoolSearchButton" Content="Back to school search" Click="BackToSchoolSearch"
+                                        Style="{StaticResource SubtleButton}" Padding="0,6" Margin="0,0,16,0"/>
+                                <Button x:Name="UseManualUrlButton" Content="Use this website" Click="UseManualUrl"
+                                        Style="{StaticResource PrimaryButton}"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel x:Name="SelectedSchoolPanel" Visibility="Collapsed" Margin="0,0,0,20">
+                            <TextBlock Text="SELECTED SCHOOL" FontSize="10" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,6"/>
+                            <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}"
+                                    BorderThickness="1" CornerRadius="8" Padding="14,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="26" Height="26" CornerRadius="13" Background="{DynamicResource Selection}"
+                                            VerticalAlignment="Top">
+                                        <TextBlock Text="&#xE73E;" Style="{StaticResource Icon}" Foreground="{DynamicResource Accent}"
+                                                   FontSize="12"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="10,0,8,0">
+                                        <TextBlock x:Name="SelectedSchoolName" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="SelectedSchoolTowns" FontSize="12"
+                                                   Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"
+                                                   Margin="0,3,0,0"/>
+                                        <TextBlock x:Name="SelectedSchoolUrl" FontSize="11"
+                                                   Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <Button x:Name="ChangeSchoolButton" Grid.Column="2" Content="Change" Click="ChangeSchool"
+                                            Style="{StaticResource SubtleButton}" VerticalAlignment="Top"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel x:Name="CredentialsPanel" Visibility="Collapsed">
+                            <Label Content="Username" Target="{Binding ElementName=Username}" Padding="0"/>
+                            <TextBox x:Name="Username" Margin="0,4,0,12" AutomationProperties.Name="Username"/>
+                            <Label Content="Password" Target="{Binding ElementName=Password}" Padding="0"/>
+                            <PasswordBox x:Name="Password" Margin="0,4,0,12" AutomationProperties.Name="Password"/>
+                            <CheckBox x:Name="Remember" Content="Remember credentials on this Windows account"
+                                      Unchecked="RememberUnchecked" Margin="0,0,0,8"/>
+                            <TextBlock Text="Credentials and messages are encrypted for this Windows account."
+                                       Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap"
+                                       Margin="28,0,0,12"/>
+                            <Expander x:Name="AdvancedOptions" Header="Profile and sync options"
+                                      Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4">
+                                <StackPanel Margin="0,12,0,0">
+                                    <Label Content="Child name (optional)" Target="{Binding ElementName=ChildName}" Padding="0"/>
+                                    <TextBox x:Name="ChildName" Margin="0,4,0,4" AutomationProperties.Name="Child name (optional)"/>
+                                    <TextBlock Text="Shown in the app title instead of the school name."
+                                               Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,0,0,12"/>
+                                    <CheckBox x:Name="FullRefresh" Content="Download the full school year again"
+                                              Margin="0,0,0,4"/>
+                                    <TextBlock Text="Use this if older messages or changes are missing. Otherwise OBK downloads only new messages."
+                                               Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap"
+                                               Margin="28,0,0,4"/>
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Border Grid.Row="1" BorderBrush="{DynamicResource Stroke}" BorderThickness="0,1,0,0"
+                        Background="{DynamicResource Surface}" Padding="24,14,24,18">
+                    <StackPanel>
+                        <TextBlock x:Name="Status" TextWrapping="Wrap" Margin="0,0,0,10"
+                                   AutomationProperties.LiveSetting="Assertive"/>
+                        <DockPanel>
+                            <Button x:Name="OfflineButton" Content="Read offline" Click="ReadOffline"
+                                    IsEnabled="False" DockPanel.Dock="Left"/>
+                            <Button x:Name="SignInButton" Content="Sign in and sync" Click="SignIn"
+                                    IsEnabled="False" IsDefault="True" HorizontalAlignment="Right"
+                                    Style="{StaticResource PrimaryButton}"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </DockPanel>
-    </StackPanel>
-    </ScrollViewer>
-    </DockPanel>
     </Border>
 </Window>

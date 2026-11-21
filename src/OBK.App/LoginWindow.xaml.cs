@@ -1,6 +1,8 @@
 using OBK.Core;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace OBK.App;
 
@@ -11,9 +13,9 @@ public partial class LoginWindow : Window
     private bool completed;
     private bool ready;
     private bool busy;
-    private bool manualUrl;
     private bool updatingSearch;
     private bool updatingUrl;
+    private bool schoolConfirmed;
     private SchoolDirectory? schoolDirectory;
     private string? selectedSchoolName;
     public string StatusText { set => Status.Text = value; }
@@ -30,7 +32,6 @@ public partial class LoginWindow : Window
         Username.Text = initial?.Username ?? "";
         ChildName.Text = initial?.ChildName ?? "";
         Password.Password = initial?.Password ?? "";
-        selectedSchoolName = initial?.SchoolName;
         Remember.IsChecked = remembered;
         Status.Text = error;
         ready = true;
@@ -38,8 +39,12 @@ public partial class LoginWindow : Window
         Loaded += async (_, _) =>
         {
             await DirectoryReady;
-            if (manualUrl) SchoolUrl.Focus();
-            else if (SchoolSearch.IsEnabled) SchoolSearch.Focus();
+            if (!schoolConfirmed)
+            {
+                if (ManualUrlPanel.Visibility == Visibility.Visible) SchoolUrl.Focus();
+                else if (SchoolSearch.IsEnabled) SchoolSearch.Focus();
+            }
+            else if (Username.Text.Length > 0) Password.Focus();
             else Username.Focus();
         };
     }
@@ -58,9 +63,11 @@ public partial class LoginWindow : Window
         this.busy = busy;
         SchoolSearch.IsEnabled = schoolDirectory is not null && !busy;
         ManualUrlButton.IsEnabled = schoolDirectory is not null && !busy;
+        BackToSchoolSearchButton.IsEnabled = schoolDirectory is not null && !busy;
         SchoolMatches.IsEnabled = SchoolUrl.IsEnabled = Username.IsEnabled = ChildName.IsEnabled =
-            Password.IsEnabled = Remember.IsEnabled = FullRefresh.IsEnabled =
-            SignInButton.IsEnabled = OfflineButton.IsEnabled = !busy;
+            Password.IsEnabled = Remember.IsEnabled = FullRefresh.IsEnabled = UseManualUrlButton.IsEnabled =
+            ChangeSchoolButton.IsEnabled = AdvancedOptions.IsEnabled = !busy;
+        SignInButton.IsEnabled = OfflineButton.IsEnabled = schoolConfirmed && !busy;
     }
 
     private async void SignIn(object sender, RoutedEventArgs e)
@@ -68,19 +75,19 @@ public partial class LoginWindow : Window
         if (app.Busy || busy) return;
         try
         {
+            if (!schoolConfirmed) throw new ObkException("Choose a school before signing in.");
             var url = KomensClient.NormalizeUrl(SchoolUrl.Text);
             var username = Username.Text.Trim();
             var password = Password.Password;
-            if (username.Length == 0 || password.Length == 0) throw new ObkException("Enter both a username and password.");
+            if (username.Length == 0) throw new ObkException("Enter your Komens username.");
+            if (password.Length == 0) throw new ObkException("Enter your Komens password.");
             var remember = Remember.IsChecked == true;
             var fullRefresh = FullRefresh.IsChecked == true;
             var childName = OptionalLabel(ChildName.Text);
-            var schoolName = selectedSchoolName;
-            Password.Clear();
             SetBusy(true);
             if (!remember) await Task.Run(app.Store.ForgetCredentials);
-            Status.Text = "Signing in, then downloading all three folders...";
-            await app.SynchronizeAsync(this, url, username, password, remember, fullRefresh, childName, schoolName);
+            Status.Text = $"Connecting to {SelectedSchoolName.Text}...";
+            await app.SynchronizeAsync(this, url, username, password, remember, fullRefresh, childName, selectedSchoolName);
         }
         catch (ObkException error) { Status.Text = error.Message; SetBusy(false); }
     }
@@ -97,15 +104,13 @@ public partial class LoginWindow : Window
         if (app.Busy) return false;
         try
         {
+            if (!schoolConfirmed) throw new ObkException("Choose a school before opening offline messages.");
             var username = Username.Text.Trim();
-            if (username.Length > 0)
-            {
-                var url = KomensClient.NormalizeUrl(SchoolUrl.Text);
-                var childName = OptionalLabel(ChildName.Text);
-                var schoolName = selectedSchoolName;
-                await Task.Run(() => app.Store.SaveAccount(url, username, childName, schoolName));
-                await app.ActivateAccountAsync(url, username, childName, schoolName);
-            }
+            if (username.Length == 0) throw new ObkException("Enter the username used to download the offline messages.");
+            var url = KomensClient.NormalizeUrl(SchoolUrl.Text);
+            var childName = OptionalLabel(ChildName.Text);
+            await Task.Run(() => app.Store.SaveAccount(url, username, childName, selectedSchoolName));
+            await app.ActivateAccountAsync(url, username, childName, selectedSchoolName);
             app.OfflineStatus();
             return true;
         }
@@ -120,14 +125,16 @@ public partial class LoginWindow : Window
         finally { SetBusy(false); }
     }
 
-    private async void WindowClosing(object? sender, CancelEventArgs e)
+    private void WindowClosing(object? sender, CancelEventArgs e)
     {
         if (completed) { Password.Clear(); return; }
-        e.Cancel = true;
-        if (busy || app.Busy) { Status.Text = "Wait for the current operation to finish."; return; }
-        SetBusy(true);
-        try { if (await ActivateOfflineAsync()) Complete(); }
-        finally { SetBusy(false); }
+        if (busy || app.Busy)
+        {
+            e.Cancel = true;
+            Status.Text = "Wait for the current operation to finish.";
+            return;
+        }
+        Password.Clear();
     }
 
     private void CloseWindow(object sender, RoutedEventArgs e) => Close();
@@ -140,68 +147,100 @@ public partial class LoginWindow : Window
             {
                 const string resource = "OBK.App.Data.schools.json.gz";
                 using var stream = typeof(LoginWindow).Assembly.GetManifestResourceStream(resource) ??
-                    throw new ObkException("The bundled school directory is unavailable. Enter the school URL manually.");
+                    throw new ObkException("The school directory is unavailable. Enter the school website manually.");
                 return SchoolDirectory.Load(stream);
             });
             schoolDirectory = loaded;
             var match = initial?.Url is { Length: > 0 } url ? loaded.FindByUrl(url) : null;
             if (match is not null)
-            {
-                selectedSchoolName = match.Name;
-                updatingUrl = true;
-                SchoolUrl.Text = match.SchoolUrl;
-                updatingUrl = false;
-                updatingSearch = true;
-                SchoolSearch.Text = match.Name;
-                updatingSearch = false;
-                UpdateSchoolSearch();
-                SchoolMatches.SelectedItem = match;
-                SearchSelected(match);
-            }
+                ConfirmSchool(match, moveFocus: false);
             else if (initial?.Url is { Length: > 0 })
-            {
-                ShowManualUrl();
-                SchoolSearchStatus.Text = $"{loaded.Count:N0} bundled schools are available.";
-            }
-            else UpdateSchoolSearch();
-            SchoolSearch.IsEnabled = true;
+                ConfirmManualSchool(initial.Url, initial.SchoolName, moveFocus: false);
+            else
+                UpdateSchoolSearch();
+            SchoolSearch.IsEnabled = !busy;
         }
         catch (ObkException error)
         {
-            SchoolSearchStatus.Text = error.Message;
+            Status.Text = error.Message;
             ShowManualUrl();
             ManualUrlButton.IsEnabled = false;
-            ManualUrlButton.Content = "School search unavailable";
+            BackToSchoolSearchButton.IsEnabled = false;
         }
     }
 
     private void SchoolSearchChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
         if (updatingSearch || schoolDirectory is null) return;
-        selectedSchoolName = null;
+        schoolConfirmed = false;
         updatingUrl = true;
         SchoolUrl.Text = "";
         updatingUrl = false;
         UpdateSchoolSearch();
+        UpdateActionButtons();
     }
 
     private void SchoolUrlChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
-        if (!updatingUrl) selectedSchoolName = null;
+        if (!updatingUrl) schoolConfirmed = false;
+        UpdateActionButtons();
     }
 
-    private void SchoolSelected(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    private void SchoolSearchKeyDown(object sender, KeyEventArgs e)
     {
-        if (SchoolMatches.SelectedItem is SchoolDirectoryEntry school) SearchSelected(school);
+        if (SchoolMatches.Visibility != Visibility.Visible || SchoolMatches.Items.Count == 0) return;
+        if (e.Key == Key.Down)
+        {
+            if (SchoolMatches.SelectedIndex < 0) SchoolMatches.SelectedIndex = 0;
+            SchoolMatches.Focus();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Enter)
+        {
+            if (SchoolMatches.SelectedItem is SchoolDirectoryEntry)
+                CommitSchoolSelection();
+            else if (SchoolMatches.Items.Count == 1)
+            {
+                SchoolMatches.SelectedIndex = 0;
+                CommitSchoolSelection();
+            }
+            else
+            {
+                SchoolMatches.SelectedIndex = 0;
+                SchoolMatches.Focus();
+            }
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            SchoolSearch.Text = "";
+            e.Handled = true;
+        }
     }
 
-    private void SearchSelected(SchoolDirectoryEntry school)
+    private void SchoolMatchesKeyDown(object sender, KeyEventArgs e)
     {
-        selectedSchoolName = school.Name;
-        updatingUrl = true;
-        SchoolUrl.Text = school.SchoolUrl;
-        updatingUrl = false;
-        SchoolSearchStatus.Text = $"Selected {school.Name}. You can continue typing to choose another school.";
+        if (e.Key == Key.Enter)
+        {
+            CommitSchoolSelection();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            SchoolSearch.Focus();
+            e.Handled = true;
+        }
+    }
+
+    private void SchoolMatchesMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, CommitSchoolSelection);
+    }
+
+    internal void CommitSchoolSelection()
+    {
+        if (SchoolMatches.SelectedItem is SchoolDirectoryEntry school)
+            ConfirmSchool(school);
     }
 
     private void UpdateSchoolSearch()
@@ -212,41 +251,137 @@ public partial class LoginWindow : Window
         {
             SchoolMatches.ItemsSource = null;
             SchoolMatches.Visibility = Visibility.Collapsed;
-            SchoolSearchStatus.Text = $"Search {schoolDirectory.Count:N0} bundled schools by name, town, or URL.";
+            SchoolSearchStatus.Text = $"Search {schoolDirectory.Count:N0} bundled schools by name, town, or website.";
             return;
         }
         var result = schoolDirectory.Search(query);
         SchoolMatches.ItemsSource = result.Visible;
+        SchoolMatches.SelectedIndex = -1;
         if (result.Total == 0)
         {
             SchoolMatches.Visibility = Visibility.Collapsed;
-            SchoolSearchStatus.Text = "No schools found. Try a different name, town, or URL, or enter the URL manually.";
+            SchoolSearchStatus.Text = "No schools found. Check the spelling or enter the school website.";
         }
         else if (result.Total > result.Visible.Count)
         {
             SchoolMatches.Visibility = Visibility.Collapsed;
-            SchoolSearchStatus.Text = $"{result.Total:N0} schools match. Keep typing to narrow the list below 7.";
+            SchoolSearchStatus.Text = $"{result.Total:N0} matches. Type a little more to narrow the list.";
         }
         else
         {
             SchoolMatches.Visibility = Visibility.Visible;
-            SchoolSearchStatus.Text = $"{result.Total} {(result.Total == 1 ? "school matches" : "schools match")}. Select one.";
+            SchoolSearchStatus.Text = $"{result.Total} {(result.Total == 1 ? "match" : "matches")}. Use up and down, then Enter to choose.";
         }
     }
 
-    private void ToggleManualUrl(object sender, RoutedEventArgs e)
+    private void ConfirmSchool(SchoolDirectoryEntry school, bool moveFocus = true)
     {
-        ShowManualUrl(!manualUrl);
-        if (manualUrl) SchoolUrl.Focus();
-        else SchoolSearch.Focus();
+        var normalized = KomensClient.NormalizeUrl(school.SchoolUrl);
+        ShowConfirmedSchool(school.Name, school.Towns, normalized, moveFocus);
     }
 
-    private void ShowManualUrl(bool manual = true)
+    private void OpenManualUrl(object sender, RoutedEventArgs e)
     {
-        manualUrl = manual;
-        SchoolSearchPanel.Visibility = manual ? Visibility.Collapsed : Visibility.Visible;
-        ManualUrlPanel.Visibility = manual ? Visibility.Visible : Visibility.Collapsed;
-        ManualUrlButton.Content = manual ? "Find school by name" : "Enter URL manually";
+        ShowManualUrl();
+        SchoolUrl.Focus();
+    }
+
+    private void BackToSchoolSearch(object sender, RoutedEventArgs e)
+    {
+        schoolConfirmed = false;
+        SchoolChooserPanel.Visibility = Visibility.Visible;
+        ManualUrlPanel.Visibility = Visibility.Collapsed;
+        SelectedSchoolPanel.Visibility = Visibility.Collapsed;
+        CredentialsPanel.Visibility = Visibility.Collapsed;
+        Status.Text = "";
+        UpdateSchoolSearch();
+        UpdateActionButtons();
+        SchoolSearch.Focus();
+    }
+
+    private void SchoolUrlKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            UseManualUrl(sender, new RoutedEventArgs());
+            e.Handled = true;
+        }
+    }
+
+    private void UseManualUrl(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            ConfirmManualSchool(SchoolUrl.Text, initial?.SchoolName);
+        }
+        catch (ObkException error)
+        {
+            Status.Text = error.Message;
+            SchoolUrl.Focus();
+        }
+    }
+
+    private void ConfirmManualSchool(string url, string? knownSchoolName, bool moveFocus = true)
+    {
+        var normalized = KomensClient.NormalizeUrl(url);
+        var known = schoolDirectory?.FindByUrl(normalized);
+        ShowConfirmedSchool(known?.Name ?? knownSchoolName, known?.Towns ?? "Entered manually", normalized, moveFocus);
+    }
+
+    private void ShowConfirmedSchool(string? name, string towns, string normalizedUrl, bool moveFocus)
+    {
+        selectedSchoolName = name;
+        schoolConfirmed = true;
+        updatingUrl = true;
+        SchoolUrl.Text = normalizedUrl;
+        updatingUrl = false;
+        SelectedSchoolName.Text = name ?? "School website";
+        SelectedSchoolTowns.Text = towns;
+        SelectedSchoolUrl.Text = normalizedUrl;
+        SchoolChooserPanel.Visibility = Visibility.Collapsed;
+        ManualUrlPanel.Visibility = Visibility.Collapsed;
+        SelectedSchoolPanel.Visibility = Visibility.Visible;
+        CredentialsPanel.Visibility = Visibility.Visible;
+        Status.Text = "School selected. Enter your Komens username and password.";
+        UpdateActionButtons();
+        if (moveFocus) Username.Focus();
+    }
+
+    private void ChangeSchool(object sender, RoutedEventArgs e)
+    {
+        schoolConfirmed = false;
+        SchoolChooserPanel.Visibility = Visibility.Visible;
+        ManualUrlPanel.Visibility = Visibility.Collapsed;
+        SelectedSchoolPanel.Visibility = Visibility.Collapsed;
+        CredentialsPanel.Visibility = Visibility.Collapsed;
+        Status.Text = "";
+        updatingSearch = true;
+        SchoolSearch.Text = selectedSchoolName ?? "";
+        updatingSearch = false;
+        updatingUrl = true;
+        SchoolUrl.Text = "";
+        updatingUrl = false;
+        UpdateSchoolSearch();
+        UpdateActionButtons();
+        SchoolSearch.Focus();
+        SchoolSearch.SelectAll();
+    }
+
+    private void ShowManualUrl()
+    {
+        schoolConfirmed = false;
+        SchoolChooserPanel.Visibility = Visibility.Collapsed;
+        ManualUrlPanel.Visibility = Visibility.Visible;
+        SelectedSchoolPanel.Visibility = Visibility.Collapsed;
+        CredentialsPanel.Visibility = Visibility.Collapsed;
+        Status.Text = "";
+        UpdateActionButtons();
+    }
+
+    private void UpdateActionButtons()
+    {
+        if (SignInButton is null) return;
+        SignInButton.IsEnabled = OfflineButton.IsEnabled = schoolConfirmed && !busy;
     }
 
     private static string? OptionalLabel(string value) => value.Trim() is { Length: > 0 } label ? label : null;

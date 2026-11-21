@@ -222,11 +222,15 @@ dotnet run --project .\src\OBK.App\OBK.App.csproj
 The installed application does not require any development tools.
 At startup, a login popup searches the bundled school directory by school name,
 town, or school-specific URL text. Once fewer than seven schools match, selecting
-one populates its HTTPS base URL. Users can also choose **Enter URL manually**.
-The popup then asks for a username, password, and optional child name. The child
-name is shown near the OBK title instead of the school name when supplied.
+one confirms the school in a summary card. Users can also enter the school's
+website manually. Credentials remain hidden until the school is confirmed.
+The popup then asks for username and password. Optional **Profile and sync
+options** contain the child name and full school-year refresh. The child name is
+shown near the OBK title instead of the school name when supplied.
 **Remember credentials on this Windows account** is off by default. When
 enabled, the next login popup is prefilled; it does not sign in silently.
+The action footer stays visible while the form scrolls, with **Read offline**
+separate from **Sign in and sync**.
 
 The Fluent workspace has three columns: school/folder navigation, a virtualized
 message list, and a reading pane. **Inbox**, **Sent**, and **Noticeboard** show

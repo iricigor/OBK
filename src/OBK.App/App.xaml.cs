@@ -107,12 +107,20 @@ public partial class App : Application
                         if (login.SchoolMatches.Visibility != Visibility.Visible ||
                             login.SchoolMatches.Items.Count != 1)
                             throw new ObkException("School search did not narrow the visible list to the matching school.");
+                        login.UpdateLayout();
+                        Capture(login, Path.ChangeExtension(resultPath, ".login-search.png"));
                         login.SchoolMatches.SelectedIndex = 0;
-                        if (!login.SchoolUrl.Text.Contains("zssteken", StringComparison.OrdinalIgnoreCase))
+                        login.CommitSchoolSelection();
+                        if (login.SelectedSchoolPanel.Visibility != Visibility.Visible ||
+                            login.CredentialsPanel.Visibility != Visibility.Visible ||
+                            !login.SchoolUrl.Text.Contains("zssteken", StringComparison.OrdinalIgnoreCase))
                             throw new ObkException("Selecting a school search result did not populate its URL.");
                         login.UpdateLayout();
                         Capture(login, Path.ChangeExtension(resultPath, ".login.png"));
-                        login.Complete();
+                        login.Username.Text = "not-saved";
+                        login.Close();
+                        if (store.LastAccount()!.Username != "installation-check")
+                            throw new ObkException("Closing the sign-in window changed the active offline account.");
                     }
                     if (resultPath is not null) File.WriteAllText(resultPath, "{\"ok\":true}");
                 }
