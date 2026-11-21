@@ -6,6 +6,12 @@ Offline Bakaláři Komens
 OBK is a read-only Bakaláři Komens client that downloads messages for offline
 reading. Sending messages is out of scope.
 
+The agreed replacement for the Python/Tkinter Windows client is C#/.NET with
+WPF, published self-contained. The migration will preserve the existing
+encrypted SQLite archive and read-only behavior, and update Windows installer
+validation and release packaging. WPF is Windows-only; future platforms will
+need a separate presentation implementation.
+
 The first release targets Windows desktop, building on the Python/Tkinter API
 tester with SQLite storage. Later releases are planned for macOS, Linux,
 Android, and iOS; their implementation stack is not yet decided.
