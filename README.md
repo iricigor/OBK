@@ -239,8 +239,7 @@ start at `v0.1.0`, then increment the patch number. The tag targets the exact
 validated commit, not whichever commit happens to be latest on `main`.
 Release runs are serialized with a queue of up to 100 pending runs so multiple
 merges do not compete for a version; GitHub does not guarantee dispatch order.
-Direct pushes to `main` also trigger releases; prohibit them through branch
-protection when available.
+Direct pushes to `main` also trigger releases.
 
 Publication creates a draft release, uploads both assets, and only then makes
 it public. Retry a failed run from the Actions UI: a draft for the same commit
@@ -248,13 +247,12 @@ is resumed, while an already published release is not duplicated. A failed
 build does not create a release. Do not manually repurpose pipeline tags or
 change their target commits.
 
-To enforce pre-merge validation, configure a `main` branch protection rule or
-ruleset requiring pull requests and the check
-**windows / Tests and installer smoke test**, with checks required against
-the current base branch. GitHub currently blocks branch protection for this
-private repository without GitHub Pro; the workflow reports results but cannot
-prevent merges until that limitation is resolved. Enabling Actions and granting
-the release workflow `contents: write` are also necessary. Its version-selection
+Validation starts automatically; branch protection and mandatory merge checks
+are intentionally not configured. Review the
+**windows / Tests and installer smoke test** result before merging.
+Release validation still prevents a failed build from being published.
+Enabling Actions and allowing the release workflow `contents: write` are
+necessary. Its version-selection
 job needs write permission to see unfinished draft releases for retries;
 the publication job uses it to create releases and upload assets.
 
