@@ -4,9 +4,12 @@ Offline Bakaláři Komens
 ## School directory maintenance
 
 `data\schools.json.gz` is a gzip-compressed UTF-8 JSON snapshot of the public
-[Bakaláři directory](https://sluzby.bakalari.cz/api/v1/municipality). It is
-intentionally unused by the application and is not included in the installer.
-There are no user-facing controls, startup downloads, or scheduled refreshes.
+[Bakaláři directory](https://sluzby.bakalari.cz/api/v1/municipality). The Windows
+application embeds the snapshot and uses it for offline school search in the
+sign-in window; choosing a result populates the HTTPS base URL. Search matches
+school names, town associations, and school-specific URL text. Results appear
+only when fewer than seven schools match, and manual URL entry remains
+available. There are no startup downloads or scheduled refreshes.
 
 The decoded format contains `formatVersion` (currently 1), `source`, `fetchedAt`
 (UTC), `municipalityCount`, `expectedSchoolCount` (named groups only),
@@ -217,11 +220,13 @@ dotnet run --project .\src\OBK.App\OBK.App.csproj
 ```
 
 The installed application does not require any development tools.
-At startup, a login popup asks for the school HTTPS base URL, username, and
-password. **Remember credentials on this Windows account** is off by default.
-When enabled, the next login popup is prefilled; it does not sign in silently.
-Turning the option off or selecting **Forget credentials** removes the saved
-credentials without deleting offline messages.
+At startup, a login popup searches the bundled school directory by school name,
+town, or school-specific URL text. Once fewer than seven schools match, selecting
+one populates its HTTPS base URL. Users can also choose **Enter URL manually**.
+The popup then asks for a username, password, and optional child name. The child
+name is shown near the OBK title instead of the school name when supplied.
+**Remember credentials on this Windows account** is off by default. When
+enabled, the next login popup is prefilled; it does not sign in silently.
 
 The Fluent workspace has three columns: school/folder navigation, a virtualized
 message list, and a reading pane. **Inbox**, **Sent**, and **Noticeboard** show
@@ -242,8 +247,10 @@ message text, login controls, menus, and window chrome. The choice is saved
 per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
 startup. It contains only the theme, not credentials or archive data.
 The title bar retains native dragging, resizing, caption controls, and Windows
-11 maximize-button snap layouts. **Forget credentials** requires confirmation;
-it does not remove the offline archive. Sync progress and errors appear in the
+11 maximize-button snap layouts. The active child or school is shown beside the
+OBK title. **Switch school / Log out** requires confirmation, clears saved
+credentials and the active account, and opens a blank school picker. It does
+not remove any offline archive. Sync progress and errors appear in the
 header/footer without blocking offline reading.
 
 The first synchronization fetches every page in all three folders for the

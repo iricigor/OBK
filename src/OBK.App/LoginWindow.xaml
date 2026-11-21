@@ -17,13 +17,49 @@
                 <TextBlock Style="{StaticResource Icon}" Text="&#xE8BB;" FontSize="10"/>
             </Button>
         </Grid>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="720">
     <StackPanel Margin="24,8,24,24">
         <TextBlock Text="Sign in to Komens" FontSize="24" FontWeight="Bold" Margin="0,0,0,8"/>
-        <TextBlock Text="Download the current school year for offline reading." TextWrapping="Wrap" Margin="0,0,0,18"/>
-        <Label Content="School base URL (HTTPS)" Target="{Binding ElementName=SchoolUrl}" Padding="0"/>
-        <TextBox x:Name="SchoolUrl" Margin="0,4,0,12" AutomationProperties.Name="School base URL (HTTPS)"/>
+        <TextBlock Text="Find your school, then download the current school year for offline reading." TextWrapping="Wrap" Margin="0,0,0,18"/>
+        <StackPanel x:Name="SchoolSearchPanel">
+            <Label Content="Find your school" Target="{Binding ElementName=SchoolSearch}" Padding="0"/>
+            <TextBox x:Name="SchoolSearch" Margin="0,4,0,6" AutomationProperties.Name="Find your school"
+                     TextChanged="SchoolSearchChanged" IsEnabled="False"
+                     ToolTip="Search by school name, town, or part of the school URL"/>
+            <TextBlock x:Name="SchoolSearchStatus" Text="Loading the bundled school directory..." TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
+            <ListBox x:Name="SchoolMatches" MaxHeight="160" Margin="0,0,0,8" Visibility="Collapsed"
+                     SelectionChanged="SchoolSelected" AutomationProperties.Name="Matching schools"
+                     ItemContainerStyle="{StaticResource SelectableRow}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="10,8">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Towns}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                           TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+                                <TextBlock Text="{Binding SchoolUrl}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                           TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+        <StackPanel x:Name="ManualUrlPanel" Visibility="Collapsed">
+            <Label Content="School base URL (HTTPS)" Target="{Binding ElementName=SchoolUrl}" Padding="0"/>
+            <TextBox x:Name="SchoolUrl" Margin="0,4,0,6" AutomationProperties.Name="School base URL (HTTPS)"
+                     TextChanged="SchoolUrlChanged"/>
+            <TextBlock Text="Use the school's HTTPS address, without /login." Foreground="{DynamicResource TextSecondary}"
+                       FontSize="12" Margin="0,0,0,8"/>
+        </StackPanel>
+        <Button x:Name="ManualUrlButton" Content="Enter URL manually" Click="ToggleManualUrl"
+                Style="{StaticResource SubtleButton}" HorizontalAlignment="Left" Padding="0,4" Margin="0,0,0,12"/>
         <Label Content="Username" Target="{Binding ElementName=Username}" Padding="0"/>
         <TextBox x:Name="Username" Margin="0,4,0,12" AutomationProperties.Name="Username"/>
+        <Label Content="Child name (optional)" Target="{Binding ElementName=ChildName}" Padding="0"/>
+        <TextBox x:Name="ChildName" Margin="0,4,0,12" AutomationProperties.Name="Child name (optional)"
+                 ToolTip="Shown near the OBK title instead of the school name"/>
         <Label Content="Password" Target="{Binding ElementName=Password}" Padding="0"/>
         <PasswordBox x:Name="Password" Margin="0,4,0,12" AutomationProperties.Name="Password"/>
         <CheckBox x:Name="Remember" Content="Remember credentials on this Windows account" Unchecked="RememberUnchecked" Margin="0,4,0,8"/>
@@ -35,6 +71,7 @@
             <Button x:Name="SignInButton" Content="Sign in and sync" Click="SignIn" IsDefault="True" HorizontalAlignment="Right" Style="{StaticResource PrimaryButton}"/>
         </DockPanel>
     </StackPanel>
+    </ScrollViewer>
     </DockPanel>
     </Border>
 </Window>

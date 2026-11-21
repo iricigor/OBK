@@ -120,11 +120,34 @@ public sealed class LocalStore
         return command.ExecuteNonQuery();
     });
 
-    public void SaveLogin(string url, string username, string password, bool remember)
+    public void LogOut() => Access(connection =>
+    {
+        using var command = Command(connection,
+            "DELETE FROM settings WHERE name IN ('remembered_login', 'last_account')");
+        return command.ExecuteNonQuery();
+    });
+
+    public void SaveAccount(string url, string username, string? childName = null, string? schoolName = null)
+    {
+        var account = Encode(new Login(KomensClient.NormalizeUrl(url), username,
+            ChildName: OptionalLabel(childName), SchoolName: OptionalLabel(schoolName)));
+        Access(connection =>
+        {
+            using var command = Command(connection,
+                "INSERT OR REPLACE INTO settings VALUES ('last_account', $value)",
+                parameters: [("$value", account)]);
+            return command.ExecuteNonQuery();
+        });
+    }
+
+    public void SaveLogin(string url, string username, string password, bool remember,
+        string? childName = null, string? schoolName = null)
     {
         url = KomensClient.NormalizeUrl(url);
-        var account = Encode(new Login(url, username));
-        var credentials = remember ? Encode(new Login(url, username, password)) : null;
+        childName = OptionalLabel(childName);
+        schoolName = OptionalLabel(schoolName);
+        var account = Encode(new Login(url, username, ChildName: childName, SchoolName: schoolName));
+        var credentials = remember ? Encode(new Login(url, username, password, childName, schoolName)) : null;
         Access(connection =>
         {
             using var transaction = connection.BeginTransaction();
@@ -140,6 +163,9 @@ public sealed class LocalStore
             return true;
         });
     }
+
+    private static string? OptionalLabel(string? value) =>
+        value?.Trim() is { Length: > 0 } label ? label : null;
 
     public string SaveArchive(string url, string username, SchoolYear year, string school,
         Dictionary<string, List<Message>> folders)

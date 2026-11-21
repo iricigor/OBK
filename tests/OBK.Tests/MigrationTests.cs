@@ -27,6 +27,28 @@ public sealed class MigrationTests : IDisposable
     [InlineData("2027-01-01", 2026)]
     public void SchoolYearBoundary(string today, int expected) => Assert.Equal(expected, SchoolYear.Current(DateTime.Parse(today)).StartYear);
 
+    [Fact]
+    public void SchoolDirectorySearchMatchesNamesTownsAndDistinctUrlParts()
+    {
+        var schools = Enumerable.Range(1, 8).Select(index => new SchoolDirectoryEntry
+        {
+            Id = $"S{index}",
+            Name = $"Základní škola {index} Bystřice",
+            SchoolUrl = $"https://zs{index}-bystřice.bakalari.cz",
+            UrlValid = true,
+            MunicipalityMatches = [index == 1 ? "Malá Bystřice" : $"Town {index}"]
+        });
+        var directory = new SchoolDirectory(schools);
+
+        var byName = directory.Search("bystrice");
+        Assert.Equal(8, byName.Total);
+        Assert.Equal(6, byName.Visible.Count);
+        Assert.Single(directory.Search("malabyst").Visible);
+        Assert.Single(directory.Search("zs7-bystřice").Visible);
+        Assert.Equal(0, directory.Search("https://www.bakalari.cz").Total);
+        Assert.Equal("S7", directory.FindByUrl("https://zs7-bystřice.bakalari.cz/")?.Id);
+    }
+
     [Theory]
     [InlineData("http://school.example")]
     [InlineData("https://user:pass@school.example")]
@@ -193,9 +215,11 @@ public sealed class MigrationTests : IDisposable
     public void CredentialOptInAccountIsolationAndNoPlaintextFallback()
     {
         var store = Store;
-        store.SaveLogin(Url, "u", "private-password", false);
+        store.SaveLogin(Url, "u", "private-password", false, "Anežka", "School A");
         Assert.Null(store.RememberedLogin());
-        store.SaveLogin(Url, "u", "private-password", true);
+        store.SaveLogin(Url, "u", "private-password", true, "Anežka", "School A");
+        Assert.Equal("Anežka", store.RememberedLogin()!.ChildName);
+        Assert.Equal("School A", store.LastAccount()!.SchoolName);
         var folders = Folders.Empty();
         folders["received"].Add(Message("private"));
         store.SaveArchive(Url, "u", year, "School", folders);
@@ -206,6 +230,10 @@ public sealed class MigrationTests : IDisposable
         Assert.Null(store.LoadArchive(Url, "u", new(2025)));
         store.ForgetCredentials();
         Assert.Null(store.RememberedLogin());
+        Assert.NotNull(store.LoadArchive(Url, "u", year));
+        store.LogOut();
+        Assert.Null(store.RememberedLogin());
+        Assert.Null(store.LastAccount());
         Assert.NotNull(store.LoadArchive(Url, "u", year));
         Assert.Throws<ObkException>(() => LocalStore.Decode<Login>(Encoding.UTF8.GetBytes("""{"password":"plaintext"}""")));
     }

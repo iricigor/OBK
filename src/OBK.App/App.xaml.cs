@@ -57,7 +57,8 @@ public partial class App : Application
                 SentDate = year.Start.AddDays(1).ToString("O"), Read = true,
                 Sender = JsonSerializer.SerializeToElement(new { Name = "Test School Office" }), Attachments = []
             });
-            store.SaveLogin("https://school.example", "installation-check", "", false);
+            store.SaveLogin("https://school.example", "installation-check", "", false,
+                "Installation check pupil", "Installation check school");
             store.SaveArchive("https://school.example", "installation-check", year, "Installation check school", folders);
             await Task.Run(async () =>
             {
@@ -77,6 +78,8 @@ public partial class App : Application
                 {
                     if (!window.IsVisible || window.ActualWidth <= 0) throw new ObkException("The offline window did not start.");
                     await window.InitializeAsync();
+                    if (window.ViewModel.AccountLabel != "Installation check pupil")
+                        throw new ObkException("The optional child name was not restored for the active account.");
                     await window.VerifyOfflineReaderAsync();
                     window.UpdateLayout();
                     if (resultPath is not null)
@@ -94,8 +97,19 @@ public partial class App : Application
                         window.Height = 620;
                         window.UpdateLayout();
                         Capture(window, Path.ChangeExtension(resultPath, ".small.png"));
-                        var login = new LoginWindow(window, window.Account, false, "");
+                        var login = new LoginWindow(window, null, false, "");
                         login.Show();
+                        await login.DirectoryReady;
+                        if (login.AvailableSchoolCount < 1000)
+                            throw new ObkException("The bundled school directory was not loaded by the sign-in window.");
+                        login.SchoolSearch.Text = "zssteken";
+                        await Dispatcher.Yield(DispatcherPriority.Input);
+                        if (login.SchoolMatches.Visibility != Visibility.Visible ||
+                            login.SchoolMatches.Items.Count != 1)
+                            throw new ObkException("School search did not narrow the visible list to the matching school.");
+                        login.SchoolMatches.SelectedIndex = 0;
+                        if (!login.SchoolUrl.Text.Contains("zssteken", StringComparison.OrdinalIgnoreCase))
+                            throw new ObkException("Selecting a school search result did not populate its URL.");
                         login.UpdateLayout();
                         Capture(login, Path.ChangeExtension(resultPath, ".login.png"));
                         login.Complete();

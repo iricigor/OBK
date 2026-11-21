@@ -111,13 +111,15 @@ public partial class MainWindow : Window
         finally { openingLogin = false; }
     }
 
-    public Task ActivateAccountAsync(string url, string username) => ViewModel.ActivateAccountAsync(url, username);
+    public Task ActivateAccountAsync(string url, string username, string? childName = null, string? schoolName = null) =>
+        ViewModel.ActivateAccountAsync(url, username, childName: childName, schoolName: schoolName);
     public void OfflineStatus() => ViewModel.OfflineStatus();
-    public async Task SynchronizeAsync(LoginWindow login, string url, string username, string password, bool remember, bool fullRefresh)
+    public async Task SynchronizeAsync(LoginWindow login, string url, string username, string password, bool remember,
+        bool fullRefresh, string? childName, string? schoolName)
     {
         try
         {
-            await ViewModel.SynchronizeAsync(url, username, password, remember, fullRefresh,
+            await ViewModel.SynchronizeAsync(url, username, password, remember, fullRefresh, childName, schoolName,
                 new Progress<string>(text => login.StatusText = text));
             login.Complete();
         }

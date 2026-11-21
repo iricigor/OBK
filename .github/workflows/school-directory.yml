@@ -67,7 +67,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Could not push the update branch." }
           $summary = python -c "import gzip,json; d=json.load(gzip.open(r'data\schools.json.gz','rt',encoding='utf-8')); print('Collected', d['schoolCount'], 'of', d['expectedSchoolCount'], 'expected named-group schools. Diagnostics:', len(d['diagnostics']), '; malformed URLs:', d['invalidUrlCount'], '; excluded unnamed-group schools:', sum(x['schoolCount'] for x in d['excludedMunicipalities']))"
           if ($LASTEXITCODE -ne 0) { throw "Could not summarize the update." }
-          $body = "$summary`n`nBest-effort refresh of data/schools.json.gz. Individual failures are recorded in metadata and logs. Municipality matches are lookup associations, not exact geographic assignments. Review diagnostics and lost coverage before merging. Gzip is not encryption. Application behavior is unchanged. Run Validation manually on this branch before merging: PRs created with GITHUB_TOKEN do not automatically trigger workflows."
+          $body = "$summary`n`nBest-effort refresh of data/schools.json.gz. Individual failures are recorded in metadata and logs. Municipality matches are lookup associations, not exact geographic assignments. Review diagnostics and lost coverage before merging. Gzip is not encryption. This changes the bundled offline school search results, but makes no startup network requests. Run Validation manually on this branch before merging: PRs created with GITHUB_TOKEN do not automatically trigger workflows."
           gh pr create --base main --head $branch `
             --title "Refresh compressed Bakalari school directory" `
             --body $body

@@ -11,4 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OBK.Core\OBK.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\data\schools.json.gz" LogicalName="OBK.App.Data.schools.json.gz" />
+  </ItemGroup>
 </Project>

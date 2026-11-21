@@ -31,7 +31,7 @@ public sealed class MainViewModel : ObservableObject
     private string initials = "OB";
     private string metadata = "Viewing cached messages makes no server requests.";
     private bool expanded;
-    private bool confirmForget;
+    private bool confirmSwitch;
     private int folderVersion;
     private int messageVersion;
 
@@ -42,13 +42,15 @@ public sealed class MainViewModel : ObservableObject
         Theme = theme;
         SignInCommand = new RelayCommand(_ => openLogin(), _ => CanChangeAccount);
         ToggleThemeCommand = new AsyncCommand(_ => Theme.ToggleAsync(), ReportError);
-        RequestForgetCommand = new RelayCommand(_ => ConfirmForget = true, _ => CanChangeAccount);
-        CancelForgetCommand = new RelayCommand(_ => ConfirmForget = false);
-        ForgetCommand = new AsyncCommand(async _ =>
+        RequestSwitchCommand = new RelayCommand(_ => ConfirmSwitch = true, _ => CanChangeAccount);
+        CancelSwitchCommand = new RelayCommand(_ => ConfirmSwitch = false);
+        SwitchSchoolCommand = new AsyncCommand(async _ =>
         {
-            await Task.Run(store.ForgetCredentials);
-            ConfirmForget = false;
-            SetStatus("Remembered credentials removed. Offline messages are unchanged.", true);
+            await Task.Run(store.LogOut);
+            ClearAccount();
+            ConfirmSwitch = false;
+            SetStatus("Signed out. Offline messages are unchanged.", true);
+            openLogin();
         }, ReportError, _ => CanChangeAccount);
         OpenAttachmentCommand = ExportCommand("open", export);
         SaveAttachmentCommand = ExportCommand("save", export);
@@ -66,9 +68,9 @@ public sealed class MainViewModel : ObservableObject
     public ThemeManager Theme { get; }
     public ICommand SignInCommand { get; }
     public ICommand ToggleThemeCommand { get; }
-    public ICommand RequestForgetCommand { get; }
-    public ICommand CancelForgetCommand { get; }
-    public ICommand ForgetCommand { get; }
+    public ICommand RequestSwitchCommand { get; }
+    public ICommand CancelSwitchCommand { get; }
+    public ICommand SwitchSchoolCommand { get; }
     public ICommand OpenAttachmentCommand { get; }
     public ICommand SaveAttachmentCommand { get; }
     public ICommand OpenFolderCommand { get; }
@@ -76,8 +78,29 @@ public sealed class MainViewModel : ObservableObject
     public ICommand ExpandAttachmentsCommand { get; }
     public Task FolderReady { get; private set; } = Task.CompletedTask;
     public Task MessageReady { get; private set; } = Task.CompletedTask;
-    public Login? Account { get => account; private set => Set(ref account, value); }
-    public string School { get => school; private set => Set(ref school, value); }
+    public Login? Account
+    {
+        get => account;
+        private set
+        {
+            if (!Set(ref account, value)) return;
+            Notify(nameof(AccountLabel));
+            Notify(nameof(WindowTitle));
+        }
+    }
+    public string School
+    {
+        get => school;
+        private set
+        {
+            if (!Set(ref school, value)) return;
+            Notify(nameof(AccountLabel));
+            Notify(nameof(WindowTitle));
+        }
+    }
+    public string AccountLabel => Account?.ChildName is { Length: > 0 } childName ? childName : School;
+    public string WindowTitle => AccountLabel == "Your school" ? "OBK - Offline Komens" :
+        $"OBK - Offline Komens - {AccountLabel}";
     public string YearLabel => $"School year {year.Label} | Sept 1 - Aug 31";
     public string FolderTitle => selectedFolder?.Title ?? "Inbox";
     public string FolderCaption => $"{folders[selectedFolder?.Key ?? "received"].Count} messages | School year {year.Label}";
@@ -91,7 +114,7 @@ public sealed class MainViewModel : ObservableObject
     public bool CanChangeAccount => !IsSyncing && !Loading && !IsExporting;
     public string Status { get => status; private set => Set(ref status, value); }
     public bool GoodStatus { get => goodStatus; private set => Set(ref goodStatus, value); }
-    public bool ConfirmForget { get => confirmForget; set => Set(ref confirmForget, value); }
+    public bool ConfirmSwitch { get => confirmSwitch; set => Set(ref confirmSwitch, value); }
     public string Subject { get => subject; private set => Set(ref subject, value); }
     public string Sender { get => sender; private set => Set(ref sender, value); }
     public string Initials { get => initials; private set => Set(ref initials, value); }
@@ -142,13 +165,15 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             var last = await Task.Run(store.LastAccount);
-            if (last is not null) await ActivateAccountAsync(last.Url, last.Username);
+            if (last is not null)
+                await ActivateAccountAsync(last.Url, last.Username, childName: last.ChildName, schoolName: last.SchoolName);
         }
         catch (ObkException error) { ReportError(error.Message); }
         if (themeError is not null) ReportError(themeError);
     }
 
-    public async Task ActivateAccountAsync(string url, string username, SchoolYear? selectedYear = null)
+    public async Task ActivateAccountAsync(string url, string username, SchoolYear? selectedYear = null,
+        string? childName = null, string? schoolName = null)
     {
         if (Loading || IsExporting) throw new ObkException("Wait for the current archive operation to finish.");
         Loading = true;
@@ -165,17 +190,31 @@ public sealed class MainViewModel : ObservableObject
             if (Account is not { } previous || previous.Url != normalized ||
                 previous.Username != username || year != nextYear)
                 selectedMessageIds.Clear();
-            Account = new(normalized, username);
+            Account = new(normalized, username, ChildName: childName?.Trim() is { Length: > 0 } child ? child : null,
+                SchoolName: schoolName?.Trim() is { Length: > 0 } schoolLabel ? schoolLabel : null);
             year = nextYear;
             folders = result.items;
             attachmentInfo = result.info;
-            School = result.archive?.SchoolName ?? "Your school";
+            School = result.archive?.SchoolName ?? Account.SchoolName ?? "Your school";
             syncedAt = result.archive?.SyncedAt;
             Notify(nameof(YearLabel));
             RebuildNavigation();
             SetStatus(CacheStatus(), syncedAt is not null);
         }
         finally { Loading = false; }
+    }
+
+    private void ClearAccount()
+    {
+        Account = null;
+        year = SchoolYear.Current();
+        folders = Folders.Empty();
+        attachmentInfo = [];
+        School = "Your school";
+        syncedAt = null;
+        selectedMessageIds.Clear();
+        Notify(nameof(YearLabel));
+        RebuildNavigation();
     }
 
     private Dictionary<string, AttachmentInfo?> ReadAttachmentInfo(string url, string username, Dictionary<string, List<Message>> items) =>
@@ -305,7 +344,7 @@ public sealed class MainViewModel : ObservableObject
     }
 
     public async Task SynchronizeAsync(string url, string username, string password, bool remember, bool fullRefresh,
-        IProgress<string> loginProgress)
+        string? childName, string? schoolName, IProgress<string> loginProgress)
     {
         if (!CanChangeAccount) throw new ObkException("Wait for the current operation to finish.");
         IsSyncing = true;
@@ -320,10 +359,10 @@ public sealed class MainViewModel : ObservableObject
             var token = await Task.Run(async () =>
             {
                 var result = await client.SignInAsync(username, password);
-                store.SaveLogin(url, username, password, remember);
+                store.SaveLogin(url, username, password, remember, childName, schoolName);
                 return result;
             });
-            await ActivateAccountAsync(url, username, syncYear);
+            await ActivateAccountAsync(url, username, syncYear, childName, schoolName);
             var result = await Task.Run(async () =>
             {
                 var schoolName = await client.SchoolNameAsync(token);
@@ -334,6 +373,7 @@ public sealed class MainViewModel : ObservableObject
                 var stamp = store.SaveArchive(url, username, syncYear, schoolName, fetched);
                 return (schoolName, fetched, stamp, info);
             });
+            Account = Account! with { SchoolName = result.schoolName };
             School = result.schoolName;
             folders = result.fetched;
             attachmentInfo = result.info;
