@@ -11,6 +11,14 @@ the user to agree on the approach.
 
 ## 2. Track the work before implementation
 
+Before creating a tracking issue or draft pull request, review the repository's
+open issues and open pull requests for potential overlap with the planned work.
+Compare their descriptions and proposed changes with the agreed scope, not
+just their titles. Report any potential overlaps to the user with links and
+wait for the user to decide how to proceed before creating either item. If the
+check cannot be completed, explain why and wait for the user's decision rather
+than assuming there is no overlap.
+
 Create a GitHub issue describing the agreed scope and acceptance criteria.
 Then open a draft pull request targeting the intended base branch and include
 `Closes #<issue-number>` in its description.
