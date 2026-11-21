@@ -9,6 +9,7 @@ public partial class LoginWindow : Window
     private readonly MainWindow app;
     private bool completed;
     private bool ready;
+    private bool busy;
     public string StatusText { set => Status.Text = value; }
 
     public LoginWindow(MainWindow app, Login? initial, bool remembered, string error)
@@ -25,33 +26,38 @@ public partial class LoginWindow : Window
         Loaded += (_, _) => { if (Username.Text.Length > 0) Password.Focus(); else Username.Focus(); };
     }
 
-    private void RememberUnchecked(object sender, RoutedEventArgs e)
+    private async void RememberUnchecked(object sender, RoutedEventArgs e)
     {
         if (!ready) return;
-        try { app.Store.ForgetCredentials(); }
+        SetBusy(true);
+        try { await Task.Run(app.Store.ForgetCredentials); }
         catch (ObkException error) { Status.Text = error.Message; Remember.IsChecked = true; }
+        finally { SetBusy(false); }
     }
 
     public void SetBusy(bool busy)
     {
+        this.busy = busy;
         SchoolUrl.IsEnabled = Username.IsEnabled = Password.IsEnabled = Remember.IsEnabled =
             FullRefresh.IsEnabled = SignInButton.IsEnabled = OfflineButton.IsEnabled = !busy;
     }
 
     private async void SignIn(object sender, RoutedEventArgs e)
     {
-        if (app.Busy) return;
+        if (app.Busy || busy) return;
         try
         {
             var url = KomensClient.NormalizeUrl(SchoolUrl.Text);
             var username = Username.Text.Trim();
             var password = Password.Password;
             if (username.Length == 0 || password.Length == 0) throw new ObkException("Enter both a username and password.");
-            if (Remember.IsChecked != true) app.Store.ForgetCredentials();
+            var remember = Remember.IsChecked == true;
+            var fullRefresh = FullRefresh.IsChecked == true;
             Password.Clear();
             SetBusy(true);
+            if (!remember) await Task.Run(app.Store.ForgetCredentials);
             Status.Text = "Signing in, then downloading all three folders...";
-            await app.SynchronizeAsync(this, url, username, password, Remember.IsChecked == true, FullRefresh.IsChecked == true);
+            await app.SynchronizeAsync(this, url, username, password, remember, fullRefresh);
         }
         catch (ObkException error) { Status.Text = error.Message; SetBusy(false); }
     }
@@ -63,27 +69,36 @@ public partial class LoginWindow : Window
         Close();
     }
 
-    private bool ActivateOffline()
+    private async Task<bool> ActivateOfflineAsync()
     {
         if (app.Busy) return false;
         try
         {
             var username = Username.Text.Trim();
-            if (username.Length > 0) app.ActivateAccount(KomensClient.NormalizeUrl(SchoolUrl.Text), username);
+            if (username.Length > 0) await app.ActivateAccountAsync(KomensClient.NormalizeUrl(SchoolUrl.Text), username);
             app.OfflineStatus();
             return true;
         }
         catch (ObkException error) { Status.Text = error.Message; return false; }
     }
 
-    private void ReadOffline(object sender, RoutedEventArgs e)
+    private async void ReadOffline(object sender, RoutedEventArgs e)
     {
-        if (ActivateOffline()) Complete();
+        if (busy) return;
+        SetBusy(true);
+        try { if (await ActivateOfflineAsync()) Complete(); }
+        finally { SetBusy(false); }
     }
 
-    private void WindowClosing(object? sender, CancelEventArgs e)
+    private async void WindowClosing(object? sender, CancelEventArgs e)
     {
-        if (!completed && !ActivateOffline()) { e.Cancel = true; return; }
-        Password.Clear();
+        if (completed) { Password.Clear(); return; }
+        e.Cancel = true;
+        if (busy || app.Busy) { Status.Text = "Wait for the current operation to finish."; return; }
+        SetBusy(true);
+        try { if (await ActivateOfflineAsync()) Complete(); }
+        finally { SetBusy(false); }
     }
+
+    private void CloseWindow(object sender, RoutedEventArgs e) => Close();
 }

@@ -132,12 +132,6 @@ python -m unittest discover -s .\tools -p "test_api_probe.py"
 
 ## Windows desktop client
 
-The planned Fluent UI redesign retains WPF, offline storage, and synchronization
-while introducing reactive Light/Dark themes, a three-column message workspace,
-and attachment cards with direct opening, export, and Windows drag-and-drop.
-The redesign is tracked separately and remains pending implementation and user
-verification.
-
 Run the three-pane application from source with the .NET 10 SDK:
 
 ```powershell
@@ -151,11 +145,23 @@ When enabled, the next login popup is prefilled; it does not sign in silently.
 Turning the option off or selecting **Forget credentials** removes the saved
 credentials without deleting offline messages.
 
-The left tree uses the school name returned by the API, with **Inbox**, **Sent**,
-and **Noticeboard** underneath. The upper-right pane lists messages; selecting a
-message shows its details and content in the lower-right pane. Both dividers
-can be resized. The Sent folder is for reading previously sent messages, not
-composing or sending new ones.
+The Fluent workspace has three columns: school/folder navigation, a virtualized
+message list, and a reading pane. **Inbox**, **Sent**, and **Noticeboard** show
+actual archive counts; unread dots reflect the cached server read state.
+Selecting a message does not mark it read or send any server requests.
+Drag the divider between the list and reading pane to resize them. The layout
+adapts down to an 880-pixel-wide window while retaining all three columns.
+The Sent folder is for reading previously sent messages, not composing or
+sending new ones.
+
+The sun/moon button switches **Light** and **Dark** immediately, including
+message text, login controls, menus, and window chrome. The choice is saved
+per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
+startup. It contains only the theme, not credentials or archive data.
+The title bar retains native dragging, resizing, caption controls, and Windows
+11 maximize-button snap layouts. **Forget credentials** requires confirmation;
+it does not remove the offline archive. Sync progress and errors appear in the
+header/footer without blocking offline reading.
 
 The first synchronization fetches every page in all three folders for the
 current school year: September 1 through August 31, based on the device's current
@@ -192,16 +198,29 @@ sensitive managed process memory is not guaranteed. DPAPI is not protection agai
 software already running as the same Windows user, and another Windows account
 cannot simply copy the database and decrypt it.
 
-Message HTML is rendered as inert text with basic formatting. Scripts and
-embedded resources do not run, external images are not fetched, and link
-destinations are displayed as text. Select an attachment in the reading pane
-to see its offline availability and size. **Open** launches the default Windows
-viewer for supported document, image, text, and ZIP file types after confirmation.
-Other file types can be saved using **Save a copy**, but are not launched directly.
+Message HTML is rendered as inert, selectable text with basic formatting.
+Scripts and embedded resources do not run, external images are not fetched,
+and link destinations are displayed as text.
+Attachment cards above the body show filenames, human-readable sizes, and an
+offline-cache indicator. Clicking a cached card immediately opens supported
+document, image, text, or ZIP files in the default Windows viewer, without an
+additional OBK confirmation. Windows downloaded-file protection still applies.
+Other file types can be saved, but are not launched directly.
+
+Hover over a card (or focus it with the keyboard) for **Open** and **Save as...**.
+Right-click for those actions and **Open folder**, which creates a decrypted
+copy and selects it in Explorer. Drag a cached card onto Desktop/Explorer to
+copy the file there; decryption runs in the background before the Windows drag
+starts, so keep the mouse button held while a large file is prepared.
+More than four attachments initially show three cards and a **+N more** toggle.
+**Save all** becomes available when every attachment is cached; choose a folder
+to export them. Duplicate attachment filenames receive numbered suffixes, and
+replacing existing destination files requires confirmation.
 
 Opening creates a decrypted copy in `%LOCALAPPDATA%\OBK\opened` that remains
-on disk so external viewers can keep using it. **Save a copy** writes a decrypted
-file to the location you choose. These copies are outside the encrypted cache;
+on disk so external viewers can keep using it. **Save as...** writes a decrypted
+file to the location you choose. Opening a folder and dragging also leave source
+copies in the local `opened` directory. These copies are outside the encrypted cache;
 delete them when no longer needed. Copies receive Windows' Internet-zone
 marking to retain downloaded-file security prompts. Only open files you trust,
 even if they came from school.
