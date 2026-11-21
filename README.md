@@ -1,6 +1,9 @@
 # OBK
 Offline Bakaláři Komens
 
+Potential future work and its prerequisites are recorded in
+[Deferred ideas](DEFERRED_IDEAS.md).
+
 ## School directory maintenance
 
 `data\schools.json.gz` is a gzip-compressed UTF-8 JSON snapshot of the public

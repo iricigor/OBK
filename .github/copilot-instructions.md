@@ -3,6 +3,27 @@
 Follow this workflow for code changes in this repository. Do not treat a request
 to implement something as approval to skip brainstorming or user verification.
 
+## Deferred ideas
+
+When the user asks to defer or record an idea for later, add it to the repository
+root `DEFERRED_IDEAS.md`, creating the document if it does not exist. Update an
+existing entry for the same idea rather than creating a duplicate.
+
+Give each idea a stable sequential identifier such as `DI-01` in its heading.
+For new entries, use the next unused number; do not renumber existing entries or
+reuse identifiers from removed ideas.
+
+Each entry should describe the idea, its deferred status, why it is deferred,
+known facts and uncertainties, and prerequisites or investigation needed before
+implementation. Include supporting references when available, and distinguish
+verified behavior from assumptions or heuristic approaches.
+
+Recording an idea is documentation-only work, not approval to implement it.
+Do not create implementation tracking issues or pull requests merely to defer
+an idea unless the user asks for them. Before implementing a deferred idea,
+agree its scope with the user and follow the collaboration workflow below.
+Never include credentials or private user data in deferred entries.
+
 ## Workflow naming
 
 When adding or renaming a GitHub Actions workflow, prefix its display `name:`
