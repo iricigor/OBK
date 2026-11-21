@@ -21,6 +21,10 @@ function Invoke-CheckedProcess([string]$File, [string[]]$Arguments) {
 }
 
 try {
+    # Simulate an older Python installation in this isolated verification directory.
+    New-Item -ItemType Directory -Path (Join-Path $install 'runtime'), (Join-Path $install 'app') | Out-Null
+    Set-Content (Join-Path $install 'runtime\legacy-marker.txt') 'old-runtime'
+    Set-Content (Join-Path $install 'app\legacy-marker.txt') 'old-app'
     Invoke-CheckedProcess (Resolve-Path $Installer).Path @(
         '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', '/NOICONS',
         "/VerificationId=$([guid]::NewGuid())",
@@ -30,9 +34,11 @@ try {
     if (-not (Test-Path $uninstaller)) {
         throw 'Installer did not create the uninstaller.'
     }
-    # Use the same windowed runtime and arguments as the Start-menu shortcut.
-    Invoke-CheckedProcess (Join-Path $install 'runtime\pythonw.exe') @(
-        '-I', "`"$(Join-Path $install 'app\obk_app.py')`"",
+    if ((Test-Path (Join-Path $install 'runtime')) -or (Test-Path (Join-Path $install 'app'))) {
+        throw 'Installer left the old Python runtime/application directories behind.'
+    }
+    # Use the same executable as the Start-menu shortcut.
+    Invoke-CheckedProcess (Join-Path $install 'OBK.exe') @(
         '--smoke-test', '--smoke-result', "`"$result`""
     )
     if (-not (Test-Path $result) -or -not (Get-Content $result -Raw | ConvertFrom-Json).ok) {
@@ -42,8 +48,8 @@ try {
         '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART',
         "/LOG=`"$(Join-Path $directory 'uninstall.log')`""
     )
-    if (Test-Path (Join-Path $install 'runtime\pythonw.exe')) {
-        throw 'Uninstall left the application runtime behind.'
+    if (Test-Path (Join-Path $install 'OBK.exe')) {
+        throw 'Uninstall left the application executable behind.'
     }
     # Inno's copied uninstaller can briefly hold the log after its launcher exits.
     $deadline = [DateTime]::UtcNow.AddSeconds(15)
