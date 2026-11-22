@@ -25,6 +25,25 @@ public sealed class PresentationTests
     }
 
     [Fact]
+    public void RelatedRowsAreChronologicalNumberedOutwardAndShowTheSender()
+    {
+        Message Make(string id, int day, string sender) => new()
+        {
+            Id = id, Title = "Hodnocení", Text = "", Attachments = [],
+            SentDate = new DateTimeOffset(2026, 9, day, 10, 0, 0, TimeSpan.FromHours(2)).ToString("O"),
+            Sender = System.Text.Json.JsonSerializer.SerializeToElement(new { Name = sender })
+        };
+        var related = new RelatedMessages(
+            [new(new(Make("p1", 20, "Jan Novák"), "received"), 1), new(new(Make("p2", 10, "Parent"), "sent"), 1)],
+            [new(new(Make("n1", 25, "Jan Novák"), "received"), 1)]);
+        var rows = RelatedRow.Build(null!, related);
+        Assert.Equal(["p2", "p1", "n1"], rows.Select(r => r.Item.Message.Id));
+        Assert.Equal(["Previous (2)", "Previous (1)", "Next"], rows.Select(r => r.Direction));
+        Assert.Equal("you", rows[0].From);
+        Assert.Equal($"{new DateTime(2026, 9, 20, 10, 0, 0):dd.MMM HH:mm} \u2022 From: Jan Novák", rows[1].Label);
+    }
+
+    [Fact]
     public async Task ThemesAndAsyncSelectionsStayReactiveWithoutChangingArchiveReadState()
     {
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -61,6 +80,12 @@ public sealed class PresentationTests
                             Id = "sent-new", Title = "Newest sent message", Text = "Newest sent content",
                             SentDate = SchoolYear.Current().Start.AddDays(3).ToString("O"), Read = true, Attachments = []
                         });
+                        folders["sent"].Add(new Message
+                        {
+                            Id = "sent-excuse", Title = "omluvenka", Text = "Excuse", Read = true, Attachments = [],
+                            SentDate = SchoolYear.Current().Start.AddDays(1).ToString("O"),
+                            Extra = new() { ["Type"] = System.Text.Json.JsonSerializer.SerializeToElement("OMLUVENKA") }
+                        });
                         storage.SaveArchive("https://school.example", "test", SchoolYear.Current(), "Test school", folders);
                         storage.SaveArchive("https://school.example", "other", SchoolYear.Current(), "Other account", folders);
                         foreach (var attachment in attachments)
@@ -72,9 +97,10 @@ public sealed class PresentationTests
                     });
                     var theme = new ThemeManager(Path.Combine(directory, "appearance.json"));
                     string? exported = null;
-                    var vm = new MainViewModel(store, theme, _ => { },
+                    var vm = new MainViewModel(store, theme, (_, _) => { },
                         (row, action) => { exported = row.Attachment.Identifier + ":" + action; return Task.CompletedTask; },
                         _ => Task.CompletedTask);
+                    MessageRow M(string id) => vm.Messages.Single(m => m.Message.Id == id);
                     async Task WaitForFolderAsync()
                     {
                         await vm.FolderReady;
@@ -93,7 +119,7 @@ public sealed class PresentationTests
                     await vm.ActivateAccountAsync("https://school.example", "test");
                     await WaitForFolderAsync();
                     Assert.Equal("Test school", vm.AccountLabel);
-                    vm.SelectedMessage = vm.Messages[0];
+                    vm.SelectedMessage = M("first");
                     await vm.MessageReady;
                     Assert.Equal(3, vm.VisibleAttachments.Count);
                     Assert.Equal("+3 more", vm.MoreAttachmentsLabel);
@@ -106,8 +132,8 @@ public sealed class PresentationTests
                     vm.IsExporting = false;
                     vm.ExpandAttachmentsCommand.Execute(null);
                     Assert.Equal(6, vm.VisibleAttachments.Count);
-                    Assert.False(vm.Messages[0].Message.Read);
-                    Assert.True(vm.Messages[0].Unread);
+                    Assert.False(M("first").Message.Read);
+                    Assert.True(M("first").Unread);
 
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "sent");
                     await WaitForFolderAsync();
@@ -119,6 +145,11 @@ public sealed class PresentationTests
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "sent");
                     await WaitForFolderAsync();
                     Assert.Equal("sent-old", vm.SelectedMessage?.Message.Id);
+                    Assert.DoesNotContain(vm.Messages, m => m.Message.Id == "sent-excuse");
+                    vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "excuses");
+                    await WaitForFolderAsync();
+                    Assert.Equal("sent-excuse", Assert.Single(vm.Messages).Message.Id);
+                    Assert.Equal(["noticeboard", "received", "sent", "excuses"], vm.Navigation.Select(f => f.Key));
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "noticeboard");
                     await WaitForFolderAsync();
                     Assert.Null(vm.SelectedMessage);
@@ -130,9 +161,9 @@ public sealed class PresentationTests
                     await WaitForFolderAsync();
                     Assert.Equal("first", vm.SelectedMessage?.Message.Id);
 
-                    vm.SelectedMessage = vm.Messages[1];
-                    vm.SelectedMessage = vm.Messages[0];
-                    vm.SelectedMessage = vm.Messages[1];
+                    vm.SelectedMessage = M("second");
+                    vm.SelectedMessage = M("first");
+                    vm.SelectedMessage = M("second");
                     await vm.MessageReady;
                     Assert.Equal("Second", vm.Subject);
                     Assert.Contains("Second content", string.Concat(vm.Body.Select(p => p.Text)));
@@ -142,14 +173,23 @@ public sealed class PresentationTests
                     await WaitForFolderAsync();
                     Assert.Equal("Inbox", vm.FolderTitle);
                     Assert.Equal(2, vm.Messages.Count);
+                    Assert.Equal("noticeboard", vm.Navigation[0].Key);
+                    Assert.Equal(["second", "first"], vm.Messages.Select(m => m.Message.Id));
+                    vm.SearchText = "SECOND conténť";
+                    await vm.FolderReady;
+                    Assert.Equal("second", Assert.Single(vm.Messages).Message.Id);
+                    Assert.Equal("1 of 2 messages match", vm.FolderCaption);
+                    vm.SearchText = "";
+                    await vm.FolderReady;
+                    Assert.Equal(2, vm.Messages.Count);
                     Assert.Equal("second", vm.SelectedMessage?.Message.Id);
                     Assert.Contains("Second content", string.Concat(vm.Body.Select(p => p.Text)));
 
-                    vm.SelectedMessage = vm.Messages[0];
+                    vm.SelectedMessage = M("first");
                     await vm.ActivateAccountAsync("https://school.example", "other");
                     await WaitForFolderAsync();
                     Assert.Equal("second", vm.SelectedMessage?.Message.Id);
-                    vm.SelectedMessage = vm.Messages[0];
+                    vm.SelectedMessage = M("first");
                     await vm.ActivateAccountAsync("https://school.example", "other", new SchoolYear(SchoolYear.Current().StartYear + 1));
                     await WaitForFolderAsync();
                     Assert.Null(vm.SelectedMessage);
@@ -158,7 +198,7 @@ public sealed class PresentationTests
                     Assert.Equal("second", vm.SelectedMessage?.Message.Id);
                     await vm.ActivateAccountAsync("https://school.example", "test");
                     await WaitForFolderAsync();
-                    vm.SelectedMessage = vm.Messages[0];
+                    vm.SelectedMessage = M("first");
                     await Task.Run(() =>
                     {
                         var archive = store.LoadArchive("https://school.example", "test", SchoolYear.Current()) ??
@@ -169,6 +209,15 @@ public sealed class PresentationTests
                     await vm.ActivateAccountAsync("https://school.example", "test");
                     await WaitForFolderAsync();
                     Assert.Equal("second", vm.SelectedMessage?.Message.Id);
+
+                    await Task.Run(() => store.SaveAccount("https://school.example", "other"));
+                    await vm.ActivateAccountAsync("https://school.example", "other");
+                    var accountOrder = vm.Accounts.Select(a => a.Login.Username).ToArray();
+                    await Task.Run(() => store.SaveAccount("https://school.example", "test"));
+                    await vm.ActivateAccountAsync("https://school.example", "test");
+                    await WaitForFolderAsync();
+                    Assert.Equal(accountOrder, vm.Accounts.Select(a => a.Login.Username));
+                    Assert.Equal("test", vm.Accounts.Single(a => a.IsCurrent).Login.Username);
 
                     var surface = new Border();
                     var text = new TextBlock();

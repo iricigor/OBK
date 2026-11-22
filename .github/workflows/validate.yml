@@ -28,5 +28,5 @@ jobs:
   windows:
     uses: ./.github/workflows/windows-build.yml
     with:
-      version: 0.1.0
+      version: 1.0.0
       fast-compression: true

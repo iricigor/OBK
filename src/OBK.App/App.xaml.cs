@@ -14,6 +14,11 @@ public partial class App : Application
     {
         base.OnStartup(e);
         DispatcherUnhandledException += UnexpectedError;
+        if (e.Args.Length == 2 && e.Args[0] == "--screenshot")
+        {
+            await CaptureDemoAsync(e.Args[1]);
+            return;
+        }
         var smoke = e.Args.Contains("--smoke-test");
         var resultIndex = Array.IndexOf(e.Args, "--smoke-result");
         string? resultPath = resultIndex >= 0 && resultIndex + 1 < e.Args.Length ? e.Args[resultIndex + 1] : null;
@@ -101,6 +106,29 @@ public partial class App : Application
                         window.Height = 620;
                         window.UpdateLayout();
                         Capture(window, Path.ChangeExtension(resultPath, ".small.png"));
+                        window.ViewModel.ToggleNavigationCommand.Execute(null);
+                        window.UpdateLayout();
+                        if (Math.Abs(window.NavigationColumn.ActualWidth - 64) > 0.5)
+                            throw new ObkException("Collapsing the sidebar did not switch to icon-only width.");
+                        Capture(window, Path.ChangeExtension(resultPath, ".icons.png"));
+                        window.ViewModel.ToggleNavigationCommand.Execute(null);
+                        window.UpdateLayout();
+                        if (window.NavigationColumn.ActualWidth < 140)
+                            throw new ObkException("Expanding the sidebar did not restore its width.");
+                        window.ViewModel.Grouping = MessageGrouping.Date;
+                        await window.ViewModel.FolderReady;
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        window.UpdateLayout();
+                        var groupHeader = Descendants(window.Messages).OfType<System.Windows.Controls.Primitives.ToggleButton>()
+                            .FirstOrDefault(t => t.Name == "GroupHeader") ?? throw new ObkException("Grouped messages have no group header.");
+                        groupHeader.IsChecked = false;
+                        window.UpdateLayout();
+                        if (Descendants(window.Messages).OfType<System.Windows.Controls.ListBoxItem>().Any(i => i.IsVisible))
+                            throw new ObkException("Collapsing a message group did not hide its messages.");
+                        Capture(window, Path.ChangeExtension(resultPath, ".grouped.png"));
+                        groupHeader.IsChecked = true;
+                        window.ViewModel.Grouping = MessageGrouping.None;
+                        await window.ViewModel.FolderReady;
                         string? switchUsername = null;
                         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
                         {
@@ -187,6 +215,96 @@ public partial class App : Application
             if (resultPath is not null) File.WriteAllText(resultPath, JsonSerializer.Serialize(new { ok = false, error = error.Message }));
             if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
             Shutdown(1);
+        }
+    }
+
+    /// <summary>Renders fictional sample data for documentation screenshots; no school is contacted.</summary>
+    private async Task CaptureDemoAsync(string path)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "obk-demo-" + Guid.NewGuid().ToString("N"));
+        var exitCode = 0;
+        try
+        {
+            var store = await Task.Run(() => new LocalStore(Path.Combine(directory, "demo.sqlite3")));
+            var year = SchoolYear.Current();
+            var now = DateTimeOffset.Now;
+            Message Make(string id, string title, string sender, TimeSpan age, string text, bool read = true,
+                string? recipient = null, string? type = null, int files = 0) => new()
+            {
+                Id = id, Title = title, Text = text, Read = read, RelevantName = recipient,
+                SentDate = (now - age < year.Start ? year.Start.AddDays(1) : now - age).ToString("O"),
+                Sender = JsonSerializer.SerializeToElement(new { Name = sender }),
+                Attachments = Enumerable.Range(1, files).Select(i => new Attachment { Id = $"{id}-{i}", Name = $"{id}-{i}.pdf" }).ToList(),
+                Extra = type is null ? null : new() { ["Type"] = JsonSerializer.SerializeToElement(type) }
+            };
+            var folders = Folders.Empty();
+            folders["received"].AddRange(
+            [
+                Make("trip", "Školní výlet do Brna", "Mgr. Eva Svobodová", TimeSpan.FromMinutes(40),
+                    "<p>Dobrý den,</p><p>ve čtvrtek pojedeme na <b>školní výlet do Brna</b>. Sraz je v 7:30 před školou.</p>" +
+                    "<p>Program a mapu najdete na https://www.example.com/vylet.</p><p>S pozdravem<br>Eva Svobodová</p>",
+                    read: false, files: 2),
+                Make("grades", "Hodnocení / Evaluation - Matematika", "Ing. Petr Novák", TimeSpan.FromDays(2),
+                    "<p>Posílám průběžné hodnocení z matematiky za první čtvrtletí.</p>"),
+                Make("lunch", "Změna jídelníčku", "Školní jídelna", TimeSpan.FromDays(4),
+                    "<p>Od pondělí se mění jídelníček.</p>", read: false),
+                Make("meeting", "Třídní schůzky", "Mgr. Eva Svobodová", TimeSpan.FromDays(9),
+                    "<p>Třídní schůzky proběhnou v úterý od 17:00.</p>", files: 1),
+                Make("library", "Školní knihovna", "Knihovna", TimeSpan.FromDays(16), "<p>Knihovna je otevřena i o přestávkách.</p>")
+            ]);
+            folders["sent"].AddRange(
+            [
+                Make("grades-reply", "Re: Hodnocení - Matematika", "Parent", TimeSpan.FromDays(1),
+                    "<p>Děkuji za hodnocení.</p>", recipient: "Ing. Petr Novák"),
+                Make("excuse", "omluvenka: Anna Dvořáková, 5.A", "Parent", TimeSpan.FromDays(6),
+                    "<p>Omlouvám dceru z důvodu nemoci.</p>", recipient: "Mgr. Eva Svobodová", type: "OMLUVENKA")
+            ]);
+            folders["noticeboard"].Add(Make("holiday", "Podzimní prázdniny", "Ředitelství", TimeSpan.FromDays(12),
+                "<p>Podzimní prázdniny budou 29. a 30. října.</p>"));
+            await Task.Run(() =>
+            {
+                store.SaveLogin("https://tomas.example", "tomas", "unused", false, "Tomáš", "Základní škola Lipová");
+                store.SaveLogin("https://anna.example", "anna", "unused", false, "Anna", "Základní škola Lipová");
+                store.SaveArchive("https://anna.example", "anna", year, "Základní škola Lipová", folders);
+                store.SaveArchive("https://tomas.example", "tomas", year, "Základní škola Lipová", Folders.Empty());
+            });
+            foreach (var attachment in folders["received"].SelectMany(m => m.Attachments))
+            {
+                using var source = new MemoryStream(new byte[184320]);
+                await store.SaveAttachmentAsync("https://anna.example", "anna", attachment, source, expectedSize: 184320, contentType: "application/pdf");
+            }
+            var window = new MainWindow(store, showLogin: false, enableUpdates: false) { Width = 1280, Height = 760 };
+            MainWindow = window;
+            window.Show();
+            await window.InitializeAsync();
+            window.ViewModel.Grouping = MessageGrouping.Date;
+            await window.ViewModel.FolderReady;
+            window.ViewModel.SelectedMessage = window.ViewModel.Messages.Single(m => m.Message.Id == "grades");
+            await window.ViewModel.MessageReady;
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            window.UpdateLayout();
+            Capture(window, path);
+            window.Close();
+        }
+        catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
+        {
+            exitCode = 1;
+            MessageBox.Show(error.Message, "Screenshot failed");
+        }
+        finally
+        {
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+            Shutdown(exitCode);
+        }
+    }
+
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var nested in Descendants(child)) yield return nested;
         }
     }
 

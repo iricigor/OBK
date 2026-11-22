@@ -23,6 +23,7 @@ Compression=lzma2
 #endif
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=..\src\OBK.App\Assets\OBK.ico
 UninstallDisplayIcon={app}\OBK.exe
 SetupLogging=yes
 UsePreviousLanguage=no

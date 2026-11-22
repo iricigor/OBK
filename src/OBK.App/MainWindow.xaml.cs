@@ -50,6 +50,8 @@ public partial class MainWindow : Window
         ViewModel.PropertyChanged += (_, e) =>
         {
             if (enableUpdates && e.PropertyName == nameof(MainViewModel.Account) && ViewModel.Account is not null) Updates.Start();
+            if (e.PropertyName == nameof(MainViewModel.NavigationExpanded))
+                NavigationColumn.Width = new GridLength(ViewModel.NavigationExpanded ? expandedNavigationWidth : IconNavigationWidth);
             if (e.PropertyName != nameof(MainViewModel.SelectedMessage)) return;
             ReadingScroll.ScrollToTop();
             if (ViewModel.SelectedMessage is { } row)
@@ -66,10 +68,32 @@ public partial class MainWindow : Window
     private async void WindowLoaded(object sender, RoutedEventArgs e)
     {
         await InitializeAsync();
-        if (showLogin) OpenLoginDialog(true);
+        if (showLogin && ViewModel.Accounts.Count == 0) OpenLoginDialog(true);
     }
 
     private void UpdateMenuClick(object sender, RoutedEventArgs e) => Updates.MenuOpen = !Updates.MenuOpen;
+
+    private const double IconNavigationWidth = 64;
+    private const double IconSnapWidth = 140;
+    private double expandedNavigationWidth = 210;
+
+    // Dragging the sidebar narrower than readable labels snaps it to icon-only mode.
+    private void NavigationSplitterDragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+    {
+        var width = NavigationColumn.ActualWidth;
+        if (width < IconSnapWidth)
+        {
+            if (ViewModel.NavigationExpanded) ViewModel.NavigationExpanded = false;
+            else NavigationColumn.Width = new GridLength(IconNavigationWidth);
+            return;
+        }
+        expandedNavigationWidth = width;
+        if (!ViewModel.NavigationExpanded) ViewModel.NavigationExpanded = true;
+    }
+    private void UpdateTextClick(object sender, MouseButtonEventArgs e)
+    {
+        if (Updates.CheckNowCommand.CanExecute(null)) Updates.CheckNowCommand.Execute(null);
+    }
 
     private void WindowClosing(object? sender, CancelEventArgs e)
     {
@@ -88,24 +112,23 @@ public partial class MainWindow : Window
         if (next != compact)
         {
             compact = next;
-            NavigationColumn.Width = new GridLength(next ? 200 : 210);
+            expandedNavigationWidth = next ? 200 : 210;
+            if (ViewModel.NavigationExpanded) NavigationColumn.Width = new GridLength(expandedNavigationWidth);
             MessageColumn.Width = new GridLength(next ? 260 : 360);
         }
-        YearLabel.TextTrimming = TextTrimming.CharacterEllipsis;
-        YearBadge.ToolTip = ViewModel.YearLabel;
         var maxListWidth = ActualWidth - 48 - NavigationColumn.ActualWidth - 300;
         if (MessageColumn.ActualWidth > maxListWidth)
             MessageColumn.Width = new GridLength(Math.Max(240, maxListWidth));
         WindowRoot.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
     }
 
-    private async void OpenLoginDialog(bool showSavedAccounts = false)
+    private async void OpenLoginDialog(bool showSavedAccounts = false, Login? target = null)
     {
         if (openingLogin || !ViewModel.CanChangeAccount) return;
         openingLogin = true;
         try
         {
-            Login? initial = showSavedAccounts ? null : Account;
+            Login? initial = showSavedAccounts ? null : target ?? Account;
             var remembered = false;
             var error = "";
             try
@@ -307,7 +330,7 @@ public partial class MainWindow : Window
         if (ViewModel.SelectedMessage?.Message.Id != "fixture-second" ||
             !ReferenceEquals(Messages.SelectedItem, ViewModel.SelectedMessage))
             throw new ObkException("The newest message was not selected when opening the folder.");
-        Messages.SelectedIndex = 0;
+        ViewModel.SelectedMessage = ViewModel.Messages.Single(m => m.Message.Id == "installation-check");
         await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         if (Subject.Text != "Installation check" ||
@@ -318,7 +341,7 @@ public partial class MainWindow : Window
         if (ViewModel.VisibleAttachments.Count != 6)
             throw new ObkException("The attachment strip did not expand to show every file.");
         ViewModel.ExpandAttachmentsCommand.Execute(null);
-        ViewModel.SelectedMessage = ViewModel.Messages[1];
+        ViewModel.SelectedMessage = ViewModel.Messages.Single(m => m.Message.Id == "fixture-second");
         await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         UpdateLayout();
@@ -329,7 +352,7 @@ public partial class MainWindow : Window
         UpdateLayout();
         if (ReadingScroll.VerticalOffset <= 0)
             throw new ObkException("The selectable message body did not scroll with the mouse wheel.");
-        ViewModel.SelectedMessage = ViewModel.Messages[0];
+        ViewModel.SelectedMessage = ViewModel.Messages.Single(m => m.Message.Id == "installation-check");
         await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         ReadingScroll.ScrollToTop();

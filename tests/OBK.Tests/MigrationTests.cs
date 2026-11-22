@@ -261,6 +261,8 @@ public sealed class MigrationTests : IDisposable
         Assert.Null(store.RememberedLogin());
         Assert.NotNull(store.LoadArchive(Url, "u", year));
         Assert.Contains(store.KnownLogins(), profile => profile.Url == Url && profile.Username == "u");
+        store.SaveAccount("https://other-school.example", "second", "Jan", "School B");
+        Assert.Equal("Anežka", store.KnownLogins().Single(profile => profile.Username == "u").ChildName);
         Assert.Throws<ObkException>(() => LocalStore.Decode<Login>(Encoding.UTF8.GetBytes("""{"password":"plaintext"}""")));
     }
 
@@ -335,7 +337,7 @@ public sealed class MigrationTests : IDisposable
         var text = string.Concat(parts.Select(p => p.Text));
         Assert.Contains("Hello & school\nNext line", text);
         Assert.Contains(parts, p => p.Text == "school" && p.Bold);
-        Assert.Contains("Details (https://school.example/info)", text);
+        Assert.Contains(parts, p => p.Text == "Details" && p.Link == "https://school.example/info");
         Assert.DoesNotContain("alert", text);
         Assert.DoesNotContain("tracker.example", text);
         Assert.Contains("[Image: Diagram]", text);

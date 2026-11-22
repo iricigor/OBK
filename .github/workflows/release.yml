@@ -23,7 +23,7 @@ jobs:
       published: ${{ steps.version.outputs.published }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-      - name: Choose next patch version or resume this commit's release
+      - name: Choose 1.0.<build ID> version or resume this commit's release
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
@@ -31,18 +31,16 @@ jobs:
         run: |
           $pages = gh api "repos/$env:GITHUB_REPOSITORY/releases" --paginate --slurp | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0) { throw 'Cannot list releases.' }
-          $releases = @($pages | ForEach-Object { $_ } | Where-Object { $_.tag_name -match '^v0\.1\.(0|[1-9][0-9]*)$' })
+          $releases = @($pages | ForEach-Object { $_ } | Where-Object { $_.tag_name -match '^v(0\.1|1\.0)\.(0|[1-9][0-9]*)$' })
           $existing = @($releases | Where-Object { $_.target_commitish -eq $env:GITHUB_SHA })
           if ($existing.Count -gt 1) { throw 'Multiple releases point at this commit.' }
           if ($existing.Count -eq 1) {
             $version = $existing[0].tag_name.Substring(1)
             $published = (-not $existing[0].draft).ToString().ToLowerInvariant()
           } else {
-            $patch = 0
-            foreach ($release in $releases) {
-              $patch = [Math]::Max($patch, [int]($release.tag_name.Split('.')[-1]) + 1)
-            }
-            $version = "0.1.$patch"
+            # 1.0.<run number>: the build ID of this Release workflow run, stable across re-runs.
+            $version = "1.0.$env:GITHUB_RUN_NUMBER"
+            if ($releases.tag_name -contains "v$version") { throw "Release v$version already exists for another commit." }
             $published = 'false'
           }
           "version=$version" >> $env:GITHUB_OUTPUT

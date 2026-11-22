@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory)]
-    [ValidatePattern('^0\.1\.(0|[1-9][0-9]*)$')]
+    [ValidatePattern('^1\.0\.(0|[1-9][0-9]*)$')]
     [string]$Version,
     [string]$Iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe',
     [switch]$FastCompression

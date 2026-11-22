@@ -7,7 +7,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>OBK</AssemblyName>
+    <ApplicationIcon>Assets\OBK.ico</ApplicationIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\OBK.ico" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OBK.Core\OBK.Core.csproj" />
   </ItemGroup>
