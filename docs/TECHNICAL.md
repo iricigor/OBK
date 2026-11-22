@@ -281,6 +281,35 @@ to switch keys loses local data. Per user decision, persistent production
 signing and release publication are configured after preview verification.
 No signing key or password belongs in Git.
 
+### Transferring an account from Windows to Android
+
+`OBK.Core.CredentialTransfer` moves one remembered account offline, with no
+network, cloud service, or pairing. On Windows, **Settings > Accounts >
+Transfer to Android** (enabled only when the password is saved) shows a QR
+code and three words. Android's **Scan from PC** on the sign-in page scans it,
+asks for the words, and only prefills the sign-in form; **Remember
+credentials** stays unchecked, and nothing is signed in or saved until the user
+taps **Sign in and download**.
+
+- The QR text is `OBK1:` plus base64url of salt (16 bytes), nonce (12), tag
+  (16), and AES-256-GCM ciphertext of the account JSON (school address,
+  username, password, optional child and school names). The prefix is
+  authenticated as associated data.
+- The key is PBKDF2-HMAC-SHA256 with 600,000 iterations over the normalized
+  words (lowercase, single spaces) and a random salt.
+- Words are chosen independently with `RandomNumberGenerator` from the
+  [EFF large word list](https://www.eff.org/dice) (7,776 words, CC BY 3.0 US),
+  embedded unchanged in `src\OBK.Core\Data\eff_large_wordlist.txt`. Three words
+  give about 39 bits. Every displayed code uses new words, salt, and nonce.
+- The Windows dialog hides the QR code and words after 15 seconds. Hiding limits
+  screen exposure only: a photographed code remains decryptable by anyone who
+  also has the words, and offline guessing is limited only by PBKDF2's cost.
+  Words not in the list are rejected before the slow key derivation.
+- Android declares the `CAMERA` permission (camera hardware optional) but
+  requests it only when the user taps **Scan from PC**; denial leaves manual
+  sign-in available. Scanning uses ZXing.Net.Maui; Windows renders the QR code
+  with QRCoder.
+
 ## Data access plan
 
 ### Primary: Bakaláři API

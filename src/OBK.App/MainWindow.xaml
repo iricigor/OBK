@@ -659,6 +659,9 @@
                                                     <Button Content="{x:Static loc:AppStrings.SettingsSavePassword}" Margin="6,2,0,2" Visibility="{Binding PasswordMissing, Converter={StaticResource VisibleIf}}"
                                                             Command="{Binding SetPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
                                                             ToolTip="{x:Static loc:AppStrings.SettingsSavePasswordTooltip}" AutomationProperties.Name="{Binding Label, StringFormat={x:Static loc:AppStrings.SettingsSavePasswordFor}}"/>
+                                                    <Button Content="{x:Static loc:AppStrings.SettingsTransfer}" Margin="6,2,0,2" ToolTipService.ShowOnDisabled="True"
+                                                            Command="{Binding TransferAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                                            ToolTip="{x:Static loc:AppStrings.SettingsTransferTooltip}" AutomationProperties.Name="{Binding Label, StringFormat={x:Static loc:AppStrings.SettingsTransferFor}}"/>
                                                 </WrapPanel>
                                             </Grid>
                                         </Border>

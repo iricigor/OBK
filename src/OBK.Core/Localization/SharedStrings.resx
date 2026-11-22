@@ -227,4 +227,27 @@
     <value>{0}: page {1}, {2} messages...</value>
     <comment>{0} = folder name; {1} = page number; {2} = messages downloaded so far.</comment>
   </data>
+  <data name="ErrorTransferDamaged" xml:space="preserve">
+    <value>The QR code is damaged or incomplete. Show a new code on your PC and scan again.</value>
+  </data>
+  <data name="ErrorTransferNeedsPassword" xml:space="preserve">
+    <value>Save this account's password before transferring it.</value>
+  </data>
+  <data name="ErrorTransferNotObkCode" xml:space="preserve">
+    <value>This is not an OBK account transfer code. On your PC, open Settings, Accounts, Transfer to Android.</value>
+  </data>
+  <data name="ErrorTransferUnknownWord" xml:space="preserve">
+    <value>“{0}” is not one of the transfer words. Check the spelling on your PC.</value>
+    <comment>{0} = the word the user typed.</comment>
+  </data>
+  <data name="ErrorTransferUnsupported" xml:space="preserve">
+    <value>Encrypted account transfer is not available on this device.</value>
+  </data>
+  <data name="ErrorTransferWordCount" xml:space="preserve">
+    <value>Enter the {0} words shown on your PC.</value>
+    <comment>{0} = number of words.</comment>
+  </data>
+  <data name="ErrorTransferWrongWords" xml:space="preserve">
+    <value>These words do not unlock this QR code. Check them on your PC, or show a new code there and scan again.</value>
+  </data>
 </root>

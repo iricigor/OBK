@@ -42,6 +42,8 @@ if (-not $CompilePreparedStage) {
         -OutFile (Join-Path $licenses 'SQLitePCLRaw-LICENSE.txt')
     Invoke-WebRequest 'https://raw.githubusercontent.com/ericsink/SQLitePCL.raw/ed046114d5a30534e13294d94d78eb73de896ad4/NOTICE.TXT' `
         -OutFile (Join-Path $licenses 'SQLitePCLRaw-NOTICE.txt')
+    Invoke-WebRequest 'https://raw.githubusercontent.com/Shane32/QRCoder/v1.9.0/LICENSE.txt' `
+        -OutFile (Join-Path $licenses 'QRCoder-LICENSE.txt')
 }
 
 $ownedFiles = @('OBK.exe', 'OBK.dll', 'OBK.Core.dll') | ForEach-Object { Join-Path $stage $_ }
