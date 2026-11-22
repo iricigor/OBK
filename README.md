@@ -88,7 +88,7 @@ button, in Android's reader footer, and in the native toolbar on its other pages
 
 ## Code signing policy
 
-SignPath Foundation enrollment is pending; current releases remain unsigned.
+SignPath Foundation enrollment is pending; Windows releases remain unsigned.
 See the [code signing policy](docs/CODE_SIGNING.md) for signing responsibilities,
 privacy details, enrollment instructions, and release verification.
 
@@ -109,9 +109,7 @@ still apply. OBK is not affiliated with or endorsed by Bakaláři.
 
 ## Android preview
 
-An Android 10+ .NET MAUI reader is being developed in
-[#25](https://github.com/iricigor/OBK/issues/25). It is not a published Android
-release yet. The preview supports school sign-in, multiple children, manual
+The Android 10+ .NET MAUI reader supports school sign-in, multiple children, manual
 refresh, offline folders/search, and opening or sharing downloaded attachments.
 It uses Android Keystore-backed encryption and remains read-only toward school
 servers.
@@ -129,7 +127,20 @@ Development-signed APKs are available as artifacts of **🔨 Android preview**
 workflow runs. They are for device verification, not production distribution;
 installing previews from different build machines may require uninstalling the
 previous preview, which deletes its local archives and encryption key.
-Production signing and GitHub release APKs follow preview verification.
-Play Store publishing and additional interface languages come later.
+New releases include a persistently signed `OBK-<version>-android.apk` and
+`ANDROID-SHA256SUMS.txt` once the owner has configured release signing.
+Download the APK from [Releases](https://github.com/iricigor/OBK/releases/latest),
+open it on the phone, allow installation from that download source when Android
+asks, and confirm installation. Android may still display installation warnings.
+Older releases may contain only the Windows installer.
+
+Install a newer release APK over the existing release app to keep accounts and
+offline archives. **Switching from a development-signed preview requires
+uninstalling it first, which deletes all local data and its encryption key.**
+Do not uninstall a release app just to update it. Android does not yet check for
+or download updates in-app; get updates manually from Releases. Play Store
+publishing and the in-app updater are out of scope here; additional interface
+languages are tracked separately.
 
 See the [Android build and verification instructions](docs/TECHNICAL.md#android-preview).
+Maintainers: see [release signing setup](docs/TECHNICAL.md#android-release-signing).

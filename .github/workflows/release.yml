@@ -62,8 +62,19 @@ jobs:
       sign-release: ${{ needs.version.outputs.signing-enabled == 'true' }}
     secrets:
       SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+  android:
+    needs: version
+    if: needs.version.outputs.published != 'true'
+    uses: ./.github/workflows/android-release.yml
+    with:
+      version: ${{ needs.version.outputs.version }}
+    secrets:
+      ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+      ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+      ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+      ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
   publish:
-    needs: [version, build]
+    needs: [version, build, android]
     runs-on: windows-2025
     timeout-minutes: 5
     permissions:
@@ -74,7 +85,11 @@ jobs:
         with:
           name: windows-installer
           path: dist
-      - name: Publish verified installer
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: android-release
+          path: dist
+      - name: Publish verified installer and APK
         env:
           GH_TOKEN: ${{ github.token }}
           APP_VERSION: ${{ needs.version.outputs.version }}
@@ -82,22 +97,4 @@ jobs:
           SIGNPATH_CERTIFICATE_THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_THUMBPRINT }}
         shell: pwsh
         run: |
-          $installer = ".\dist\OBK-$env:APP_VERSION-windows-x64-setup.exe"
-          $hash = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
-          $expected = "$hash  OBK-$env:APP_VERSION-windows-x64-setup.exe"
-          if ((Get-Content -LiteralPath '.\dist\SHA256SUMS.txt' -Raw).Trim() -cne $expected) {
-            throw 'Final installer checksum does not match SHA256SUMS.txt.'
-          }
-          if ($env:SIGN_RELEASE -eq 'true') {
-            .\packaging\verify_signatures.ps1 -Files $installer -Version "$env:APP_VERSION" -CertificateThumbprint "$env:SIGNPATH_CERTIFICATE_THUMBPRINT"
-          }
-          $tag = "v$env:APP_VERSION"
-          gh release view $tag --repo $env:GITHUB_REPOSITORY --json isDraft > $null 2>&1
-          if ($LASTEXITCODE -ne 0) {
-            gh release create $tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --draft --generate-notes --title "OBK $tag"
-            if ($LASTEXITCODE -ne 0) { throw 'Cannot create draft release.' }
-          }
-          gh release upload $tag ".\dist\OBK-$env:APP_VERSION-windows-x64-setup.exe" ".\dist\SHA256SUMS.txt" --repo $env:GITHUB_REPOSITORY --clobber
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot upload release assets; release remains draft.' }
-          gh release edit $tag --repo $env:GITHUB_REPOSITORY --draft=false --latest
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot publish release.' }
+          .\packaging\publish_release.ps1 -Version $env:APP_VERSION -SignWindowsRelease:($env:SIGN_RELEASE -eq 'true')

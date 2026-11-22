@@ -314,6 +314,8 @@ The build script produces `dist\OBK-android-preview.apk` and
 `dist\ANDROID-SHA256SUMS.txt`. Assemblies are embedded in the APK, so it can be
 installed without .NET fast-deployment tooling. Trimming is disabled to preserve
 the shared core's reflection-based JSON contracts in this initial reader.
+Release AOT compilation is also disabled because the Android SDK requires
+trimming for AOT; this keeps the same untrimmed core contracts in release APKs.
 
 For a connected device, select its serial explicitly:
 
@@ -347,9 +349,139 @@ compatibility with a real school's deployment.
 
 The preview is development-signed and does not use the Windows update service.
 Previews signed on different machines are not interchangeable; uninstalling
-to switch keys loses local data. Per user decision, persistent production
-signing and release publication are configured after preview verification.
-No signing key or password belongs in Git.
+to switch keys loses local data. Production release signing is separate from
+preview signing. No signing key or password belongs in Git.
+
+### Android release signing
+
+The Release workflow builds Windows and Android for the same `1.0.<build ID>`
+version. Android's `versionName` is that version and its integer `versionCode`
+is `<build ID> + 1` (maximum 2,100,000,000), greater than the preview's code 1
+and increasing with Release workflow run numbers. Re-running an unpublished
+release preserves its version; published commits are skipped rather than
+overwriting historical assets. Keep the Release workflow/run-number lineage
+and package ID `cz.obk.reader` stable. A future versioning change must preserve
+increasing version codes.
+
+Generate the permanent release key locally with JDK 21 `keytool`. The helper
+defaults to `$HOME\.obk-signing\obk-release.keystore`, refuses repository paths
+and existing keystores, and prompts for passwords without displaying them:
+
+```powershell
+$env:JAVA_HOME = "$env:LOCALAPPDATA\Microsoft\jdk-21"
+.\packaging\new_android_keystore.ps1
+```
+
+It creates a 4096-bit RSA key named `obk`, in JKS format so separate key and
+store passwords are supported, with a 10,000-day self-signed certificate.
+No paid certificate or Play Store account is needed. Keep an offline backup
+of the keystore, alias, and both passwords before using it for any release.
+Losing the key/passwords prevents compatible updates; do not regenerate or
+rotate the key as routine maintenance. Git ignores common keystore extensions
+as defense in depth, not permission to store keys in the checkout.
+
+Configure repository **Settings > Secrets and variables > Actions**:
+
+| Secret | Value |
+| --- | --- |
+| `ANDROID_RELEASE_KEYSTORE_BASE64` | Base64 of the complete keystore file |
+| `ANDROID_RELEASE_STORE_PASSWORD` | Keystore password |
+| `ANDROID_RELEASE_KEY_ALIAS` | `obk`, unless a different alias was chosen |
+| `ANDROID_RELEASE_KEY_PASSWORD` | Private key password |
+
+To upload without printing secret values, sign in to `gh` with repository
+secret-management access and run this locally. Enter the same passwords used
+when generating the key. Never paste them or the base64 in chat, issues, logs,
+screenshots, or source files:
+
+```powershell
+$keystore = Join-Path $HOME '.obk-signing\obk-release.keystore'
+$alias = 'obk'
+$storePassword = Read-Host 'Existing keystore password' -AsSecureString
+$keyPassword = Read-Host 'Existing key password' -AsSecureString
+[Convert]::ToBase64String([IO.File]::ReadAllBytes($keystore)) |
+  gh secret set ANDROID_RELEASE_KEYSTORE_BASE64 --repo iricigor/OBK
+if ($LASTEXITCODE -ne 0) { throw 'Cannot upload keystore secret.' }
+[Net.NetworkCredential]::new('', $storePassword).Password |
+  gh secret set ANDROID_RELEASE_STORE_PASSWORD --repo iricigor/OBK
+if ($LASTEXITCODE -ne 0) { throw 'Cannot upload store password secret.' }
+$alias | gh secret set ANDROID_RELEASE_KEY_ALIAS --repo iricigor/OBK
+if ($LASTEXITCODE -ne 0) { throw 'Cannot upload key alias secret.' }
+[Net.NetworkCredential]::new('', $keyPassword).Password |
+  gh secret set ANDROID_RELEASE_KEY_PASSWORD --repo iricigor/OBK
+if ($LASTEXITCODE -ne 0) { throw 'Cannot upload key password secret.' }
+```
+
+The reusable Android release workflow accepts secrets only from the release
+caller and restricts production signing to pushes to this repository's `main`.
+It rejects missing/empty secrets and invalid base64 before building. The key
+is decoded only into a unique runner temporary directory and removed in a
+`finally` block. Passwords use the Android SDK's `env:` references, not literal
+command-line properties. Do not enable diagnostic MSBuild logging or binary
+logs on signing builds; do not upload temporary directories or `bin`/`obj`.
+Cancellation may bypass cleanup, so production keys are used only on disposable
+GitHub-hosted runners, not persistent self-hosted machines.
+
+`packaging\build_android_release.ps1` publishes in Release configuration with
+embedded assemblies and no development signing fallback. It cleans prior
+Release outputs before building so a retry cannot reuse partially signed files
+or skip signing after an environment-password change. It derives the
+expected certificate SHA-256 from the keystore, verifies access to the private
+key before compiling, and uses `apksigner` to verify
+the APK signature and signer, then `aapt2` to check package ID, version name,
+version code, minimum API 29, and absence of the debuggable flag. The signer
+parser accepts the certificate digest reported by older numbered-signer output or
+build-tools 37's per-signature-scheme output; all reported schemes/signers must
+use the same expected certificate. Unknown digest formats are errors.
+Only after all checks pass does it produce `dist\OBK-<version>-android.apk` and
+`dist\ANDROID-SHA256SUMS.txt`. Its temporary publish directory is removed.
+Existing Debug-only fictional verification data and launch handling are
+excluded by compilation; signing tests inspect the compiled Release assembly.
+
+The publisher waits for both platform builds, checks both downloaded artifact
+checksums, uploads the APK and `ANDROID-SHA256SUMS.txt` alongside the installer
+and its unchanged `SHA256SUMS.txt`, then publishes the draft. Missing/invalid
+secrets, signing/verification failures, or failed uploads leave the release
+unpublished; never bypass a signing failure with a preview APK. Changing secrets
+alone does not trigger a release. Configure them before merging this change.
+
+For a local Release build after installing the documented Android dependencies:
+
+```powershell
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:JAVA_HOME = "$env:LOCALAPPDATA\Microsoft\jdk-21"
+try {
+  $env:OBK_ANDROID_KEYSTORE_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'Keystore password' -AsSecureString)).Password
+  $env:OBK_ANDROID_KEY_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'Key password' -AsSecureString)).Password
+  .\packaging\build_android_release.ps1 -Version 1.0.7 `
+    -KeystorePath "$HOME\.obk-signing\obk-release.keystore" -KeyAlias obk
+} finally {
+  Remove-Item Env:\OBK_ANDROID_KEYSTORE_PASSWORD, Env:\OBK_ANDROID_KEY_PASSWORD -ErrorAction SilentlyContinue
+}
+```
+
+Choose an appropriate newer version for an update; example `1.0.7` is not a
+version reservation. PR Android checks run `tests\android_release.Tests.ps1`
+with a disposable test key, never production secrets. The tests build two
+consecutive Release versions and check signatures, versions, checksums, fixture
+exclusion, missing passwords, incorrect alias/password, signer mismatch,
+version mismatch, and invalid APK rejection. Test APKs are not published.
+
+Before merge, the user must verify a release-signed APK on Android 10+ and
+install a newer APK over it, checking account/offline data preservation and
+download checksums. Since production releases run only on `main`, stage the
+locally built release-signed APKs and checksums in an **unpublished draft
+GitHub release** for pre-merge download verification; do not publish an
+unreviewed branch or use a disposable test key for this verification. Confirm
+the first actual published release's install/update path afterward as well.
+Keep the PR draft until setup and verification are complete.
+
+Switching from a differently signed preview requires uninstalling, destroying
+local data and its Android Keystore key. Ordinary release updates preserve
+them; do not uninstall to update. Android installation is user-confirmed and
+requires allowing installation from the download source. There is no in-app
+Android updater in this change; see deferred idea DI-03. Windows SignPath
+activation (#38) is independent and retains its existing behavior.
 
 ### Transferring an account from Windows to Android
 

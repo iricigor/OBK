@@ -123,3 +123,46 @@ The membership cost is the primary blocker. Additional hurdles discussed are:
 - [Apple Developer membership comparison and personal-team limits](https://developer.apple.com/support/compare-memberships/)
 - [Distribution to registered devices](https://help.apple.com/xcode/mac/current/en.lproj/dev7ccaf4d3c.html)
 - [TestFlight testing and build expiry](https://developer.apple.com/testflight/)
+
+## DI-03: Android in-app updates from GitHub Releases
+
+**Status:** Deferred by user decision until Android release signing and APK
+publication (#39) are implemented and verified. This is not part of #39.
+
+**Idea:** Check GitHub Releases from OBK, download a newer Android APK, and
+hand it to Android's package installer with explicit user consent.
+
+### What is known
+
+- Current Android APKs are development-signed preview artifacts; the release
+  workflow currently publishes only the Windows installer.
+- #39 establishes persistent release signing, increasing Android version codes,
+  and versioned release APKs with checksums. Compatible package identity and
+  signing are prerequisites for updates that preserve local data.
+- An ordinary sideloaded application cannot silently install updates. Users
+  must allow installation from OBK and confirm Android's installer prompt.
+- Release signing does not implement update detection, downloads, or installer
+  integration. Switching from a preview signed with another key requires
+  uninstalling it and loses its local data.
+
+### Why this is deferred
+
+The user chose to implement and verify release distribution first, keeping the
+updater as separate work. Published, consistently signed APKs must exist before
+the end-to-end update route can be verified.
+
+### Investigation before implementation
+
+- Agree manual versus automatic checks, prompts, and download behavior.
+- Design version comparison, HTTPS downloads, APK identity/signature and
+  integrity verification, and safe installer handoff on Android 10+.
+- Handle denied installation permission, interrupted downloads, offline use,
+  rate limits, invalid assets, and cancelled installation explicitly.
+- Verify updating between actual releases preserves accounts and offline data.
+  Do not assume Windows updater code can be reused unchanged.
+
+### References
+
+- [Android release signing and APK publication](https://github.com/iricigor/OBK/issues/39)
+- [Android build and verification](docs/TECHNICAL.md#android-preview)
+- [Android package installation permission](https://developer.android.com/reference/android/Manifest.permission#REQUEST_INSTALL_PACKAGES)
