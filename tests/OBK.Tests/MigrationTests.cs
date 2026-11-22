@@ -335,7 +335,7 @@ public sealed class MigrationTests : IDisposable
         var text = string.Concat(parts.Select(p => p.Text));
         Assert.Contains("Hello & school\nNext line", text);
         Assert.Contains(parts, p => p.Text == "school" && p.Bold);
-        Assert.Contains("Details (https://school.example/info)", text);
+        Assert.Contains(parts, p => p.Text == "Details" && p.Link == "https://school.example/info");
         Assert.DoesNotContain("alert", text);
         Assert.DoesNotContain("tracker.example", text);
         Assert.Contains("[Image: Diagram]", text);

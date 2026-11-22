@@ -93,8 +93,15 @@ the installed version when current. A newer installer is downloaded in the
 background and verified against the release's `SHA256SUMS.txt`; a failed
 check or download shows a message and is retried at the next interval. Once ready,
 **Update and restart** installs it silently and reopens OBK. Its dropdown offers
-**Ignore during this session** and **Install when I exit**. There is no setting to
+**Ignore during this session** and **Install when I exit**. Clicking **You're on the
+latest version** (or a check error) checks again immediately. There is no setting to
 disable checks yet; only HTTPS assets from this repository's releases are used.
+
+## Application icon
+
+`src\OBK.App\Assets\OBK.ico` (a graduation cap over an envelope) is used for the
+executable, windows, and installer. Regenerate it with Pillow after editing
+`tools\make_app_icon.py`: `python .\tools\make_app_icon.py`.
 
 ## Purpose and scope
 
@@ -262,7 +269,7 @@ fields so they cannot be reused unintentionally.
 remembered school and username is saved as its own encrypted profile. Accounts
 used without remembering the password are also retained in encrypted account
 history, so they can be recognized and selected later. The
-initial login and **Switch school** flow list previously used accounts;
+initial login and **Add child** flow list previously used accounts;
 the list collapses while a school search is active, so up to six matches fit
 without scrolling. Choosing one restores its username and optional child name;
 passwords are filled only for explicitly remembered profiles. Choosing or
@@ -271,9 +278,28 @@ Nothing signs in silently.
 The action footer stays visible while the form scrolls, with **Read offline**
 separate from **Sign in and sync**.
 
-The Fluent workspace has three columns: school/folder navigation, a virtualized
-message list, and a reading pane. **Inbox**, **Sent**, and **Noticeboard** show
-actual archive counts; unread dots reflect the cached server read state.
+The Fluent workspace has three columns: child/folder navigation, a virtualized
+message list, and a reading pane. The left column lists every known child or
+school account; clicking one opens its offline archive for the current school
+year without network requests. **Add child** opens the account picker.
+**Noticeboard**, **Inbox**, and **Sent** show actual archive counts; unread dots
+reflect the cached server read state.
+
+Each list item has two lines: subject and date, then the sender (or recipient in
+Sent). Sent excuses carry an **Excuse** badge, identified by the API message
+type `OMLUVENKA`, not by subject text. The search box filters the current folder
+live by subject, contents, sender/recipient, and sent date (for example
+`3.11.2026` or `2026-11-03`), ignoring case and diacritics; every word must
+match. **Sort** orders by date (newest first), sender, or subject; **Group**
+groups by date (Today, Yesterday, This week, This month, then months), sender,
+or subject, ignoring Re:/Odp:/Fwd: prefixes.
+
+Below the message body, **Possibly related messages** lists possible previous
+messages and responses across Inbox and Sent. Komens lists do not expose reply
+links, so this is a heuristic: subjects must share enough words (prefixes,
+case, and diacritics are ignored, so an added or changed middle part such as
+"Hodnocení / Evaluation" still matches) and the other person must match. Matches
+may be wrong or incomplete; selecting one opens it in its folder.
 Selecting a message does not mark it read or send any server requests.
 Switching folders restores the last selected message in that folder for the
 current app session. On a first visit, or if that message is no longer present,
@@ -291,9 +317,16 @@ per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
 startup. It contains only the theme, not credentials or archive data.
 The title bar retains native dragging, resizing, caption controls, and Windows
 11 maximize-button snap layouts. The active child or school is shown beside the
-OBK title. **Switch school** opens the previously used account picker directly.
+OBK title. **Add child** opens the previously used account picker directly.
 Closing the picker returns to the current school unchanged; the active account
-changes only after **Sign in and sync** or **Read offline**. Saved credential
+changes only after **Sign in and sync** or **Read offline**.
+
+**Refresh** synchronizes every known account that has a remembered password,
+one after another, then reloads the visible archive. Accounts without a saved
+password are listed in the status bar; the sign-in dialog opens for the current
+account if it needs a password, or for the first account if none could refresh.
+A failure for one account is reported and does not replace its offline archive
+or stop the others. Saved credential
 profiles and account history remain available; no offline archive is removed.
 Sync progress and errors appear in the header/footer without blocking offline
 reading.
@@ -335,8 +368,12 @@ software already running as the same Windows user, and another Windows account
 cannot simply copy the database and decrypt it.
 
 Message HTML is rendered as inert, selectable text with basic formatting.
-Scripts and embedded resources do not run, external images are not fetched,
-and link destinations are displayed as text.
+Scripts and embedded resources do not run and external images are not fetched.
+Links with absolute `https`, `http`, or `mailto` destinations, plus bare URLs in
+the text, are clickable and open in the default browser or mail app; hover to
+see the destination. Scheme-less `www.` links are treated as HTTPS rather than
+resolved against the school's site. Other destinations (relative,
+`javascript:`, `file:`) are shown as plain text.
 Attachment cards above the body show filenames, human-readable sizes, and an
 offline-cache indicator. Clicking a cached card immediately opens supported
 document, image, text, or ZIP files in the default Windows viewer, without an

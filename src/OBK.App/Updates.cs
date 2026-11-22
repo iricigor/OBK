@@ -21,6 +21,7 @@ public sealed class UpdateManager : ObservableObject, IDisposable
     private bool menuOpen;
     private bool started;
     private bool restartRequested;
+    private bool checking;
 
     public UpdateManager(UpdateService service, Version installed, Func<bool> canRestart, Action restart)
     {
@@ -31,15 +32,20 @@ public sealed class UpdateManager : ObservableObject, IDisposable
         InstallCommand = new RelayCommand(_ => InstallNow(), _ => state == UpdateState.Ready);
         InstallOnExitCommand = new RelayCommand(_ => Choose(UpdateState.Scheduled), _ => state == UpdateState.Ready);
         IgnoreCommand = new RelayCommand(_ => Choose(UpdateState.Ignored), _ => state == UpdateState.Ready);
+        CheckNowCommand = new RelayCommand(_ => _ = CheckOnceAsync(stop.Token), _ => CanCheckNow);
     }
 
     public ICommand InstallCommand { get; }
     public ICommand InstallOnExitCommand { get; }
     public ICommand IgnoreCommand { get; }
+    public ICommand CheckNowCommand { get; }
+    public bool CanCheckNow => state == UpdateState.Current && !checking;
+    public string? CheckTooltip => CanCheckNow ? "Click to check for updates now" : null;
     public UpdateState State { get => state; private set { if (Set(ref state, value)) NotifyAll(); } }
     public bool IsReady => state == UpdateState.Ready;
     public bool MenuOpen { get => menuOpen; set => Set(ref menuOpen, value); }
-    public string Text => error is not null ? error : state switch
+    public string Text => checking && state == UpdateState.Current ? "Checking for updates..." :
+        error is not null ? error : state switch
     {
         UpdateState.Downloading => $"Downloading {UpdateService.Display(update!.Version)}...",
         UpdateState.Ready => $"{UpdateService.Display(update!.Version)} is ready to install",
@@ -52,6 +58,8 @@ public sealed class UpdateManager : ObservableObject, IDisposable
     {
         Notify(nameof(Text));
         Notify(nameof(IsReady));
+        Notify(nameof(CanCheckNow));
+        Notify(nameof(CheckTooltip));
         CommandManager.InvalidateRequerySuggested();
     }
 
@@ -80,6 +88,9 @@ public sealed class UpdateManager : ObservableObject, IDisposable
 
     public async Task CheckOnceAsync(CancellationToken cancel = default)
     {
+        if (checking || state != UpdateState.Current) return;
+        checking = true;
+        NotifyAll();
         try
         {
             var found = await service.CheckAsync(installed, cancel);
@@ -96,6 +107,8 @@ public sealed class UpdateManager : ObservableObject, IDisposable
             update = null;
             SetError(problem.Message);
         }
+        catch (OperationCanceledException) when (cancel.IsCancellationRequested) { }
+        finally { checking = false; NotifyAll(); }
     }
 
     private void SetError(string? message) { error = message; NotifyAll(); }

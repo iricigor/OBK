@@ -116,13 +116,65 @@ public sealed class FolderRow(string key, string title, string icon, int count)
 
 public sealed class MessageRow(Message message, string folder)
 {
+    private string? searchText;
     public Message Message { get; } = message;
-    public bool Unread => folder != "sent" && Message.Read == false;
+    public string Folder { get; } = folder;
+    public bool Unread => Folder != "sent" && Message.Read == false;
     public string Subject => MainViewModel.OneLine(Message.Title) is { Length: > 0 } title ? title : "(No subject)";
-    public string Person => MainViewModel.OneLine(folder == "sent" ? Message.RelevantName ?? Message.SenderName : Message.SenderName)
+    public string Person => MainViewModel.OneLine(MessageInsights.Counterpart(Message, Folder))
         is { Length: > 0 } name ? name : "(Not supplied)";
     public string Sent => Message.Date.ToString("dd MMM yyyy HH:mm");
+    public string ShortSent
+    {
+        get
+        {
+            var local = Message.Date.LocalDateTime;
+            var today = DateTime.Today;
+            return local.Date == today ? local.ToString("HH:mm") :
+                local.Year == today.Year ? local.ToString("d MMM") : local.ToString("d MMM yyyy");
+        }
+    }
     public bool HasFiles => Message.Attachments.Count > 0;
+    public bool IsExcuse { get; } = MessageInsights.IsExcuse(message);
+    public string Group { get; set; } = "";
+    public string SearchText => searchText ??= MessageInsights.SearchText(Message, Folder);
+}
+
+public sealed class AccountRow(Login login, bool current)
+{
+    public Login Login { get; } = login;
+    public bool IsCurrent { get; } = current;
+    public string Label { get; } = login.ChildName ?? login.SchoolName ?? login.Username;
+    public string Detail => string.Join("\n", new[] { Label, Login.SchoolName, Login.Username }
+        .Where(v => !string.IsNullOrEmpty(v)).Distinct());
+    public string ColorKey => Palette.PairKey(Login.Url + "|" + Login.Username);
+    public string Initials
+    {
+        get
+        {
+            var words = Label.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => char.IsLetterOrDigit(w[0])).ToArray();
+            return words.Length == 0 ? "?" : string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
+        }
+    }
+}
+
+public sealed class RelatedRow(MainViewModel owner, MessageRef item)
+{
+    public MainViewModel Owner { get; } = owner;
+    public MessageRef Item { get; } = item;
+    public string Subject => MainViewModel.OneLine(Item.Message.Title) is { Length: > 0 } title ? title : "(No subject)";
+    public string Detail => $"{Folders.Names[Item.Folder]} \u2022 {Item.Message.Date:dd MMM yyyy HH:mm} \u2022 " +
+        (MainViewModel.OneLine(MessageInsights.Counterpart(Item.Message, Item.Folder)) is { Length: > 0 } name ? name : "(Not supplied)");
+}
+
+public static class LinkOpener
+{
+    public static void Open(string? target)
+    {
+        if (MessageRenderer.NormalizeLink(target) is not { } link) return;
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(link) { UseShellExecute = true }); }
+        catch (Exception error) when (error is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+    }
 }
 
 public sealed class AttachmentRow(MainViewModel owner, Attachment attachment, AttachmentInfo? info)
@@ -136,7 +188,7 @@ public sealed class AttachmentRow(MainViewModel owner, Attachment attachment, At
     public string Size => info is null ? "Not downloaded" : FormatSize(info.Size);
     public string Type => System.IO.Path.GetExtension(Name).TrimStart('.').ToUpperInvariant() is { Length: > 0 } type
         ? type.Length <= 4 ? type : "FILE" : "FILE";
-    public string Availability => Name + "\n" + (!Cached ? "Not downloaded. Sign in / Sync to cache this file." :
+    public string Availability => Name + "\n" + (!Cached ? "Not downloaded. Refresh to cache this file." :
         CanOpen ? "Cached offline. Open a decrypted copy in your default viewer." :
         "Cached offline. This file type can be saved, but not opened directly.");
     public static string FormatSize(long bytes) => bytes switch
@@ -169,7 +221,14 @@ public static class MessageDocument
                 FontSize = part.Heading ? 18 : 14
             };
             if (part.Underline) run.TextDecorations = TextDecorations.Underline;
-            paragraph.Inlines.Add(run);
+            if (part.Link is { } link)
+            {
+                var hyperlink = new Hyperlink(run) { ToolTip = link, Cursor = Cursors.Hand };
+                hyperlink.SetResourceReference(TextElement.ForegroundProperty, "Accent");
+                hyperlink.Click += (_, _) => LinkOpener.Open(link);
+                paragraph.Inlines.Add(hyperlink);
+            }
+            else paragraph.Inlines.Add(run);
             if (++count % 100 == 0)
             {
                 await Dispatcher.Yield(DispatcherPriority.Background);

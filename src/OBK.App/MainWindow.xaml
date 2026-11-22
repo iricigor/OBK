@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:local="clr-namespace:OBK.App"
-        Style="{StaticResource {x:Type Window}}" Title="{Binding WindowTitle}"
+        Style="{StaticResource {x:Type Window}}" Title="{Binding WindowTitle}" Icon="pack://application:,,,/Assets/OBK.ico"
         Width="1380" Height="840" MinWidth="880" MinHeight="620"
         WindowStyle="None" ResizeMode="CanResize"
         Loaded="WindowLoaded" Closing="WindowClosing" SizeChanged="WindowSizeChanged" SourceInitialized="WindowSourceInitialized">
@@ -20,7 +20,8 @@
         <Border Grid.RowSpan="2" Background="{DynamicResource HeaderSurface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1"/>
         <Grid>
             <StackPanel Orientation="Horizontal" Margin="20,0,150,0" VerticalAlignment="Center">
-                <TextBlock Style="{StaticResource Icon}" Text="&#xE715;" Foreground="{DynamicResource Accent}" FontSize="14" Margin="0,0,8,0"/>
+                <Image Source="pack://application:,,,/Assets/OBK.ico" Width="16" Height="16" Margin="0,0,8,0"
+                       RenderOptions.BitmapScalingMode="HighQuality" AutomationProperties.Name="OBK"/>
                 <TextBlock Text="OBK - Offline Komens" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                 <TextBlock Text="{Binding AccountLabel}" ToolTip="{Binding AccountLabel}" MaxWidth="420"
                            TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="16,0,0,0"/>
@@ -62,19 +63,14 @@
                         </TextBlock.Foreground>
                     </TextBlock>
                 </Border>
-                <Border x:Name="YearBadge" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}"
-                        BorderThickness="1" CornerRadius="12" Padding="10,3" VerticalAlignment="Center">
-                    <TextBlock x:Name="YearLabel" Text="{Binding YearLabel}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
-                </Border>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Style="{StaticResource IconButton}" Command="{Binding ToggleThemeCommand}" ToolTip="{Binding Theme.ToggleTooltip}"
                         AutomationProperties.Name="{Binding Theme.ToggleTooltip}" Margin="0,0,8,0">
                     <TextBlock Style="{StaticResource Icon}" Text="{Binding Theme.ToggleIcon}"/>
                 </Button>
-                <Button x:Name="SwitchSchoolButton" Style="{StaticResource SubtleButton}" Command="{Binding SwitchSchoolCommand}"
-                        Content="Switch school" FontSize="12.5" Margin="0,0,8,0"/>
-                <Button x:Name="SyncButton" Style="{StaticResource PrimaryButton}" Command="{Binding SignInCommand}">
+                <Button x:Name="SyncButton" Style="{StaticResource PrimaryButton}" Command="{Binding RefreshCommand}"
+                        ToolTip="Download new messages for every saved child">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock x:Name="SyncIcon" Text="&#xE895;" FontFamily="{StaticResource IconFont}"
                                    Foreground="{DynamicResource AccentText}" VerticalAlignment="Center" Margin="0,0,8,0" RenderTransformOrigin="0.5,0.5">
@@ -100,8 +96,8 @@
                         <TextBlock Foreground="{DynamicResource AccentText}">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Text" Value="Sign in / Sync"/>
-                                    <Style.Triggers><DataTrigger Binding="{Binding IsSyncing}" Value="True"><Setter Property="Text" Value="Syncing..."/></DataTrigger></Style.Triggers>
+                                    <Setter Property="Text" Value="Refresh"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding IsSyncing}" Value="True"><Setter Property="Text" Value="Refreshing..."/></DataTrigger></Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
@@ -118,7 +114,57 @@
                 <ColumnDefinition Width="*" MinWidth="300"/>
             </Grid.ColumnDefinitions>
             <DockPanel Margin="4,8,4,0">
-                <TextBlock Text="{Binding School}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="12,0,12,18"/>
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <ItemsControl x:Name="AccountList" ItemsSource="{Binding Accounts}" AutomationProperties.Name="Children">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource SubtleButton}" Command="{Binding DataContext.SelectAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}" ToolTip="{Binding Detail}" AutomationProperties.Name="{Binding Label}"
+                                        HorizontalContentAlignment="Stretch" Height="40" Padding="8,0" Margin="0,0,0,2">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                        <Border CornerRadius="2" Background="{DynamicResource Accent}" Height="20"
+                                                Visibility="{Binding IsCurrent, Converter={StaticResource VisibleIf}}"/>
+                                        <Border Grid.Column="1" Width="28" Height="28" CornerRadius="14" Margin="6,0,0,0">
+                                            <Border.Background>
+                                                <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
+                                                    <Binding Path="ColorKey"/>
+                                                    <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                </MultiBinding>
+                                            </Border.Background>
+                                            <TextBlock Text="{Binding Initials}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock.Foreground>
+                                                    <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                                        <Binding Path="ColorKey"/>
+                                                        <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Foreground>
+                                            </TextBlock>
+                                        </Border>
+                                        <TextBlock Grid.Column="2" Text="{Binding Label}" VerticalAlignment="Center" Margin="10,0,0,0"
+                                                   TextTrimming="CharacterEllipsis" FontSize="13.5">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="FontWeight" Value="Normal"/>
+                                                    <Style.Triggers><DataTrigger Binding="{Binding IsCurrent}" Value="True"><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger></Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button x:Name="AddAccountButton" Style="{StaticResource SubtleButton}" Command="{Binding SwitchSchoolCommand}"
+                            HorizontalContentAlignment="Left" Height="34" Padding="18,0" ToolTip="Sign in with another child or school"
+                            AutomationProperties.Name="Add child">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,10,0"/>
+                            <TextBlock Text="Add child" FontSize="12.5" Foreground="{DynamicResource TextSecondary}"/>
+                        </StackPanel>
+                    </Button>
+                    <Border Height="1" Background="{DynamicResource Stroke}" Margin="8,10,8,0"/>
+                </StackPanel>
                 <TextBlock DockPanel.Dock="Bottom" Text="OFFLINE KOMENS" FontSize="10" Foreground="{DynamicResource TextSecondary}" Margin="12,16"/>
                 <ListBox x:Name="FolderList" ItemsSource="{Binding Navigation}" SelectedItem="{Binding SelectedFolder}"
                          AutomationProperties.Name="Folders">
@@ -161,30 +207,87 @@
             </DockPanel>
             <Border Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
                 <DockPanel Margin="8">
-                    <StackPanel DockPanel.Dock="Top" Margin="12,12,12,14">
+                    <StackPanel DockPanel.Dock="Top" Margin="12,12,12,10">
                         <TextBlock x:Name="ListTitle" Text="{Binding FolderTitle}" FontSize="20" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding FolderCaption}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding FolderCaption}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,6,0,10" TextWrapping="Wrap"/>
+                        <Grid>
+                            <TextBox x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=200}" Padding="30,7,28,7"
+                                     AutomationProperties.Name="Search messages" ToolTip="Search subject, contents, sender and date"/>
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" IsHitTestVisible="False"/>
+                            <TextBlock Text="Search messages" FontSize="12.5" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"
+                                       Margin="30,0,0,0" IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <Button Style="{StaticResource SubtleButton}" Command="{Binding ClearSearchCommand}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    Width="24" Height="24" MinHeight="0" Padding="0" Margin="0,0,4,0" ToolTip="Clear search" AutomationProperties.Name="Clear search"
+                                    Visibility="{Binding SearchActive, Converter={StaticResource VisibleIf}}">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE711;" FontSize="10"/>
+                            </Button>
+                        </Grid>
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <TextBlock Text="Sort" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <ComboBox x:Name="SortBox" Grid.Column="1" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding Sort}" FontSize="12"
+                                      AutomationProperties.Name="Sort messages by"/>
+                            <TextBlock Grid.Column="2" Text="Group" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="10,0,6,0"/>
+                            <ComboBox x:Name="GroupBox" Grid.Column="3" ItemsSource="{Binding GroupOptions}" SelectedItem="{Binding Grouping}" FontSize="12"
+                                      AutomationProperties.Name="Group messages by"/>
+                        </Grid>
                     </StackPanel>
                     <Grid>
                         <TextBlock Text="{Binding EmptyFolderText}" Visibility="{Binding EmptyFolder, Converter={StaticResource VisibleIf}}"
                                    Margin="12,24" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}"/>
-                        <ListBox x:Name="Messages" ItemsSource="{Binding Messages}" SelectedItem="{Binding SelectedMessage}"
+                        <ListBox x:Name="Messages" ItemsSource="{Binding MessagesView}" SelectedItem="{Binding SelectedMessage}" IsSynchronizedWithCurrentItem="False"
+                                 VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel"
                                  ItemContainerStyle="{StaticResource SelectableRow}" AutomationProperties.Name="Messages">
+                            <ListBox.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="12,10,12,4">
+                                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding ItemCount}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,0"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </ListBox.GroupStyle>
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="12,10">
+                                    <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="12,8">
                                         <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition/><ColumnDefinition Width="20"/></Grid.ColumnDefinitions>
-                                            <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" VerticalAlignment="Top" Margin="0,7,4,0"
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                                            <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" VerticalAlignment="Center" Margin="0,0,4,0"
                                                      Visibility="{Binding Unread, Converter={StaticResource VisibleIf}}"/>
-                                            <StackPanel Grid.Column="1">
-                                                <TextBlock Text="{Binding Subject}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" LineStackingStrategy="BlockLineHeight" LineHeight="17" MaxHeight="34" FontSize="13" FontWeight="SemiBold" ToolTip="{Binding Subject}"/>
-                                                <TextBlock Text="{Binding Person}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
-                                                <TextBlock Text="{Binding Sent}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" FontSize="13" ToolTip="{Binding Subject}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="FontWeight" Value="Normal"/>
+                                                        <Style.Triggers><DataTrigger Binding="{Binding Unread}" Value="True"><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger></Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock Grid.Column="2" Text="{Binding ShortSent}" ToolTip="{Binding Sent}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}"
+                                                       VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Person}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8,2,0,0">
+                                                <Border Background="{DynamicResource Avatar3Bg}" CornerRadius="4" Padding="5,0" VerticalAlignment="Center"
+                                                        Visibility="{Binding IsExcuse, Converter={StaticResource VisibleIf}}" ToolTip="Excuse (omluvenka)">
+                                                    <TextBlock Text="Excuse" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource Avatar3Fg}"/>
+                                                </Border>
+                                                <TextBlock Text="&#xE723;" Style="{StaticResource Icon}" FontSize="12" VerticalAlignment="Center" Margin="6,0,0,0"
+                                                           Foreground="{DynamicResource TextSecondary}" Visibility="{Binding HasFiles, Converter={StaticResource VisibleIf}}"
+                                                           AutomationProperties.Name="Has attachments"/>
                                             </StackPanel>
-                                            <TextBlock Grid.Column="2" Text="&#xE723;" Style="{StaticResource Icon}" FontSize="13" VerticalAlignment="Top" Margin="6,3,0,0"
-                                                       Foreground="{DynamicResource TextSecondary}" Visibility="{Binding HasFiles, Converter={StaticResource VisibleIf}}"
-                                                       AutomationProperties.Name="Has attachments"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -198,8 +301,12 @@
             <Border Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
                 <ScrollViewer x:Name="ReadingScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="24">
                     <StackPanel>
-                        <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,20"/>
-                        <Grid Margin="0,0,0,20">
+                        <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <Border HorizontalAlignment="Left" Background="{DynamicResource Avatar3Bg}" CornerRadius="4" Padding="8,2" Margin="0,0,0,8"
+                                Visibility="{Binding SelectedIsExcuse, Converter={StaticResource VisibleIf}}">
+                            <TextBlock Text="Excuse (omluvenka)" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource Avatar3Fg}"/>
+                        </Border>
+                        <Grid Margin="0,4,0,20">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
                             <Border Width="36" Height="36" CornerRadius="18" VerticalAlignment="Top">
                                 <Border.Background>
@@ -311,12 +418,70 @@
                                         ToolTip="Save copies of all attachments. Sync first if any attachment is not downloaded." ToolTipService.ShowOnDisabled="True"/>
                             </StackPanel>
                         </StackPanel>
-                        <RichTextBox x:Name="ContentReader" local:MessageDocument.Parts="{Binding Body}" IsReadOnly="True" IsDocumentEnabled="False"
+                        <RichTextBox x:Name="ContentReader" local:MessageDocument.Parts="{Binding Body}" IsReadOnly="True" IsDocumentEnabled="True"
                                      PreviewMouseWheel="ReaderMouseWheel"
                                      BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimary}"
                                      SelectionBrush="{DynamicResource Accent}" Padding="0" FontSize="14"
                                      VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"
                                      AutomationProperties.Name="Message content"/>
+                        <StackPanel x:Name="RelatedPanel" Margin="0,24,0,0" Visibility="{Binding HasRelated, Converter={StaticResource VisibleIf}}">
+                            <Border Height="1" Background="{DynamicResource Stroke}" Margin="0,0,0,12"/>
+                            <TextBlock Text="Possibly related messages" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Text="Matched by similar subject and the same person. Komens does not report actual reply links, so these may be unrelated."
+                                       FontSize="11.5" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,8"/>
+                            <ItemsControl ItemsSource="{Binding PreviousMessages}">
+                                <ItemsControl.Style>
+                                    <Style TargetType="ItemsControl">
+                                        <Style.Triggers><DataTrigger Binding="{Binding PreviousMessages.Count}" Value="0"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </ItemsControl.Style>
+                                <ItemsControl.Template>
+                                    <ControlTemplate TargetType="ItemsControl">
+                                        <StackPanel>
+                                            <TextBlock Text="POSSIBLE PREVIOUS MESSAGES" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,4"/>
+                                            <ItemsPresenter/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </ItemsControl.Template>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
+                                                HorizontalContentAlignment="Stretch" Padding="8,4" Margin="0,0,0,2" AutomationProperties.Name="{Binding Subject}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Subject}" FontSize="12.5" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Accent}"/>
+                                                <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding Responses}">
+                                <ItemsControl.Style>
+                                    <Style TargetType="ItemsControl">
+                                        <Style.Triggers><DataTrigger Binding="{Binding Responses.Count}" Value="0"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </ItemsControl.Style>
+                                <ItemsControl.Template>
+                                    <ControlTemplate TargetType="ItemsControl">
+                                        <StackPanel>
+                                            <TextBlock Text="POSSIBLE RESPONSES" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,4"/>
+                                            <ItemsPresenter/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </ItemsControl.Template>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
+                                                HorizontalContentAlignment="Stretch" Padding="8,4" Margin="0,0,0,2" AutomationProperties.Name="{Binding Subject}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Subject}" FontSize="12.5" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Accent}"/>
+                                                <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -338,8 +503,24 @@
                     <TextBlock Text="Loading archive..." FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"
                                Margin="12,0,0,0" Visibility="{Binding Loading, Converter={StaticResource VisibleIf}}"/>
                     <TextBlock x:Name="UpdateText" Text="{Binding Text}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
-                               VerticalAlignment="Center" Margin="16,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="360" ToolTip="{Binding Text}"
-                               AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="Update status"/>
+                               VerticalAlignment="Center" Margin="16,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="360"
+                               ToolTip="{Binding CheckTooltip}" MouseLeftButtonUp="UpdateTextClick"
+                               AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="Update status">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CanCheckNow}" Value="True"><Setter Property="Cursor" Value="Hand"/></DataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding CanCheckNow}" Value="True"/>
+                                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="TextDecorations" Value="Underline"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                     <StackPanel x:Name="UpdateActions" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center"
                                 Visibility="{Binding IsReady, Converter={StaticResource VisibleIf}}">
                         <Button Style="{StaticResource PrimaryButton}" Content="Update and restart" Command="{Binding InstallCommand}"

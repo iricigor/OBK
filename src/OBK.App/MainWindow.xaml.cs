@@ -70,6 +70,10 @@ public partial class MainWindow : Window
     }
 
     private void UpdateMenuClick(object sender, RoutedEventArgs e) => Updates.MenuOpen = !Updates.MenuOpen;
+    private void UpdateTextClick(object sender, MouseButtonEventArgs e)
+    {
+        if (Updates.CheckNowCommand.CanExecute(null)) Updates.CheckNowCommand.Execute(null);
+    }
 
     private void WindowClosing(object? sender, CancelEventArgs e)
     {
@@ -91,21 +95,19 @@ public partial class MainWindow : Window
             NavigationColumn.Width = new GridLength(next ? 200 : 210);
             MessageColumn.Width = new GridLength(next ? 260 : 360);
         }
-        YearLabel.TextTrimming = TextTrimming.CharacterEllipsis;
-        YearBadge.ToolTip = ViewModel.YearLabel;
         var maxListWidth = ActualWidth - 48 - NavigationColumn.ActualWidth - 300;
         if (MessageColumn.ActualWidth > maxListWidth)
             MessageColumn.Width = new GridLength(Math.Max(240, maxListWidth));
         WindowRoot.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
     }
 
-    private async void OpenLoginDialog(bool showSavedAccounts = false)
+    private async void OpenLoginDialog(bool showSavedAccounts = false, Login? target = null)
     {
         if (openingLogin || !ViewModel.CanChangeAccount) return;
         openingLogin = true;
         try
         {
-            Login? initial = showSavedAccounts ? null : Account;
+            Login? initial = showSavedAccounts ? null : target ?? Account;
             var remembered = false;
             var error = "";
             try
@@ -307,7 +309,7 @@ public partial class MainWindow : Window
         if (ViewModel.SelectedMessage?.Message.Id != "fixture-second" ||
             !ReferenceEquals(Messages.SelectedItem, ViewModel.SelectedMessage))
             throw new ObkException("The newest message was not selected when opening the folder.");
-        Messages.SelectedIndex = 0;
+        ViewModel.SelectedMessage = ViewModel.Messages.Single(m => m.Message.Id == "installation-check");
         await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         if (Subject.Text != "Installation check" ||
@@ -318,7 +320,7 @@ public partial class MainWindow : Window
         if (ViewModel.VisibleAttachments.Count != 6)
             throw new ObkException("The attachment strip did not expand to show every file.");
         ViewModel.ExpandAttachmentsCommand.Execute(null);
-        ViewModel.SelectedMessage = ViewModel.Messages[1];
+        ViewModel.SelectedMessage = ViewModel.Messages.Single(m => m.Message.Id == "fixture-second");
         await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         UpdateLayout();
@@ -329,7 +331,7 @@ public partial class MainWindow : Window
         UpdateLayout();
         if (ReadingScroll.VerticalOffset <= 0)
             throw new ObkException("The selectable message body did not scroll with the mouse wheel.");
-        ViewModel.SelectedMessage = ViewModel.Messages[0];
+        ViewModel.SelectedMessage = ViewModel.Messages.Single(m => m.Message.Id == "installation-check");
         await ViewModel.MessageReady;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         ReadingScroll.ScrollToTop();
