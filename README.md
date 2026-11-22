@@ -13,6 +13,19 @@ your Windows PC so you can read, search, and organize them offline.
 
 <sub>Screenshot uses fictional sample data.</sub>
 
+**Privacy and security:** Your Bakaláři login details, messages, and attachments
+travel **only between your PC and your school's Bakaláři server**, over HTTPS.
+OBK does not send this data to its developer or GitHub, and there is no OBK
+cloud service. Separate connections to GitHub are used for app updates, not
+for your school data. Cached messages, attachments, and optionally saved passwords
+are encrypted for your Windows account. Some database metadata, including your
+school address and username, is not encrypted, and this protection does not
+stop software running under your Windows account. Opening or exporting an
+attachment leaves an unencrypted copy on disk, so only open files you trust
+and delete copies when no longer needed. When reporting problems, never share
+passwords or private messages. See [Privacy](#privacy) and the
+[security details](docs/TECHNICAL.md#windows-desktop-client) for more information.
+
 ## Features
 
 - **All your children in one place** – switch between children and schools with
