@@ -126,9 +126,9 @@ The membership cost is the primary blocker. Additional hurdles discussed are:
 
 ## DI-03: Android in-app updates from GitHub Releases
 
-**Status:** Implementation agreed in #55: manual checks from Android Settings,
+**Status:** Implemented in draft PR #56 (tracked by #55): manual checks from Android Settings,
 with downloads initiated by the user and user-confirmed installation. No
-startup or background checks. Implementation and device verification are pending.
+startup or background checks. User/device verification and merge are pending.
 
 **Idea:** Check GitHub Releases from OBK, download a newer Android APK, and
 hand it to Android's package installer with explicit user consent.
@@ -154,11 +154,17 @@ manual-only updates. End-to-end updates still require device verification.
 
 ### Investigation before implementation
 
-- Agree manual versus automatic checks, prompts, and download behavior.
-- Design version comparison, HTTPS downloads, APK identity/signature and
-  integrity verification, and safe installer handoff on Android 10+.
-- Handle denied installation permission, interrupted downloads, offline use,
-  rate limits, invalid assets, and cancelled installation explicitly.
+- Manual checks and user-initiated downloads are the agreed scope; automatic
+  checks remain outside this implementation.
+- Implemented checks cover version comparison, canonical HTTPS assets,
+  SHA-256, package/version identity, current signer compatibility and
+  user-confirmed installer handoff. This does not support signing-key rotation.
+- Android 10 emulator verification covers live release discovery,
+  development/release signer mismatch rejection, cancelled-download cleanup,
+  and English/light and Czech/dark Settings rendering. Emulator testing found
+  and fixed UI-thread HTTP cleanup on cancellation.
+- Device verification of installation-source permission, installer
+  cancellation and successful compatible release installation is still pending.
 - Verify updating between actual releases preserves accounts and offline data.
   Do not assume Windows updater code can be reused unchanged.
 

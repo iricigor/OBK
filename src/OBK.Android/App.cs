@@ -71,6 +71,7 @@ public sealed class App : Application
         if (stack.FirstOrDefault() is not ReaderPage reader ||
             reader.Busy || stack.OfType<SignInPage>().Any(page => page.Busy) ||
             stack.OfType<MessagePage>().Any(page => page.Busy) ||
+            stack.OfType<SettingsPage>().Any(page => page.Busy) ||
             stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage)))
             throw new ObkException(SharedStrings.ErrorLanguageBusy);
         switchingLanguage = true;
