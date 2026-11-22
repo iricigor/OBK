@@ -67,11 +67,9 @@ internal sealed class ReaderPage : ContentPage
             var title = new Label { FontAttributes = FontAttributes.Bold, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation };
             title.SetDynamicResource(Label.FontSizeProperty, "ListSubjectSize");
             title.SetBinding(Label.TextProperty, nameof(Message.Title));
-            var sender = ReaderTheme.Metadata(new Label { MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation });
-            sender.SetDynamicResource(Label.FontSizeProperty, "ListSenderSize");
+            var sender = ReaderTheme.Metadata(new Label { MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation }, "ListSenderSize");
             sender.SetBinding(Label.TextProperty, nameof(Message.SenderName));
-            var date = ReaderTheme.Metadata(new Label { MaxLines = 1, VerticalOptions = LayoutOptions.Center });
-            date.SetDynamicResource(Label.FontSizeProperty, "ListDateSize");
+            var date = ReaderTheme.Metadata(new Label { MaxLines = 1, VerticalOptions = LayoutOptions.Center }, "ListDateSize");
             date.SetBinding(Label.TextProperty, new Binding(nameof(Message.Date), converter: new DateConverter()));
             var row = new Grid
             {
@@ -192,8 +190,7 @@ internal sealed class ReaderPage : ContentPage
     private void UpdateContext()
     {
         var label = account is null ? null : AccountLabelConverter.Label(account);
-        child.Text = label is null ? "" : string.Concat(label.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Take(2).Select(word => System.Globalization.StringInfo.GetNextTextElement(word))).ToUpperInvariant();
+        child.Text = label is null ? "" : AvatarPresentation.Initials(label);
         child.ImageSource = label is null ? ImageSource.FromFile("child.png") : null;
         child.FontSize = AvatarPresentation.UseLargeInitial(account, known) ? 24 : 16;
         ReaderTheme.SetAvatarColors(child, account);
@@ -318,24 +315,12 @@ internal sealed class ReaderPage : ContentPage
     internal async Task AccountActionsAsync()
     {
         if (session is null || busy) return;
-        if (account is null) { await OpenSignInAsync(); return; }
-        var addChild = AppStrings.ReaderAccountsSheetAddChild;
-        var signInAgain = AppStrings.ReaderAccountsSheetSignIn;
-        var forgetPassword = AppStrings.ReaderAccountsSheetForgetPassword;
-        var selected = await DisplayActionSheetAsync(AppStrings.ReaderAccountsSheetTitle, AppStrings.ReaderAccountsSheetCancel, null,
-            addChild, signInAgain, forgetPassword);
-        if (selected == addChild) await OpenSignInAsync();
-        else if (selected == signInAgain) await OpenSignInAsync(account);
-        else if (selected == forgetPassword)
-            await RunAsync(async () =>
-            {
-                var current = account;
-                await Task.Run(() => session.Store.ForgetPassword(current.Url, current.Username));
-                await ReloadAsync();
-                status.Text = AppStrings.ReaderStatusPasswordForgotten;
-                await DisplayAlertAsync(AppStrings.ReaderAccountsSheetTitle, status.Text, AppStrings.AlertOkButton);
-            });
+        await Navigation.PushAsync(CreateAccountsPage());
     }
+
+    internal AccountsPage CreateAccountsPage() => new(
+        session ?? throw new ObkException(AppStrings.ErrorArchiveNotOpen),
+        OpenSignInAsync, () => RunAsync(() => ReloadAsync()));
 
     private async Task RefreshAllAsync()
     {
@@ -378,7 +363,7 @@ internal sealed class ReaderPage : ContentPage
         }
     }
 
-    private static class AccountLabelConverter
+    internal static class AccountLabelConverter
     {
         public static string Label(Login login) => !string.IsNullOrWhiteSpace(login.ChildName) ? login.ChildName :
             (login.SchoolName is { } school ? Localized.Format(AppStrings.AccountSchoolAndUsername, school, login.Username) : login.Username);

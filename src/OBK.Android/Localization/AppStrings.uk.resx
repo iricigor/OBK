@@ -153,6 +153,28 @@
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>Параметри</value>
   </data>
+  <data name="AccountsSavedHere" xml:space="preserve">
+    <value>Облікові записи, збережені на цьому пристрої</value>
+  </data>
+  <data name="AccountsActive" xml:space="preserve">
+    <value>Активний</value>
+  </data>
+  <data name="AccountsPasswordSaved" xml:space="preserve">
+    <value>Пароль збережено</value>
+  </data>
+  <data name="AccountsPasswordNotSaved" xml:space="preserve">
+    <value>Немає збереженого пароля</value>
+  </data>
+  <data name="AccountsSignIn" xml:space="preserve">
+    <value>Увійти</value>
+  </data>
+  <data name="AccountsForgetPassword" xml:space="preserve">
+    <value>Забути пароль</value>
+  </data>
+  <data name="AccountsForgetConfirmation" xml:space="preserve">
+    <value>Забути збережений пароль для {0}? Обліковий запис і автономні повідомлення залишаться.</value>
+    <comment>{0} = child or account label.</comment>
+  </data>
   <data name="SettingsManageAccounts" xml:space="preserve">
     <value>Керування обліковими записами</value>
   </data>

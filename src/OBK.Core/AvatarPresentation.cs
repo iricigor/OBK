@@ -4,6 +4,10 @@ public static class AvatarPresentation
 {
     public const int PaletteCount = 6;
 
+    public static string Initials(string label) =>
+        string.Concat(label.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Take(2)
+            .Select(word => System.Globalization.StringInfo.GetNextTextElement(word))).ToUpperInvariant();
+
     public static int PaletteIndex(string? value)
     {
         // FNV-1a keeps assignments stable across launches, unlike string.GetHashCode.

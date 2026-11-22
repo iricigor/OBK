@@ -124,6 +124,10 @@ ellipsized. Defaults are Medium and Relaxed, with tighter spacing than the earli
 three-line list. Choices are saved on the device and respect Android text scaling.
 Android and Windows message lists use pale alternating row backgrounds, with
 subtle dark-theme stripes. Windows selection and hover remain distinct.
+**Manage accounts** opens a dedicated page showing all children/accounts,
+their school, username and saved-password status, with account-specific
+**Sign in** and **Forget password** actions and a fixed **Add child** button.
+Forgetting a password asks for confirmation and keeps the offline archive.
 
 To avoid typing credentials on the phone, open **Settings > Accounts >
 Transfer to Android** in OBK on Windows, then tap **Scan from PC** on Android's

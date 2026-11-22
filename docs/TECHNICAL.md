@@ -307,6 +307,10 @@ On sign-in, school search is primary; **Enter school
 address manually** reveals the editable HTTPS address (already visible for
 an existing account). Message links and attachment actions stay explicit taps,
 with privacy notices beneath the content. Appearance follows Android by default.
+Opened messages reuse desktop's light/dark shaded header with contrasting
+secondary text, plus a separate attachment band when files are present. The
+message body remains on the normal reader surface. Android does not currently
+show related-message links; this styling does not add that functionality.
 
 The launcher icon uses `Resources\AppIcon\obk.png` declared as a `MauiIcon`.
 The Android application manifest must reference MAUI's generated `@mipmap/obk`
@@ -331,6 +335,13 @@ Device backup is disabled. Uninstalling deletes app data and its key.
 Passwords are retained only with **Remember credentials**; use **Menu >
 Manage accounts > Forget this account's saved password** to remove a saved password
 without deleting the offline archive. API tokens stay in memory.
+**Manage accounts** is a dedicated page, not an action sheet tied to the active
+child. It lists all known accounts, marks the active account, shows school,
+username and saved-password status, and exposes per-account sign-in and password
+forgetting. Forgetting requires confirmation; no account or archive deletion is
+offered. **Add child** stays fixed beneath the scrollable list. Avatar colors
+and initials match the reader. Returning from sign-in reloads the account list;
+language switching rebuilds this page while retaining the navigation stack.
 
 Message HTML is parsed into native text rather than loaded into a browser.
 Links open only on an explicit tap. Attachment opening/sharing creates a
@@ -386,6 +397,11 @@ $activity = (& $adb -s <serial> shell cmd package resolve-activity --brief cz.ob
 ```
 
 The verification fixture and launch handling are excluded from Release builds.
+To exercise saved-password status and forgetting in the dedicated accounts page,
+add `--ez obk_verification_saved_password true` to the verification launch once.
+This seeds a fictional password for Anna only in the isolated verification
+database. Omit that extra on subsequent launches to verify that forgetting
+persists; verification mode never contacts a school.
 Restart without the launch extra for real sign-in. Fictional data does not prove
 compatibility with a real school's deployment.
 

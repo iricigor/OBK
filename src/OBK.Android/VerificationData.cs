@@ -58,6 +58,8 @@ internal static class VerificationData
             throw new ObkException("Verification failed: attachment content did not round-trip.");
         File.Delete(copy);
         store.SaveAccount(url, "anna", "Anna", "Fictional school");
+        if (Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification_saved_password", false) == true)
+            store.RememberPassword(url, "anna", "fictional-password");
         global::Android.Util.Log.Info("OBK.Verify", "Keystore nonce/tamper checks and encrypted archive/attachment round-trip passed.");
     }
 

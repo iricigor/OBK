@@ -29,16 +29,23 @@ internal sealed class MessagePage : ContentPage
         subject.SetDynamicResource(Label.FontSizeProperty, "ReaderSubjectSize");
         var sender = new Label { Text = message.SenderName };
         sender.SetDynamicResource(Label.FontSizeProperty, "ReaderSenderSize");
-        var date = ReaderTheme.Metadata(new Label { Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) });
-        date.SetDynamicResource(Label.FontSizeProperty, "ReaderMetaSize");
-        content.Add(new VerticalStackLayout
+        var date = ReaderTheme.Metadata(new Label
+        {
+            Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture)
+        }, "ReaderMetaSize");
+        sender.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
+        date.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
+        var header = ReaderTheme.Panel(new VerticalStackLayout
         {
             Spacing = 4,
             Children =
             {
                 subject, sender, date
             }
-        });
+        }, 16);
+        header.StrokeThickness = 0;
+        header.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.MessageHeaderSurface, ReaderTheme.DarkMessageHeaderSurface);
+        content.Add(header);
         content.Add(status);
         Content = new ScrollView { Content = content };
         ReaderTheme.Apply(this);
@@ -82,14 +89,21 @@ internal sealed class MessagePage : ContentPage
                 actions.Add(button);
                 content.Add(button);
             }
+            var attachments = new VerticalStackLayout { Spacing = 12 };
             if (message.Attachments.Count > 0)
-                content.Add(new Label { Text = AppStrings.MessageAttachmentsHeader, FontAttributes = FontAttributes.Bold });
+            {
+                attachments.Add(new Label { Text = AppStrings.MessageAttachmentsHeader, FontAttributes = FontAttributes.Bold });
+                var band = ReaderTheme.Panel(attachments, 16);
+                band.StrokeThickness = 0;
+                band.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.AttachmentSurface, ReaderTheme.DarkAttachmentSurface);
+                content.Add(band);
+            }
             foreach (var attachment in message.Attachments)
             {
                 var info = await Task.Run(() => session.Store.AttachmentInfo(account.Url, account.Username, attachment.Identifier));
                 var fileContent = new VerticalStackLayout { Spacing = 8 };
                 fileContent.Add(new Label { Text = attachment.SafeName, FontSize = 14, FontAttributes = FontAttributes.Bold });
-                content.Add(ReaderTheme.Panel(fileContent, 12));
+                attachments.Add(ReaderTheme.Panel(fileContent, 12));
                 if (info is null)
                 {
                     fileContent.Add(ReaderTheme.Metadata(new Label { Text = AppStrings.MessageAttachmentNotDownloaded }));

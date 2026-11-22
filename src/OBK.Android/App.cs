@@ -73,7 +73,8 @@ public sealed class App : Application
             reader.Busy || stack.OfType<SignInPage>().Any(page => page.Busy) ||
             stack.OfType<MessagePage>().Any(page => page.Busy) ||
             stack.OfType<SettingsPage>().Any(page => page.Busy) ||
-            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage)))
+            stack.OfType<AccountsPage>().Any(page => page.Busy) ||
+            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage or AccountsPage)))
             throw new ObkException(SharedStrings.ErrorLanguageBusy);
         switchingLanguage = true;
         try
@@ -90,6 +91,7 @@ public sealed class App : Application
                     SignInPage signIn => signIn.Rebuild(surface.Reader.AccountSavedAsync),
                     MessagePage message => message.Rebuild(),
                     SettingsPage => surface.Reader.CreateSettingsPage(),
+                    AccountsPage => surface.Reader.CreateAccountsPage(),
                     _ => throw new ObkException(SharedStrings.ErrorLanguageBusy)
                 };
                 await surface.Navigation.PushAsync(replacement, animated: false);
@@ -106,13 +108,13 @@ public sealed class App : Application
         var navigation = new NavigationPage(reader);
         navigation.SetAppThemeColor(NavigationPage.BarBackgroundColorProperty, Color.FromArgb("#EAEFF5"), Color.FromArgb("#1B2129"));
         navigation.SetAppThemeColor(NavigationPage.BarTextColorProperty, Color.FromArgb("#1A1A1A"), Colors.White);
-        var settings = ReaderTheme.DrawerButton(new Button { Text = AppStrings.SettingsPageTitle });
+        var settings = ReaderTheme.StartAlignedButton(new Button { Text = AppStrings.SettingsPageTitle });
         settings.Clicked += async (_, _) =>
         {
             flyout.IsPresented = false;
             await reader.OpenSettingsAsync();
         };
-        var accounts = ReaderTheme.DrawerButton(new Button { Text = AppStrings.SettingsManageAccounts });
+        var accounts = ReaderTheme.StartAlignedButton(new Button { Text = AppStrings.SettingsManageAccounts });
         accounts.Clicked += async (_, _) =>
         {
             flyout.IsPresented = false;
@@ -122,7 +124,7 @@ public sealed class App : Application
         var folderButtons = new List<Button>();
         foreach (var index in Enumerable.Range(0, reader.FolderLabels.Count))
         {
-            var button = ReaderTheme.DrawerButton(new Button
+            var button = ReaderTheme.StartAlignedButton(new Button
             {
                 Text = reader.FolderLabels[index],
                 ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 12)

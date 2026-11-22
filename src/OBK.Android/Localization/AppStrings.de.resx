@@ -153,6 +153,28 @@
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>Einstellungen</value>
   </data>
+  <data name="AccountsSavedHere" xml:space="preserve">
+    <value>Auf diesem Gerät gespeicherte Konten</value>
+  </data>
+  <data name="AccountsActive" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+  <data name="AccountsPasswordSaved" xml:space="preserve">
+    <value>Passwort gespeichert</value>
+  </data>
+  <data name="AccountsPasswordNotSaved" xml:space="preserve">
+    <value>Kein gespeichertes Passwort</value>
+  </data>
+  <data name="AccountsSignIn" xml:space="preserve">
+    <value>Anmelden</value>
+  </data>
+  <data name="AccountsForgetPassword" xml:space="preserve">
+    <value>Passwort vergessen</value>
+  </data>
+  <data name="AccountsForgetConfirmation" xml:space="preserve">
+    <value>Das gespeicherte Passwort für {0} vergessen? Das Konto und die Offline-Nachrichten bleiben erhalten.</value>
+    <comment>{0} = child or account label.</comment>
+  </data>
   <data name="SettingsManageAccounts" xml:space="preserve">
     <value>Konten verwalten</value>
   </data>

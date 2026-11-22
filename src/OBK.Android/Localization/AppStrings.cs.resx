@@ -150,6 +150,28 @@
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>Nastavení</value>
   </data>
+  <data name="AccountsSavedHere" xml:space="preserve">
+    <value>Účty uložené na tomto zařízení</value>
+  </data>
+  <data name="AccountsActive" xml:space="preserve">
+    <value>Aktivní</value>
+  </data>
+  <data name="AccountsPasswordSaved" xml:space="preserve">
+    <value>Heslo uloženo</value>
+  </data>
+  <data name="AccountsPasswordNotSaved" xml:space="preserve">
+    <value>Heslo není uloženo</value>
+  </data>
+  <data name="AccountsSignIn" xml:space="preserve">
+    <value>Přihlásit se</value>
+  </data>
+  <data name="AccountsForgetPassword" xml:space="preserve">
+    <value>Zapomenout heslo</value>
+  </data>
+  <data name="AccountsForgetConfirmation" xml:space="preserve">
+    <value>Zapomenout uložené heslo pro {0}? Účet a offline zprávy zůstanou zachovány.</value>
+    <comment>{0} = child or account label.</comment>
+  </data>
   <data name="SettingsManageAccounts" xml:space="preserve">
     <value>Spravovat účty</value>
   </data>

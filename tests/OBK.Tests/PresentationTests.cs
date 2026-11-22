@@ -70,6 +70,14 @@ public sealed class PresentationTests
     }
 
     [Fact]
+    public void AvatarInitialsUseWholeTextElementsAndWhitespaceSeparatedNames()
+    {
+        Assert.Equal("AN", AvatarPresentation.Initials(" Anna\tNovak "));
+        Assert.Equal("A\u0301N", AvatarPresentation.Initials("a\u0301nna Novak"));
+        Assert.Equal("A", AvatarPresentation.Initials("Anna"));
+    }
+
+    [Fact]
     public void AccountAvatarColorsDoNotDependOnNamesOrOrder()
     {
         var login = new Login("https://sample.example", "anna", ChildName: "Anna");

@@ -153,6 +153,28 @@
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="AccountsSavedHere" xml:space="preserve">
+    <value>Accounts saved on this device</value>
+  </data>
+  <data name="AccountsActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="AccountsPasswordSaved" xml:space="preserve">
+    <value>Password saved</value>
+  </data>
+  <data name="AccountsPasswordNotSaved" xml:space="preserve">
+    <value>No saved password</value>
+  </data>
+  <data name="AccountsSignIn" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="AccountsForgetPassword" xml:space="preserve">
+    <value>Forget password</value>
+  </data>
+  <data name="AccountsForgetConfirmation" xml:space="preserve">
+    <value>Forget the saved password for {0}? The account and offline messages will be kept.</value>
+    <comment>{0} = child or account label.</comment>
+  </data>
   <data name="SettingsManageAccounts" xml:space="preserve">
     <value>Manage accounts</value>
   </data>
