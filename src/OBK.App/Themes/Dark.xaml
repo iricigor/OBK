@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="AppBackground" Color="#202020"/>
     <SolidColorBrush x:Key="Surface" Color="#2B2B2B"/>
+    <SolidColorBrush x:Key="ListAlternateSurface" Color="#30343A"/>
     <SolidColorBrush x:Key="Stroke" Color="#383838"/>
     <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="TextSecondary" Color="#A6A6A6"/>

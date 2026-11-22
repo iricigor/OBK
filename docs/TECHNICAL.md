@@ -271,17 +271,46 @@ three-column layout. UI refinement does not imply adding missing desktop
 features or implementing the separately tracked language controls.
 
 The reader uses an integrated search bar above the list: the hamburger opens
-a navigation drawer with **Settings**, folder selection and the active-child
-avatar sit inside the search container, and the refresh icon refreshes all
-accounts. Icon descriptions identify the active child/folder; native choosers
-show their names. Sync status stays below the list. **Settings** offers
-**System**, **Light**, and **Dark** appearance plus the existing account actions.
+a navigation drawer headed **OBK / Offline Bakalari Komens** with **Inbox**,
+**Noticeboard**, **Sent**, and **Excuses** first, followed by **Manage accounts**
+and **Settings**. The active folder is highlighted and announced in the drawer;
+selecting a folder closes it. Only search and the active-child avatar sit inside
+the search container, and the refresh icon refreshes all
+accounts. The avatar opens a native chooser showing child/account names.
+Sync status stays below the list. **Settings** offers
+**System**, **Light**, and **Dark** appearance, **Small / Medium / Large** reading
+sizes, and **Compact / Relaxed** list density. The list uses two lines: a
+single-line, ellipsized subject and right-aligned short date, then an ellipsized
+sender. Older years remain visible in dates; full timestamps stay in the reader.
+Both densities are tighter than the previous three-line layout; rows retain a
+48-dp minimum touch height and grow with system font scaling. Reading sizes use
+the desktop's 0.9 / 1.0 / 1.15 scale factors on Android's existing type sizes.
+The single-line footer abbreviates the last sync to Today / Yesterday / 2-9
+days ago plus the local time. Older syncs use a short date (including a year only
+for previous years) plus time. The language control remains in the right-hand
+auto-sized column; long status text truncates instead of pushing it off-screen.
+Font and spacing resources update live and persist independently across restarts
+and language changes. Medium / Relaxed are the defaults.
 Appearance applies immediately and persists in app-private preferences; this
 non-sensitive UI preference is separate from encrypted school/account settings.
+The child avatar reuses the desktop's six contrast-paired light/dark colors.
+FNV-1a hashes the school URL plus username, so account ordering, renaming and
+language changes do not change the assignment (color collisions are possible).
+A one-word child name uses a 24-sp initial instead of 16 sp only when every
+explicit child name is one word; school/account fallback labels are excluded
+from that check and retain their normal size.
+Message rows alternate between the surface and a pale theme-specific stripe on
+both platforms. Stripes follow the current filtered/sorted message order,
+continuing across Windows group boundaries. Selection and
+hover take precedence over stripes on Windows. No other lists are striped.
 On sign-in, school search is primary; **Enter school
 address manually** reveals the editable HTTPS address (already visible for
 an existing account). Message links and attachment actions stay explicit taps,
 with privacy notices beneath the content. Appearance follows Android by default.
+Opened messages reuse desktop's light/dark shaded header with contrasting
+secondary text, plus a separate attachment band when files are present. The
+message body remains on the normal reader surface. Android does not currently
+show related-message links; this styling does not add that functionality.
 
 The launcher icon uses `Resources\AppIcon\obk.png` declared as a `MauiIcon`.
 The Android application manifest must reference MAUI's generated `@mipmap/obk`
@@ -303,9 +332,16 @@ Missing keys and failed authentication are explicit errors, never a reason to
 create a replacement key for an existing database or store plaintext.
 
 Device backup is disabled. Uninstalling deletes app data and its key.
-Passwords are retained only with **Remember credentials**; use **Settings >
+Passwords are retained only with **Remember credentials**; use **Menu >
 Manage accounts > Forget this account's saved password** to remove a saved password
 without deleting the offline archive. API tokens stay in memory.
+**Manage accounts** is a dedicated page, not an action sheet tied to the active
+child. It lists all known accounts, marks the active account, shows school,
+username and saved-password status, and exposes per-account sign-in and password
+forgetting. Forgetting requires confirmation; no account or archive deletion is
+offered. **Add child** stays fixed beneath the scrollable list. Avatar colors
+and initials match the reader. Returning from sign-in reloads the account list;
+language switching rebuilds this page while retaining the navigation stack.
 
 Message HTML is parsed into native text rather than loaded into a browser.
 Links open only on an explicit tap. Attachment opening/sharing creates a
@@ -361,6 +397,11 @@ $activity = (& $adb -s <serial> shell cmd package resolve-activity --brief cz.ob
 ```
 
 The verification fixture and launch handling are excluded from Release builds.
+To exercise saved-password status and forgetting in the dedicated accounts page,
+add `--ez obk_verification_saved_password true` to the verification launch once.
+This seeds a fictional password for Anna only in the isolated verification
+database. Omit that extra on subsequent launches to verify that forgetting
+persists; verification mode never contacts a school.
 Restart without the launch extra for real sign-in. Fictional data does not prove
 compatibility with a real school's deployment.
 

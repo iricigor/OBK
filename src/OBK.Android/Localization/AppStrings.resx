@@ -153,11 +153,60 @@
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="AccountsSavedHere" xml:space="preserve">
+    <value>Accounts saved on this device</value>
+  </data>
+  <data name="AccountsActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="AccountsPasswordSaved" xml:space="preserve">
+    <value>Password saved</value>
+  </data>
+  <data name="AccountsPasswordNotSaved" xml:space="preserve">
+    <value>No saved password</value>
+  </data>
+  <data name="AccountsSignIn" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="AccountsForgetPassword" xml:space="preserve">
+    <value>Forget password</value>
+  </data>
+  <data name="AccountsForgetConfirmation" xml:space="preserve">
+    <value>Forget the saved password for {0}? The account and offline messages will be kept.</value>
+    <comment>{0} = child or account label.</comment>
+  </data>
   <data name="SettingsManageAccounts" xml:space="preserve">
     <value>Manage accounts</value>
   </data>
   <data name="SettingsAppearance" xml:space="preserve">
     <value>Appearance</value>
+  </data>
+  <data name="SettingsReadingSize" xml:space="preserve">
+    <value>Reading size</value>
+  </data>
+  <data name="SettingsReadingSizeDescription" xml:space="preserve">
+    <value>Text size of the message list and the reader</value>
+  </data>
+  <data name="SettingsReadingSizeSmall" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="SettingsReadingSizeMedium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="SettingsReadingSizeLarge" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="SettingsListDensity" xml:space="preserve">
+    <value>Message list density</value>
+  </data>
+  <data name="SettingsListDensityDescription" xml:space="preserve">
+    <value>Space between messages in the list</value>
+  </data>
+  <data name="SettingsListDensityCompact" xml:space="preserve">
+    <value>Compact</value>
+  </data>
+  <data name="SettingsListDensityRelaxed" xml:space="preserve">
+    <value>Relaxed</value>
   </data>
   <data name="SettingsThemeSystem" xml:space="preserve">
     <value>System</value>
@@ -246,8 +295,16 @@
     <value>Search messages</value>
   </data>
   <data name="ReaderStatusArchiveReady" xml:space="preserve">
-    <value>Offline archive ready. Last sync: {0}</value>
+    <value>Synced: {0}</value>
     <comment>{0} = already localized last synchronization date and time.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoFew" xml:space="preserve">
+    <value>{0} days ago</value>
+    <comment>Relative sync date, two through four days ago.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoMany" xml:space="preserve">
+    <value>{0} days ago</value>
+    <comment>Relative sync date, five through nine days ago.</comment>
   </data>
   <data name="ReaderStatusNoAccounts" xml:space="preserve">
     <value>Add a child to download messages. Reading cached messages never contacts your school.</value>

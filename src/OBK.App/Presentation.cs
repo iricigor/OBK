@@ -75,16 +75,9 @@ public sealed class AnyTrueConverter : IMultiValueConverter
 
 public static class Palette
 {
-    public const int PairCount = 6;
+    public const int PairCount = AvatarPresentation.PaletteCount;
 
-    // FNV-1a keeps assignments stable across launches, unlike string.GetHashCode.
-    public static int PairIndex(string? value)
-    {
-        var hash = 2166136261u;
-        foreach (var c in (value ?? "").Trim().ToLowerInvariant())
-            hash = (hash ^ c) * 16777619u;
-        return (int)(hash % PairCount);
-    }
+    public static int PairIndex(string? value) => AvatarPresentation.PaletteIndex(value);
 
     public static string PairKey(string? value) => "Avatar" + PairIndex(value);
 
@@ -122,9 +115,11 @@ public sealed class FolderRow(string key, string title, string icon, int count)
     public int Count { get; } = count;
 }
 
-public sealed class MessageRow(Message message, string folder)
+public sealed class MessageRow(Message message, string folder) : ObservableObject
 {
     private string? searchText;
+    private bool isAlternate;
+    public bool IsAlternate { get => isAlternate; internal set => Set(ref isAlternate, value); }
     public Message Message { get; } = message;
     public string Folder { get; } = folder;
     public bool Unread => Folder != "sent" && Message.Read == false;

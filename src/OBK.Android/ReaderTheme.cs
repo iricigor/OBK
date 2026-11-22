@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
+using OBK.Core;
 
 namespace OBK.AndroidApp;
 
@@ -10,10 +11,64 @@ internal static class ReaderTheme
     private static readonly Color DarkSecondary = Color.FromArgb("#A6A6A6");
     internal static readonly Color Surface = Colors.White;
     internal static readonly Color DarkSurface = Color.FromArgb("#2B2B2B");
+    internal static readonly Color AlternateSurface = Color.FromArgb("#F5F7FA");
+    internal static readonly Color DarkAlternateSurface = Color.FromArgb("#30343A");
+    internal static readonly Color MessageHeaderSurface = Color.FromArgb("#DFEAF5");
+    internal static readonly Color DarkMessageHeaderSurface = Color.FromArgb("#20364A");
+    internal static readonly Color MessageHeaderSecondary = Color.FromArgb("#3B5873");
+    internal static readonly Color DarkMessageHeaderSecondary = Color.FromArgb("#CBDDEB");
+    internal static readonly Color AttachmentSurface = Color.FromArgb("#F5F7FA");
+    internal static readonly Color DarkAttachmentSurface = Color.FromArgb("#242424");
     internal static readonly Color Stroke = Color.FromArgb("#E5E5E5");
     internal static readonly Color DarkStroke = Color.FromArgb("#808080");
     internal static readonly Color Accent = Color.FromArgb("#0F6CBD");
     internal static readonly Color DarkAccent = Color.FromArgb("#4CC2FF");
+    internal static readonly Color StatusGood = Color.FromArgb("#107C10");
+    internal static readonly Color DarkStatusGood = Color.FromArgb("#6CCB5F");
+    internal static readonly Color Danger = Color.FromArgb("#C42B1C");
+    internal static readonly Color DarkDanger = Color.FromArgb("#FF9E8A");
+    private static readonly (string LightBackground, string LightText, string DarkBackground, string DarkText)[] AvatarColors =
+    [
+        ("#E0F2F1", "#00695C", "#163835", "#4DD0E1"),
+        ("#E8EAF6", "#3949AB", "#232A4D", "#9FA8FF"),
+        ("#F3E5F5", "#7B1FA2", "#3A2440", "#E1A6F0"),
+        ("#FDE7E2", "#B3412B", "#43251F", "#FF9E8A"),
+        ("#FFF3D6", "#8A5A00", "#3D3016", "#FBBF24"),
+        ("#DDF3E4", "#1B7A3E", "#17372A", "#6EE7A0")
+    ];
+
+    public static void SetAvatarColors(Button button, Login? account)
+    {
+        if (account is null)
+        {
+            button.SetAppThemeColor(Button.BackgroundColorProperty, Colors.Transparent, Colors.Transparent);
+            button.SetAppThemeColor(Button.TextColorProperty, Accent, DarkAccent);
+            return;
+        }
+        var colors = AvatarColors[AvatarPresentation.PaletteIndex(account.Url + "|" + account.Username)];
+        button.SetAppThemeColor(Button.BackgroundColorProperty, Color.FromArgb(colors.LightBackground), Color.FromArgb(colors.DarkBackground));
+        button.SetAppThemeColor(Button.TextColorProperty, Color.FromArgb(colors.LightText), Color.FromArgb(colors.DarkText));
+    }
+
+    public static Border AccountAvatar(Login login, IReadOnlyList<Login> known)
+    {
+        var colors = AvatarColors[AvatarPresentation.PaletteIndex(login.Url + "|" + login.Username)];
+        var letter = new Label
+        {
+            Text = AvatarPresentation.Initials(ReaderPage.AccountLabelConverter.Label(login)),
+            FontSize = AvatarPresentation.UseLargeInitial(login, known) ? 24 : 16,
+            FontAttributes = FontAttributes.Bold,
+            HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center
+        };
+        letter.SetAppThemeColor(Label.TextColorProperty, Color.FromArgb(colors.LightText), Color.FromArgb(colors.DarkText));
+        var border = new Border
+        {
+            Content = letter, WidthRequest = 48, HeightRequest = 48, StrokeThickness = 0,
+            VerticalOptions = LayoutOptions.Start, StrokeShape = new RoundRectangle { CornerRadius = 24 }
+        };
+        border.SetAppThemeColor(VisualElement.BackgroundColorProperty, Color.FromArgb(colors.LightBackground), Color.FromArgb(colors.DarkBackground));
+        return border;
+    }
 
     public static ImageButton Icon(string name, string description)
     {
@@ -30,9 +85,10 @@ internal static class ReaderTheme
     public static void SetIcon(ImageButton button, string name) =>
         button.SetAppTheme<ImageSource>(ImageButton.SourceProperty, ImageSource.FromFile($"{name}.png"), ImageSource.FromFile($"{name}_dark.png"));
 
-    public static Label Metadata(Label label)
+    public static Label Metadata(Label label, string? sizeResource = null)
     {
-        if (!label.IsSet(Label.FontSizeProperty)) label.FontSize = 13;
+        if (sizeResource is not null) label.SetDynamicResource(Label.FontSizeProperty, sizeResource);
+        else if (!label.IsSet(Label.FontSizeProperty)) label.FontSize = 13;
         label.SetAppThemeColor(Label.TextColorProperty, Secondary, DarkSecondary);
         return label;
     }
@@ -49,6 +105,18 @@ internal static class ReaderTheme
     {
         button.BackgroundColor = Colors.Transparent;
         button.BorderWidth = 0;
+        return button;
+    }
+
+    public static Button StartAlignedButton(Button button)
+    {
+        Subtle(button);
+        button.HorizontalOptions = LayoutOptions.Fill;
+        button.HandlerChanged += (_, _) =>
+        {
+            if (button.Handler?.PlatformView is global::Android.Widget.Button native)
+                native.Gravity = global::Android.Views.GravityFlags.Start | global::Android.Views.GravityFlags.CenterVertical;
+        };
         return button;
     }
 

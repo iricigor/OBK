@@ -23,7 +23,12 @@ internal static class VerificationData
         var attachment = new Attachment { Id = "sample-note", Name = "trip-details.txt" };
         foreach (var user in new[] { "anna", "tomas" })
         {
-            if (store.LoadArchive(url, user, year) is not null) continue;
+            if (store.LoadArchive(url, user, year) is { } existing)
+            {
+                AddListSamples(existing.Folders["received"], year);
+                store.SaveArchive(url, user, year, "Fictional school", existing.Folders);
+                continue;
+            }
             store.SaveAccount(url, user, user == "anna" ? "Anna" : "Tomas", "Fictional school");
             var folders = Folders.Empty();
             folders["received"].Add(new Message
@@ -45,6 +50,7 @@ internal static class VerificationData
                 Sender = JsonSerializer.SerializeToElement(new { Name = "School library" }), Attachments = []
             });
             await store.SaveAttachmentAsync(url, user, attachment, new MemoryStream(value), value.Length, "text/plain");
+            AddListSamples(folders["received"], year);
             store.SaveArchive(url, user, year, "Fictional school", folders);
         }
         var copy = store.ExportAttachment(url, "anna", attachment.Id, Path.Combine(directory, "verification.txt"));
@@ -52,7 +58,27 @@ internal static class VerificationData
             throw new ObkException("Verification failed: attachment content did not round-trip.");
         File.Delete(copy);
         store.SaveAccount(url, "anna", "Anna", "Fictional school");
+        if (Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification_saved_password", false) == true)
+            store.RememberPassword(url, "anna", "fictional-password");
         global::Android.Util.Log.Info("OBK.Verify", "Keystore nonce/tamper checks and encrypted archive/attachment round-trip passed.");
+    }
+
+    private static void AddListSamples(List<Message> messages, SchoolYear year)
+    {
+        foreach (var index in Enumerable.Range(1, 2))
+        {
+            var id = $"sample-list-{index}";
+            if (messages.Any(message => message.Id == id)) continue;
+            messages.Add(new Message
+            {
+                Id = id,
+                Title = index == 1 ? "Class meeting: arrangements and questions for the next school term" : "Library hours",
+                Text = "<p>Fictional content for message-list verification.</p>",
+                SentDate = new DateTimeOffset(year.StartYear, 11, 20 - index, 9, 30, 0, TimeSpan.Zero).ToString("O"),
+                Sender = JsonSerializer.SerializeToElement(new { Name = index == 1 ? "Fictional school administration and class teachers" : "School library" }),
+                Attachments = []
+            });
+        }
     }
 }
 #endif

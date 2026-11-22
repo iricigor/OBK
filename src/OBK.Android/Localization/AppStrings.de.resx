@@ -153,8 +153,57 @@
   <data name="SettingsPageTitle" xml:space="preserve">
     <value>Einstellungen</value>
   </data>
+  <data name="AccountsSavedHere" xml:space="preserve">
+    <value>Auf diesem Gerät gespeicherte Konten</value>
+  </data>
+  <data name="AccountsActive" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+  <data name="AccountsPasswordSaved" xml:space="preserve">
+    <value>Passwort gespeichert</value>
+  </data>
+  <data name="AccountsPasswordNotSaved" xml:space="preserve">
+    <value>Kein gespeichertes Passwort</value>
+  </data>
+  <data name="AccountsSignIn" xml:space="preserve">
+    <value>Anmelden</value>
+  </data>
+  <data name="AccountsForgetPassword" xml:space="preserve">
+    <value>Passwort vergessen</value>
+  </data>
+  <data name="AccountsForgetConfirmation" xml:space="preserve">
+    <value>Das gespeicherte Passwort für {0} vergessen? Das Konto und die Offline-Nachrichten bleiben erhalten.</value>
+    <comment>{0} = child or account label.</comment>
+  </data>
   <data name="SettingsManageAccounts" xml:space="preserve">
     <value>Konten verwalten</value>
+  </data>
+  <data name="SettingsReadingSize" xml:space="preserve">
+    <value>Lesegröße</value>
+  </data>
+  <data name="SettingsReadingSizeDescription" xml:space="preserve">
+    <value>Textgröße der Nachrichtenliste und Leseansicht</value>
+  </data>
+  <data name="SettingsReadingSizeSmall" xml:space="preserve">
+    <value>Klein</value>
+  </data>
+  <data name="SettingsReadingSizeMedium" xml:space="preserve">
+    <value>Mittel</value>
+  </data>
+  <data name="SettingsReadingSizeLarge" xml:space="preserve">
+    <value>Groß</value>
+  </data>
+  <data name="SettingsListDensity" xml:space="preserve">
+    <value>Dichte der Nachrichtenliste</value>
+  </data>
+  <data name="SettingsListDensityDescription" xml:space="preserve">
+    <value>Abstand zwischen Nachrichten in der Liste</value>
+  </data>
+  <data name="SettingsListDensityCompact" xml:space="preserve">
+    <value>Kompakt</value>
+  </data>
+  <data name="SettingsListDensityRelaxed" xml:space="preserve">
+    <value>Locker</value>
   </data>
   <data name="SettingsAppearance" xml:space="preserve">
     <value>Erscheinungsbild</value>
@@ -246,8 +295,16 @@
     <value>Nachrichten suchen</value>
   </data>
   <data name="ReaderStatusArchiveReady" xml:space="preserve">
-    <value>Offline-Archiv bereit. Letzte Synchronisierung: {0}</value>
+    <value>Stand: {0}</value>
     <comment>{0} = already localized last synchronization date and time.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoFew" xml:space="preserve">
+    <value>vor {0} Tagen</value>
+    <comment>Relative sync date, two through four days ago.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoMany" xml:space="preserve">
+    <value>vor {0} Tagen</value>
+    <comment>Relative sync date, five through nine days ago.</comment>
   </data>
   <data name="ReaderStatusNoAccounts" xml:space="preserve">
     <value>Kind hinzufügen, um Nachrichten herunterzuladen. Das Lesen zwischengespeicherter Nachrichten kontaktiert die Schule nie.</value>

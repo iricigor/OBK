@@ -502,7 +502,12 @@ public sealed class MainViewModel : ObservableObject
             return MessageInsights.Arrange(matching, r => r.Message, r => r.Person, sortBy, groupBy, DateTime.Today);
         });
         if (version != folderVersion || listId != listVersion) return;
-        foreach (var (row, group) in arranged) row.Group = group;
+        for (var index = 0; index < arranged.Count; index++)
+        {
+            var (row, group) = arranged[index];
+            row.Group = group;
+            row.IsAlternate = index % 2 == 1;
+        }
         var list = arranged.Select(a => a.Item).ToList();
         var view = new ListCollectionView(list);
         if (groupBy != MessageGrouping.None) view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MessageRow.Group)));

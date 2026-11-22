@@ -7,14 +7,17 @@ namespace OBK.AndroidApp;
 internal sealed class ReaderPage : ContentPage
 {
     private readonly ImageButton menu = ReaderTheme.Icon("menu", AppStrings.ReaderNavigationMenu);
-    private readonly ImageButton folder = ReaderTheme.Icon("inbox", SharedStrings.FolderInbox);
     private readonly Button child = ReaderTheme.Primary(new Button
     {
         WidthRequest = 48, HeightRequest = 48, Padding = 0, CornerRadius = 24,
         FontSize = 16, FontAttributes = FontAttributes.Bold
     });
     private readonly SearchBar search = new() { Placeholder = AppStrings.ReaderSearchPlaceholder, BackgroundColor = Colors.Transparent };
-    private readonly Label status = ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderStatusOpening });
+    private readonly Label status = ReaderTheme.Metadata(new Label
+    {
+        Text = AppStrings.ReaderStatusOpening, MaxLines = 1,
+        LineBreakMode = LineBreakMode.TailTruncation, VerticalOptions = LayoutOptions.Center
+    });
     private readonly ImageButton refresh = ReaderTheme.Icon("refresh", AppStrings.ReaderRefreshAll);
     private readonly Button language;
     private readonly ActivityIndicator progress = new() { IsVisible = false };
@@ -29,10 +32,14 @@ internal sealed class ReaderPage : ContentPage
     private int folderIndex;
     private bool initialized;
     internal bool Busy => busy;
+    internal bool AccountsAvailable => session is not null && !busy;
+    internal int FolderIndex => folderIndex;
+    internal IReadOnlyList<string> FolderLabels => folderLabels;
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private static readonly string[] FolderKeys = ["received", "noticeboard", "sent", "excuses"];
-    private static readonly string[] FolderIcons = ["inbox", "noticeboard", "sent", "excuses"];
+    internal static readonly string[] FolderIcons = ["inbox", "noticeboard", "sent", "excuses"];
     private readonly string[] folderLabels = [SharedStrings.FolderInbox, SharedStrings.FolderNoticeboard, SharedStrings.FolderSent, SharedStrings.FolderExcuses];
+    private sealed record MessageListItem(Message Message, bool IsAlternate);
 
     public ReaderPage(Action openMenu)
     {
@@ -48,15 +55,6 @@ internal sealed class ReaderPage : ContentPage
             var index = Array.IndexOf(choices, selected);
             if (index >= 0) await RunAsync(() => SelectAsync(known[index]));
         };
-        folder.Clicked += async (_, _) =>
-        {
-            var selected = await DisplayActionSheetAsync(AppStrings.ReaderFolderPickerTitle, AppStrings.ReaderAccountsSheetCancel, null, folderLabels);
-            var index = Array.IndexOf(folderLabels, selected);
-            if (index < 0) return;
-            folderIndex = index;
-            UpdateContext();
-            ApplySearch();
-        };
         search.TextChanged += (_, _) => ApplySearch();
         search.HandlerChanged += (_, _) =>
         {
@@ -66,34 +64,52 @@ internal sealed class ReaderPage : ContentPage
         refresh.Clicked += async (_, _) => await RunAsync(session is null ? InitializeAsync : RefreshAllAsync);
         messages.ItemTemplate = new DataTemplate(() =>
         {
-            var title = new Label { FontSize = 15, FontAttributes = FontAttributes.Bold, MaxLines = 2 };
+            var title = new Label { FontAttributes = FontAttributes.Bold, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation };
+            title.SetDynamicResource(Label.FontSizeProperty, "ListSubjectSize");
             title.SetBinding(Label.TextProperty, nameof(Message.Title));
-            var sender = ReaderTheme.Metadata(new Label { MaxLines = 1 });
+            var sender = ReaderTheme.Metadata(new Label { MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation }, "ListSenderSize");
             sender.SetBinding(Label.TextProperty, nameof(Message.SenderName));
-            var date = ReaderTheme.Metadata(new Label());
+            var date = ReaderTheme.Metadata(new Label { MaxLines = 1, VerticalOptions = LayoutOptions.Center }, "ListDateSize");
             date.SetBinding(Label.TextProperty, new Binding(nameof(Message.Date), converter: new DateConverter()));
-            return ReaderTheme.Apply(new VerticalStackLayout
+            var row = new Grid
             {
-                Padding = new Thickness(16, 12),
-                Spacing = 4,
-                Children = { title, sender, date, new BoxView { HeightRequest = 1 } }
-            });
+                ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)],
+                RowDefinitions = [new(GridLength.Auto), new(GridLength.Auto)],
+                ColumnSpacing = 8,
+                MinimumHeightRequest = 48
+            };
+            row.SetDynamicResource(Grid.PaddingProperty, "ListRowPadding");
+            row.SetDynamicResource(Grid.RowSpacingProperty, "ListLineGap");
+            row.Add(title);
+            row.Add(date, 1);
+            row.Add(sender, 0, 1);
+            var item = new Grid { RowDefinitions = [new(GridLength.Auto), new(1)], RowSpacing = 0 };
+            item.Add(row);
+            item.Add(new BoxView(), 0, 1);
+            item.BindingContextChanged += (_, _) =>
+            {
+                if (item.BindingContext is not MessageListItem entry) return;
+                row.BindingContext = entry.Message;
+                item.SetAppThemeColor(BackgroundColorProperty,
+                    entry.IsAlternate ? ReaderTheme.AlternateSurface : ReaderTheme.Surface,
+                    entry.IsAlternate ? ReaderTheme.DarkAlternateSurface : ReaderTheme.DarkSurface);
+            };
+            return ReaderTheme.Apply(item);
         });
         addChild.Clicked += async (_, _) => await OpenSignInAsync();
         messages.EmptyView = new VerticalStackLayout { Padding = 24, Spacing = 12, Children = { empty, addChild } };
         messages.SelectionChanged += async (_, args) =>
         {
-            if (args.CurrentSelection.FirstOrDefault() is Message message && session is not null && account is not null)
+            if (args.CurrentSelection.FirstOrDefault() is MessageListItem entry && session is not null && account is not null)
             {
                 messages.SelectedItem = null;
-                await RunAsync(() => Navigation.PushAsync(new MessagePage(session, account, message)));
+                await RunAsync(() => Navigation.PushAsync(new MessagePage(session, account, entry.Message)));
             }
 
         };
-        var searchContent = new Grid { ColumnDefinitions = [new(48), new(GridLength.Star), new(48)] };
-        searchContent.Add(folder, 0);
-        searchContent.Add(search, 1);
-        searchContent.Add(child, 2);
+        var searchContent = new Grid { ColumnDefinitions = [new(GridLength.Star), new(48)] };
+        searchContent.Add(search);
+        searchContent.Add(child, 1);
         var searchPanel = ReaderTheme.Panel(searchContent, 0);
         searchPanel.StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 24 };
         var header = new Grid
@@ -142,23 +158,42 @@ internal sealed class ReaderPage : ContentPage
     }
 
     internal Task AccountSavedAsync(Login login) => RunAsync(() => ReloadAsync(login));
-    private static string ArchiveStatus(Archive archive) => Localized.Format(AppStrings.ReaderStatusArchiveReady,
-        DateTimeOffset.Parse(archive.SyncedAt).ToLocalTime().ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
+    private static string ArchiveStatus(Archive archive)
+    {
+        var synced = DateTimeOffset.Parse(archive.SyncedAt).ToLocalTime();
+        var now = DateTimeOffset.Now;
+        var days = (now.Date - synced.Date).Days;
+        var date = days switch
+        {
+            0 => SharedStrings.GroupToday,
+            1 => SharedStrings.GroupYesterday,
+            >= 2 and <= 4 => Localized.Format(AppStrings.ReaderStatusDaysAgoFew, days),
+            >= 5 and <= 9 => Localized.Format(AppStrings.ReaderStatusDaysAgoMany, days),
+            _ => synced.ToString(synced.Year == now.Year ? SharedStrings.DateShortFormat :
+                SharedStrings.DateShortYearFormat, LanguageSettings.Culture)
+        };
+        return Localized.Format(AppStrings.ReaderStatusArchiveReady,
+            date + " " + synced.ToString(SharedStrings.DateTimeFormat, LanguageSettings.Culture));
+    }
 
-    internal SettingsPage CreateSettingsPage() => new(
-        AccountActionsAsync, () => session is not null, () => account is null ? null : AccountLabelConverter.Label(account));
+    internal SettingsPage CreateSettingsPage() => new();
     internal Task OpenSettingsAsync() => Navigation.PushAsync(CreateSettingsPage());
+
+    internal void SelectFolder(int index)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, FolderKeys.Length);
+        folderIndex = index;
+        ApplySearch();
+    }
 
     private void UpdateContext()
     {
-        ReaderTheme.SetIcon(folder, FolderIcons[folderIndex]);
-        SemanticProperties.SetDescription(folder, Localized.Format(AppStrings.ReaderSelectedFolder, folderLabels[folderIndex]));
         var label = account is null ? null : AccountLabelConverter.Label(account);
-        child.Text = label is null ? "" : string.Concat(label.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Take(2).Select(word => System.Globalization.StringInfo.GetNextTextElement(word))).ToUpperInvariant();
+        child.Text = label is null ? "" : AvatarPresentation.Initials(label);
         child.ImageSource = label is null ? ImageSource.FromFile("child.png") : null;
-        child.SetAppThemeColor(BackgroundColorProperty, label is null ? Colors.Transparent : ReaderTheme.Accent,
-            label is null ? Colors.Transparent : ReaderTheme.DarkAccent);
+        child.FontSize = AvatarPresentation.UseLargeInitial(account, known) ? 24 : 16;
+        ReaderTheme.SetAvatarColors(child, account);
         SemanticProperties.SetDescription(child, label is null ? AppStrings.ReaderAccountPickerTitle :
             Localized.Format(AppStrings.ReaderSelectedChild, label));
     }
@@ -185,7 +220,6 @@ internal sealed class ReaderPage : ContentPage
         menu.IsEnabled = !value;
         language.IsEnabled = !value;
         child.IsEnabled = !value && known.Count > 0;
-        folder.IsEnabled = !value;
         search.IsEnabled = !value;
         messages.IsEnabled = !value;
         SemanticProperties.SetDescription(refresh, session is null ? AppStrings.ReaderRetryOpening : AppStrings.ReaderRefreshAll);
@@ -262,7 +296,8 @@ internal sealed class ReaderPage : ContentPage
         if (query.Length > 0)
             items = items.Where(item => $"{item.Title}\n{item.SenderName}\n{item.Text}\n{item.SentDate}\n{MessageInsights.DateSearchText(item.Date)}"
                 .Contains(query, StringComparison.CurrentCultureIgnoreCase));
-        messages.ItemsSource = items.OrderByDescending(item => item.Date).ToList();
+        messages.ItemsSource = items.OrderByDescending(item => item.Date)
+            .Select((message, index) => new MessageListItem(message, index % 2 == 1)).ToList();
         addChild.IsVisible = session is not null && known.Count == 0;
         empty.Text = query.Length > 0 ? AppStrings.ReaderEmptySearch :
             archive is null ? AppStrings.ReaderEmptyNoArchive : AppStrings.ReaderEmptyFolder;
@@ -277,27 +312,15 @@ internal sealed class ReaderPage : ContentPage
         }));
     }
 
-    private async Task AccountActionsAsync()
+    internal async Task AccountActionsAsync()
     {
         if (session is null || busy) return;
-        if (account is null) { await OpenSignInAsync(); return; }
-        var addChild = AppStrings.ReaderAccountsSheetAddChild;
-        var signInAgain = AppStrings.ReaderAccountsSheetSignIn;
-        var forgetPassword = AppStrings.ReaderAccountsSheetForgetPassword;
-        var selected = await DisplayActionSheetAsync(AppStrings.ReaderAccountsSheetTitle, AppStrings.ReaderAccountsSheetCancel, null,
-            addChild, signInAgain, forgetPassword);
-        if (selected == addChild) await OpenSignInAsync();
-        else if (selected == signInAgain) await OpenSignInAsync(account);
-        else if (selected == forgetPassword)
-            await RunAsync(async () =>
-            {
-                var current = account;
-                await Task.Run(() => session.Store.ForgetPassword(current.Url, current.Username));
-                await ReloadAsync();
-                status.Text = AppStrings.ReaderStatusPasswordForgotten;
-                await DisplayAlertAsync(AppStrings.ReaderAccountsSheetTitle, status.Text, AppStrings.AlertOkButton);
-            });
+        await Navigation.PushAsync(CreateAccountsPage());
     }
+
+    internal AccountsPage CreateAccountsPage() => new(
+        session ?? throw new ObkException(AppStrings.ErrorArchiveNotOpen),
+        OpenSignInAsync, () => RunAsync(() => ReloadAsync()));
 
     private async Task RefreshAllAsync()
     {
@@ -340,7 +363,7 @@ internal sealed class ReaderPage : ContentPage
         }
     }
 
-    private static class AccountLabelConverter
+    internal static class AccountLabelConverter
     {
         public static string Label(Login login) => !string.IsNullOrWhiteSpace(login.ChildName) ? login.ChildName :
             (login.SchoolName is { } school ? Localized.Format(AppStrings.AccountSchoolAndUsername, school, login.Username) : login.Username);
@@ -349,7 +372,14 @@ internal sealed class ReaderPage : ContentPage
     private sealed class DateConverter : IValueConverter
     {
         public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
-            value is DateTimeOffset date ? date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) : "";
+            value is DateTimeOffset date ? ShortDate(date.ToLocalTime()) : "";
+        private static string ShortDate(DateTimeOffset date)
+        {
+            var now = DateTimeOffset.Now;
+            return date.ToString(date.Date == now.Date ? SharedStrings.DateTimeFormat :
+                date.Year == now.Year ? SharedStrings.DateShortFormat : SharedStrings.DateShortYearFormat,
+                LanguageSettings.Culture);
+        }
         public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
             throw new NotSupportedException();
     }
