@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountSchoolAndUsername" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>Account label when no child name is set. {0} = school name, {1} = Komens username.</comment>
+  </data>
+  <data name="AlertOkButton" xml:space="preserve">
+    <value>OK</value>
+    <comment>Dismiss button for error and attention alerts.</comment>
+  </data>
+  <data name="ErrorArchiveNotOpen" xml:space="preserve">
+    <value>Das verschlüsselte Archiv ist nicht geöffnet.</value>
+  </data>
+  <data name="ErrorAuthenticatedEncryptionUnavailable" xml:space="preserve">
+    <value>Die authentifizierte Android-Verschlüsselung ist nicht verfügbar.</value>
+  </data>
+  <data name="ErrorEncryptionKeyMissing" xml:space="preserve">
+    <value>Der Android-Verschlüsselungsschlüssel fehlt. Vorhandene lokale Daten können nicht entschlüsselt werden; kein Ersatzschlüssel wurde erstellt.</value>
+  </data>
+  <data name="ErrorEnterUsernameAndPassword" xml:space="preserve">
+    <value>Den Schul-Benutzernamen und das Passwort eingeben.</value>
+  </data>
+  <data name="ErrorInvalidAttachmentContentType" xml:space="preserve">
+    <value>Der Anhang hat einen ungültigen Inhaltstyp.</value>
+  </data>
+  <data name="ErrorInvalidEncryptedFormat" xml:space="preserve">
+    <value>Lokale Android-Daten haben ein ungültiges verschlüsseltes Format.</value>
+  </data>
+  <data name="ErrorKeyAccessFailed" xml:space="preserve">
+    <value>Android konnte nicht auf den lokalen Verschlüsselungsschlüssel zugreifen.</value>
+  </data>
+  <data name="ErrorKeyCreationFailed" xml:space="preserve">
+    <value>Android konnte den lokalen Verschlüsselungsschlüssel nicht erstellen.</value>
+  </data>
+  <data name="ErrorKeystoreUnavailable" xml:space="preserve">
+    <value>Android Keystore ist nicht verfügbar; keine lokalen Daten wurden geöffnet.</value>
+  </data>
+  <data name="ErrorLocalDecryptFailed" xml:space="preserve">
+    <value>Android konnte lokale Daten nicht entschlüsseln. Der Schlüssel ist möglicherweise nicht verfügbar oder die Daten sind beschädigt; es gibt keinen Klartext-Fallback.</value>
+  </data>
+  <data name="ErrorLocalDecryptNoResult" xml:space="preserve">
+    <value>Android hat lokale Daten nicht entschlüsselt.</value>
+  </data>
+  <data name="ErrorLocalEncryptFailed" xml:space="preserve">
+    <value>Android konnte lokale Daten nicht verschlüsseln. Es gibt keinen Klartext-Fallback.</value>
+  </data>
+  <data name="ErrorLocalEncryptNoResult" xml:space="preserve">
+    <value>Android hat lokale Daten nicht verschlüsselt.</value>
+  </data>
+  <data name="ErrorNoAppForAttachment" xml:space="preserve">
+    <value>Keine installierte App kann diesen Anhang öffnen. Stattdessen „Teilen / Kopie speichern“ verwenden.</value>
+    <comment>"Share / save a copy" must match the MessageShareAttachment button text.</comment>
+  </data>
+  <data name="ErrorNoAppForLink" xml:space="preserve">
+    <value>Keine installierte App kann diesen Link öffnen.</value>
+  </data>
+  <data name="ErrorNoEncryptionNonce" xml:space="preserve">
+    <value>Android hat keine Verschlüsselungs-Nonce bereitgestellt.</value>
+  </data>
+  <data name="ErrorSchoolDirectoryMissing" xml:space="preserve">
+    <value>Das Offline-Schulverzeichnis fehlt in dieser Installation.</value>
+  </data>
+  <data name="ErrorStorageCheckFailed" xml:space="preserve">
+    <value>Der verschlüsselte Android-Speicher hat die Initialisierungsprüfung nicht bestanden.</value>
+  </data>
+  <data name="ErrorStorageInitFailed" xml:space="preserve">
+    <value>Android konnte den verschlüsselten Speicher nicht initialisieren. Es gibt keinen Klartext-Fallback.</value>
+  </data>
+  <data name="ErrorSyncInProgress" xml:space="preserve">
+    <value>Ein anderes Konto lädt noch herunter. Vor dem erneuten Aktualisieren auf den Abschluss warten.</value>
+  </data>
+  <data name="ErrorUnsupportedNonce" xml:space="preserve">
+    <value>Android hat eine nicht unterstützte Verschlüsselungs-Nonce zurückgegeben.</value>
+  </data>
+  <data name="ErrorVerificationCannotSync" xml:space="preserve">
+    <value>Fiktive Prüfdaten können keine Schule kontaktieren. Zum Anmelden ohne Prüfkennzeichen neu starten.</value>
+    <comment>Shown only in developer verification builds started with the verification flag.</comment>
+  </data>
+  <data name="MessageActionFailedAlertTitle" xml:space="preserve">
+    <value>Öffnen oder Teilen nicht möglich</value>
+    <comment>Alert title when opening a link or opening/sharing an attachment fails.</comment>
+  </data>
+  <data name="MessageAttachmentNotDownloaded" xml:space="preserve">
+    <value>Nicht heruntergeladen. Dieses Konto aktualisieren, um den Anhang zwischenzuspeichern.</value>
+  </data>
+  <data name="MessageAttachmentsHeader" xml:space="preserve">
+    <value>Anhänge</value>
+    <comment>Section heading above the message's attachments.</comment>
+  </data>
+  <data name="MessageDecryptedCopyNotice" xml:space="preserve">
+    <value>Beim Öffnen oder Teilen entsteht eine entschlüsselte Kopie im privaten Cache von OBK. Sie wird beim nächsten App-Start gelöscht; in einer anderen App gespeicherte Kopien liegen außerhalb der Kontrolle von OBK.</value>
+  </data>
+  <data name="MessageLinksHeader" xml:space="preserve">
+    <value>Links</value>
+    <comment>Section heading above links found in the message.</comment>
+  </data>
+  <data name="MessageOfflineNotice" xml:space="preserve">
+    <value>Offline-Kopie. Beim Öffnen dieser Nachricht wird die Schule nicht kontaktiert.</value>
+  </data>
+  <data name="MessageOpenAttachment" xml:space="preserve">
+    <value>Anhang öffnen</value>
+    <comment>Button that opens an attachment in another app.</comment>
+  </data>
+  <data name="MessageOpenAttachmentChooserTitle" xml:space="preserve">
+    <value>Anhang öffnen</value>
+    <comment>Title of the Android app chooser shown when opening an attachment.</comment>
+  </data>
+  <data name="MessagePageTitle" xml:space="preserve">
+    <value>Nachricht</value>
+    <comment>Title of the message detail page.</comment>
+  </data>
+  <data name="MessageReadFailedAlertTitle" xml:space="preserve">
+    <value>Nachricht kann nicht gelesen werden</value>
+  </data>
+  <data name="MessageShareAttachment" xml:space="preserve">
+    <value>Teilen / Kopie speichern</value>
+    <comment>Button that shares an attachment or saves a copy via another app.</comment>
+  </data>
+  <data name="MessageShareAttachmentChooserTitle" xml:space="preserve">
+    <value>Anhang teilen</value>
+    <comment>Title of the Android share sheet for an attachment.</comment>
+  </data>
+  <data name="ReaderAccountPickerTitle" xml:space="preserve">
+    <value>Kind oder Konto auswählen</value>
+  </data>
+  <data name="ReaderNavigationMenu" xml:space="preserve">
+    <value>Navigationsmenü öffnen</value>
+  </data>
+  <data name="ReaderAccountOption" xml:space="preserve">
+    <value>{0}. {1}</value>
+    <comment>{0} = account number, {1} = child/account name. Numbering disambiguates identical names.</comment>
+  </data>
+  <data name="ReaderSelectedChild" xml:space="preserve">
+    <value>Kind: {0}. Kind oder Konto wechseln</value>
+    <comment>Accessibility description of the active-child avatar. {0} = child/account name.</comment>
+  </data>
+  <data name="ReaderSelectedFolder" xml:space="preserve">
+    <value>Ordner: {0}. Ordner wechseln</value>
+    <comment>Accessibility description of the active-folder icon. {0} = folder name.</comment>
+  </data>
+  <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="SettingsManageAccounts" xml:space="preserve">
+    <value>Konten verwalten</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Erscheinungsbild</value>
+  </data>
+  <data name="SettingsThemeSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="SettingsThemeLight" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="SettingsThemeDark" xml:space="preserve">
+    <value>Dunkel</value>
+  </data>
+  <data name="SettingsThemeExplanation" xml:space="preserve">
+    <value>System übernimmt das Erscheinungsbild von Android. Die Auswahl wird auf diesem Gerät gespeichert.</value>
+  </data>
+  <data name="ReaderAccountLabel" xml:space="preserve">
+    <value>Kind / Konto</value>
+  </data>
+  <data name="ReaderFolderLabel" xml:space="preserve">
+    <value>Ordner</value>
+  </data>
+  <data name="ReaderAccountStatus" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Status or failure line for one account during Refresh all. {0} = account label, {1} = progress or error text.</comment>
+  </data>
+  <data name="ReaderAccountsButton" xml:space="preserve">
+    <value>Kind hinzufügen / anmelden</value>
+  </data>
+  <data name="ReaderAccountsSheetAddChild" xml:space="preserve">
+    <value>Kind hinzufügen</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetCancel" xml:space="preserve">
+    <value>Abbrechen</value>
+    <comment>Accounts action sheet cancel button.</comment>
+  </data>
+  <data name="ReaderAccountsSheetForgetPassword" xml:space="preserve">
+    <value>Gespeichertes Passwort dieses Kontos vergessen</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetSignIn" xml:space="preserve">
+    <value>Bei diesem Konto anmelden</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetTitle" xml:space="preserve">
+    <value>Konten</value>
+    <comment>Title of the accounts action sheet.</comment>
+  </data>
+  <data name="ReaderEmptyFolder" xml:space="preserve">
+    <value>In diesem Ordner sind keine zwischengespeicherten Nachrichten.</value>
+  </data>
+  <data name="ReaderEmptyNoArchive" xml:space="preserve">
+    <value>Die heruntergeladenen Nachrichten werden hier angezeigt.</value>
+  </data>
+  <data name="ReaderEmptySearch" xml:space="preserve">
+    <value>Keine zwischengespeicherte Nachricht entspricht der Suche.</value>
+  </data>
+  <data name="ReaderFolderPickerTitle" xml:space="preserve">
+    <value>Nachrichtenordner</value>
+  </data>
+  <data name="ReaderOperationFailedAlertTitle" xml:space="preserve">
+    <value>OBK konnte den Vorgang nicht abschließen</value>
+  </data>
+  <data name="ReaderRefreshAlertTitle" xml:space="preserve">
+    <value>Aktualisierung benötigt Aufmerksamkeit</value>
+  </data>
+  <data name="ReaderRefreshAll" xml:space="preserve">
+    <value>Alle aktualisieren</value>
+    <comment>Button that refreshes every saved account.</comment>
+  </data>
+  <data name="ReaderRefreshFailed" xml:space="preserve">
+    <value>Fehlgeschlagen: {0} Vorhandene Offline-Archive wurden beibehalten.</value>
+    <comment>Part of the Refresh all summary. {0} = semicolon-separated list of "account: error" entries.</comment>
+  </data>
+  <data name="ReaderRefreshSignInNeeded" xml:space="preserve">
+    <value>Anmeldung erforderlich: {0}.</value>
+    <comment>Part of the Refresh all summary. {0} = comma-separated account labels without a saved password.</comment>
+  </data>
+  <data name="ReaderRefreshSummary" xml:space="preserve">
+    <value>{0} von {1} Konten aktualisiert.</value>
+    <comment>Start of the Refresh all summary. {0} = accounts refreshed successfully, {1} = all known accounts.</comment>
+  </data>
+  <data name="ReaderRetryOpening" xml:space="preserve">
+    <value>Archiv erneut öffnen</value>
+    <comment>Refresh button text when the encrypted archive could not be opened.</comment>
+  </data>
+  <data name="ReaderSearchPlaceholder" xml:space="preserve">
+    <value>Nachrichten suchen</value>
+  </data>
+  <data name="ReaderStatusArchiveReady" xml:space="preserve">
+    <value>Offline-Archiv bereit. Letzte Synchronisierung: {0}</value>
+    <comment>{0} = already localized last synchronization date and time.</comment>
+  </data>
+  <data name="ReaderStatusNoAccounts" xml:space="preserve">
+    <value>Kind hinzufügen, um Nachrichten herunterzuladen. Das Lesen zwischengespeicherter Nachrichten kontaktiert die Schule nie.</value>
+  </data>
+  <data name="ReaderStatusNoArchive" xml:space="preserve">
+    <value>Noch kein Offline-Archiv. Anmelden, um Nachrichten herunterzuladen.</value>
+  </data>
+  <data name="ReaderStatusOpening" xml:space="preserve">
+    <value>Verschlüsseltes Offline-Archiv wird geöffnet...</value>
+  </data>
+  <data name="ReaderStatusPasswordForgotten" xml:space="preserve">
+    <value>Gespeichertes Passwort vergessen. Offline-Nachrichten und -Anhänge bleiben verfügbar.</value>
+  </data>
+  <data name="SignInChildLabel" xml:space="preserve">
+    <value>Name des Kindes</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInChildPlaceholder" xml:space="preserve">
+    <value>Name des Kindes (optional)</value>
+    <comment>Field placeholder.</comment>
+  </data>
+  <data name="SignInFailedAlertTitle" xml:space="preserve">
+    <value>Anmeldung oder Download fehlgeschlagen</value>
+  </data>
+  <data name="SignInHeading" xml:space="preserve">
+    <value>Einmal herunterladen. Offline lesen.</value>
+  </data>
+  <data name="SignInMatchingSchools" xml:space="preserve">
+    <value>{0} passende Schulen</value>
+    <comment>{0} = number of matching schools (1 to 6).</comment>
+  </data>
+  <data name="SignInNoSchoolMatch" xml:space="preserve">
+    <value>Keine passende Schule. Die HTTPS-Adresse kann unten eingegeben werden.</value>
+  </data>
+  <data name="SignInPasswordLabel" xml:space="preserve">
+    <value>Passwort</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInPasswordNotice" xml:space="preserve">
+    <value>Das Passwort wird nur mit „Anmeldedaten merken“ gespeichert.</value>
+    <comment>"Remember credentials" must match SignInRememberCredentials.</comment>
+  </data>
+  <data name="SignInPasswordPlaceholder" xml:space="preserve">
+    <value>Passwort</value>
+    <comment>Field placeholder.</comment>
+  </data>
+  <data name="SignInReadOnlyNotice" xml:space="preserve">
+    <value>OBK liest Nachrichten nur. Es sendet nie Antworten, Bestätigungen oder Lesebestätigungen.</value>
+  </data>
+  <data name="SignInRememberCredentials" xml:space="preserve">
+    <value>Anmeldedaten merken</value>
+    <comment>Checkbox label.</comment>
+  </data>
+  <data name="SignInSchoolAddressLabel" xml:space="preserve">
+    <value>HTTPS-Adresse der Schule</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInManualAddressButton" xml:space="preserve">
+    <value>Schuladresse manuell eingeben</value>
+  </data>
+  <data name="SignInHideAddressButton" xml:space="preserve">
+    <value>Schuladresse ausblenden</value>
+  </data>
+  <data name="SignInSchoolSearchPlaceholder" xml:space="preserve">
+    <value>Schule oder Ort suchen</value>
+  </data>
+  <data name="SignInSubmitButton" xml:space="preserve">
+    <value>Anmelden und herunterladen</value>
+  </data>
+  <data name="SignInTitleAddChild" xml:space="preserve">
+    <value>Kind hinzufügen</value>
+    <comment>Sign-in page title when adding a new account.</comment>
+  </data>
+  <data name="SignInTitleSignIn" xml:space="preserve">
+    <value>Anmelden</value>
+    <comment>Sign-in page title for an existing account.</comment>
+  </data>
+  <data name="SignInTooManySchools" xml:space="preserve">
+    <value>{0} Schulen passen. Mehr eingeben, um die Ergebnisse einzuschränken.</value>
+    <comment>{0} = number of matching schools (more than 6).</comment>
+  </data>
+  <data name="SignInUsernameLabel" xml:space="preserve">
+    <value>Benutzername</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInUsernamePlaceholder" xml:space="preserve">
+    <value>Komens-Benutzername</value>
+    <comment>Field placeholder. Komens is the school messaging system name.</comment>
+  </data>
+  <data name="StatusSigningIn" xml:space="preserve">
+    <value>Anmeldung läuft...</value>
+    <comment>Progress status while signing in.</comment>
+  </data>
+  <data name="ScanCameraDenied" xml:space="preserve">
+    <value>OBK verwendet die Kamera nur zum Scannen des Übertragungscodes. Kamerazugriff in den Android-Einstellungen erlauben oder manuell anmelden.</value>
+  </data>
+  <data name="ScanCameraDeniedTitle" xml:space="preserve">
+    <value>Kamerazugriff erforderlich</value>
+  </data>
+  <data name="ScanInstructions" xml:space="preserve">
+    <value>Die Kamera auf den QR-Code richten, der von OBK auf dem PC angezeigt wird.</value>
+  </data>
+  <data name="ScanTitle" xml:space="preserve">
+    <value>PC-Code scannen</value>
+  </data>
+  <data name="SignInImported" xml:space="preserve">
+    <value>Daten vom PC importiert. Prüfen, Passwortspeicherung wählen und dann „Anmelden und herunterladen“ tippen.</value>
+  </data>
+  <data name="SignInScanFromPc" xml:space="preserve">
+    <value>Vom PC scannen</value>
+  </data>
+  <data name="SignInScanHint" xml:space="preserve">
+    <value>OBK bereits auf Windows im Einsatz? Dort Einstellungen, Konten, Auf Android übertragen öffnen.</value>
+  </data>
+  <data name="UnlockButton" xml:space="preserve">
+    <value>Entsperren</value>
+  </data>
+  <data name="UnlockFailedTitle" xml:space="preserve">
+    <value>Entsperren nicht möglich</value>
+  </data>
+  <data name="UnlockHint" xml:space="preserve">
+    <value>Die Wörter bleiben auf dem PC, bis das Übertragungsfenster dort geschlossen wird.</value>
+  </data>
+  <data name="UnlockInstructions" xml:space="preserve">
+    <value>QR-Code gescannt. Die drei auf dem PC angezeigten Wörter eingeben.</value>
+  </data>
+  <data name="UnlockTitle" xml:space="preserve">
+    <value>Wörter eingeben</value>
+  </data>
+  <data name="UnlockWordsLabel" xml:space="preserve">
+    <value>Übertragungswörter</value>
+  </data>
+  <data name="UnlockWorking" xml:space="preserve">
+    <value>Wird entsperrt…</value>
+  </data>
+  <data name="UpdateHeading" xml:space="preserve"><value>App-Updates</value></data>
+  <data name="UpdateInstalledVersion" xml:space="preserve"><value>Installierte Version: {0}</value></data>
+  <data name="UpdateManualNotice" xml:space="preserve"><value>GitHub wird nur nach Tippen auf „Nach Updates suchen“ geprüft. Download und Installation benötigen Bestätigung.</value></data>
+  <data name="UpdateCheck" xml:space="preserve"><value>Nach Updates suchen</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>GitHub Releases werden geprüft...</value></data>
+  <data name="UpdateCurrent" xml:space="preserve"><value>Keine neuere stabile Android-Version verfügbar.</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>{0} ist verfügbar. Zum Aktualisieren ohne Deinstallation von OBK herunterladen.</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Update herunterladen</value></data>
+  <data name="UpdateDownloading" xml:space="preserve"><value>Update wird heruntergeladen und verifiziert...</value></data>
+  <data name="UpdateReady" xml:space="preserve"><value>Update verifiziert. Installation in Android bestätigen.</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Update installieren</value></data>
+  <data name="UpdateNotInstalled" xml:space="preserve"><value>Das Update wurde nicht installiert. Zum erneuten Versuch „Update installieren“ tippen; Offline-Daten sind unverändert.</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>Update abgebrochen. Ein erneuter Versuch ist möglich.</value></data>
+  <data name="UpdateFailedTitle" xml:space="preserve"><value>OBK konnte nicht aktualisiert werden</value></data>
+  <data name="UpdateInvalidInstalledVersion" xml:space="preserve"><value>Die installierte App-Version ist ungültig. Vor dem Aktualisieren Hilfe holen.</value></data>
+  <data name="UpdateInvalidPackage" xml:space="preserve"><value>Die APK ist nicht das erwartete neuere OBK-Paket. Sie wurde nicht an das Installationsprogramm übergeben.</value></data>
+  <data name="UpdateIncompatibleSigner" xml:space="preserve"><value>Diese APK ist mit einem anderen Schlüssel signiert und kann diese Installation nicht aktualisieren. OBK nicht deinstallieren: Dadurch würden lokale Daten gelöscht. Eine mit demselben Schlüssel signierte APK verwenden; Preview-Builds können nicht direkt auf Release-Builds aktualisiert werden.</value></data>
+  <data name="UpdateInstallerUnavailable" xml:space="preserve"><value>Android konnte die Update-Installation nicht öffnen. Installationsbeschränkungen dieses Geräts prüfen und erneut versuchen.</value></data>
+  <data name="UpdatePermissionTitle" xml:space="preserve"><value>Updates von OBK erlauben</value></data>
+  <data name="UpdatePermissionExplanation" xml:space="preserve"><value>In den Android-Einstellungen die Installation von OBK erlauben und hierher zurückkehren. Android fragt nach Bestätigung. OBK kann nicht still installieren.</value></data>
+  <data name="UpdateOpenSettings" xml:space="preserve"><value>Android-Einstellungen öffnen</value></data>
+  <data name="UpdatePermissionDenied" xml:space="preserve"><value>Installation von OBK ist nicht erlaubt. „Update installieren“ tippen, erneut versuchen und diese Quelle in den Android-Einstellungen zulassen.</value></data>
+</root>

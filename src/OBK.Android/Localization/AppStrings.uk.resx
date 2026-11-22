@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountSchoolAndUsername" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>Account label when no child name is set. {0} = school name, {1} = Komens username.</comment>
+  </data>
+  <data name="AlertOkButton" xml:space="preserve">
+    <value>Гаразд</value>
+    <comment>Dismiss button for error and attention alerts.</comment>
+  </data>
+  <data name="ErrorArchiveNotOpen" xml:space="preserve">
+    <value>Зашифрований архів не відкрито.</value>
+  </data>
+  <data name="ErrorAuthenticatedEncryptionUnavailable" xml:space="preserve">
+    <value>Автентифіковане шифрування Android недоступне.</value>
+  </data>
+  <data name="ErrorEncryptionKeyMissing" xml:space="preserve">
+    <value>Ключ шифрування Android відсутній. Наявні локальні дані неможливо розшифрувати; замінний ключ не створено.</value>
+  </data>
+  <data name="ErrorEnterUsernameAndPassword" xml:space="preserve">
+    <value>Введіть ім’я користувача та пароль школи.</value>
+  </data>
+  <data name="ErrorInvalidAttachmentContentType" xml:space="preserve">
+    <value>Вкладення має неприпустимий тип вмісту.</value>
+  </data>
+  <data name="ErrorInvalidEncryptedFormat" xml:space="preserve">
+    <value>Локальні дані Android мають некоректний зашифрований формат.</value>
+  </data>
+  <data name="ErrorKeyAccessFailed" xml:space="preserve">
+    <value>Android не вдалося отримати доступ до локального ключа шифрування.</value>
+  </data>
+  <data name="ErrorKeyCreationFailed" xml:space="preserve">
+    <value>Android не вдалося створити локальний ключ шифрування.</value>
+  </data>
+  <data name="ErrorKeystoreUnavailable" xml:space="preserve">
+    <value>Сховище ключів Android недоступне; локальні дані не відкрито.</value>
+  </data>
+  <data name="ErrorLocalDecryptFailed" xml:space="preserve">
+    <value>Android не вдалося розшифрувати локальні дані. Ключ може бути недоступним або дані можуть бути пошкоджені; відкриті дані як резервний варіант не використовуються.</value>
+  </data>
+  <data name="ErrorLocalDecryptNoResult" xml:space="preserve">
+    <value>Android не розшифрував локальні дані.</value>
+  </data>
+  <data name="ErrorLocalEncryptFailed" xml:space="preserve">
+    <value>Android не вдалося зашифрувати локальні дані. Відкриті дані як резервний варіант не використовуються.</value>
+  </data>
+  <data name="ErrorLocalEncryptNoResult" xml:space="preserve">
+    <value>Android не зашифрував локальні дані.</value>
+  </data>
+  <data name="ErrorNoAppForAttachment" xml:space="preserve">
+    <value>Жодна встановлена програма не може відкрити це вкладення. Натомість поділіться ним або збережіть копію.</value>
+    <comment>"Share / save a copy" must match the MessageShareAttachment button text.</comment>
+  </data>
+  <data name="ErrorNoAppForLink" xml:space="preserve">
+    <value>Жодна встановлена програма не може відкрити це посилання.</value>
+  </data>
+  <data name="ErrorNoEncryptionNonce" xml:space="preserve">
+    <value>Android не надав одноразове значення для шифрування.</value>
+  </data>
+  <data name="ErrorSchoolDirectoryMissing" xml:space="preserve">
+    <value>У цьому встановленні відсутній офлайн-каталог шкіл.</value>
+  </data>
+  <data name="ErrorStorageCheckFailed" xml:space="preserve">
+    <value>Зашифроване сховище Android не пройшло перевірку ініціалізації.</value>
+  </data>
+  <data name="ErrorStorageInitFailed" xml:space="preserve">
+    <value>Android не вдалося ініціалізувати зашифроване сховище. Відкриті дані як резервний варіант не використовуються.</value>
+  </data>
+  <data name="ErrorSyncInProgress" xml:space="preserve">
+    <value>Завантаження для іншого облікового запису ще триває. Дочекайтеся завершення, перш ніж оновлювати знову.</value>
+  </data>
+  <data name="ErrorUnsupportedNonce" xml:space="preserve">
+    <value>Android повернув непідтримуване одноразове значення для шифрування.</value>
+  </data>
+  <data name="ErrorVerificationCannotSync" xml:space="preserve">
+    <value>Вигадані дані перевірки не можуть з’єднатися зі школою. Перезапустіть застосунок без прапорця перевірки, щоб увійти.</value>
+    <comment>Shown only in developer verification builds started with the verification flag.</comment>
+  </data>
+  <data name="MessageActionFailedAlertTitle" xml:space="preserve">
+    <value>Не вдалося відкрити або поділитися</value>
+    <comment>Alert title when opening a link or opening/sharing an attachment fails.</comment>
+  </data>
+  <data name="MessageAttachmentNotDownloaded" xml:space="preserve">
+    <value>Не завантажено. Оновіть цей обліковий запис, щоб кешувати вкладення.</value>
+  </data>
+  <data name="MessageAttachmentsHeader" xml:space="preserve">
+    <value>Вкладення</value>
+    <comment>Section heading above the message's attachments.</comment>
+  </data>
+  <data name="MessageDecryptedCopyNotice" xml:space="preserve">
+    <value>Під час відкриття або поширення створюється розшифрована копія в приватному кеші OBK. Її буде видалено під час наступного запуску застосунку; копії, збережені в іншій програмі, перебувають поза контролем OBK.</value>
+  </data>
+  <data name="MessageLinksHeader" xml:space="preserve">
+    <value>Посилання</value>
+    <comment>Section heading above links found in the message.</comment>
+  </data>
+  <data name="MessageOfflineNotice" xml:space="preserve">
+    <value>Автономна копія. Відкриття цього повідомлення не під’єднується до вашої школи.</value>
+  </data>
+  <data name="MessageOpenAttachment" xml:space="preserve">
+    <value>Відкрити вкладення</value>
+    <comment>Button that opens an attachment in another app.</comment>
+  </data>
+  <data name="MessageOpenAttachmentChooserTitle" xml:space="preserve">
+    <value>Відкрити вкладення</value>
+    <comment>Title of the Android app chooser shown when opening an attachment.</comment>
+  </data>
+  <data name="MessagePageTitle" xml:space="preserve">
+    <value>Повідомлення</value>
+    <comment>Title of the message detail page.</comment>
+  </data>
+  <data name="MessageReadFailedAlertTitle" xml:space="preserve">
+    <value>Не вдалося прочитати це повідомлення</value>
+  </data>
+  <data name="MessageShareAttachment" xml:space="preserve">
+    <value>Поділитися / зберегти копію</value>
+    <comment>Button that shares an attachment or saves a copy via another app.</comment>
+  </data>
+  <data name="MessageShareAttachmentChooserTitle" xml:space="preserve">
+    <value>Поділитися вкладенням</value>
+    <comment>Title of the Android share sheet for an attachment.</comment>
+  </data>
+  <data name="ReaderAccountPickerTitle" xml:space="preserve">
+    <value>Виберіть дитину або обліковий запис</value>
+  </data>
+  <data name="ReaderNavigationMenu" xml:space="preserve">
+    <value>Відкрити меню навігації</value>
+  </data>
+  <data name="ReaderAccountOption" xml:space="preserve">
+    <value>{0}. {1}</value>
+    <comment>{0} = account number, {1} = child/account name. Numbering disambiguates identical names.</comment>
+  </data>
+  <data name="ReaderSelectedChild" xml:space="preserve">
+    <value>Дитина: {0}. Змінити дитину або обліковий запис</value>
+    <comment>Accessibility description of the active-child avatar. {0} = child/account name.</comment>
+  </data>
+  <data name="ReaderSelectedFolder" xml:space="preserve">
+    <value>Папка: {0}. Змінити папку</value>
+    <comment>Accessibility description of the active-folder icon. {0} = folder name.</comment>
+  </data>
+  <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Налаштування</value>
+  </data>
+  <data name="SettingsManageAccounts" xml:space="preserve">
+    <value>Керування обліковими записами</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Вигляд</value>
+  </data>
+  <data name="SettingsThemeSystem" xml:space="preserve">
+    <value>Системна</value>
+  </data>
+  <data name="SettingsThemeLight" xml:space="preserve">
+    <value>Світла</value>
+  </data>
+  <data name="SettingsThemeDark" xml:space="preserve">
+    <value>Темна</value>
+  </data>
+  <data name="SettingsThemeExplanation" xml:space="preserve">
+    <value>Системна тема відповідає оформленню Android. Ваш вибір зберігається на цьому пристрої.</value>
+  </data>
+  <data name="ReaderAccountLabel" xml:space="preserve">
+    <value>Дитина / обліковий запис</value>
+  </data>
+  <data name="ReaderFolderLabel" xml:space="preserve">
+    <value>Папка</value>
+  </data>
+  <data name="ReaderAccountStatus" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Status or failure line for one account during Refresh all. {0} = account label, {1} = progress or error text.</comment>
+  </data>
+  <data name="ReaderAccountsButton" xml:space="preserve">
+    <value>Додати дитину / увійти</value>
+  </data>
+  <data name="ReaderAccountsSheetAddChild" xml:space="preserve">
+    <value>Додати дитину</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetCancel" xml:space="preserve">
+    <value>Скасувати</value>
+    <comment>Accounts action sheet cancel button.</comment>
+  </data>
+  <data name="ReaderAccountsSheetForgetPassword" xml:space="preserve">
+    <value>Забути збережений пароль цього облікового запису</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetSignIn" xml:space="preserve">
+    <value>Увійти до цього облікового запису</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetTitle" xml:space="preserve">
+    <value>Облікові записи</value>
+    <comment>Title of the accounts action sheet.</comment>
+  </data>
+  <data name="ReaderEmptyFolder" xml:space="preserve">
+    <value>У цій папці немає кешованих повідомлень.</value>
+  </data>
+  <data name="ReaderEmptyNoArchive" xml:space="preserve">
+    <value>Тут з’являться завантажені повідомлення.</value>
+  </data>
+  <data name="ReaderEmptySearch" xml:space="preserve">
+    <value>Немає кешованих повідомлень, що відповідають вашому запиту.</value>
+  </data>
+  <data name="ReaderFolderPickerTitle" xml:space="preserve">
+    <value>Папка повідомлень</value>
+  </data>
+  <data name="ReaderOperationFailedAlertTitle" xml:space="preserve">
+    <value>OBK не вдалося завершити операцію</value>
+  </data>
+  <data name="ReaderRefreshAlertTitle" xml:space="preserve">
+    <value>Оновлення потребує уваги</value>
+  </data>
+  <data name="ReaderRefreshAll" xml:space="preserve">
+    <value>Оновити все</value>
+    <comment>Button that refreshes every saved account.</comment>
+  </data>
+  <data name="ReaderRefreshFailed" xml:space="preserve">
+    <value>Помилка: {0} Наявні автономні архіви залишено без змін.</value>
+    <comment>Part of the Refresh all summary. {0} = semicolon-separated list of "account: error" entries.</comment>
+  </data>
+  <data name="ReaderRefreshSignInNeeded" xml:space="preserve">
+    <value>Потрібен вхід: {0}.</value>
+    <comment>Part of the Refresh all summary. {0} = comma-separated account labels without a saved password.</comment>
+  </data>
+  <data name="ReaderRefreshSummary" xml:space="preserve">
+    <value>Оновлено {0} з {1} облікових записів.</value>
+    <comment>Start of the Refresh all summary. {0} = accounts refreshed successfully, {1} = all known accounts.</comment>
+  </data>
+  <data name="ReaderRetryOpening" xml:space="preserve">
+    <value>Повторити відкриття архіву</value>
+    <comment>Refresh button text when the encrypted archive could not be opened.</comment>
+  </data>
+  <data name="ReaderSearchPlaceholder" xml:space="preserve">
+    <value>Пошук повідомлень</value>
+  </data>
+  <data name="ReaderStatusArchiveReady" xml:space="preserve">
+    <value>Автономний архів готовий. Остання синхронізація: {0}</value>
+    <comment>{0} = already localized last synchronization date and time.</comment>
+  </data>
+  <data name="ReaderStatusNoAccounts" xml:space="preserve">
+    <value>Додайте дитину, щоб завантажити повідомлення. Читання кешованих повідомлень не під’єднується до вашої школи.</value>
+  </data>
+  <data name="ReaderStatusNoArchive" xml:space="preserve">
+    <value>Автономного архіву ще немає. Увійдіть, щоб завантажити повідомлення.</value>
+  </data>
+  <data name="ReaderStatusOpening" xml:space="preserve">
+    <value>Відкриття зашифрованого автономного архіву...</value>
+  </data>
+  <data name="ReaderStatusPasswordForgotten" xml:space="preserve">
+    <value>Збережений пароль забуто. Повідомлення та вкладення офлайн усе ще доступні.</value>
+  </data>
+  <data name="SignInChildLabel" xml:space="preserve">
+    <value>Ім’я дитини</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInChildPlaceholder" xml:space="preserve">
+    <value>Ім’я дитини (необов’язково)</value>
+    <comment>Field placeholder.</comment>
+  </data>
+  <data name="SignInFailedAlertTitle" xml:space="preserve">
+    <value>Не вдалося ввійти або завантажити дані</value>
+  </data>
+  <data name="SignInHeading" xml:space="preserve">
+    <value>Завантажте один раз. Читайте офлайн.</value>
+  </data>
+  <data name="SignInMatchingSchools" xml:space="preserve">
+    <value>Відповідних шкіл: {0}</value>
+    <comment>{0} = number of matching schools (1 to 6).</comment>
+  </data>
+  <data name="SignInNoSchoolMatch" xml:space="preserve">
+    <value>Відповідної школи немає. Ви можете ввести її HTTPS-адресу нижче.</value>
+  </data>
+  <data name="SignInPasswordLabel" xml:space="preserve">
+    <value>Пароль</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInPasswordNotice" xml:space="preserve">
+    <value>Пароль зберігається лише якщо ви виберете «Запам’ятати облікові дані».</value>
+    <comment>"Remember credentials" must match SignInRememberCredentials.</comment>
+  </data>
+  <data name="SignInPasswordPlaceholder" xml:space="preserve">
+    <value>Пароль</value>
+    <comment>Field placeholder.</comment>
+  </data>
+  <data name="SignInReadOnlyNotice" xml:space="preserve">
+    <value>OBK лише читає повідомлення. Застосунок ніколи не надсилає відповіді, підтвердження або сповіщення про прочитання.</value>
+  </data>
+  <data name="SignInRememberCredentials" xml:space="preserve">
+    <value>Запам’ятати облікові дані</value>
+    <comment>Checkbox label.</comment>
+  </data>
+  <data name="SignInSchoolAddressLabel" xml:space="preserve">
+    <value>HTTPS-адреса школи</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInManualAddressButton" xml:space="preserve">
+    <value>Ввести адресу школи вручну</value>
+  </data>
+  <data name="SignInHideAddressButton" xml:space="preserve">
+    <value>Приховати адресу школи</value>
+  </data>
+  <data name="SignInSchoolSearchPlaceholder" xml:space="preserve">
+    <value>Пошук школи або міста</value>
+  </data>
+  <data name="SignInSubmitButton" xml:space="preserve">
+    <value>Увійти й завантажити</value>
+  </data>
+  <data name="SignInTitleAddChild" xml:space="preserve">
+    <value>Додати дитину</value>
+    <comment>Sign-in page title when adding a new account.</comment>
+  </data>
+  <data name="SignInTitleSignIn" xml:space="preserve">
+    <value>Увійти</value>
+    <comment>Sign-in page title for an existing account.</comment>
+  </data>
+  <data name="SignInTooManySchools" xml:space="preserve">
+    <value>Відповідних шкіл: {0}. Введіть більше символів, щоб звузити результати.</value>
+    <comment>{0} = number of matching schools (more than 6).</comment>
+  </data>
+  <data name="SignInUsernameLabel" xml:space="preserve">
+    <value>Ім’я користувача</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInUsernamePlaceholder" xml:space="preserve">
+    <value>Ім’я користувача Komens</value>
+    <comment>Field placeholder. Komens is the school messaging system name.</comment>
+  </data>
+  <data name="StatusSigningIn" xml:space="preserve">
+    <value>Вхід...</value>
+    <comment>Progress status while signing in.</comment>
+  </data>
+  <data name="ScanCameraDenied" xml:space="preserve">
+    <value>OBK використовує камеру лише для сканування коду перенесення. Дозвольте доступ до камери в налаштуваннях Android або увійдіть вручну.</value>
+  </data>
+  <data name="ScanCameraDeniedTitle" xml:space="preserve">
+    <value>Потрібен доступ до камери</value>
+  </data>
+  <data name="ScanInstructions" xml:space="preserve">
+    <value>Наведіть камеру на QR-код, який OBK показує на вашому ПК.</value>
+  </data>
+  <data name="ScanTitle" xml:space="preserve">
+    <value>Сканувати код із ПК</value>
+  </data>
+  <data name="SignInImported" xml:space="preserve">
+    <value>Дані імпортовано з ПК. Перевірте їх, виберіть, чи запам’ятовувати пароль, а потім натисніть «Увійти й завантажити».</value>
+  </data>
+  <data name="SignInScanFromPc" xml:space="preserve">
+    <value>Сканувати з ПК</value>
+  </data>
+  <data name="SignInScanHint" xml:space="preserve">
+    <value>Уже використовуєте OBK на Windows? Там відкрийте «Налаштування», «Облікові записи», «Перенести в Android».</value>
+  </data>
+  <data name="UnlockButton" xml:space="preserve">
+    <value>Розблокувати</value>
+  </data>
+  <data name="UnlockFailedTitle" xml:space="preserve">
+    <value>Не вдалося розблокувати</value>
+  </data>
+  <data name="UnlockHint" xml:space="preserve">
+    <value>Слова залишаються на ПК, доки ви не закриєте там вікно перенесення.</value>
+  </data>
+  <data name="UnlockInstructions" xml:space="preserve">
+    <value>QR-код відскановано. Введіть три слова, показані на ПК.</value>
+  </data>
+  <data name="UnlockTitle" xml:space="preserve">
+    <value>Введіть слова</value>
+  </data>
+  <data name="UnlockWordsLabel" xml:space="preserve">
+    <value>Слова для перенесення</value>
+  </data>
+  <data name="UnlockWorking" xml:space="preserve">
+    <value>Розблокування...</value>
+  </data>
+  <data name="UpdateHeading" xml:space="preserve"><value>Оновлення застосунку</value></data>
+  <data name="UpdateInstalledVersion" xml:space="preserve"><value>Установлена версія: {0}</value></data>
+  <data name="UpdateManualNotice" xml:space="preserve"><value>Перевірка GitHub виконується лише після натискання «Перевірити оновлення». Для завантаження та встановлення потрібне ваше підтвердження.</value></data>
+  <data name="UpdateCheck" xml:space="preserve"><value>Перевірити оновлення</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Перевірка GitHub Releases...</value></data>
+  <data name="UpdateCurrent" xml:space="preserve"><value>Новішого стабільного випуску для Android немає.</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Доступний випуск {0}. Завантажте його, щоб оновити OBK без видалення.</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Завантажити оновлення</value></data>
+  <data name="UpdateDownloading" xml:space="preserve"><value>Завантаження та перевірка оновлення...</value></data>
+  <data name="UpdateReady" xml:space="preserve"><value>Оновлення перевірено. Підтвердьте встановлення в Android.</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Установити оновлення</value></data>
+  <data name="UpdateNotInstalled" xml:space="preserve"><value>Оновлення не встановлено. Натисніть «Установити оновлення», щоб повторити спробу; автономні дані не змінено.</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>Оновлення скасовано. Можете спробувати ще раз.</value></data>
+  <data name="UpdateFailedTitle" xml:space="preserve"><value>Не вдалося оновити OBK</value></data>
+  <data name="UpdateInvalidInstalledVersion" xml:space="preserve"><value>Установлена версія застосунку некоректна. Зверніться по допомогу, перш ніж оновлювати.</value></data>
+  <data name="UpdateInvalidPackage" xml:space="preserve"><value>APK не є очікуваним новішим пакетом OBK. Його не передано інсталятору.</value></data>
+  <data name="UpdateIncompatibleSigner" xml:space="preserve"><value>Цей APK підписано іншим ключем, тому ним неможливо оновити це встановлення. Не видаляйте OBK: це призведе до втрати локальних даних. Використовуйте APK, підписаний тим самим ключем; попередні збірки не можна оновити до стабільних збірок без перевстановлення.</value></data>
+  <data name="UpdateInstallerUnavailable" xml:space="preserve"><value>Android не вдалося відкрити встановлення оновлення. Перевірте обмеження встановлення на цьому пристрої та спробуйте ще раз.</value></data>
+  <data name="UpdatePermissionTitle" xml:space="preserve"><value>Дозволити оновлення з OBK</value></data>
+  <data name="UpdatePermissionExplanation" xml:space="preserve"><value>У налаштуваннях Android дозвольте встановлення з OBK, а потім поверніться сюди. Android попросить підтвердити це оновлення. OBK не може встановлювати його непомітно.</value></data>
+  <data name="UpdateOpenSettings" xml:space="preserve"><value>Відкрити налаштування Android</value></data>
+  <data name="UpdatePermissionDenied" xml:space="preserve"><value>Встановлення з OBK не дозволено. Натисніть «Установити оновлення», щоб повторити спробу, і дозвольте це джерело в налаштуваннях Android.</value></data>
+</root>
