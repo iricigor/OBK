@@ -26,18 +26,25 @@ class CheckLocalizationTests(unittest.TestCase):
         path.write_text(content, encoding="utf-8")
 
     def errors(self):
-        return check(self.root)[0]
+        return check(self.root, required_cultures=())[0]
 
     def test_complete_translation_passes(self):
         self.write("App/Strings.resx", resx(Title="Inbox", Count="{0} of {1:N0}"))
         self.write("App/Strings.cs.resx", resx(Title="Doručené", Count="{0} z {1:N0}"))
-        errors, summary = check(self.root)
+        errors, summary = check(self.root, required_cultures=())
         self.assertEqual([], errors)
         self.assertIn("cs, en", summary)
 
     def test_english_only_set_passes(self):
         self.write("Core/Shared.resx", resx(Title="Inbox"))
         self.assertEqual([], self.errors())
+
+    def test_supported_languages_are_required_even_if_fully_missing(self):
+        self.write("Strings.resx", resx(Title="Inbox"))
+        errors = check(self.root)[0]
+        for culture in ("cs", "de", "uk"):
+            self.assertTrue(any(
+                f"missing translation for culture '{culture}'" in error for error in errors))
 
     def test_culture_required_in_every_set(self):
         self.write("Core/Shared.resx", resx(Title="Inbox"))
@@ -111,6 +118,7 @@ class CheckLocalizationTests(unittest.TestCase):
         errors, summary = check(DEFAULT_ROOT)
         self.assertEqual([], errors)
         self.assertIn("3 resource sets", summary)
+        self.assertIn("cs, de, en, uk", summary)
 
 
 if __name__ == "__main__":

@@ -5,18 +5,40 @@ namespace OBK.Core.Localization;
 
 public static class LanguageSettings
 {
+    private static readonly IReadOnlyList<string> supportedCodes =
+        Array.AsReadOnly(["en", "cs", "uk", "de"]);
+
     public static CultureInfo Culture => SharedStrings.Culture ?? CultureInfo.CurrentCulture;
     public static string Code => Culture.TwoLetterISOLanguageName;
-    public static string NextCode => Code == "cs" ? "en" : "cs";
-    public static string NextName => NextCode == "cs" ? "čeština" : "English";
+    public static IReadOnlyList<string> SupportedCodes => supportedCodes;
+    public static string NextCode
+    {
+        get
+        {
+            var index = IndexOf(Code);
+            return supportedCodes[index < 0 ? 1 : (index + 1) % supportedCodes.Count];
+        }
+    }
+    public static string NextName => NextCode switch
+    {
+        "en" => "English",
+        "cs" => "čeština",
+        "uk" => "українська",
+        "de" => "Deutsch",
+        _ => throw new InvalidOperationException("Unsupported interface language.")
+    };
     public static string SwitchTooltip => Localized.Format(SharedStrings.LanguageSwitchTooltip, NextName);
 
-    public static string Detect(string osLanguage) =>
-        osLanguage.Split('-', '_')[0].Equals("en", StringComparison.OrdinalIgnoreCase) ? "en" : "cs";
+    public static string Detect(string osLanguage)
+    {
+        var candidate = osLanguage.Split('-', '_')[0];
+        return supportedCodes.FirstOrDefault(code =>
+            code.Equals(candidate, StringComparison.OrdinalIgnoreCase)) ?? "cs";
+    }
 
     public static void Apply(string code)
     {
-        if (code is not ("en" or "cs")) throw new ObkException(SharedStrings.ErrorLanguageInvalid);
+        if (IndexOf(code) < 0) throw new ObkException(SharedStrings.ErrorLanguageInvalid);
         var culture = CultureInfo.GetCultureInfo(code);
         SharedStrings.Culture = culture;
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = culture;
@@ -28,7 +50,7 @@ public static class LanguageSettings
         try
         {
             var setting = JsonSerializer.Deserialize<Setting>(File.ReadAllText(path));
-            return setting?.Language is "en" or "cs" ? setting.Language :
+            return setting is not null && IndexOf(setting.Language) >= 0 ? setting.Language :
                 throw new ObkException(SharedStrings.ErrorLanguageInvalid);
         }
         catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException)
@@ -43,7 +65,7 @@ public static class LanguageSettings
 
     public static Task SaveAsync(string path, string code)
     {
-        if (code is not ("en" or "cs")) throw new ObkException(SharedStrings.ErrorLanguageInvalid);
+        if (IndexOf(code) < 0) throw new ObkException(SharedStrings.ErrorLanguageInvalid);
         return Task.Run(() =>
         {
             var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -66,6 +88,14 @@ public static class LanguageSettings
                 }
             }
         });
+    }
+
+    private static int IndexOf(string code)
+    {
+        for (var index = 0; index < supportedCodes.Count; index++)
+            if (supportedCodes[index].Equals(code, StringComparison.Ordinal))
+                return index;
+        return -1;
     }
 
     private sealed record Setting(string Language);

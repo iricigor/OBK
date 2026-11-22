@@ -1,9 +1,10 @@
 """Verify that every translation of each .resx string resource set is complete.
 
 Each resource set is a neutral English file such as ``AppStrings.resx`` plus any
-translations named ``AppStrings.<culture>.resx`` in the same directory. Sets are
-discovered automatically, so new languages are checked without configuration.
-Every discovered language must have a translation in every neutral resource set.
+translations named ``AppStrings.<culture>.resx`` in the same directory. Czech,
+Ukrainian, and German are always required; additional languages and resource
+sets are discovered automatically. Every required or discovered language must
+have a translation in every neutral resource set.
 """
 
 import argparse
@@ -18,6 +19,7 @@ DEFAULT_ROOT = Path(__file__).resolve().parent.parent / "src"
 CULTURE = re.compile(r"^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$")
 PLACEHOLDER = re.compile(r"(?<!\{)\{(\d+)(?:,\s*-?\d+)?(?::([^{}]*))?\}")
 SKIPPED_DIRECTORIES = {"bin", "obj", ".git"}
+REQUIRED_CULTURES = frozenset({"cs", "uk", "de"})
 
 
 def parse_resx(path):
@@ -71,7 +73,7 @@ def discover(root):
     return neutral, orphans
 
 
-def check(root):
+def check(root, required_cultures=REQUIRED_CULTURES):
     """Returns (errors, summary) for all resource sets below root."""
     root = Path(root)
     sets, orphans = discover(root)
@@ -79,7 +81,9 @@ def check(root):
     if not sets:
         errors.append(f"{root}: no .resx resource sets found")
     keys = 0
-    required_cultures = {culture for cultures in sets.values() for culture in cultures}
+    required_cultures = set(required_cultures) | {
+        culture for cultures in sets.values() for culture in cultures
+    }
     for base, cultures in sets.items():
         neutral, problems = parse_resx(base)
         keys += len(neutral)
