@@ -80,6 +80,12 @@ public sealed class PresentationTests
                             Id = "sent-new", Title = "Newest sent message", Text = "Newest sent content",
                             SentDate = SchoolYear.Current().Start.AddDays(3).ToString("O"), Read = true, Attachments = []
                         });
+                        folders["sent"].Add(new Message
+                        {
+                            Id = "sent-excuse", Title = "omluvenka", Text = "Excuse", Read = true, Attachments = [],
+                            SentDate = SchoolYear.Current().Start.AddDays(1).ToString("O"),
+                            Extra = new() { ["Type"] = System.Text.Json.JsonSerializer.SerializeToElement("OMLUVENKA") }
+                        });
                         storage.SaveArchive("https://school.example", "test", SchoolYear.Current(), "Test school", folders);
                         storage.SaveArchive("https://school.example", "other", SchoolYear.Current(), "Other account", folders);
                         foreach (var attachment in attachments)
@@ -139,6 +145,11 @@ public sealed class PresentationTests
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "sent");
                     await WaitForFolderAsync();
                     Assert.Equal("sent-old", vm.SelectedMessage?.Message.Id);
+                    Assert.DoesNotContain(vm.Messages, m => m.Message.Id == "sent-excuse");
+                    vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "excuses");
+                    await WaitForFolderAsync();
+                    Assert.Equal("sent-excuse", Assert.Single(vm.Messages).Message.Id);
+                    Assert.Equal(["noticeboard", "received", "sent", "excuses"], vm.Navigation.Select(f => f.Key));
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "noticeboard");
                     await WaitForFolderAsync();
                     Assert.Null(vm.SelectedMessage);

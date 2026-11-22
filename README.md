@@ -285,12 +285,13 @@ The Fluent workspace has three columns: child/folder navigation, a virtualized
 message list, and a reading pane. The left column lists every known child or
 school account; clicking one opens its offline archive for the current school
 year without network requests. **Add child** opens the account picker.
-**Noticeboard**, **Inbox**, and **Sent** show actual archive counts; unread dots
+**Noticeboard**, **Inbox**, **Sent**, and **Excuses** show actual archive counts; unread dots
 reflect the cached server read state.
 
 Each list item has two lines: subject and date, then the sender (or recipient in
-Sent). Sent excuses carry an **Excuse** badge, identified by the API message
-type `OMLUVENKA`, not by subject text. The search box filters the current folder
+Sent). Sent excuses, identified by the API message type `OMLUVENKA` (not by subject
+text), appear in a separate **Excuses** folder after **Sent** instead of in Sent,
+and carry an **Excuse** badge. The search box filters the current folder
 live by subject, contents, sender/recipient, and sent date (for example
 `3.11.2026` or `2026-11-03`), ignoring case and diacritics; every word must
 match. **Sort** orders by date (newest first), sender, or subject; **Group**

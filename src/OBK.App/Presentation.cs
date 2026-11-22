@@ -108,7 +108,7 @@ public sealed class ThemeBrushConverter : IMultiValueConverter
 public sealed class FolderRow(string key, string title, string icon, int count)
 {
     public string Key { get; } = key;
-    public string AccentKey { get; } = key switch { "sent" => "FolderSent", "noticeboard" => "FolderNotice", _ => "FolderInbox" };
+    public string AccentKey { get; } = key switch { "sent" or "excuses" => "FolderSent", "noticeboard" => "FolderNotice", _ => "FolderInbox" };
     public string Title { get; } = title;
     public string Icon { get; } = icon;
     public int Count { get; } = count;

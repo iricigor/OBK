@@ -122,7 +122,7 @@ public sealed class MainViewModel : ObservableObject
     {
         get
         {
-            var total = folders[selectedFolder?.Key ?? "received"].Count;
+            var total = FolderMessages(selectedFolder?.Key ?? "received").Count;
             return SearchActive ? $"{messages.Count} of {total} messages match" : $"{total} messages";
         }
     }
@@ -296,15 +296,25 @@ public sealed class MainViewModel : ObservableObject
         [
             new("noticeboard", "Noticeboard", "\uE789", folders["noticeboard"].Count),
             new("received", "Inbox", "\uE715", folders["received"].Count),
-            new("sent", "Sent", "\uE724", folders["sent"].Count)
+            new("sent", "Sent", "\uE724", FolderMessages("sent").Count),
+            new("excuses", "Excuses", "\uE8A5", FolderMessages("excuses").Count)
         ];
         selectedFolder = Navigation.Single(f => f.Key == key);
         Notify(nameof(SelectedFolder));
         RefreshFolder();
     }
 
-    private void OpenRelated(MessageRef item)
+    /// <summary>Excuses are a view over Sent, split by the API message type; storage keeps the server folders.</summary>
+    private List<Message> FolderMessages(string key) => key switch
     {
+        "excuses" => folders["sent"].Where(MessageInsights.IsExcuse).ToList(),
+        "sent" => folders["sent"].Where(m => !MessageInsights.IsExcuse(m)).ToList(),
+        _ => folders[key]
+    };
+
+    private void OpenRelated(MessageRef reference)
+    {
+        var item = reference.Folder == "sent" && MessageInsights.IsExcuse(reference.Message) ? reference with { Folder = "excuses" } : reference;
         selectedMessageIds[item.Folder] = item.Message.Id;
         if (SearchActive) { searchText = ""; Notify(nameof(SearchText)); Notify(nameof(SearchActive)); }
         if (selectedFolder?.Key == item.Folder) RefreshFolder();
@@ -332,8 +342,9 @@ public sealed class MainViewModel : ObservableObject
         Notify(nameof(EmptyFolder));
         try
         {
-            var source = folders[key];
-            var rows = await Task.Run(() => source.Select(m => new MessageRow(m, key)).ToArray());
+            var source = FolderMessages(key);
+            var rowFolder = key == "excuses" ? "sent" : key;
+            var rows = await Task.Run(() => source.Select(m => new MessageRow(m, rowFolder)).ToArray());
             if (version != folderVersion) return;
             folderRows = rows;
             await ApplyListAsync(version);
@@ -413,7 +424,7 @@ public sealed class MainViewModel : ObservableObject
         Initials = string.IsNullOrWhiteSpace(row.Message.SenderName) || words.Length == 0 ? "?" :
             string.Concat(words.TakeLast(2).Select(w => w[0])).ToUpperInvariant();
         SelectedIsExcuse = row.IsExcuse;
-        Metadata = $"Sent: {row.Sent} \u2022 Folder: {Folders.Names[key]}";
+        Metadata = $"Sent: {row.Sent} \u2022 Folder: {FolderTitle}";
         if (key == "sent" && !string.IsNullOrEmpty(row.Message.RelevantName))
             Metadata += $"\nTo: {OneLine(row.Message.RelevantName)}";
         if (row.Message.CanConfirm == true && row.Message.Confirmed != true)
