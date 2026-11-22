@@ -101,6 +101,8 @@ public partial class App : Application
                     await store.SaveAttachmentAsync("https://school.example", "installation-check", attachment, source, expectedSize: 459712, contentType: "application/pdf");
                 }
             });
+            LanguageSettings.Apply("en");
+            AppStrings.Culture = LanguageSettings.Culture;
             var window = new MainWindow(store, showLogin: false, enableUpdates: false);
             MainWindow = window;
             window.Show();
@@ -257,27 +259,35 @@ public partial class App : Application
                         login.LanguageButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                         var languageForm = login.LanguageForm ?? throw new ObkException("Sign-in language switch did not preserve its form.");
                         var readerState = window.ViewModel.CaptureState();
-                        window = await window.ChangeLanguageAsync();
-                        if (window.ViewModel.SelectedMessage?.Message.Id != readerState.MessageIds[readerState.Folder] ||
-                            window.ViewModel.SearchText != readerState.Search || window.ViewModel.Grouping != readerState.Grouping)
-                            throw new ObkException("Language switching lost reader state.");
-                        foreach (var size in new[] { "Small", "Medium", "Large" })
+                        foreach (var language in new[] { "cs", "uk", "de" })
                         {
-                            await window.ViewModel.Theme.SetReadingSizeAsync(size);
-                            window.UpdateLayout();
-                            Capture(window, Path.ChangeExtension(resultPath, $".cs.{size.ToLowerInvariant()}.png"));
+                            window = await window.ChangeLanguageAsync();
+                            if (LanguageSettings.Code != language)
+                                throw new ObkException($"Language switching selected {LanguageSettings.Code} instead of {language}.");
+                            if (window.ViewModel.SelectedMessage?.Message.Id != readerState.MessageIds[readerState.Folder] ||
+                                window.ViewModel.SearchText != readerState.Search || window.ViewModel.Grouping != readerState.Grouping)
+                                throw new ObkException("Language switching lost reader state.");
+                            foreach (var size in new[] { "Small", "Medium", "Large" })
+                            {
+                                await window.ViewModel.Theme.SetReadingSizeAsync(size);
+                                window.UpdateLayout();
+                                Capture(window, Path.ChangeExtension(resultPath, $".{language}.{size.ToLowerInvariant()}.png"));
+                            }
+                            var translatedLogin = new LoginWindow(window, null, false, "", showSavedAccounts: true);
+                            await translatedLogin.RestoreFormAsync(languageForm);
+                            translatedLogin.Show();
+                            if (translatedLogin.Username.Text != languageForm.Username ||
+                                translatedLogin.Password.Password != languageForm.Password ||
+                                translatedLogin.ChildName.Text != languageForm.ChildName ||
+                                translatedLogin.Remember.IsChecked != languageForm.Remember)
+                                throw new ObkException("Language switching lost sign-in form fields.");
+                            translatedLogin.UpdateLayout();
+                            Capture(translatedLogin, Path.ChangeExtension(resultPath, $".{language}.login.png"));
+                            translatedLogin.Close();
                         }
-                        var translatedLogin = new LoginWindow(window, null, false, "", showSavedAccounts: true);
-                        await translatedLogin.RestoreFormAsync(languageForm);
-                        translatedLogin.Show();
-                        if (translatedLogin.Username.Text != languageForm.Username ||
-                            translatedLogin.Password.Password != languageForm.Password ||
-                            translatedLogin.ChildName.Text != languageForm.ChildName ||
-                            translatedLogin.Remember.IsChecked != languageForm.Remember)
-                            throw new ObkException("Language switching lost sign-in form fields.");
-                        translatedLogin.UpdateLayout();
-                        Capture(translatedLogin, Path.ChangeExtension(resultPath, ".cs.login.png"));
-                        translatedLogin.Close();
+                        window = await window.ChangeLanguageAsync();
+                        if (LanguageSettings.Code != "en")
+                            throw new ObkException("Language cycling did not return to English.");
                         if (store.LastAccount()!.Username != "installation-check")
                             throw new ObkException("Closing the sign-in window changed the active offline account.");
                     }

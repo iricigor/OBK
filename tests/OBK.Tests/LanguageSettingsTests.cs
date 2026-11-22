@@ -1,5 +1,6 @@
 using OBK.Core;
 using OBK.Core.Localization;
+using System.Globalization;
 using Xunit;
 
 namespace OBK.Tests;
@@ -14,12 +15,35 @@ public sealed class LanguageSettingsTests
     [InlineData("en-US", "en")]
     [InlineData("en-GB", "en")]
     [InlineData("cs-CZ", "cs")]
-    [InlineData("de-DE", "cs")]
-    [InlineData("uk-UA", "cs")]
+    [InlineData("uk-UA", "uk")]
+    [InlineData("UK", "uk")]
+    [InlineData("de-DE", "de")]
+    [InlineData("de_AT", "de")]
     [InlineData("und", "cs")]
     [InlineData("", "cs")]
     public void DetectsSupportedOsLanguagesAndFallsBackToCzech(string osLanguage, string expected) =>
         Assert.Equal(expected, LanguageSettings.Detect(osLanguage));
+
+    [Fact]
+    public void CyclesEnglishCzechUkrainianAndGerman()
+    {
+        Assert.Equal(["en", "cs", "uk", "de"], LanguageSettings.SupportedCodes);
+        var original = SharedStrings.Culture;
+        try
+        {
+            foreach (var (current, next, name) in new[]
+            {
+                ("en", "cs", "čeština"), ("cs", "uk", "українська"),
+                ("uk", "de", "Deutsch"), ("de", "en", "English")
+            })
+            {
+                SharedStrings.Culture = CultureInfo.GetCultureInfo(current);
+                Assert.Equal(next, LanguageSettings.NextCode);
+                Assert.Equal(name, LanguageSettings.NextName);
+            }
+        }
+        finally { SharedStrings.Culture = original; }
+    }
 
     [Fact]
     public async Task ExplicitChoiceOverridesOsLanguageAndInvalidSettingsAreReported()
@@ -28,13 +52,14 @@ public sealed class LanguageSettingsTests
         var path = Path.Combine(directory, "language.json");
         try
         {
-            Assert.Equal("cs", await LanguageSettings.LoadAsync(path, "de-DE"));
-            await LanguageSettings.SaveAsync(path, "en");
-            Assert.Equal("en", await LanguageSettings.LoadAsync(path, "cs-CZ"));
-            await LanguageSettings.SaveAsync(path, "cs");
-            Assert.Equal("cs", await LanguageSettings.LoadAsync(path, "en-US"));
+            Assert.Equal("de", await LanguageSettings.LoadAsync(path, "de-DE"));
+            foreach (var code in LanguageSettings.SupportedCodes)
+            {
+                await LanguageSettings.SaveAsync(path, code);
+                Assert.Equal(code, await LanguageSettings.LoadAsync(path, "en-US"));
+            }
             Assert.Single(Directory.GetFiles(directory));
-            await File.WriteAllTextAsync(path, "{\"Language\":\"de\"}");
+            await File.WriteAllTextAsync(path, "{\"Language\":\"fr\"}");
             await Assert.ThrowsAsync<ObkException>(() => LanguageSettings.LoadAsync(path, "en-US"));
             await File.WriteAllTextAsync(path, "{broken");
             await Assert.ThrowsAsync<ObkException>(() => LanguageSettings.LoadAsync(path, "en-US"));
@@ -51,7 +76,7 @@ public sealed class LanguageSettingsTests
         {
             await Assert.ThrowsAsync<ObkException>(() => LanguageSettings.SaveAsync(Path.Combine(path, "language.json"), "cs"));
             Assert.Equal("not a directory", await File.ReadAllTextAsync(path));
-            await Assert.ThrowsAsync<ObkException>(() => LanguageSettings.SaveAsync(path, "de"));
+            await Assert.ThrowsAsync<ObkException>(() => LanguageSettings.SaveAsync(path, "fr"));
         }
         finally { File.Delete(path); }
     }

@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ErrorAccountNotSaved" xml:space="preserve">
+    <value>Dieses Konto ist nicht mehr gespeichert.</value>
+  </data>
+  <data name="ErrorApiAccessRejected" xml:space="preserve">
+    <value>API-Zugriff abgelehnt (HTTP {0}). Das Konto oder Token hat möglicherweise keinen Komens-Zugriff.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorApiRequestFailed" xml:space="preserve">
+    <value>API-Anfrage fehlgeschlagen (HTTP {0}). Verfügbarkeit der Schule und API-Kompatibilität prüfen.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorArchiveDamaged" xml:space="preserve">
+    <value>Das Offline-Nachrichtenarchiv ist beschädigt.</value>
+  </data>
+  <data name="ErrorAttachmentCacheFailed" xml:space="preserve">
+    <value>Anhang kann nicht zwischengespeichert werden. Speicherplatz und Zugriffsrechte prüfen.</value>
+  </data>
+  <data name="ErrorAttachmentCacheIncomplete" xml:space="preserve">
+    <value>Der zwischengespeicherte Anhang ist unvollständig.</value>
+  </data>
+  <data name="ErrorAttachmentCopy" xml:space="preserve">
+    <value>Anlagenkopie kann nicht geschrieben werden. Speicherplatz und Zugriff auf das Ziel prüfen.</value>
+  </data>
+  <data name="ErrorAttachmentCopyCleanup" xml:space="preserve">
+    <value>Eine temporäre entschlüsselte Anlagenkopie konnte nicht aus dem Zielordner entfernt werden.</value>
+  </data>
+  <data name="ErrorAttachmentCopyProtected" xml:space="preserve">
+    <value>Anlagenkopie kann nicht geschrieben werden. Diskzugriff prüfen und ob das Ziel den Schutz für Windows-Downloads unterstützt.</value>
+  </data>
+  <data name="ErrorAttachmentDownloadIncomplete" xml:space="preserve">
+    <value>Der Anhang wurde unvollständig heruntergeladen. Synchronisierung wiederholen; keine unvollständige Kopie wurde gespeichert.</value>
+  </data>
+  <data name="ErrorAttachmentIntegrity" xml:space="preserve">
+    <value>Der zwischengespeicherte Anhang hat die Integritätsprüfung nicht bestanden.</value>
+  </data>
+  <data name="ErrorAttachmentInvalidSize" xml:space="preserve">
+    <value>Der Anhang hat eine ungültige Downloadgröße.</value>
+  </data>
+  <data name="ErrorAttachmentMetadataDamaged" xml:space="preserve">
+    <value>Die Metadaten des zwischengespeicherten Anhangs sind beschädigt.</value>
+  </data>
+  <data name="ErrorAttachmentNoId" xml:space="preserve">
+    <value>Ein Anhang hat keine gültige ID und kann nicht heruntergeladen werden.</value>
+  </data>
+  <data name="ErrorAttachmentNotDownloaded" xml:space="preserve">
+    <value>Dieser Anhang ist nicht heruntergeladen. Zuerst anmelden und synchronisieren.</value>
+  </data>
+  <data name="ErrorConnectionFailed" xml:space="preserve">
+    <value>Verbindung auch nach einem erneuten Versuch fehlgeschlagen. Internetzugang und HTTPS-Zertifikat der Schule prüfen. Keine Zertifikatsprüfung wurde umgangen.</value>
+  </data>
+  <data name="ErrorDataProtectionUnavailable" xml:space="preserve">
+    <value>Der Windows-Datenschutz ist auf dieser Plattform nicht verfügbar.</value>
+  </data>
+  <data name="ErrorDatabaseAccess" xml:space="preserve">
+    <value>Auf die lokale OBK-Datenbank kann nicht zugegriffen werden. Speicherplatz und Zugriffsrechte prüfen.</value>
+  </data>
+  <data name="ErrorDecryptFailed" xml:space="preserve">
+    <value>Windows konnte lokale Daten nicht entschlüsseln. Das Windows-Konto verwenden, das sie erstellt hat; es gibt keinen Klartext-Fallback.</value>
+  </data>
+  <data name="ErrorDirectoryDamaged" xml:space="preserve">
+    <value>Das mitgelieferte Schulverzeichnis ist beschädigt. Schul-URL manuell eingeben.</value>
+  </data>
+  <data name="ErrorDirectoryEmpty" xml:space="preserve">
+    <value>Das mitgelieferte Schulverzeichnis ist leer.</value>
+  </data>
+  <data name="ErrorDirectoryFormat" xml:space="preserve">
+    <value>Das Format des mitgelieferten Schulverzeichnisses wird nicht unterstützt.</value>
+  </data>
+  <data name="ErrorDirectoryNoSchools" xml:space="preserve">
+    <value>Das mitgelieferte Schulverzeichnis enthält keine nutzbaren HTTPS-Schulen.</value>
+  </data>
+  <data name="ErrorEncryptFailed" xml:space="preserve">
+    <value>Windows konnte lokale Daten nicht verschlüsseln. Es gibt keinen Klartext-Fallback.</value>
+  </data>
+  <data name="ErrorInAttachment" xml:space="preserve">
+    <value>Anhang {0} von {1}: {2}</value>
+    <comment>{0} = attachment number; {1} = total attachments; {2} = error message.</comment>
+  </data>
+  <data name="ErrorInContext" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0} = folder name; {1} = error message.</comment>
+  </data>
+  <data name="ErrorIncompleteFolderSet" xml:space="preserve">
+    <value>Ein unvollständiger Ordnersatz kann das Offline-Archiv nicht ersetzen.</value>
+  </data>
+  <data name="ErrorInvalidJson" xml:space="preserve">
+    <value>Die Schule hat eine ungültige JSON-Antwort zurückgegeben. API-Kompatibilität prüfen.</value>
+  </data>
+  <data name="ErrorInvalidSentDate" xml:space="preserve">
+    <value>Eine Nachricht hat ein ungültiges Sendedatum; die Synchronisierung wurde abgebrochen.</value>
+  </data>
+  <data name="ErrorLocalAppDataUnavailable" xml:space="preserve">
+    <value>Windows LOCALAPPDATA ist nicht verfügbar; keine lokale Datenbank wurde geöffnet.</value>
+  </data>
+  <data name="ErrorLocalDataDamaged" xml:space="preserve">
+    <value>Lokale OBK-Daten sind beschädigt und konnten nicht dekodiert werden.</value>
+  </data>
+  <data name="ErrorMissingCredentials" xml:space="preserve">
+    <value>Benutzernamen und Passwort eingeben.</value>
+  </data>
+  <data name="ErrorNoAccessToken" xml:space="preserve">
+    <value>Die Anmeldung hat kein nutzbares Zugriffstoken zurückgegeben.</value>
+  </data>
+  <data name="ErrorNoSchoolName" xml:space="preserve">
+    <value>Das Schulprofil hat keinen Schulnamen zurückgegeben.</value>
+  </data>
+  <data name="ErrorPaginationLimit" xml:space="preserve">
+    <value>Die Schule hat die Seitennummerierung nach 10.000 Seiten nicht abgeschlossen. Kein unvollständiges Archiv wurde gespeichert.</value>
+  </data>
+  <data name="ErrorPlatformStorageRequired" xml:space="preserve">
+    <value>Diese Plattform erfordert einen expliziten Datenbankpfad und lokalen Datenschutz.</value>
+  </data>
+  <data name="ErrorRedirectBlocked" xml:space="preserve">
+    <value>Die Schule hat die Anfrage weitergeleitet. Basis-URL prüfen; Weiterleitungen werden zum Schutz der Anmeldedaten blockiert.</value>
+  </data>
+  <data name="ErrorRepeatedPage" xml:space="preserve">
+    <value>Die Schule hat eine Seite ohne neue Nachrichten wiederholt. Die Synchronisierung wurde abgebrochen, statt ein unvollständiges Archiv zu speichern.</value>
+  </data>
+  <data name="ErrorResponseTooLarge" xml:space="preserve">
+    <value>Die API-Antwort hat die Grenze von 2 MB überschritten.</value>
+  </data>
+  <data name="ErrorSavedAccountsDamaged" xml:space="preserve">
+    <value>Die Liste der gespeicherten Konten ist beschädigt. Erneut anmelden.</value>
+  </data>
+  <data name="ErrorSavedSignInDamaged" xml:space="preserve">
+    <value>Die gespeicherte Anmeldeeinstellung ist beschädigt. Erneut anmelden.</value>
+  </data>
+  <data name="ErrorSavedSignInsDamaged" xml:space="preserve">
+    <value>Die Liste der gespeicherten Anmeldungen ist beschädigt. Erneut anmelden.</value>
+  </data>
+  <data name="ErrorSignInRejected" xml:space="preserve">
+    <value>Anmeldung abgelehnt (HTTP {0}). Anmeldedaten prüfen. Die dokumentierte mobile Anmeldung ist möglicherweise deaktiviert oder inkompatibel.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorSyncTimestampDamaged" xml:space="preserve">
+    <value>Der Zeitstempel der Offline-Synchronisierung ist beschädigt.</value>
+  </data>
+  <data name="ErrorTimeout" xml:space="preserve">
+    <value>Die Schule hat auch nach einem erneuten Versuch nicht innerhalb von {0:0} Sekunden geantwortet. Internetzugang prüfen oder später erneut versuchen.</value>
+    <comment>{0} = timeout in seconds.</comment>
+  </data>
+  <data name="ErrorUnknownFolder" xml:space="preserve">
+    <value>Unbekannter Komens-Ordner.</value>
+  </data>
+  <data name="ErrorUnrecognizedMessage" xml:space="preserve">
+    <value>Komens hat ein unbekanntes Nachrichtenformat zurückgegeben.</value>
+  </data>
+  <data name="ErrorUnrecognizedMessageList" xml:space="preserve">
+    <value>Komens hat ein unbekanntes Nachrichtenlistenformat zurückgegeben.</value>
+  </data>
+  <data name="ErrorUpdateCheckFailed" xml:space="preserve">
+    <value>Updates konnten nicht geprüft werden. OBK versucht es später erneut.</value>
+  </data>
+  <data name="ErrorUpdateDownloadFailed" xml:space="preserve">
+    <value>Update konnte nicht heruntergeladen werden. OBK versucht es später erneut.</value>
+  </data>
+  <data name="ErrorUpdateNoChecksum" xml:space="preserve">
+    <value>Die Veröffentlichung enthält keine Prüfsumme für das Installationsprogramm.</value>
+  </data>
+  <data name="ErrorUpdateTooLarge" xml:space="preserve">
+    <value>Das Update-Installationsprogramm ist unerwartet groß.</value>
+  </data>
+  <data name="ErrorUpdateVerificationFailed" xml:space="preserve">
+    <value>Das heruntergeladene Update wurde nicht verifiziert und verworfen.</value>
+  </data>
+  <data name="ErrorUrlIsLoginPage" xml:space="preserve">
+    <value>Die Basis-URL der Schule eingeben, nicht deren Seite /login.</value>
+  </data>
+  <data name="ErrorUrlNotHttps" xml:space="preserve">
+    <value>Eine HTTPS-Schul-URL ohne Anmeldedaten, Abfrage oder Fragment verwenden.</value>
+  </data>
+  <data name="FolderExcuses" xml:space="preserve">
+    <value>Entschuldigungen</value>
+    <comment>Folder name for sent absence excuse notes (omluvenky).</comment>
+  </data>
+  <data name="FolderInbox" xml:space="preserve">
+    <value>Posteingang</value>
+  </data>
+  <data name="FolderNoticeboard" xml:space="preserve">
+    <value>Schwarzes Brett</value>
+  </data>
+  <data name="FolderSent" xml:space="preserve">
+    <value>Gesendet</value>
+  </data>
+  <data name="GroupThisMonth" xml:space="preserve">
+    <value>Diesen Monat</value>
+  </data>
+  <data name="GroupThisWeek" xml:space="preserve">
+    <value>Diese Woche</value>
+  </data>
+  <data name="GroupToday" xml:space="preserve">
+    <value>Heute</value>
+  </data>
+  <data name="GroupYesterday" xml:space="preserve">
+    <value>Gestern</value>
+  </data>
+  <data name="ImageNotLoaded" xml:space="preserve">
+    <value>[Bild nicht geladen]</value>
+  </data>
+  <data name="ImageWithDescription" xml:space="preserve">
+    <value>[Bild: {0}]</value>
+    <comment>Placeholder for an image in a message body. {0} = image description from the message.</comment>
+  </data>
+  <data name="NoSubject" xml:space="preserve">
+    <value>(Kein Betreff)</value>
+    <comment>Shown instead of an empty message subject.</comment>
+  </data>
+  <data name="ProgressAttachment" xml:space="preserve">
+    <value>Anhang {0} von {1}: {2}...</value>
+    <comment>{0} = attachment number; {1} = total attachments; {2} = file name.</comment>
+  </data>
+  <data name="ProgressFolderPage" xml:space="preserve">
+    <value>{0}: Seite {1}, {2} Nachrichten...</value>
+    <comment>{0} = folder name; {1} = page number; {2} = messages downloaded so far.</comment>
+  </data>
+  <data name="ErrorTransferDamaged" xml:space="preserve">
+    <value>Der QR-Code ist beschädigt oder unvollständig. Auf dem PC einen neuen Code anzeigen und erneut scannen.</value>
+  </data>
+  <data name="ErrorTransferNeedsPassword" xml:space="preserve">
+    <value>Das Passwort dieses Kontos vor der Übertragung speichern.</value>
+  </data>
+  <data name="ErrorTransferNotObkCode" xml:space="preserve">
+    <value>Dies ist kein OBK-Kontoübertragungscode. Auf dem PC Einstellungen, Konten, Auf Android übertragen öffnen.</value>
+  </data>
+  <data name="ErrorTransferUnknownWord" xml:space="preserve">
+    <value>„{0}“ ist kein Übertragungswort. Die Schreibweise auf dem PC prüfen.</value>
+    <comment>{0} = the word the user typed.</comment>
+  </data>
+  <data name="ErrorTransferUnsupported" xml:space="preserve">
+    <value>Die verschlüsselte Kontoübertragung ist auf diesem Gerät nicht verfügbar.</value>
+  </data>
+  <data name="ErrorTransferWordCount" xml:space="preserve">
+    <value>Die {0} auf dem PC angezeigten Wörter eingeben.</value>
+    <comment>{0} = number of words.</comment>
+  </data>
+  <data name="ErrorTransferWrongWords" xml:space="preserve">
+    <value>Diese Wörter entsperren diesen QR-Code nicht. Auf dem PC prüfen oder dort einen neuen Code anzeigen und erneut scannen.</value>
+  </data>
+  <data name="LanguageSwitchTooltip" xml:space="preserve">
+    <value>Zu {0} wechseln</value>
+    <comment>{0} = next language's native name.</comment>
+  </data>
+  <data name="ErrorLanguageInvalid" xml:space="preserve">
+    <value>Die gespeicherte Spracheinstellung ist ungültig. Eine Sprache zum Ersetzen auswählen.</value>
+  </data>
+  <data name="ErrorLanguageRead" xml:space="preserve">
+    <value>Die Spracheinstellung kann nicht gelesen werden. Eine Sprache auswählen und erneut speichern.</value>
+  </data>
+  <data name="ErrorLanguageSave" xml:space="preserve">
+    <value>Die Sprachauswahl kann nicht gespeichert werden. Speicherzugriff prüfen und erneut versuchen.</value>
+  </data>
+  <data name="ErrorLanguageCleanup" xml:space="preserve">
+    <value>Eine temporäre Spracheinstellungsdatei konnte nicht entfernt werden. Speicherzugriff prüfen.</value>
+  </data>
+  <data name="ErrorLanguageBusy" xml:space="preserve">
+    <value>Vor dem Sprachwechsel den aktuellen Vorgang abschließen lassen.</value>
+  </data>
+  <data name="DateLongFormat" xml:space="preserve">
+    <value>d. MMMM yyyy HH:mm</value>
+    <comment>.NET custom date/time layout for a full message timestamp; not a composite-format string.</comment>
+  </data>
+  <data name="DateShortFormat" xml:space="preserve">
+    <value>d. MMM</value>
+    <comment>.NET custom date/time layout for a short message date without a year; not a composite-format string.</comment>
+  </data>
+  <data name="DateShortYearFormat" xml:space="preserve">
+    <value>d. MMM yyyy</value>
+    <comment>.NET custom date/time layout for a short message date with a year; not a composite-format string.</comment>
+  </data>
+  <data name="DateTimeFormat" xml:space="preserve">
+    <value>HH:mm</value>
+    <comment>.NET custom date/time layout for a message time in 24-hour notation; not a composite-format string.</comment>
+  </data>
+  <data name="DateRelatedFormat" xml:space="preserve">
+    <value>d. MMM HH:mm</value>
+    <comment>.NET custom date/time layout for a related-message date and time; not a composite-format string.</comment>
+  </data>
+  <data name="DateGroupMonthFormat" xml:space="preserve">
+    <value>MMMM yyyy</value>
+    <comment>.NET custom date/time layout for a month/year group heading; not a composite-format string.</comment>
+  </data>
+  <data name="RepositoryLink" xml:space="preserve">
+    <value>GitHub-Repository</value>
+  </data>
+</root>

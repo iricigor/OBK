@@ -46,7 +46,7 @@ public static partial class MessageInsights
 
     public static string DateSearchText(DateTimeOffset date)
     {
-        var localized = new[] { "en", "cs" }.Select(code =>
+        var localized = LanguageSettings.SupportedCodes.Select(code =>
         {
             var culture = CultureInfo.GetCultureInfo(code);
             var format = SharedStrings.ResourceManager.GetString(nameof(SharedStrings.DateLongFormat), culture) ??

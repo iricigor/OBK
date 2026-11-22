@@ -477,14 +477,27 @@ public sealed class PresentationTests
                         Assert.Equal("1,5 MB", AttachmentRow.FormatSize(1572864));
                         Assert.Equal("listopad 2025", MessageInsights.DateGroup(new DateTimeOffset(2025, 11, 1, 12, 0, 0, TimeSpan.Zero), new DateTime(2026, 11, 22)));
                         main = await ClickLanguageAsync(main);
+                        Assert.Equal("uk", LanguageSettings.Code);
+                        Assert.Equal("UK", ((TextBlock)main.FindName("LanguageCodeText")).Text);
+                        AssertRepositoryLink();
+                        Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
+                        Assert.Equal("20 листопада 2026 р. 14:09",
+                            new DateTime(2026, 11, 20, 14, 9, 0).ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
+                        Assert.Equal("1,5 МБ", AttachmentRow.FormatSize(1572864));
+                        main = await ClickLanguageAsync(main);
+                        Assert.Equal("de", LanguageSettings.Code);
+                        Assert.Equal("DE", ((TextBlock)main.FindName("LanguageCodeText")).Text);
+                        AssertRepositoryLink();
+                        Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
+                        Assert.Equal("20. November 2026 14:09",
+                            new DateTime(2026, 11, 20, 14, 9, 0).ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
+                        Assert.Equal("1,5 MB", AttachmentRow.FormatSize(1572864));
+                        main = await ClickLanguageAsync(main);
                         Assert.Equal("en", LanguageSettings.Code);
+                        AssertRepositoryLink();
                         Assert.Equal("Sent", main.ViewModel.FolderTitle);
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Equal("1.5 MB", AttachmentRow.FormatSize(1572864));
-                        main = await ClickLanguageAsync(main);
-                        Assert.Equal("cs", LanguageSettings.Code);
-                        main = await ClickLanguageAsync(main);
-                        Assert.Equal("en", LanguageSettings.Code);
                     }
                     finally { main.Close(); }
                     completion.SetResult();
