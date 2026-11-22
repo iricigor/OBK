@@ -219,6 +219,9 @@ address manually** reveals the editable HTTPS address (already visible for
 an existing account). Message links and attachment actions stay explicit taps,
 with privacy notices beneath the content. Appearance follows Android by default.
 
+The launcher icon uses `Resources\AppIcon\obk.png` declared as a `MauiIcon`.
+The Android application manifest must reference MAUI's generated `@mipmap/obk`
+and `@mipmap/obk_round` resources for normal and round launcher icons.
 `src\OBK.Android\OBK.Android.csproj` targets `net10.0-android` with minimum API
 29. `OBK.Core` also targets portable `net10.0`, and `LocalStore` accepts an
 `ILocalDataProtection` implementation and an explicit database path. Its
@@ -236,8 +239,8 @@ Missing keys and failed authentication are explicit errors, never a reason to
 create a replacement key for an existing database or store plaintext.
 
 Device backup is disabled. Uninstalling deletes app data and its key.
-Passwords are retained only with **Remember credentials**; use **Add child /
-sign in > Forget this account's saved password** to remove a saved password
+Passwords are retained only with **Remember credentials**; use **Settings >
+Manage accounts > Forget this account's saved password** to remove a saved password
 without deleting the offline archive. API tokens stay in memory.
 
 Message HTML is parsed into native text rather than loaded into a browser.
@@ -300,6 +303,38 @@ Previews signed on different machines are not interchangeable; uninstalling
 to switch keys loses local data. Per user decision, persistent production
 signing and release publication are configured after preview verification.
 No signing key or password belongs in Git.
+
+### Transferring an account from Windows to Android
+
+`OBK.Core.CredentialTransfer` moves one remembered account offline, with no
+network, cloud service, or pairing. On Windows, **Settings > Accounts >
+Transfer to Android** (enabled only when the password is saved) shows a QR
+code and three words. Android's **Scan from PC** on the sign-in page scans it,
+asks for the words, and only prefills the sign-in form; **Remember
+credentials** stays unchecked, and nothing is signed in or saved until the user
+taps **Sign in and download**.
+
+- The QR text is `OBK1:` plus base64url of salt (16 bytes), nonce (12), tag
+  (16), and AES-256-GCM ciphertext of the account JSON (school address,
+  username, password, optional child and school names). The prefix is
+  authenticated as associated data.
+- The key is PBKDF2-HMAC-SHA256 with 600,000 iterations over the normalized
+  words (lowercase, single spaces) and a random salt.
+- Words are chosen independently with `RandomNumberGenerator` from the
+  [EFF large word list](https://www.eff.org/dice) (7,776 words, CC BY 3.0 US),
+  embedded unchanged in `src\OBK.Core\Data\eff_large_wordlist.txt`. Three words
+  give about 39 bits. Every displayed code uses new words, salt, and nonce.
+- The Windows dialog blurs the QR code after 15 seconds by replacing it with a
+  12×12-pixel downscaled, blurred copy, so the code data no longer exists in the
+  window. The words stay visible until the dialog closes; **Show new code**
+  creates a new code and words. Blurring limits screen exposure only: a
+  photographed code remains decryptable by anyone who also has the words, and
+  offline guessing is limited only by PBKDF2's cost.
+  Words not in the list are rejected before the slow key derivation.
+- Android declares the `CAMERA` permission (camera hardware optional) but
+  requests it only when the user taps **Scan from PC**; denial leaves manual
+  sign-in available. Scanning uses ZXing.Net.Maui; Windows renders the QR code
+  with QRCoder.
 
 ## Data access plan
 
@@ -700,6 +735,26 @@ job needs write permission to see unfinished draft releases for retries;
 the publication job uses it to create releases and upload assets.
 
 ### Local build and verification
+
+Local Windows builds (Debug or Release, including local installers) show an
+orange diagonal **DEV BUILD** ribbon in the top-right corner below the window
+controls, with the UTC build time. It overlays the reader and Settings on a
+higher z-order without moving or resizing their content. Only the diagonal
+strip intercepts clicks; the rest of its transparent corner area remains
+click-through. Click it, or focus it with Tab and press Enter/Space, to hide
+it until the process exits. It returns after relaunch and uses system colors
+in high contrast. Window controls are unchanged.
+
+The desktop project stamps `LocalBuild=true` and the actual UTC `BuildTimestamp`
+as assembly metadata, independently of compiler configuration or signing.
+CI installer builds explicitly pass `-LocalBuild:$false`; official releases
+(signed or unsigned) and CI validation installers have no ribbon.
+For a release-style source build, use `-p:LocalBuild=false`. A repeatable build
+can override the ISO 8601 timestamp with an explicit offset or `Z`, for example
+`-p:BuildTimestamp=2026-11-22T14:00:00Z`. The installer script accepts the same
+override as `-BuildTimestamp`. Invalid metadata fails explicitly rather than
+displaying a fabricated timestamp. Android and PR/test-specific labels are
+outside this feature's scope.
 
 Development runs from source using the .NET command above.
 To build an installer, install the .NET 10 SDK and Inno Setup 6

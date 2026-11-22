@@ -41,8 +41,9 @@ passwords or private messages. See [Privacy](#privacy) and the
 - **Clickable links** in messages, and attachments that open with one click.
 - **Light and dark themes**, a resizable sidebar that can shrink to icons, and
   **automatic updates**.
-- **Settings** at the bottom of the sidebar – choose the theme, reading size and message list density, rename
-  children, save, change, or clear saved passwords, and check for updates.
+- **Settings** at the bottom of the sidebar – choose the theme, reading size and
+  message list density, rename children, save, change, or clear saved passwords,
+  check for updates, and transfer an account to OBK on Android.
 
 OBK only reads messages. It cannot send messages, replies, excuses, or
 confirmations, and it never marks messages as read on the server.
@@ -107,6 +108,15 @@ release yet. The preview supports school sign-in, multiple children, manual
 refresh, offline folders/search, and opening or sharing downloaded attachments.
 It uses Android Keystore-backed encryption and remains read-only toward school
 servers.
+
+To avoid typing credentials on the phone, open **Settings > Accounts >
+Transfer to Android** in OBK on Windows, then tap **Scan from PC** on Android's
+sign-in page and enter the three words shown. The QR code is encrypted and the
+transfer works offline; the QR code blurs after 15 seconds, while the words stay
+until you close the window. Anyone who has both the QR code and the words can
+recover that account's password, so do
+not photograph or share them. Android asks for camera access only when you tap
+**Scan from PC**.
 
 Development-signed APKs are available as artifacts of **🔨 Android preview**
 workflow runs. They are for device verification, not production distribution;

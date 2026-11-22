@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
         <Border Background="{DynamicResource HeaderSurface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1"/>
         <Grid>
-            <StackPanel Orientation="Horizontal" Margin="20,0,200,0" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Margin="20,0,240,0" VerticalAlignment="Center">
                 <Image Source="pack://application:,,,/OBK;component/Assets/OBK.ico" Width="16" Height="16" Margin="0,0,8,0"
                        RenderOptions.BitmapScalingMode="HighQuality" AutomationProperties.Name="OBK"/>
                 <TextBlock Text="{x:Static loc:AppStrings.AppTitle}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
@@ -361,7 +361,55 @@
             <GridSplitter Grid.Column="3" Width="6" HorizontalAlignment="Center" Background="Transparent" ResizeDirection="Columns"
                           ResizeBehavior="PreviousAndNext" ShowsPreview="True" ToolTip="{x:Static loc:AppStrings.MainResizeMessageList}" AutomationProperties.Name="{x:Static loc:AppStrings.MainResizeMessageList}"
                           Visibility="{Binding ShowMessages, Converter={StaticResource VisibleIf}}"/>
-            <Border Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8"
+            <Canvas x:Name="BuildRibbonArea" Grid.Column="4" Panel.ZIndex="10" Width="200" Height="124"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-12,-12,0" Visibility="Collapsed">
+                <Canvas.Clip><RectangleGeometry Rect="0,0,200,124"/></Canvas.Clip>
+                <Button x:Name="BuildRibbon" Canvas.Left="-90" Canvas.Top="23" Width="440" Height="44" Padding="12,2"
+                        RenderTransformOrigin="0.5,0.5" Click="BuildRibbonClick"
+                        AutomationProperties.Name="{x:Static loc:AppStrings.BuildRibbonDismiss}">
+                    <Button.RenderTransform><RotateTransform Angle="35"/></Button.RenderTransform>
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Background" Value="#F4A340"/>
+                            <Setter Property="Foreground" Value="#281700"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2">
+                                            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#FFC06B"/></Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="BorderBrush" Value="#281700"/></Trigger>
+                                <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="#E89530"/></Trigger>
+                                <DataTrigger Binding="{Binding Path=(SystemParameters.HighContrast)}" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                                </DataTrigger>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Path=(SystemParameters.HighContrast)}" Value="True"/>
+                                        <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static loc:AppStrings.BuildRibbonLabel}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="BuildRibbonTimestamp" FontSize="10" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Canvas>
+            <Border x:Name="ReadingPane" Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8"
                     Visibility="{Binding ShowMessages, Converter={StaticResource VisibleIf}}">
                 <ScrollViewer x:Name="ReadingScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="24">
                     <StackPanel>
@@ -659,6 +707,9 @@
                                                     <Button Content="{x:Static loc:AppStrings.SettingsSavePassword}" Margin="6,2,0,2" Visibility="{Binding PasswordMissing, Converter={StaticResource VisibleIf}}"
                                                             Command="{Binding SetPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
                                                             ToolTip="{x:Static loc:AppStrings.SettingsSavePasswordTooltip}" AutomationProperties.Name="{Binding Label, StringFormat={x:Static loc:AppStrings.SettingsSavePasswordFor}}"/>
+                                                    <Button Content="{x:Static loc:AppStrings.SettingsTransfer}" Margin="6,2,0,2" ToolTipService.ShowOnDisabled="True"
+                                                            Command="{Binding TransferAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                                            ToolTip="{x:Static loc:AppStrings.SettingsTransferTooltip}" AutomationProperties.Name="{Binding Label, StringFormat={x:Static loc:AppStrings.SettingsTransferFor}}"/>
                                                 </WrapPanel>
                                             </Grid>
                                         </Border>

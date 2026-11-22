@@ -341,4 +341,46 @@
     <value>Signing in...</value>
     <comment>Progress status while signing in.</comment>
   </data>
+  <data name="ScanCameraDenied" xml:space="preserve">
+    <value>OBK uses the camera only to scan the transfer code. Allow camera access in Android settings, or sign in manually.</value>
+  </data>
+  <data name="ScanCameraDeniedTitle" xml:space="preserve">
+    <value>Camera access needed</value>
+  </data>
+  <data name="ScanInstructions" xml:space="preserve">
+    <value>Point the camera at the QR code shown by OBK on your PC.</value>
+  </data>
+  <data name="ScanTitle" xml:space="preserve">
+    <value>Scan PC code</value>
+  </data>
+  <data name="SignInImported" xml:space="preserve">
+    <value>Details imported from your PC. Check them, choose whether to remember the password, then tap Sign in and download.</value>
+  </data>
+  <data name="SignInScanFromPc" xml:space="preserve">
+    <value>Scan from PC</value>
+  </data>
+  <data name="SignInScanHint" xml:space="preserve">
+    <value>Already using OBK on Windows? There, open Settings, Accounts, Transfer to Android.</value>
+  </data>
+  <data name="UnlockButton" xml:space="preserve">
+    <value>Unlock</value>
+  </data>
+  <data name="UnlockFailedTitle" xml:space="preserve">
+    <value>Could not unlock</value>
+  </data>
+  <data name="UnlockHint" xml:space="preserve">
+    <value>The words stay on your PC until you close the transfer window there.</value>
+  </data>
+  <data name="UnlockInstructions" xml:space="preserve">
+    <value>QR code scanned. Enter the three words shown on your PC.</value>
+  </data>
+  <data name="UnlockTitle" xml:space="preserve">
+    <value>Enter words</value>
+  </data>
+  <data name="UnlockWordsLabel" xml:space="preserve">
+    <value>Transfer words</value>
+  </data>
+  <data name="UnlockWorking" xml:space="preserve">
+    <value>Unlocking…</value>
+  </data>
 </root>

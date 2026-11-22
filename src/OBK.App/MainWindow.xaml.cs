@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     public ICommand RenameAccountCommand { get; }
     public ICommand SetPasswordCommand { get; }
     public ICommand ClearPasswordCommand { get; }
+    public ICommand TransferAccountCommand { get; }
     public string VersionText { get; } = UpdateService.Display(UpdateService.InstalledVersion);
     private readonly bool showLogin;
     private Task? initialization;
@@ -35,6 +36,7 @@ public partial class MainWindow : Window
     private bool compact;
     private bool openingLogin;
     private int? cornerPreferenceError;
+    private static bool buildAcknowledged;
 
     public UpdateManager Updates { get; }
     public MainWindow(LocalStore store, bool showLogin = true, bool enableUpdates = true)
@@ -56,9 +58,16 @@ public partial class MainWindow : Window
             p => p is AccountRow && ViewModel.CanChangeAccount);
         ClearPasswordCommand = new AsyncCommand(p => p is AccountRow row ? ViewModel.ForgetPasswordAsync(row) : Task.CompletedTask,
             message => ViewModel.ReportError(message), p => p is AccountRow && ViewModel.CanChangeAccount);
+        TransferAccountCommand = new RelayCommand(p => { if (p is AccountRow row) TransferAccount(row); },
+            p => p is AccountRow { PasswordSaved: true } && ViewModel.CanChangeAccount);
         Updates = new UpdateManager(new UpdateService(Path.Combine(Path.GetDirectoryName(store.Path)!, "updates")),
             UpdateService.InstalledVersion, () => !Busy && !ViewModel.IsExporting, Close);
         InitializeComponent();
+        var build = BuildIdentity.Current;
+        BuildRibbonTimestamp.Text = build.TimestampText;
+        BuildRibbon.ToolTip = Localized.Format(AppStrings.BuildRibbonTooltip, build.FullTimestampText);
+        System.Windows.Automation.AutomationProperties.SetHelpText(BuildRibbon, (string)BuildRibbon.ToolTip);
+        UpdateBuildRibbonVisibility();
         if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
         {
             // Zero glass makes WPF install a window region, which prevents native DWM rounding.
@@ -95,6 +104,18 @@ public partial class MainWindow : Window
 
     private void UpdateMenuClick(object sender, RoutedEventArgs e) => Updates.MenuOpen = !Updates.MenuOpen;
 
+    private void BuildRibbonClick(object sender, RoutedEventArgs e)
+    {
+        buildAcknowledged = true;
+        UpdateBuildRibbonVisibility();
+    }
+
+    private void UpdateBuildRibbonVisibility()
+    {
+        var visible = BuildIdentity.Current.IsLocal && !buildAcknowledged;
+        BuildRibbonArea.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     // Clicking the already-selected folder does not change selection, so close Settings on any folder click.
     private void FolderListClick(object sender, MouseButtonEventArgs e)
     {
@@ -117,6 +138,14 @@ public partial class MainWindow : Window
             Localized.Format(row.PasswordSaved ? AppStrings.SettingsChangePasswordFor : AppStrings.SettingsSavePasswordFor, row.Label),
             Localized.Format(AppStrings.PromptPasswordDescription, school, row.Login.Username),
             AppStrings.FieldPassword, AppStrings.PromptPasswordAction, password => ViewModel.VerifyAndRememberPasswordAsync(row, password), password: true).ShowDialog();
+    }
+
+    private void TransferAccount(AccountRow row)
+    {
+        var login = row.Login;
+        new TransferWindow(this, row.Label, async () => await Task.Run(() =>
+            Store.RememberedLogins().LastOrDefault(profile => profile.Url == login.Url && profile.Username == login.Username)) ??
+            throw new ObkException(SharedStrings.ErrorTransferNeedsPassword)).ShowDialog();
     }
 
     private const double IconNavigationWidth = 64;

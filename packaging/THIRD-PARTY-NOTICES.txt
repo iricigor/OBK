@@ -2,7 +2,13 @@ OBK Windows distribution dependencies
 
 The self-contained application includes .NET and WPF (MIT license),
 Microsoft.Data.Sqlite and System.Security.Cryptography.ProtectedData (MIT),
-SQLitePCLRaw (Apache-2.0), SQLite (public domain), and AngleSharp (MIT).
+SQLitePCLRaw (Apache-2.0), SQLite (public domain), AngleSharp (MIT), and
+QRCoder (MIT).
+
+OBK.Core embeds the EFF Large Wordlist for Passphrases by the Electronic
+Frontier Foundation, used unmodified under CC BY 3.0 US:
+https://www.eff.org/dice
+https://creativecommons.org/licenses/by/3.0/us/
 
 Source and license texts:
 https://github.com/dotnet/runtime/blob/main/LICENSE.TXT
@@ -12,6 +18,7 @@ https://github.com/dotnet/efcore/blob/main/LICENSE.txt
 https://github.com/ericsink/SQLitePCL.raw/blob/master/LICENSE.TXT
 https://sqlite.org/copyright.html
 https://github.com/AngleSharp/AngleSharp/blob/main/LICENSE
+https://github.com/Shane32/QRCoder/blob/v1.9.0/LICENSE.txt
 
 The installer build also copies the dependency license texts alongside this
 notice. The historical Python API tester is not part of the distribution.

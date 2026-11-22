@@ -28,6 +28,18 @@
     <value>OBK - Offline Komens - {0}</value>
     <comment>Window caption. {0} = active child name or school name.</comment>
   </data>
+  <data name="BuildRibbonLabel" xml:space="preserve">
+    <value>DEV BUILD</value>
+    <comment>Diagonal corner ribbon for locally built Windows apps.</comment>
+  </data>
+  <data name="BuildRibbonDismiss" xml:space="preserve">
+    <value>Acknowledge development build</value>
+    <comment>Accessible name of the ribbon button.</comment>
+  </data>
+  <data name="BuildRibbonTooltip" xml:space="preserve">
+    <value>Local development build, built {0}. Click or press Enter/Space to hide this ribbon until OBK closes.</value>
+    <comment>{0} = full ISO 8601 UTC build timestamp.</comment>
+  </data>
   <data name="AttachmentAvailabilityNotDownloaded" xml:space="preserve">
     <value>Not downloaded. Refresh to cache this file.</value>
     <comment>Attachment tooltip line below the file name.</comment>
@@ -913,5 +925,55 @@ Refresh to check your school.</value>
   <data name="WindowMinimize" xml:space="preserve">
     <value>Minimize</value>
     <comment>Minimize caption button tooltip and accessible name.</comment>
+  </data>
+  <data name="SettingsTransfer" xml:space="preserve">
+    <value>Transfer to Android</value>
+    <comment>Button on an account row in Settings.</comment>
+  </data>
+  <data name="SettingsTransferFor" xml:space="preserve">
+    <value>Transfer {0} to Android</value>
+    <comment>{0} = account label. Accessible name of the button.</comment>
+  </data>
+  <data name="SettingsTransferTooltip" xml:space="preserve">
+    <value>Show an encrypted QR code and three words to add this account in OBK on Android. Requires a saved password.</value>
+  </data>
+  <data name="TransferCountdown" xml:space="preserve">
+    <value>QR code blurs in {0} s</value>
+    <comment>{0} = seconds remaining.</comment>
+  </data>
+  <data name="TransferDescription" xml:space="preserve">
+    <value>On your phone, open OBK, tap Scan from PC, scan this code, then enter the three words.</value>
+  </data>
+  <data name="TransferHidden" xml:space="preserve">
+    <value>QR code blurred for privacy. The words stay until you close this window; show a new code to scan again.</value>
+  </data>
+  <data name="TransferPreparing" xml:space="preserve">
+    <value>Encrypting…</value>
+  </data>
+  <data name="TransferQrName" xml:space="preserve">
+    <value>Encrypted account QR code</value>
+    <comment>Accessible name of the QR image.</comment>
+  </data>
+  <data name="TransferScope" xml:space="preserve">
+    <value>Only the school address, username, password and child name are transferred. Messages stay on this PC.</value>
+  </data>
+  <data name="TransferShowNew" xml:space="preserve">
+    <value>Show new code</value>
+  </data>
+  <data name="TransferStepScan" xml:space="preserve">
+    <value>Scan in OBK on Android</value>
+  </data>
+  <data name="TransferStepWords" xml:space="preserve">
+    <value>Then enter these words</value>
+  </data>
+  <data name="TransferTitle" xml:space="preserve">
+    <value>Transfer to Android</value>
+  </data>
+  <data name="TransferWarning" xml:space="preserve">
+    <value>Keep the code and words private. Anyone who has both can recover this account's password. Blurring the code does not invalidate a photo already taken.</value>
+  </data>
+  <data name="TransferWordsName" xml:space="preserve">
+    <value>Transfer words</value>
+    <comment>Accessible name of the words text.</comment>
   </data>
 </root>

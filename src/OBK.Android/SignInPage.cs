@@ -20,6 +20,7 @@ internal sealed class SignInPage : ContentPage
     private readonly Button submit = ReaderTheme.Primary(new Button { Text = AppStrings.SignInSubmitButton });
     private readonly Button manualAddress = ReaderTheme.Subtle(new Button { Text = AppStrings.SignInManualAddressButton });
     private readonly ActivityIndicator progress = new() { IsVisible = false };
+    private readonly VerticalStackLayout addressFields;
     private bool busy;
 
     public SignInPage(ReaderSession session, Login? login, Func<Login, Task> saved)
@@ -27,7 +28,7 @@ internal sealed class SignInPage : ContentPage
         this.session = session;
         this.saved = saved;
         Title = login is null ? AppStrings.SignInTitleAddChild : AppStrings.SignInTitleSignIn;
-        var addressFields = Field(AppStrings.SignInSchoolAddressLabel, url);
+        addressFields = Field(AppStrings.SignInSchoolAddressLabel, url);
         addressFields.IsVisible = login is not null;
         manualAddress.Text = addressFields.IsVisible ? AppStrings.SignInHideAddressButton : AppStrings.SignInManualAddressButton;
         manualAddress.Clicked += (_, _) =>
@@ -69,6 +70,8 @@ internal sealed class SignInPage : ContentPage
             ReaderTheme.Apply(schoolResults);
         };
         submit.Clicked += async (_, _) => await SignInAsync();
+        var scan = new Button { Text = AppStrings.SignInScanFromPc };
+        scan.Clicked += async (_, _) => { if (!busy) await TransferScanPage.OpenAsync(this, Import); };
         var remembered = new Grid
         {
             ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)],
@@ -85,6 +88,7 @@ internal sealed class SignInPage : ContentPage
                 Children =
                 {
                     new Label { Text = AppStrings.SignInHeading, FontSize = 20, FontAttributes = FontAttributes.Bold },
+                    scan, ReaderTheme.Metadata(new Label { Text = AppStrings.SignInScanHint }),
                     schoolSearch, schoolStatus, schoolResults,
                     manualAddress, addressFields,
                     Field(AppStrings.SignInUsernameLabel, username),
@@ -103,6 +107,22 @@ internal sealed class SignInPage : ContentPage
         Spacing = 4,
         Children = { ReaderTheme.Metadata(new Label { Text = label }), ReaderTheme.Panel(input, new Thickness(8, 0)) }
     };
+
+    // Fills the form from a PC transfer; the user still reviews it and decides whether to remember the password.
+    private void Import(Login login)
+    {
+        url.Text = login.Url;
+        addressFields.IsVisible = true;
+        manualAddress.Text = AppStrings.SignInHideAddressButton;
+        username.Text = login.Username;
+        password.Text = login.Password;
+        child.Text = login.ChildName;
+        remember.IsChecked = false;
+        schoolResults.Children.Clear();
+        schoolStatus.Text = login.SchoolName ?? "";
+        schoolStatus.IsVisible = schoolStatus.Text.Length > 0;
+        status.Text = AppStrings.SignInImported;
+    }
 
     private async Task SignInAsync()
     {

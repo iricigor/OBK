@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -14,6 +16,30 @@ namespace OBK.Tests;
 
 public sealed class PresentationTests
 {
+    [Theory]
+    [InlineData("true", "2026-11-22T14:03:04Z", true)]
+    [InlineData("true", "2026-11-22T16:03:04.1234567+02:00", true)]
+    [InlineData("false", "2026-11-22T14:03:04.1234567Z", false)]
+    public void BuildIdentityUsesExplicitOriginAndNormalizesUtc(string origin, string timestamp, bool local)
+    {
+        var build = BuildIdentity.FromMetadata(origin, timestamp);
+        Assert.Equal(local, build.IsLocal);
+        Assert.Equal("2026-11-22 14:03 UTC", build.TimestampText);
+        Assert.Equal(TimeSpan.Zero, build.BuiltAt.Offset);
+        Assert.EndsWith("+00:00", build.FullTimestampText);
+    }
+
+    [Theory]
+    [InlineData(null, "2026-11-22T14:03:04Z")]
+    [InlineData("development", "2026-11-22T14:03:04Z")]
+    [InlineData("true", null)]
+    [InlineData("true", "yesterday")]
+    [InlineData("false", "2026-11-22T14:03:04")]
+    public void BuildIdentityRejectsMissingOrInvalidMetadata(string? origin, string? timestamp)
+    {
+        Assert.Throws<InvalidOperationException>(() => BuildIdentity.FromMetadata(origin, timestamp));
+    }
+
     [Fact]
     public void PaletteAssignmentsAreStableAndFileKindsAreCaseInsensitive()
     {
@@ -275,6 +301,48 @@ public sealed class PresentationTests
                         main.Show();
                         await main.InitializeAsync();
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        var ribbon = (Button)main.FindName("BuildRibbon");
+                        var ribbonArea = (Canvas)main.FindName("BuildRibbonArea");
+                        var readingPane = (Border)main.FindName("ReadingPane");
+                        var timestamp = (TextBlock)main.FindName("BuildRibbonTimestamp");
+                        Assert.Equal(BuildIdentity.Current.IsLocal ? Visibility.Visible : Visibility.Collapsed, ribbonArea.Visibility);
+                        Assert.Equal(BuildIdentity.Current.TimestampText, timestamp.Text);
+                        if (BuildIdentity.Current.IsLocal)
+                        {
+                            main.Width = 880;
+                            main.Height = 620;
+                            main.UpdateLayout();
+                            var bounds = ribbonArea.TransformToAncestor(main).TransformBounds(new Rect(ribbonArea.RenderSize));
+                            var maximize = (Button)main.FindName("MaximizeButton");
+                            var captionBounds = maximize.TransformToAncestor(main).TransformBounds(new Rect(maximize.RenderSize));
+                            Assert.True(bounds.Top >= captionBounds.Bottom);
+                            var timestampBounds = timestamp.TransformToAncestor(ribbonArea).TransformBounds(new Rect(timestamp.RenderSize));
+                            Assert.True(new Rect(ribbonArea.RenderSize).Contains(timestampBounds));
+                            Assert.True(timestamp.DesiredSize.Width <= ribbon.ActualWidth - ribbon.Padding.Left - ribbon.Padding.Right);
+                            var labelHit = Assert.IsAssignableFrom<DependencyObject>(main.InputHitTest(
+                                timestamp.TranslatePoint(new Point(timestamp.ActualWidth / 2, timestamp.ActualHeight / 2), main)));
+                            Assert.True(ribbon.IsAncestorOf(labelHit));
+                            var transparentHit = Assert.IsAssignableFrom<DependencyObject>(main.InputHitTest(
+                                ribbonArea.TranslatePoint(new Point(8, 120), main)));
+                            Assert.False(ribbon.IsAncestorOf(transparentHit));
+                            void AssertOverlayDoesNotShift(FrameworkElement content)
+                            {
+                                var before = content.TransformToAncestor(main).TransformBounds(new Rect(content.RenderSize));
+                                ribbonArea.Visibility = Visibility.Collapsed;
+                                main.UpdateLayout();
+                                Assert.Equal(before, content.TransformToAncestor(main).TransformBounds(new Rect(content.RenderSize)));
+                                ribbonArea.Visibility = Visibility.Visible;
+                                main.UpdateLayout();
+                            }
+                            AssertOverlayDoesNotShift(readingPane);
+                            main.ViewModel.OpenSettingsCommand.Execute(null);
+                            main.UpdateLayout();
+                            AssertOverlayDoesNotShift((ScrollViewer)main.FindName("SettingsPage"));
+                            main.ViewModel.CloseSettingsCommand.Execute(null);
+                            main.UpdateLayout();
+                            Assert.True(ribbon.Focus());
+                            Assert.True(ribbon.IsKeyboardFocused);
+                        }
                         var handle = new WindowInteropHelper(main).Handle;
                         void AssertNativeRounding()
                         {
@@ -295,6 +363,22 @@ public sealed class PresentationTests
                         main.Height = 700;
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         AssertNativeRounding();
+                        if (BuildIdentity.Current.IsLocal)
+                        {
+                            var beforeDismissal = readingPane.TransformToAncestor(main).TransformBounds(new Rect(readingPane.RenderSize));
+                            var invoke = (IInvokeProvider)new ButtonAutomationPeer(ribbon).GetPattern(PatternInterface.Invoke);
+                            invoke.Invoke();
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                            Assert.Equal(Visibility.Collapsed, ribbonArea.Visibility);
+                            Assert.Equal(beforeDismissal, readingPane.TransformToAncestor(main).TransformBounds(new Rect(readingPane.RenderSize)));
+                            var reopened = new MainWindow(store, showLogin: false, enableUpdates: false);
+                            try
+                            {
+                                reopened.Show();
+                                Assert.Equal(Visibility.Collapsed, ((Canvas)reopened.FindName("BuildRibbonArea")).Visibility);
+                            }
+                            finally { reopened.Close(); }
+                        }
                         main.MaximizeCommand.Execute(null);
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         Assert.Equal(WindowState.Maximized, main.WindowState);
