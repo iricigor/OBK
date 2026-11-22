@@ -23,8 +23,6 @@
                 <Image Source="pack://application:,,,/Assets/OBK.ico" Width="16" Height="16" Margin="0,0,8,0"
                        RenderOptions.BitmapScalingMode="HighQuality" AutomationProperties.Name="OBK"/>
                 <TextBlock Text="OBK - Offline Komens" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
-                <TextBlock Text="{Binding AccountLabel}" ToolTip="{Binding AccountLabel}" MaxWidth="420"
-                           TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="16,0,0,0"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                 <Button Width="46" Height="40" MinHeight="0" Style="{StaticResource SubtleButton}"
@@ -46,7 +44,6 @@
         <Grid Grid.Row="1" Margin="20,0,20,0">
             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="OBK" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0"/>
                 <Border CornerRadius="12" Padding="10,3" VerticalAlignment="Center" Margin="0,0,12,0" MaxWidth="360" ToolTip="{Binding AccountLabel}">
                     <Border.Background>
                         <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
