@@ -1,3 +1,4 @@
+using OBK.Core.Localization;
 using System.Globalization;
 using System.IO.Compression;
 using System.Text;
@@ -79,17 +80,17 @@ public sealed class SchoolDirectory
             var document = JsonSerializer.Deserialize<DirectoryDocument>(gzip, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }) ?? throw new ObkException("The bundled school directory is empty.");
+            }) ?? throw new ObkException(SharedStrings.ErrorDirectoryEmpty);
             if (document.FormatVersion != 1 || document.Schools is null)
-                throw new ObkException("The bundled school directory format is not supported.");
+                throw new ObkException(SharedStrings.ErrorDirectoryFormat);
             var directory = new SchoolDirectory(document.Schools);
             if (directory.Count == 0)
-                throw new ObkException("The bundled school directory has no usable HTTPS schools.");
+                throw new ObkException(SharedStrings.ErrorDirectoryNoSchools);
             return directory;
         }
         catch (Exception error) when (error is JsonException or InvalidDataException or IOException or NotSupportedException)
         {
-            throw new ObkException("The bundled school directory is damaged. Enter the school URL manually.", error);
+            throw new ObkException(SharedStrings.ErrorDirectoryDamaged, error);
         }
     }
 

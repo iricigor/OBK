@@ -1,3 +1,4 @@
+using OBK.Core.Localization;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -43,7 +44,7 @@ public sealed class Message
     {
         if (string.IsNullOrEmpty(Id) || Title is null || Text is null ||
             Attachments is null || Attachments.Any(a => a is null))
-            throw new ObkException("Komens returned an unrecognized message format.");
+            throw new ObkException(SharedStrings.ErrorUnrecognizedMessage);
         _ = Date;
     }
 
@@ -52,7 +53,7 @@ public sealed class Message
         if (value is null || !Regex.IsMatch(value, @"^\d{4}-\d{2}-\d{2}T") ||
             !DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture,
                 DateTimeStyles.None, out var date))
-            throw new ObkException("A message has an invalid sent date; synchronization stopped.");
+            throw new ObkException(SharedStrings.ErrorInvalidSentDate);
         return date;
     }
 }
@@ -64,7 +65,7 @@ public sealed class Attachment
     public string? FileName { get; init; }
     [JsonExtensionData] public Dictionary<string, JsonElement>? Extra { get; init; }
     [JsonIgnore] public string Identifier => !string.IsNullOrEmpty(Id) ? Id :
-        throw new ObkException("An attachment has no valid ID; it cannot be downloaded.");
+        throw new ObkException(SharedStrings.ErrorAttachmentNoId);
     [JsonIgnore] public string SafeName => FileNames.Sanitize(Name ?? FileName ?? "attachment.bin");
 }
 
@@ -112,22 +113,25 @@ public sealed record Archive(string SchoolName, Dictionary<string, List<Message>
 
 public static class Folders
 {
-    public static IReadOnlyDictionary<string, string> Names { get; } =
-        new Dictionary<string, string>
-        {
-            ["received"] = "Inbox", ["sent"] = "Sent", ["noticeboard"] = "Noticeboard"
-        };
-    public static Dictionary<string, List<Message>> Empty() => Names.Keys.ToDictionary(k => k, _ => new List<Message>());
+    public static IReadOnlyList<string> Keys { get; } = ["received", "sent", "noticeboard"];
+    public static string Title(string key) => key switch
+    {
+        "received" => SharedStrings.FolderInbox,
+        "sent" => SharedStrings.FolderSent,
+        "noticeboard" => SharedStrings.FolderNoticeboard,
+        _ => key
+    };
+    public static Dictionary<string, List<Message>> Empty() => Keys.ToDictionary(k => k, _ => new List<Message>());
     public static void Validate(Dictionary<string, List<Message>> folders)
     {
-        if (folders is null || !folders.Keys.ToHashSet().SetEquals(Names.Keys))
-            throw new ObkException("An incomplete folder set cannot replace the offline archive.");
+        if (folders is null || !folders.Keys.ToHashSet().SetEquals(Keys))
+            throw new ObkException(SharedStrings.ErrorIncompleteFolderSet);
         foreach (var messages in folders.Values)
         {
-            if (messages is null) throw new ObkException("The offline message archive is damaged.");
+            if (messages is null) throw new ObkException(SharedStrings.ErrorArchiveDamaged);
             foreach (var message in messages)
             {
-                if (message is null) throw new ObkException("The offline message archive is damaged.");
+                if (message is null) throw new ObkException(SharedStrings.ErrorArchiveDamaged);
                 message.Validate();
             }
         }

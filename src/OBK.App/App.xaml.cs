@@ -1,4 +1,6 @@
+using OBK.App.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -33,7 +35,7 @@ public partial class App : Application
             try { new MainWindow(await Task.Run(() => new LocalStore())).Show(); }
             catch (ObkException error)
             {
-                MessageBox.Show(error.Message, "OBK cannot start", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(error.Message, AppStrings.ErrorStartupTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown(1);
             }
             return;
@@ -359,8 +361,8 @@ public partial class App : Application
 
     private void UnexpectedError(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        MessageBox.Show($"Unexpected application error ({e.Exception.GetType().Name}). Restart OBK; do not share credentials or message content in error reports.",
-            "OBK error", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show(Localized.Format(AppStrings.ErrorUnexpected, e.Exception.GetType().Name),
+            AppStrings.ErrorUnexpectedTitle, MessageBoxButton.OK, MessageBoxImage.Error);
         e.Handled = true;
         Shutdown(1);
     }

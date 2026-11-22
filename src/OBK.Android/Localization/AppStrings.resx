@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountSchoolAndUsername" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>Account label when no child name is set. {0} = school name, {1} = Komens username.</comment>
+  </data>
+  <data name="AlertOkButton" xml:space="preserve">
+    <value>OK</value>
+    <comment>Dismiss button for error and attention alerts.</comment>
+  </data>
+  <data name="ErrorArchiveNotOpen" xml:space="preserve">
+    <value>The encrypted archive is not open.</value>
+  </data>
+  <data name="ErrorAuthenticatedEncryptionUnavailable" xml:space="preserve">
+    <value>Android authenticated encryption is unavailable.</value>
+  </data>
+  <data name="ErrorEncryptionKeyMissing" xml:space="preserve">
+    <value>The Android encryption key is missing. Existing local data cannot be decrypted; no replacement key was created.</value>
+  </data>
+  <data name="ErrorEnterUsernameAndPassword" xml:space="preserve">
+    <value>Enter your school username and password.</value>
+  </data>
+  <data name="ErrorInvalidAttachmentContentType" xml:space="preserve">
+    <value>The attachment has an invalid content type.</value>
+  </data>
+  <data name="ErrorInvalidEncryptedFormat" xml:space="preserve">
+    <value>Local Android data has an invalid encrypted format.</value>
+  </data>
+  <data name="ErrorKeyAccessFailed" xml:space="preserve">
+    <value>Android could not access the local encryption key.</value>
+  </data>
+  <data name="ErrorKeyCreationFailed" xml:space="preserve">
+    <value>Android could not create the local encryption key.</value>
+  </data>
+  <data name="ErrorKeystoreUnavailable" xml:space="preserve">
+    <value>Android Keystore is unavailable; no local data was opened.</value>
+  </data>
+  <data name="ErrorLocalDecryptFailed" xml:space="preserve">
+    <value>Android could not decrypt local data. Its key may be unavailable or the data damaged; no plaintext fallback is used.</value>
+  </data>
+  <data name="ErrorLocalDecryptNoResult" xml:space="preserve">
+    <value>Android did not decrypt local data.</value>
+  </data>
+  <data name="ErrorLocalEncryptFailed" xml:space="preserve">
+    <value>Android could not encrypt local data. No plaintext fallback is used.</value>
+  </data>
+  <data name="ErrorLocalEncryptNoResult" xml:space="preserve">
+    <value>Android did not encrypt local data.</value>
+  </data>
+  <data name="ErrorNoAppForAttachment" xml:space="preserve">
+    <value>No installed app can open this attachment. Use Share / save a copy instead.</value>
+    <comment>"Share / save a copy" must match the MessageShareAttachment button text.</comment>
+  </data>
+  <data name="ErrorNoAppForLink" xml:space="preserve">
+    <value>No installed app can open this link.</value>
+  </data>
+  <data name="ErrorNoEncryptionNonce" xml:space="preserve">
+    <value>Android did not provide an encryption nonce.</value>
+  </data>
+  <data name="ErrorSchoolDirectoryMissing" xml:space="preserve">
+    <value>The offline school directory is missing from this installation.</value>
+  </data>
+  <data name="ErrorStorageCheckFailed" xml:space="preserve">
+    <value>Android encrypted storage failed its initialization check.</value>
+  </data>
+  <data name="ErrorStorageInitFailed" xml:space="preserve">
+    <value>Android could not initialize encrypted storage. No plaintext fallback is used.</value>
+  </data>
+  <data name="ErrorSyncInProgress" xml:space="preserve">
+    <value>Another account is still downloading. Wait for it to finish before refreshing again.</value>
+  </data>
+  <data name="ErrorUnsupportedNonce" xml:space="preserve">
+    <value>Android returned an unsupported encryption nonce.</value>
+  </data>
+  <data name="ErrorVerificationCannotSync" xml:space="preserve">
+    <value>Fictional verification data cannot contact a school. Restart without the verification flag to sign in.</value>
+    <comment>Shown only in developer verification builds started with the verification flag.</comment>
+  </data>
+  <data name="MessageActionFailedAlertTitle" xml:space="preserve">
+    <value>Cannot open or share</value>
+    <comment>Alert title when opening a link or opening/sharing an attachment fails.</comment>
+  </data>
+  <data name="MessageAttachmentNotDownloaded" xml:space="preserve">
+    <value>Not downloaded. Refresh this account to cache the attachment.</value>
+  </data>
+  <data name="MessageAttachmentsHeader" xml:space="preserve">
+    <value>Attachments</value>
+    <comment>Section heading above the message's attachments.</comment>
+  </data>
+  <data name="MessageDecryptedCopyNotice" xml:space="preserve">
+    <value>Opening or sharing creates a decrypted copy in OBK's private cache. It is cleared on the next app start; copies saved in another app are outside OBK's control.</value>
+  </data>
+  <data name="MessageLinksHeader" xml:space="preserve">
+    <value>Links</value>
+    <comment>Section heading above links found in the message.</comment>
+  </data>
+  <data name="MessageOfflineNotice" xml:space="preserve">
+    <value>Offline copy. Opening this message does not contact your school.</value>
+  </data>
+  <data name="MessageOpenAttachment" xml:space="preserve">
+    <value>Open attachment</value>
+    <comment>Button that opens an attachment in another app.</comment>
+  </data>
+  <data name="MessageOpenAttachmentChooserTitle" xml:space="preserve">
+    <value>Open attachment</value>
+    <comment>Title of the Android app chooser shown when opening an attachment.</comment>
+  </data>
+  <data name="MessagePageTitle" xml:space="preserve">
+    <value>Message</value>
+    <comment>Title of the message detail page.</comment>
+  </data>
+  <data name="MessageReadFailedAlertTitle" xml:space="preserve">
+    <value>Cannot read this message</value>
+  </data>
+  <data name="MessageShareAttachment" xml:space="preserve">
+    <value>Share / save a copy</value>
+    <comment>Button that shares an attachment or saves a copy via another app.</comment>
+  </data>
+  <data name="MessageShareAttachmentChooserTitle" xml:space="preserve">
+    <value>Share attachment</value>
+    <comment>Title of the Android share sheet for an attachment.</comment>
+  </data>
+  <data name="ReaderAccountPickerTitle" xml:space="preserve">
+    <value>Choose a child or account</value>
+  </data>
+  <data name="ReaderAccountStatus" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Status or failure line for one account during Refresh all. {0} = account label, {1} = progress or error text.</comment>
+  </data>
+  <data name="ReaderAccountsButton" xml:space="preserve">
+    <value>Add child / sign in</value>
+  </data>
+  <data name="ReaderAccountsSheetAddChild" xml:space="preserve">
+    <value>Add child</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetCancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Accounts action sheet cancel button.</comment>
+  </data>
+  <data name="ReaderAccountsSheetForgetPassword" xml:space="preserve">
+    <value>Forget this account's saved password</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetSignIn" xml:space="preserve">
+    <value>Sign in to this account</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetTitle" xml:space="preserve">
+    <value>Accounts</value>
+    <comment>Title of the accounts action sheet.</comment>
+  </data>
+  <data name="ReaderEmptyFolder" xml:space="preserve">
+    <value>No cached messages in this folder.</value>
+  </data>
+  <data name="ReaderEmptyNoArchive" xml:space="preserve">
+    <value>Your downloaded messages will appear here.</value>
+  </data>
+  <data name="ReaderEmptySearch" xml:space="preserve">
+    <value>No cached messages match your search.</value>
+  </data>
+  <data name="ReaderFolderPickerTitle" xml:space="preserve">
+    <value>Message folder</value>
+  </data>
+  <data name="ReaderOperationFailedAlertTitle" xml:space="preserve">
+    <value>OBK could not complete the operation</value>
+  </data>
+  <data name="ReaderRefreshAlertTitle" xml:space="preserve">
+    <value>Refresh needs attention</value>
+  </data>
+  <data name="ReaderRefreshAll" xml:space="preserve">
+    <value>Refresh all</value>
+    <comment>Button that refreshes every saved account.</comment>
+  </data>
+  <data name="ReaderRefreshFailed" xml:space="preserve">
+    <value>Failed: {0} Existing offline archives were kept.</value>
+    <comment>Part of the Refresh all summary. {0} = semicolon-separated list of "account: error" entries.</comment>
+  </data>
+  <data name="ReaderRefreshSignInNeeded" xml:space="preserve">
+    <value>Sign in needed: {0}.</value>
+    <comment>Part of the Refresh all summary. {0} = comma-separated account labels without a saved password.</comment>
+  </data>
+  <data name="ReaderRefreshSummary" xml:space="preserve">
+    <value>Refreshed {0} of {1} accounts.</value>
+    <comment>Start of the Refresh all summary. {0} = accounts refreshed successfully, {1} = all known accounts.</comment>
+  </data>
+  <data name="ReaderRetryOpening" xml:space="preserve">
+    <value>Retry opening archive</value>
+    <comment>Refresh button text when the encrypted archive could not be opened.</comment>
+  </data>
+  <data name="ReaderSearchPlaceholder" xml:space="preserve">
+    <value>Search subject, sender, text or date</value>
+  </data>
+  <data name="ReaderStatusArchiveReady" xml:space="preserve">
+    <value>Offline archive ready. Last sync: {0:g}</value>
+    <comment>{0} = date and time of the last successful download (short date/time format).</comment>
+  </data>
+  <data name="ReaderStatusNoAccounts" xml:space="preserve">
+    <value>Add a child to download messages. Reading cached messages never contacts your school.</value>
+  </data>
+  <data name="ReaderStatusNoArchive" xml:space="preserve">
+    <value>No offline archive yet. Sign in to download messages.</value>
+  </data>
+  <data name="ReaderStatusOpening" xml:space="preserve">
+    <value>Opening encrypted offline archive...</value>
+  </data>
+  <data name="ReaderStatusPasswordForgotten" xml:space="preserve">
+    <value>Saved password forgotten. Offline messages and attachments are still available.</value>
+  </data>
+  <data name="SignInChildLabel" xml:space="preserve">
+    <value>Child's name</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInChildPlaceholder" xml:space="preserve">
+    <value>Child's name (optional)</value>
+    <comment>Field placeholder.</comment>
+  </data>
+  <data name="SignInFailedAlertTitle" xml:space="preserve">
+    <value>Sign-in or download failed</value>
+  </data>
+  <data name="SignInHeading" xml:space="preserve">
+    <value>Download once. Read offline.</value>
+  </data>
+  <data name="SignInMatchingSchools" xml:space="preserve">
+    <value>{0} matching schools</value>
+    <comment>{0} = number of matching schools (1 to 6).</comment>
+  </data>
+  <data name="SignInNoSchoolMatch" xml:space="preserve">
+    <value>No matching school. You can enter its HTTPS address below.</value>
+  </data>
+  <data name="SignInPasswordLabel" xml:space="preserve">
+    <value>Password</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInPasswordNotice" xml:space="preserve">
+    <value>Your password is saved only if you choose Remember credentials.</value>
+    <comment>"Remember credentials" must match SignInRememberCredentials.</comment>
+  </data>
+  <data name="SignInPasswordPlaceholder" xml:space="preserve">
+    <value>Password</value>
+    <comment>Field placeholder.</comment>
+  </data>
+  <data name="SignInReadOnlyNotice" xml:space="preserve">
+    <value>OBK only reads messages. It never sends replies, confirmations or read receipts.</value>
+  </data>
+  <data name="SignInRememberCredentials" xml:space="preserve">
+    <value>Remember credentials</value>
+    <comment>Checkbox label.</comment>
+  </data>
+  <data name="SignInSchoolAddressLabel" xml:space="preserve">
+    <value>School HTTPS address</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInSchoolSearchPlaceholder" xml:space="preserve">
+    <value>Search school or town</value>
+  </data>
+  <data name="SignInSubmitButton" xml:space="preserve">
+    <value>Sign in and download</value>
+  </data>
+  <data name="SignInTitleAddChild" xml:space="preserve">
+    <value>Add child</value>
+    <comment>Sign-in page title when adding a new account.</comment>
+  </data>
+  <data name="SignInTitleSignIn" xml:space="preserve">
+    <value>Sign in</value>
+    <comment>Sign-in page title for an existing account.</comment>
+  </data>
+  <data name="SignInTooManySchools" xml:space="preserve">
+    <value>{0} schools match. Type more to narrow the results.</value>
+    <comment>{0} = number of matching schools (more than 6).</comment>
+  </data>
+  <data name="SignInUsernameLabel" xml:space="preserve">
+    <value>Username</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInUsernamePlaceholder" xml:space="preserve">
+    <value>Komens username</value>
+    <comment>Field placeholder. Komens is the school messaging system name.</comment>
+  </data>
+  <data name="StatusSigningIn" xml:space="preserve">
+    <value>Signing in...</value>
+    <comment>Progress status while signing in.</comment>
+  </data>
+</root>

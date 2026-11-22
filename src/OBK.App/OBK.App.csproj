@@ -10,7 +10,12 @@
     <Product>OBK</Product>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <ApplicationIcon>Assets\OBK.ico</ApplicationIcon>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
+  <ItemGroup>
+    <LocalizedStrings Include="Localization\AppStrings.resx" />
+  </ItemGroup>
+  <Import Project="..\Localization.targets" />
   <ItemGroup>
     <Resource Include="Assets\OBK.ico" />
   </ItemGroup>

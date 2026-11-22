@@ -26,6 +26,20 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - run: python -m unittest discover -s .\tools -p "test_school_directory.py"
 
+  localization:
+    name: Localization resource completeness
+    runs-on: windows-2025
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Test the completeness check
+        run: python -m unittest discover -s .\tools -p "test_check_localization.py"
+      - name: Check every language of each resource set
+        run: python .\tools\check_localization.py
+
   windows:
     uses: ./.github/workflows/windows-build.yml
     with:

@@ -2,8 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:loc="clr-namespace:OBK.App.Localization"
         Style="{StaticResource {x:Type Window}}"
-        Title="Sign in to your school" Width="560" SizeToContent="Height"
+        Title="{x:Static loc:AppStrings.LoginTitle}" Width="560" SizeToContent="Height"
         ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner" Closing="WindowClosing">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="40" ResizeBorderThickness="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
@@ -13,7 +14,7 @@
             <Grid DockPanel.Dock="Top" Height="40">
                 <TextBlock Text="OBK" Foreground="{DynamicResource TextSecondary}" FontSize="12" VerticalAlignment="Center" Margin="24,0"/>
                 <Button HorizontalAlignment="Right" Width="40" Height="40" Style="{StaticResource SubtleButton}"
-                        Click="CloseWindow" ToolTip="Close without signing in" AutomationProperties.Name="Close sign in"
+                        Click="CloseWindow" ToolTip="{x:Static loc:AppStrings.LoginCloseTooltip}" AutomationProperties.Name="{x:Static loc:AppStrings.LoginCloseName}"
                         shell:WindowChrome.IsHitTestVisibleInChrome="True">
                     <TextBlock Style="{StaticResource Icon}" Text="&#xE8BB;" FontSize="10"/>
                 </Button>
@@ -25,14 +26,14 @@
                 </Grid.RowDefinitions>
                 <ScrollViewer x:Name="ContentScroll" VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="24,8,24,20">
-                        <TextBlock Text="Sign in to Komens" FontSize="24" FontWeight="Bold" Margin="0,0,0,8"/>
-                        <TextBlock Text="Choose your school, sign in, and sync messages for offline reading."
+                        <TextBlock Text="{x:Static loc:AppStrings.LoginHeading}" FontSize="24" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <TextBlock Text="{x:Static loc:AppStrings.LoginIntro}"
                                    TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,22"/>
 
                         <StackPanel x:Name="SchoolChooserPanel">
                             <StackPanel x:Name="SavedAccountsPanel" Visibility="Collapsed" Margin="0,0,0,18">
-                                <TextBlock Text="Previously used accounts" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                <TextBlock Text="Choose a child or username. Saved passwords are filled in automatically."
+                                <TextBlock Text="{x:Static loc:AppStrings.LoginSavedAccountsTitle}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <TextBlock Text="{x:Static loc:AppStrings.LoginSavedAccountsHint}"
                                            Foreground="{DynamicResource TextSecondary}"
                                            FontSize="12" Margin="0,0,0,8"/>
                                 <ItemsControl x:Name="SavedAccounts">
@@ -51,18 +52,18 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </StackPanel>
-                            <TextBlock x:Name="SavedAccountsDivider" Text="Or find another school"
+                            <TextBlock x:Name="SavedAccountsDivider" Text="{x:Static loc:AppStrings.LoginFindAnotherSchool}"
                                        Visibility="Collapsed" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                            <Label Content="School" Target="{Binding ElementName=SchoolSearch}" Padding="0"/>
-                            <TextBox x:Name="SchoolSearch" Margin="0,4,0,6" AutomationProperties.Name="School"
-                                     AutomationProperties.HelpText="Search by school name, town, or website"
+                            <Label Content="{x:Static loc:AppStrings.LoginSchoolLabel}" Target="{Binding ElementName=SchoolSearch}" Padding="0"/>
+                            <TextBox x:Name="SchoolSearch" Margin="0,4,0,6" AutomationProperties.Name="{x:Static loc:AppStrings.LoginSchoolLabel}"
+                                     AutomationProperties.HelpText="{x:Static loc:AppStrings.LoginSchoolSearchHelp}"
                                      TextChanged="SchoolSearchChanged" PreviewKeyDown="SchoolSearchKeyDown" IsEnabled="False"/>
-                            <TextBlock x:Name="SchoolSearchStatus" Text="Loading the bundled school directory..."
+                            <TextBlock x:Name="SchoolSearchStatus" Text="{x:Static loc:AppStrings.LoginLoadingDirectory}"
                                        TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"
                                        AutomationProperties.LiveSetting="Polite"/>
                             <ListBox x:Name="SchoolMatches" Margin="0,0,0,8" Visibility="Collapsed"
                                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                     AutomationProperties.Name="Matching schools" PreviewKeyDown="SchoolMatchesKeyDown"
+                                     AutomationProperties.Name="{x:Static loc:AppStrings.LoginMatchingSchools}" PreviewKeyDown="SchoolMatchesKeyDown"
                                      PreviewMouseLeftButtonUp="SchoolMatchesMouseUp"
                                      ItemContainerStyle="{StaticResource SelectableRow}">
                                 <ListBox.ItemTemplate>
@@ -78,27 +79,27 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <Button x:Name="ManualUrlButton" Content="Can't find your school? Enter its website"
+                            <Button x:Name="ManualUrlButton" Content="{x:Static loc:AppStrings.LoginManualUrlButton}"
                                     Click="OpenManualUrl" Style="{StaticResource SubtleButton}" HorizontalAlignment="Left"
                                     Padding="0,4" Margin="0,0,0,4"/>
                         </StackPanel>
 
                         <StackPanel x:Name="ManualUrlPanel" Visibility="Collapsed">
-                            <Label Content="School website (HTTPS)" Target="{Binding ElementName=SchoolUrl}" Padding="0"/>
-                            <TextBox x:Name="SchoolUrl" Margin="0,4,0,6" AutomationProperties.Name="School website (HTTPS)"
+                            <Label Content="{x:Static loc:AppStrings.LoginSchoolUrlLabel}" Target="{Binding ElementName=SchoolUrl}" Padding="0"/>
+                            <TextBox x:Name="SchoolUrl" Margin="0,4,0,6" AutomationProperties.Name="{x:Static loc:AppStrings.LoginSchoolUrlLabel}"
                                      TextChanged="SchoolUrlChanged" PreviewKeyDown="SchoolUrlKeyDown"/>
-                            <TextBlock Text="Use the school's HTTPS address. Do not include /login."
+                            <TextBlock Text="{x:Static loc:AppStrings.LoginSchoolUrlHint}"
                                        Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,0,0,10"/>
                             <StackPanel Orientation="Horizontal">
-                                <Button x:Name="BackToSchoolSearchButton" Content="Back to school search" Click="BackToSchoolSearch"
+                                <Button x:Name="BackToSchoolSearchButton" Content="{x:Static loc:AppStrings.LoginBackToSearch}" Click="BackToSchoolSearch"
                                         Style="{StaticResource SubtleButton}" Padding="0,6" Margin="0,0,16,0"/>
-                                <Button x:Name="UseManualUrlButton" Content="Use this website" Click="UseManualUrl"
+                                <Button x:Name="UseManualUrlButton" Content="{x:Static loc:AppStrings.LoginUseWebsite}" Click="UseManualUrl"
                                         Style="{StaticResource PrimaryButton}"/>
                             </StackPanel>
                         </StackPanel>
 
                         <StackPanel x:Name="SelectedSchoolPanel" Visibility="Collapsed" Margin="0,0,0,20">
-                            <TextBlock Text="SELECTED SCHOOL" FontSize="10" FontWeight="SemiBold"
+                            <TextBlock Text="{x:Static loc:AppStrings.LoginSelectedSchool}" FontSize="10" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,6"/>
                             <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}"
                                     BorderThickness="1" CornerRadius="8" Padding="14,12">
@@ -122,7 +123,7 @@
                                                    Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"
                                                    Margin="0,2,0,0"/>
                                     </StackPanel>
-                                    <Button x:Name="ChangeSchoolButton" Grid.Column="2" Content="Change" Click="ChangeSchool"
+                                    <Button x:Name="ChangeSchoolButton" Grid.Column="2" Content="{x:Static loc:AppStrings.LoginChangeSchool}" Click="ChangeSchool"
                                             Style="{StaticResource SubtleButton}" VerticalAlignment="Top"/>
                                 </Grid>
                             </Border>
@@ -141,21 +142,21 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <Label Content="Username" Target="{Binding ElementName=Username}" Padding="0"
+                            <Label Content="{x:Static loc:AppStrings.FieldUsername}" Target="{Binding ElementName=Username}" Padding="0"
                                    VerticalAlignment="Center" Margin="0,0,0,10"/>
-                            <TextBox x:Name="Username" Grid.Column="1" Margin="0,0,0,10" AutomationProperties.Name="Username"/>
-                            <Label Grid.Row="1" Content="Password" Target="{Binding ElementName=Password}" Padding="0"
+                            <TextBox x:Name="Username" Grid.Column="1" Margin="0,0,0,10" AutomationProperties.Name="{x:Static loc:AppStrings.FieldUsername}"/>
+                            <Label Grid.Row="1" Content="{x:Static loc:AppStrings.FieldPassword}" Target="{Binding ElementName=Password}" Padding="0"
                                    VerticalAlignment="Center" Margin="0,0,0,10"/>
                             <PasswordBox x:Name="Password" Grid.Row="1" Grid.Column="1" Margin="0,0,0,10"
-                                         AutomationProperties.Name="Password" PasswordChanged="PasswordChanged"/>
-                            <Label Grid.Row="2" Content="Child name" Target="{Binding ElementName=ChildName}" Padding="0"
+                                         AutomationProperties.Name="{x:Static loc:AppStrings.FieldPassword}" PasswordChanged="PasswordChanged"/>
+                            <Label Grid.Row="2" Content="{x:Static loc:AppStrings.FieldChildName}" Target="{Binding ElementName=ChildName}" Padding="0"
                                    VerticalAlignment="Center"/>
-                            <TextBox x:Name="ChildName" Grid.Row="2" Grid.Column="1" AutomationProperties.Name="Child name (optional)"/>
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="Optional. Shown in the app title instead of the school name."
+                            <TextBox x:Name="ChildName" Grid.Row="2" Grid.Column="1" AutomationProperties.Name="{x:Static loc:AppStrings.LoginChildNameOptional}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Static loc:AppStrings.LoginChildNameHint}"
                                        Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,14"/>
-                            <CheckBox x:Name="Remember" Grid.Row="4" Grid.Column="1" Content="Remember credentials on this Windows account"
+                            <CheckBox x:Name="Remember" Grid.Row="4" Grid.Column="1" Content="{x:Static loc:AppStrings.LoginRemember}"
                                       Unchecked="RememberUnchecked" Margin="0,0,0,6"/>
-                            <TextBlock Grid.Row="5" Grid.Column="1" Text="Credentials and messages are encrypted for this Windows account."
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Static loc:AppStrings.LoginEncryptionNote}"
                                        Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="28,0,0,0"/>
                         </Grid>
                     </StackPanel>
@@ -167,9 +168,9 @@
                         <TextBlock x:Name="Status" TextWrapping="Wrap" Margin="0,0,0,10"
                                    AutomationProperties.LiveSetting="Assertive"/>
                         <DockPanel>
-                            <Button x:Name="OfflineButton" Content="Read offline" Click="ReadOffline"
+                            <Button x:Name="OfflineButton" Content="{x:Static loc:AppStrings.LoginReadOffline}" Click="ReadOffline"
                                     IsEnabled="False" DockPanel.Dock="Left"/>
-                            <Button x:Name="SignInButton" Content="Sign in and sync" Click="SignIn"
+                            <Button x:Name="SignInButton" Content="{x:Static loc:AppStrings.LoginSignIn}" Click="SignIn"
                                     IsEnabled="False" IsDefault="True" HorizontalAlignment="Right"
                                     Style="{StaticResource PrimaryButton}"/>
                         </DockPanel>

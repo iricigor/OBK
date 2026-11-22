@@ -1,4 +1,6 @@
+using OBK.App.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 using System.Windows.Input;
 
 namespace OBK.App;
@@ -40,18 +42,18 @@ public sealed class UpdateManager : ObservableObject, IDisposable
     public ICommand IgnoreCommand { get; }
     public ICommand CheckNowCommand { get; }
     public bool CanCheckNow => state == UpdateState.Current && !checking;
-    public string? CheckTooltip => CanCheckNow ? "Click to check for updates now" : null;
+    public string? CheckTooltip => CanCheckNow ? AppStrings.UpdateCheckTooltip : null;
     public UpdateState State { get => state; private set { if (Set(ref state, value)) NotifyAll(); } }
     public bool IsReady => state == UpdateState.Ready;
     public bool MenuOpen { get => menuOpen; set => Set(ref menuOpen, value); }
-    public string Text => checking && state == UpdateState.Current ? "Checking for updates..." :
+    public string Text => checking && state == UpdateState.Current ? AppStrings.UpdateChecking :
         error is not null ? error : state switch
     {
-        UpdateState.Downloading => $"Downloading {UpdateService.Display(update!.Version)}...",
-        UpdateState.Ready => $"{UpdateService.Display(update!.Version)} is ready to install",
-        UpdateState.Scheduled => $"{UpdateService.Display(update!.Version)} will install when you exit",
-        UpdateState.Ignored => $"Update {UpdateService.Display(update!.Version)} ignored this session",
-        _ => $"You're on the latest version {UpdateService.Display(installed)}"
+        UpdateState.Downloading => Localized.Format(AppStrings.UpdateDownloading, UpdateService.Display(update!.Version)),
+        UpdateState.Ready => Localized.Format(AppStrings.UpdateReady, UpdateService.Display(update!.Version)),
+        UpdateState.Scheduled => Localized.Format(AppStrings.UpdateScheduled, UpdateService.Display(update!.Version)),
+        UpdateState.Ignored => Localized.Format(AppStrings.UpdateIgnored, UpdateService.Display(update!.Version)),
+        _ => Localized.Format(AppStrings.UpdateCurrent, UpdateService.Display(installed))
     };
 
     private void NotifyAll()
@@ -117,7 +119,7 @@ public sealed class UpdateManager : ObservableObject, IDisposable
 
     private void InstallNow()
     {
-        if (!canRestart()) { SetError("Wait for synchronization or attachment export to finish before updating."); return; }
+        if (!canRestart()) { SetError(AppStrings.UpdateErrorBusy); return; }
         restartRequested = true;
         restart();
     }

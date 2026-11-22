@@ -1,15 +1,17 @@
+using OBK.AndroidApp.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 
 namespace OBK.AndroidApp;
 
 internal sealed class ReaderPage : ContentPage
 {
-    private readonly Picker accounts = new() { Title = "Choose a child or account" };
-    private readonly Picker folders = new() { Title = "Message folder" };
-    private readonly SearchBar search = new() { Placeholder = "Search subject, sender, text or date" };
-    private readonly Label status = new() { Text = "Opening encrypted offline archive..." };
-    private readonly Button refresh = new() { Text = "Refresh all" };
-    private readonly Button signIn = new() { Text = "Add child / sign in" };
+    private readonly Picker accounts = new() { Title = AppStrings.ReaderAccountPickerTitle };
+    private readonly Picker folders = new() { Title = AppStrings.ReaderFolderPickerTitle };
+    private readonly SearchBar search = new() { Placeholder = AppStrings.ReaderSearchPlaceholder };
+    private readonly Label status = new() { Text = AppStrings.ReaderStatusOpening };
+    private readonly Button refresh = new() { Text = AppStrings.ReaderRefreshAll };
+    private readonly Button signIn = new() { Text = AppStrings.ReaderAccountsButton };
     private readonly ActivityIndicator progress = new() { IsVisible = false };
     private readonly CollectionView messages = new() { SelectionMode = SelectionMode.Single };
     private readonly Label empty = new();
@@ -26,7 +28,7 @@ internal sealed class ReaderPage : ContentPage
     public ReaderPage()
     {
         Title = "OBK";
-        folders.ItemsSource = new[] { "Inbox", "Noticeboard", "Sent", "Excuses" };
+        folders.ItemsSource = new[] { SharedStrings.FolderInbox, SharedStrings.FolderNoticeboard, SharedStrings.FolderSent, SharedStrings.FolderExcuses };
         folders.SelectedIndex = 0;
         accounts.ItemDisplayBinding = new Binding(".", converter: new AccountLabelConverter());
         accounts.SelectedIndexChanged += async (_, _) =>
@@ -103,7 +105,7 @@ internal sealed class ReaderPage : ContentPage
         folders.IsEnabled = !value;
         search.IsEnabled = !value;
         messages.IsEnabled = !value;
-        refresh.Text = session is null ? "Retry opening archive" : "Refresh all";
+        refresh.Text = session is null ? AppStrings.ReaderRetryOpening : AppStrings.ReaderRefreshAll;
         refresh.IsEnabled = !value && (session is null || known.Count > 0);
         signIn.IsEnabled = !value && session is not null;
     }
@@ -122,7 +124,7 @@ internal sealed class ReaderPage : ContentPage
             status.Text = error.Message;
             progress.IsRunning = false;
             progress.IsVisible = false;
-            await DisplayAlertAsync("OBK could not complete the operation", error.Message, "OK");
+            await DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
         finally
         {
@@ -133,7 +135,7 @@ internal sealed class ReaderPage : ContentPage
 
     private async Task ReloadAsync(Login? preferred = null)
     {
-        if (session is null) throw new ObkException("The encrypted archive is not open.");
+        if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
         var result = await Task.Run(() => (session.Store.KnownLogins(), session.Store.LastAccount()));
         known = result.Item1;
         loadingAccounts = true;
@@ -149,14 +151,14 @@ internal sealed class ReaderPage : ContentPage
         {
             account = null;
             archive = null;
-            status.Text = "Add a child to download messages. Reading cached messages never contacts your school.";
+            status.Text = AppStrings.ReaderStatusNoAccounts;
             ApplySearch();
         }
     }
 
     private async Task SelectAsync(Login login)
     {
-        if (session is null) throw new ObkException("The encrypted archive is not open.");
+        if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
         var loaded = await Task.Run(() =>
         {
             var value = session.Store.LoadArchive(login.Url, login.Username, SchoolYear.Current());
@@ -166,8 +168,8 @@ internal sealed class ReaderPage : ContentPage
         account = login;
         archive = loaded;
         search.Text = "";
-        status.Text = loaded is null ? "No offline archive yet. Sign in to download messages." :
-            $"Offline archive ready. Last sync: {DateTimeOffset.Parse(loaded.SyncedAt):g}";
+        status.Text = loaded is null ? AppStrings.ReaderStatusNoArchive :
+            Localized.Format(AppStrings.ReaderStatusArchiveReady, DateTimeOffset.Parse(loaded.SyncedAt));
         ApplySearch();
     }
 
@@ -183,8 +185,8 @@ internal sealed class ReaderPage : ContentPage
             items = items.Where(item => $"{item.Title}\n{item.SenderName}\n{item.Text}\n{item.SentDate}\n{item.Date:g}"
                 .Contains(query, StringComparison.CurrentCultureIgnoreCase));
         messages.ItemsSource = items.OrderByDescending(item => item.Date).ToList();
-        empty.Text = query.Length > 0 ? "No cached messages match your search." :
-            archive is null ? "Your downloaded messages will appear here." : "No cached messages in this folder.";
+        empty.Text = query.Length > 0 ? AppStrings.ReaderEmptySearch :
+            archive is null ? AppStrings.ReaderEmptyNoArchive : AppStrings.ReaderEmptyFolder;
         empty.Margin = new Thickness(24);
     }
 
@@ -201,23 +203,26 @@ internal sealed class ReaderPage : ContentPage
     {
         if (session is null || busy) return;
         if (account is null) { await OpenSignInAsync(); return; }
-        var selected = await DisplayActionSheetAsync("Accounts", "Cancel", null,
-            "Add child", "Sign in to this account", "Forget this account's saved password");
-        if (selected == "Add child") await OpenSignInAsync();
-        else if (selected == "Sign in to this account") await OpenSignInAsync(account);
-        else if (selected == "Forget this account's saved password")
+        var addChild = AppStrings.ReaderAccountsSheetAddChild;
+        var signInAgain = AppStrings.ReaderAccountsSheetSignIn;
+        var forgetPassword = AppStrings.ReaderAccountsSheetForgetPassword;
+        var selected = await DisplayActionSheetAsync(AppStrings.ReaderAccountsSheetTitle, AppStrings.ReaderAccountsSheetCancel, null,
+            addChild, signInAgain, forgetPassword);
+        if (selected == addChild) await OpenSignInAsync();
+        else if (selected == signInAgain) await OpenSignInAsync(account);
+        else if (selected == forgetPassword)
             await RunAsync(async () =>
             {
                 var current = account;
                 await Task.Run(() => session.Store.ForgetPassword(current.Url, current.Username));
                 await ReloadAsync();
-                status.Text = "Saved password forgotten. Offline messages and attachments are still available.";
+                status.Text = AppStrings.ReaderStatusPasswordForgotten;
             });
     }
 
     private async Task RefreshAllAsync()
     {
-        if (session is null) throw new ObkException("The encrypted archive is not open.");
+        if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
         var saved = await Task.Run(() => session.Store.RememberedLogins());
         var failures = new List<string>();
         var missing = new List<Login>();
@@ -231,21 +236,24 @@ internal sealed class ReaderPage : ContentPage
                 continue;
             }
             var label = AccountLabelConverter.Label(login);
-            status.Text = $"{label}: Signing in...";
+            status.Text = Localized.Format(AppStrings.ReaderAccountStatus, label, AppStrings.StatusSigningIn);
             try
             {
                 await session.SynchronizeAsync(login, password, true,
-                    new Progress<string>(text => status.Text = $"{label}: {text}"));
+                    new Progress<string>(text => status.Text = Localized.Format(AppStrings.ReaderAccountStatus, label, text)));
                 completed++;
             }
-            catch (ObkException error) { failures.Add($"{label}: {error.Message}"); }
+            catch (ObkException error) { failures.Add(Localized.Format(AppStrings.ReaderAccountStatus, label, error.Message)); }
         }
         await ReloadAsync();
-        status.Text = $"Refreshed {completed} of {known.Count} accounts." +
-            (missing.Count > 0 ? $" Sign in needed: {string.Join(", ", missing.Select(AccountLabelConverter.Label))}." : "") +
-            (failures.Count > 0 ? " Failed: " + string.Join("; ", failures) + " Existing offline archives were kept." : "");
+        var summary = new List<string> { Localized.Format(AppStrings.ReaderRefreshSummary, completed, known.Count) };
+        if (missing.Count > 0)
+            summary.Add(Localized.Format(AppStrings.ReaderRefreshSignInNeeded, string.Join(", ", missing.Select(AccountLabelConverter.Label))));
+        if (failures.Count > 0)
+            summary.Add(Localized.Format(AppStrings.ReaderRefreshFailed, string.Join("; ", failures)));
+        status.Text = string.Join(" ", summary);
         if (failures.Count > 0 || missing.Count > 0)
-            await DisplayAlertAsync("Refresh needs attention", status.Text, "OK");
+            await DisplayAlertAsync(AppStrings.ReaderRefreshAlertTitle, status.Text, AppStrings.AlertOkButton);
         if (missing.Count > 0)
         {
             var login = missing.FirstOrDefault(item => item.Url == account?.Url && item.Username == account.Username) ?? missing[0];
@@ -256,7 +264,7 @@ internal sealed class ReaderPage : ContentPage
     private sealed class AccountLabelConverter : IValueConverter
     {
         public static string Label(Login login) => login.ChildName ??
-            (login.SchoolName is { } school ? $"{school} ({login.Username})" : login.Username);
+            (login.SchoolName is { } school ? Localized.Format(AppStrings.AccountSchoolAndUsername, school, login.Username) : login.Username);
         public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
             value is Login login ? Label(login) : "";
         public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>

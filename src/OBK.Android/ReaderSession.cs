@@ -1,3 +1,4 @@
+using OBK.AndroidApp.Localization;
 using OBK.Core;
 
 namespace OBK.AndroidApp;
@@ -20,10 +21,10 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
         var protection = new AndroidDataProtection(File.Exists(path));
         var check = "OBK encryption check"u8.ToArray();
         if (!protection.Unprotect(protection.Protect(check)).SequenceEqual(check))
-            throw new ObkException("Android encrypted storage failed its initialization check.");
+            throw new ObkException(AppStrings.ErrorStorageCheckFailed);
         var store = new LocalStore(path, protection);
         using var stream = typeof(ReaderSession).Assembly.GetManifestResourceStream("OBK.schools.json.gz") ??
-            throw new ObkException("The offline school directory is missing from this installation.");
+            throw new ObkException(AppStrings.ErrorSchoolDirectoryMissing);
         var schools = SchoolDirectory.Load(stream);
         var directory = Path.Combine(FileSystem.CacheDirectory, "attachment-view");
         Directory.CreateDirectory(directory);
@@ -40,9 +41,9 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
     public async Task SynchronizeAsync(Login login, string password, bool remember, IProgress<string> progress)
     {
         if (IsVerification)
-            throw new ObkException("Fictional verification data cannot contact a school. Restart without the verification flag to sign in.");
+            throw new ObkException(AppStrings.ErrorVerificationCannotSync);
         if (!await syncGate.WaitAsync(0))
-            throw new ObkException("Another account is still downloading. Wait for it to finish before refreshing again.");
+            throw new ObkException(AppStrings.ErrorSyncInProgress);
         try
         {
             await Task.Run(async () =>

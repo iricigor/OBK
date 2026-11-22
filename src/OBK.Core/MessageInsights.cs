@@ -1,3 +1,4 @@
+using OBK.Core.Localization;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -57,11 +58,11 @@ public static partial class MessageInsights
     {
         var day = date.LocalDateTime.Date;
         today = today.Date;
-        if (day >= today) return "Today";
-        if (day == today.AddDays(-1)) return "Yesterday";
+        if (day >= today) return SharedStrings.GroupToday;
+        if (day == today.AddDays(-1)) return SharedStrings.GroupYesterday;
         var weekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
-        if (day >= weekStart) return "This week";
-        if (day.Year == today.Year && day.Month == today.Month) return "This month";
+        if (day >= weekStart) return SharedStrings.GroupThisWeek;
+        if (day.Year == today.Year && day.Month == today.Month) return SharedStrings.GroupThisMonth;
         return day.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
     }
 
@@ -86,7 +87,7 @@ public static partial class MessageInsights
                 .SelectMany(g => Within(g).Select(r => (r.Item, g.Key)))
                 .ToArray();
         string Label((T Item, Message Message, string Person) row) => grouping == MessageGrouping.Sender
-            ? row.Person : StripPrefixes(row.Message.Title) is { Length: > 0 } title ? title : "(No subject)";
+            ? row.Person : StripPrefixes(row.Message.Title) is { Length: > 0 } title ? title : Localization.SharedStrings.NoSubject;
         return rows.GroupBy(r => Fold(Label(r)))
             .Select(g => (Label: Label(g.OrderByDescending(r => r.Message.Date).First()), Rows: g))
             .OrderBy(g => g.Label, comparer)

@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountPasswordNotSaved" xml:space="preserve">
+    <value>Password not saved</value>
+    <comment>Account detail in Settings.</comment>
+  </data>
+  <data name="AccountPasswordSaved" xml:space="preserve">
+    <value>Password saved</value>
+    <comment>Account detail in Settings.</comment>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>OBK - Offline Komens</value>
+    <comment>Product title shown in the title bar and window caption.</comment>
+  </data>
+  <data name="AppTitleWithAccount" xml:space="preserve">
+    <value>OBK - Offline Komens - {0}</value>
+    <comment>Window caption. {0} = active child name or school name.</comment>
+  </data>
+  <data name="AttachmentAvailabilityNotDownloaded" xml:space="preserve">
+    <value>Not downloaded. Refresh to cache this file.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentAvailabilityOpenable" xml:space="preserve">
+    <value>Cached offline. Open a decrypted copy in your default viewer.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentAvailabilitySaveOnly" xml:space="preserve">
+    <value>Cached offline. This file type can be saved, but not opened directly.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentNotDownloaded" xml:space="preserve">
+    <value>Not downloaded</value>
+    <comment>Shown instead of the file size for attachments that are not cached.</comment>
+  </data>
+  <data name="AttachmentOpen" xml:space="preserve">
+    <value>Open</value>
+    <comment>Attachment context menu item and Open button tooltip.</comment>
+  </data>
+  <data name="AttachmentOpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+    <comment>Attachment context menu item that shows the decrypted copy in Explorer.</comment>
+  </data>
+  <data name="AttachmentOpenName" xml:space="preserve">
+    <value>Open attachment</value>
+    <comment>Accessible name of the attachment Open button.</comment>
+  </data>
+  <data name="AttachmentSaveAll" xml:space="preserve">
+    <value>Save all</value>
+  </data>
+  <data name="AttachmentSaveAllTooltip" xml:space="preserve">
+    <value>Save copies of all attachments. Sync first if any attachment is not downloaded.</value>
+  </data>
+  <data name="AttachmentSaveAs" xml:space="preserve">
+    <value>Save as...</value>
+    <comment>Attachment context menu item and Save button tooltip.</comment>
+  </data>
+  <data name="AttachmentSaveName" xml:space="preserve">
+    <value>Save attachment</value>
+    <comment>Accessible name of the attachment Save button.</comment>
+  </data>
+  <data name="AttachmentTypeFile" xml:space="preserve">
+    <value>FILE</value>
+    <comment>Short badge for attachments without a recognized file extension; keep at most four characters.</comment>
+  </data>
+  <data name="AttachmentsMore" xml:space="preserve">
+    <value>+{0} more</value>
+    <comment>Button that shows hidden attachments. {0} = number of hidden attachments.</comment>
+  </data>
+  <data name="AttachmentsShowFewer" xml:space="preserve">
+    <value>Show fewer</value>
+    <comment>Button that collapses the attachment list.</comment>
+  </data>
+  <data name="CommonCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CommonClose" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close button tooltip and accessible name for a window.</comment>
+  </data>
+  <data name="DialogReplaceFilesMessage" xml:space="preserve">
+    <value>Some files already exist in this folder. Replace those files with the attachment copies?</value>
+  </data>
+  <data name="DialogReplaceFilesTitle" xml:space="preserve">
+    <value>Replace files?</value>
+  </data>
+  <data name="DialogSaveAllTitle" xml:space="preserve">
+    <value>Save all decrypted attachment copies</value>
+    <comment>Folder picker title.</comment>
+  </data>
+  <data name="DialogSaveAttachmentTitle" xml:space="preserve">
+    <value>Save a decrypted attachment copy</value>
+    <comment>Save file dialog title.</comment>
+  </data>
+  <data name="ErrorAttachmentCannotOpen" xml:space="preserve">
+    <value>This file type cannot be opened directly. Use Save as.</value>
+  </data>
+  <data name="ErrorAttachmentFolder" xml:space="preserve">
+    <value>Cannot create a decrypted attachment copy folder. Check disk access.</value>
+  </data>
+  <data name="ErrorAttachmentNoViewer" xml:space="preserve">
+    <value>The copy was created, but Windows could not open it. Install a default viewer or use Save as.</value>
+  </data>
+  <data name="ErrorCloseBusy" xml:space="preserve">
+    <value>Wait for synchronization or attachment export to finish before closing OBK.</value>
+  </data>
+  <data name="ErrorEnterPassword" xml:space="preserve">
+    <value>Enter the password.</value>
+  </data>
+  <data name="ErrorRoundedCorners" xml:space="preserve">
+    <value>Windows could not enable rounded window corners (0x{0:X8}). The app remains usable; restart OBK to try again.</value>
+    <comment>{0} = Windows error code, shown as eight hexadecimal digits.</comment>
+  </data>
+  <data name="ErrorSaveAllPartial" xml:space="preserve">
+    <value>{0} Saved {1} of {2} copies.</value>
+    <comment>{0} = error message; {1} = copies saved before the error; {2} = total copies.</comment>
+  </data>
+  <data name="ErrorStartupTitle" xml:space="preserve">
+    <value>OBK cannot start</value>
+    <comment>Message box caption when the app cannot open its local data.</comment>
+  </data>
+  <data name="ErrorSyncArchiveKept" xml:space="preserve">
+    <value>{0} Existing offline archive was not replaced.</value>
+    <comment>{0} = synchronization error message.</comment>
+  </data>
+  <data name="ErrorUnexpected" xml:space="preserve">
+    <value>Unexpected application error ({0}). Restart OBK; do not share credentials or message content in error reports.</value>
+    <comment>{0} = technical .NET exception type name.</comment>
+  </data>
+  <data name="ErrorUnexpectedTitle" xml:space="preserve">
+    <value>OBK error</value>
+    <comment>Message box caption for unexpected errors.</comment>
+  </data>
+  <data name="FieldChildName" xml:space="preserve">
+    <value>Child name</value>
+    <comment>Field label for the optional child display name.</comment>
+  </data>
+  <data name="FieldPassword" xml:space="preserve">
+    <value>Password</value>
+    <comment>Field label for the Komens password.</comment>
+  </data>
+  <data name="FieldUsername" xml:space="preserve">
+    <value>Username</value>
+    <comment>Field label for the Komens username.</comment>
+  </data>
+  <data name="LoginBackToSearch" xml:space="preserve">
+    <value>Back to school search</value>
+  </data>
+  <data name="LoginChangeSchool" xml:space="preserve">
+    <value>Change</value>
+    <comment>Button that changes the selected school.</comment>
+  </data>
+  <data name="LoginChildNameHint" xml:space="preserve">
+    <value>Optional. Shown in the app title instead of the school name.</value>
+  </data>
+  <data name="LoginChildNameOptional" xml:space="preserve">
+    <value>Child name (optional)</value>
+    <comment>Accessible name of the child name field.</comment>
+  </data>
+  <data name="LoginCloseName" xml:space="preserve">
+    <value>Close sign in</value>
+    <comment>Accessible name of the sign-in window close button.</comment>
+  </data>
+  <data name="LoginCloseTooltip" xml:space="preserve">
+    <value>Close without signing in</value>
+  </data>
+  <data name="LoginConnecting" xml:space="preserve">
+    <value>Connecting to the school...</value>
+  </data>
+  <data name="LoginEncryptionNote" xml:space="preserve">
+    <value>Credentials and messages are encrypted for this Windows account.</value>
+  </data>
+  <data name="LoginEnteredManually" xml:space="preserve">
+    <value>Entered manually</value>
+    <comment>Shown instead of the school's towns when its website was typed manually.</comment>
+  </data>
+  <data name="LoginErrorChooseSchool" xml:space="preserve">
+    <value>Choose a school before signing in.</value>
+  </data>
+  <data name="LoginErrorChooseSchoolOffline" xml:space="preserve">
+    <value>Choose a school before opening offline messages.</value>
+  </data>
+  <data name="LoginErrorDirectoryUnavailable" xml:space="preserve">
+    <value>The school directory is unavailable. Enter the school website manually.</value>
+  </data>
+  <data name="LoginErrorOfflineUsername" xml:space="preserve">
+    <value>Enter the username used to download the offline messages.</value>
+  </data>
+  <data name="LoginErrorPassword" xml:space="preserve">
+    <value>Enter your Komens password.</value>
+  </data>
+  <data name="LoginErrorUsername" xml:space="preserve">
+    <value>Enter your Komens username.</value>
+  </data>
+  <data name="LoginFindAnotherSchool" xml:space="preserve">
+    <value>Or find another school</value>
+  </data>
+  <data name="LoginHeading" xml:space="preserve">
+    <value>Sign in to Komens</value>
+  </data>
+  <data name="LoginIntro" xml:space="preserve">
+    <value>Choose your school, sign in, and sync messages for offline reading.</value>
+  </data>
+  <data name="LoginLoadingDirectory" xml:space="preserve">
+    <value>Loading the bundled school directory...</value>
+  </data>
+  <data name="LoginManualUrlButton" xml:space="preserve">
+    <value>Can't find your school? Enter its website</value>
+  </data>
+  <data name="LoginMatches" xml:space="preserve">
+    <value>{0} matches. Use up and down, then Enter to choose.</value>
+    <comment>Used when more than one school matches. {0} = number of matching schools.</comment>
+  </data>
+  <data name="LoginMatchingSchools" xml:space="preserve">
+    <value>Matching schools</value>
+    <comment>Accessible name of the school search results.</comment>
+  </data>
+  <data name="LoginNoSchools" xml:space="preserve">
+    <value>No schools found. Check the spelling or enter the school website.</value>
+  </data>
+  <data name="LoginOneMatch" xml:space="preserve">
+    <value>{0} match. Use up and down, then Enter to choose.</value>
+    <comment>Used when exactly one school matches. {0} = 1.</comment>
+  </data>
+  <data name="LoginPreviousAccountSelected" xml:space="preserve">
+    <value>Previous account selected. Enter the password.</value>
+  </data>
+  <data name="LoginReadOffline" xml:space="preserve">
+    <value>Read offline</value>
+    <comment>Button that opens the offline archive without signing in.</comment>
+  </data>
+  <data name="LoginRemember" xml:space="preserve">
+    <value>Remember credentials on this Windows account</value>
+  </data>
+  <data name="LoginSavedAccount" xml:space="preserve">
+    <value>Saved account</value>
+    <comment>Fallback title or detail for a previously used account without a known school.</comment>
+  </data>
+  <data name="LoginSavedAccountReady" xml:space="preserve">
+    <value>Saved account ready. Sign in and sync, or read offline.</value>
+  </data>
+  <data name="LoginSavedAccountsHint" xml:space="preserve">
+    <value>Choose a child or username. Saved passwords are filled in automatically.</value>
+  </data>
+  <data name="LoginSavedAccountsTitle" xml:space="preserve">
+    <value>Previously used accounts</value>
+  </data>
+  <data name="LoginSchoolLabel" xml:space="preserve">
+    <value>School</value>
+    <comment>Label and accessible name of the school search field.</comment>
+  </data>
+  <data name="LoginSchoolSearchHelp" xml:space="preserve">
+    <value>Search by school name, town, or website</value>
+    <comment>Accessible help text of the school search field.</comment>
+  </data>
+  <data name="LoginSchoolSelected" xml:space="preserve">
+    <value>School selected. Enter your Komens username and password.</value>
+  </data>
+  <data name="LoginSchoolUrlHint" xml:space="preserve">
+    <value>Use the school's HTTPS address. Do not include /login.</value>
+  </data>
+  <data name="LoginSchoolUrlLabel" xml:space="preserve">
+    <value>School website (HTTPS)</value>
+  </data>
+  <data name="LoginSchoolWebsite" xml:space="preserve">
+    <value>School website</value>
+    <comment>Shown as the school name when only its website is known.</comment>
+  </data>
+  <data name="LoginSearchPrompt" xml:space="preserve">
+    <value>Search by school name, town, or website.</value>
+    <comment>Status below the empty school search field.</comment>
+  </data>
+  <data name="LoginSelectedSchool" xml:space="preserve">
+    <value>SELECTED SCHOOL</value>
+    <comment>Small uppercase caption above the selected school.</comment>
+  </data>
+  <data name="LoginSignIn" xml:space="preserve">
+    <value>Sign in and sync</value>
+  </data>
+  <data name="LoginSyncFailed" xml:space="preserve">
+    <value>{0} Existing offline messages remain available.</value>
+    <comment>{0} = sign-in or synchronization error message.</comment>
+  </data>
+  <data name="LoginTitle" xml:space="preserve">
+    <value>Sign in to your school</value>
+    <comment>Sign-in window title.</comment>
+  </data>
+  <data name="LoginTooManyMatches" xml:space="preserve">
+    <value>{0:N0} matches. Type a little more to narrow the list.</value>
+    <comment>{0} = number of matching schools.</comment>
+  </data>
+  <data name="LoginUseWebsite" xml:space="preserve">
+    <value>Use this website</value>
+  </data>
+  <data name="MainClearSearch" xml:space="preserve">
+    <value>Clear search</value>
+    <comment>Tooltip and accessible name of the clear-search button.</comment>
+  </data>
+  <data name="MainDefaultSchool" xml:space="preserve">
+    <value>Your school</value>
+    <comment>Placeholder account label before any school is known.</comment>
+  </data>
+  <data name="MainEmptyFolderExcuses" xml:space="preserve">
+    <value>No cached messages in excuses.
+Refresh to check your school.</value>
+    <comment>Empty state of the Excuses folder.</comment>
+  </data>
+  <data name="MainEmptyFolderInbox" xml:space="preserve">
+    <value>No cached messages in inbox.
+Refresh to check your school.</value>
+    <comment>Empty state of the Inbox folder.</comment>
+  </data>
+  <data name="MainEmptyFolderNoticeboard" xml:space="preserve">
+    <value>No cached messages in noticeboard.
+Refresh to check your school.</value>
+    <comment>Empty state of the Noticeboard folder.</comment>
+  </data>
+  <data name="MainEmptyFolderSent" xml:space="preserve">
+    <value>No cached messages in sent.
+Refresh to check your school.</value>
+    <comment>Empty state of the Sent folder.</comment>
+  </data>
+  <data name="MainEmptySearchExcuses" xml:space="preserve">
+    <value>No messages in excuses match “{0}”.</value>
+    <comment>Search found nothing in the Excuses folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchInbox" xml:space="preserve">
+    <value>No messages in inbox match “{0}”.</value>
+    <comment>Search found nothing in the Inbox folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchNoticeboard" xml:space="preserve">
+    <value>No messages in noticeboard match “{0}”.</value>
+    <comment>Search found nothing in the Noticeboard folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchSent" xml:space="preserve">
+    <value>No messages in sent match “{0}”.</value>
+    <comment>Search found nothing in the Sent folder. {0} = search text.</comment>
+  </data>
+  <data name="MainFolderCount" xml:space="preserve">
+    <value>{0} messages</value>
+    <comment>{0} = number of messages in the selected folder.</comment>
+  </data>
+  <data name="MainFolderSearchCount" xml:space="preserve">
+    <value>{0} of {1} messages match</value>
+    <comment>Folder caption while searching. {0} = matching messages; {1} = all messages in the folder.</comment>
+  </data>
+  <data name="MainGroupHeaderTooltip" xml:space="preserve">
+    <value>Collapse or expand this group</value>
+  </data>
+  <data name="MainGroupLabel" xml:space="preserve">
+    <value>Group</value>
+    <comment>Label before the message grouping drop-down.</comment>
+  </data>
+  <data name="MainGroupName" xml:space="preserve">
+    <value>Group messages by</value>
+    <comment>Accessible name of the grouping drop-down.</comment>
+  </data>
+  <data name="MainGroupOptionDate" xml:space="preserve">
+    <value>Date</value>
+    <comment>Grouping option: group messages by date.</comment>
+  </data>
+  <data name="MainGroupOptionNone" xml:space="preserve">
+    <value>None</value>
+    <comment>Grouping option: no grouping.</comment>
+  </data>
+  <data name="MainGroupOptionSender" xml:space="preserve">
+    <value>Sender</value>
+    <comment>Grouping option: group messages by sender.</comment>
+  </data>
+  <data name="MainGroupOptionTitle" xml:space="preserve">
+    <value>Title</value>
+    <comment>Grouping option: group messages by subject.</comment>
+  </data>
+  <data name="MainMessagesName" xml:space="preserve">
+    <value>Messages</value>
+    <comment>Accessible name of the message list.</comment>
+  </data>
+  <data name="MainRefresh" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Button that downloads new messages.</comment>
+  </data>
+  <data name="MainRefreshTooltip" xml:space="preserve">
+    <value>Download new messages for every saved child</value>
+  </data>
+  <data name="MainRefreshing" xml:space="preserve">
+    <value>Refreshing...</value>
+    <comment>Refresh button text while synchronizing.</comment>
+  </data>
+  <data name="MainResizeMessageList" xml:space="preserve">
+    <value>Resize message list</value>
+    <comment>Tooltip and accessible name of the message list splitter.</comment>
+  </data>
+  <data name="MainSearchMessages" xml:space="preserve">
+    <value>Search messages</value>
+    <comment>Search box placeholder and accessible name.</comment>
+  </data>
+  <data name="MainSearchTooltip" xml:space="preserve">
+    <value>Search subject, contents, sender and date</value>
+  </data>
+  <data name="MainSortLabel" xml:space="preserve">
+    <value>Sort</value>
+    <comment>Label before the message sort drop-down.</comment>
+  </data>
+  <data name="MainSortName" xml:space="preserve">
+    <value>Sort messages by</value>
+    <comment>Accessible name of the sort drop-down.</comment>
+  </data>
+  <data name="MainSortOptionDate" xml:space="preserve">
+    <value>Date</value>
+    <comment>Sort option: sort messages by date.</comment>
+  </data>
+  <data name="MainSortOptionSender" xml:space="preserve">
+    <value>Sender</value>
+    <comment>Sort option: sort messages by sender.</comment>
+  </data>
+  <data name="MainSortOptionTitle" xml:space="preserve">
+    <value>Title</value>
+    <comment>Sort option: sort messages by subject.</comment>
+  </data>
+  <data name="MessageExcuseBadge" xml:space="preserve">
+    <value>Excuse</value>
+    <comment>Short badge on excuse notes in the message list.</comment>
+  </data>
+  <data name="MessageExcuseLabel" xml:space="preserve">
+    <value>Excuse (omluvenka)</value>
+    <comment>Excuse badge in the reader and its tooltip in the list; 'omluvenka' is the Czech Komens term.</comment>
+  </data>
+  <data name="MessageHasAttachments" xml:space="preserve">
+    <value>Has attachments</value>
+    <comment>Accessible name of the attachment icon in the message list.</comment>
+  </data>
+  <data name="PromptPasswordAction" xml:space="preserve">
+    <value>Verify and save</value>
+    <comment>Submit button of the password dialog.</comment>
+  </data>
+  <data name="PromptPasswordDescription" xml:space="preserve">
+    <value>OBK signs in to {0} as {1} to check the password. It is saved only if sign-in succeeds, encrypted for your Windows account.</value>
+    <comment>{0} = school name or website; {1} = Komens username.</comment>
+  </data>
+  <data name="PromptRenameAction" xml:space="preserve">
+    <value>Rename</value>
+    <comment>Submit button of the rename dialog.</comment>
+  </data>
+  <data name="PromptRenameDescription" xml:space="preserve">
+    <value>This name is shown in the sidebar instead of the school name. Leave it empty to show “{0}”.</value>
+    <comment>{0} = school name or username shown when no child name is set.</comment>
+  </data>
+  <data name="PromptRenameTitle" xml:space="preserve">
+    <value>Rename child</value>
+    <comment>Rename dialog heading.</comment>
+  </data>
+  <data name="PromptVerifyingPassword" xml:space="preserve">
+    <value>Signing in to verify the password...</value>
+  </data>
+  <data name="ReaderConfirmationRequested" xml:space="preserve">
+    <value>Confirmation requested. OBK does not send confirmations.</value>
+  </data>
+  <data name="ReaderContentName" xml:space="preserve">
+    <value>Message content</value>
+    <comment>Accessible name of the message body.</comment>
+  </data>
+  <data name="ReaderMetadata" xml:space="preserve">
+    <value>Sent: {0} • Folder: {1}</value>
+    <comment>{0} = date and time the message was sent; {1} = folder name.</comment>
+  </data>
+  <data name="ReaderNoContent" xml:space="preserve">
+    <value>(No message content)</value>
+  </data>
+  <data name="ReaderNoSelection" xml:space="preserve">
+    <value>Select a message</value>
+    <comment>Reader heading when no message is selected.</comment>
+  </data>
+  <data name="ReaderNoSelectionDetail" xml:space="preserve">
+    <value>Viewing cached messages makes no server requests.</value>
+  </data>
+  <data name="ReaderNoSelectionSender" xml:space="preserve">
+    <value>Your offline workspace</value>
+    <comment>Reader sender line when no message is selected.</comment>
+  </data>
+  <data name="ReaderNotSupplied" xml:space="preserve">
+    <value>(Not supplied)</value>
+    <comment>Shown when a message has no sender or recipient name.</comment>
+  </data>
+  <data name="ReaderRecipient" xml:space="preserve">
+    <value>To: {0}</value>
+    <comment>{0} = recipient name of a sent message.</comment>
+  </data>
+  <data name="ReaderRelatedHelpName" xml:space="preserve">
+    <value>About possibly related messages</value>
+    <comment>Accessible name of the help icon.</comment>
+  </data>
+  <data name="ReaderRelatedHelpTooltip" xml:space="preserve">
+    <value>Matched by similar subject and the same person. Komens does not report actual reply links, so these may be unrelated or incomplete.</value>
+  </data>
+  <data name="ReaderRelatedTitle" xml:space="preserve">
+    <value>Possibly related</value>
+  </data>
+  <data name="RefreshSummaryFailed" xml:space="preserve">
+    <value>Failed: {0} Existing offline archives were kept.</value>
+    <comment>{0} = semicolon-separated list of 'account: error' entries.</comment>
+  </data>
+  <data name="RefreshSummaryMany" xml:space="preserve">
+    <value>Refreshed {0} of {1} saved accounts.</value>
+    <comment>Used when {1} is not 1. {0} = refreshed accounts; {1} = accounts with a saved password.</comment>
+  </data>
+  <data name="RefreshSummaryOne" xml:space="preserve">
+    <value>Refreshed {0} of {1} saved account.</value>
+    <comment>Used when {1} is 1. {0} = refreshed accounts; {1} = accounts with a saved password.</comment>
+  </data>
+  <data name="RefreshSummarySignInNeeded" xml:space="preserve">
+    <value>Sign in needed (no saved password): {0}.</value>
+    <comment>{0} = comma-separated account names.</comment>
+  </data>
+  <data name="RelatedFromYou" xml:space="preserve">
+    <value>you</value>
+    <comment>Sender of a related message that you sent; inserted into RelatedLabel.</comment>
+  </data>
+  <data name="RelatedLabel" xml:space="preserve">
+    <value>{0} • From: {1}</value>
+    <comment>Related message link. {0} = short date and time; {1} = sender name or 'you'.</comment>
+  </data>
+  <data name="RelatedNext" xml:space="preserve">
+    <value>Next</value>
+    <comment>Direction of a later related message.</comment>
+  </data>
+  <data name="RelatedNextNumbered" xml:space="preserve">
+    <value>Next ({0})</value>
+    <comment>Direction of a later related message. {0} = position counted from the current message.</comment>
+  </data>
+  <data name="RelatedPrevious" xml:space="preserve">
+    <value>Previous</value>
+    <comment>Direction of an earlier related message.</comment>
+  </data>
+  <data name="RelatedPreviousNumbered" xml:space="preserve">
+    <value>Previous ({0})</value>
+    <comment>Direction of an earlier related message. {0} = position counted from the current message.</comment>
+  </data>
+  <data name="SettingsAbout" xml:space="preserve">
+    <value>About</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAboutDescription" xml:space="preserve">
+    <value>Version {0} and updates</value>
+    <comment>About section subtitle. {0} = installed app version.</comment>
+  </data>
+  <data name="SettingsAccounts" xml:space="preserve">
+    <value>Accounts</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAccountsDescription" xml:space="preserve">
+    <value>Saved passwords and child names</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Appearance</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAppearanceDescription" xml:space="preserve">
+    <value>Theme and reading size</value>
+  </data>
+  <data name="SettingsBack" xml:space="preserve">
+    <value>Back to messages</value>
+    <comment>Button that closes Settings.</comment>
+  </data>
+  <data name="SettingsBackTooltip" xml:space="preserve">
+    <value>Return to your messages</value>
+  </data>
+  <data name="SettingsChangePassword" xml:space="preserve">
+    <value>Change password</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsChangePasswordFor" xml:space="preserve">
+    <value>Change password for {0}</value>
+    <comment>Dialog heading and accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsChangePasswordTooltip" xml:space="preserve">
+    <value>Verify a new password with the school, then save it</value>
+  </data>
+  <data name="SettingsCheckNow" xml:space="preserve">
+    <value>Check now</value>
+    <comment>Button that checks for app updates.</comment>
+  </data>
+  <data name="SettingsCheckNowTooltip" xml:space="preserve">
+    <value>Check GitHub for a newer OBK version</value>
+  </data>
+  <data name="SettingsClearPassword" xml:space="preserve">
+    <value>Clear password</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsClearPasswordFor" xml:space="preserve">
+    <value>Clear saved password for {0}</value>
+    <comment>Accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsClearPasswordTooltip" xml:space="preserve">
+    <value>Forget the saved password; offline messages are kept</value>
+  </data>
+  <data name="SettingsComingLater" xml:space="preserve">
+    <value>Coming later</value>
+    <comment>Subtitle of a setting that is not available yet.</comment>
+  </data>
+  <data name="SettingsInstalledVersion" xml:space="preserve">
+    <value>Installed version</value>
+  </data>
+  <data name="SettingsNoAccounts" xml:space="preserve">
+    <value>No accounts yet. Use Add child in the sidebar to sign in.</value>
+    <comment>'Add child' refers to the SidebarAddChild button.</comment>
+  </data>
+  <data name="SettingsReadingSize" xml:space="preserve">
+    <value>Reading size</value>
+  </data>
+  <data name="SettingsReadingSizeLarge" xml:space="preserve">
+    <value>Large</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsReadingSizeMedium" xml:space="preserve">
+    <value>Medium</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsReadingSizeName" xml:space="preserve">
+    <value>Reading size, coming later</value>
+    <comment>Accessible name of the disabled reading size options.</comment>
+  </data>
+  <data name="SettingsReadingSizeSmall" xml:space="preserve">
+    <value>Small</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsReadingSizeTooltip" xml:space="preserve">
+    <value>Reading size will be available in a later version.</value>
+  </data>
+  <data name="SettingsRename" xml:space="preserve">
+    <value>Rename</value>
+    <comment>Button in the account row that renames the child.</comment>
+  </data>
+  <data name="SettingsRenameName" xml:space="preserve">
+    <value>Rename {0}</value>
+    <comment>Accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsRenameTooltip" xml:space="preserve">
+    <value>Change the child name shown in the sidebar</value>
+  </data>
+  <data name="SettingsSavePassword" xml:space="preserve">
+    <value>Save password</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsSavePasswordFor" xml:space="preserve">
+    <value>Save password for {0}</value>
+    <comment>Dialog heading and accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsSavePasswordTooltip" xml:space="preserve">
+    <value>Verify the password with the school, then save it so Refresh can update this child</value>
+  </data>
+  <data name="SettingsSavedAccountsName" xml:space="preserve">
+    <value>Saved accounts</value>
+    <comment>Accessible name of the account list in Settings.</comment>
+  </data>
+  <data name="SettingsTheme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="SettingsThemeDark" xml:space="preserve">
+    <value>Dark</value>
+    <comment>Theme option.</comment>
+  </data>
+  <data name="SettingsThemeDarkName" xml:space="preserve">
+    <value>Dark theme</value>
+    <comment>Accessible name of the Dark theme option.</comment>
+  </data>
+  <data name="SettingsThemeDescription" xml:space="preserve">
+    <value>Choose how OBK looks</value>
+  </data>
+  <data name="SettingsThemeLight" xml:space="preserve">
+    <value>Light</value>
+    <comment>Theme option.</comment>
+  </data>
+  <data name="SettingsThemeLightName" xml:space="preserve">
+    <value>Light theme</value>
+    <comment>Accessible name of the Light theme option.</comment>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Settings page title, sidebar button and accessible name.</comment>
+  </data>
+  <data name="SettingsUpdates" xml:space="preserve">
+    <value>Updates</value>
+    <comment>Settings row title.</comment>
+  </data>
+  <data name="SidebarAddChild" xml:space="preserve">
+    <value>Add child</value>
+    <comment>Sidebar button that opens sign-in for another child or school.</comment>
+  </data>
+  <data name="SidebarAddChildTooltip" xml:space="preserve">
+    <value>Sign in with another child or school</value>
+  </data>
+  <data name="SidebarChildrenName" xml:space="preserve">
+    <value>Children</value>
+    <comment>Accessible name of the sidebar list of signed-in children.</comment>
+  </data>
+  <data name="SidebarCollapseTooltip" xml:space="preserve">
+    <value>Show icons only</value>
+    <comment>Tooltip of the button that collapses the sidebar to icons.</comment>
+  </data>
+  <data name="SidebarExpandTooltip" xml:space="preserve">
+    <value>Expand sidebar</value>
+  </data>
+  <data name="SidebarFoldersName" xml:space="preserve">
+    <value>Folders</value>
+    <comment>Accessible name of the folder list.</comment>
+  </data>
+  <data name="SidebarResizeName" xml:space="preserve">
+    <value>Resize sidebar</value>
+    <comment>Accessible name of the sidebar splitter.</comment>
+  </data>
+  <data name="SidebarResizeTooltip" xml:space="preserve">
+    <value>Resize sidebar; drag narrow for icons only</value>
+  </data>
+  <data name="SizeBytes" xml:space="preserve">
+    <value>{0:N0} B</value>
+    <comment>File size. {0} = size in bytes.</comment>
+  </data>
+  <data name="SizeGigabytes" xml:space="preserve">
+    <value>{0:0.#} GB</value>
+    <comment>File size. {0} = size in gigabytes.</comment>
+  </data>
+  <data name="SizeKilobytes" xml:space="preserve">
+    <value>{0:N0} KB</value>
+    <comment>File size. {0} = size in kilobytes.</comment>
+  </data>
+  <data name="SizeMegabytes" xml:space="preserve">
+    <value>{0:0.#} MB</value>
+    <comment>File size. {0} = size in megabytes.</comment>
+  </data>
+  <data name="StatusAccountProgress" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Refresh progress for one account. {0} = account name; {1} = progress text.</comment>
+  </data>
+  <data name="StatusAccountProgressNumbered" xml:space="preserve">
+    <value>{0} ({1}/{2}): {3}</value>
+    <comment>Refresh progress. {0} = account name; {1} = account position; {2} = account count; {3} = progress text.</comment>
+  </data>
+  <data name="StatusArchiveReady" xml:space="preserve">
+    <value>Offline archive ready • Synced ({0} messages, {1} attachments) • Last synchronized: {2}</value>
+    <comment>{0} = message count; {1} = cached attachment count; {2} = last synchronization date and time.</comment>
+  </data>
+  <data name="StatusAttachmentOpened" xml:space="preserve">
+    <value>Opened decrypted copy: {0}. It remains in the local opened folder.</value>
+    <comment>{0} = attachment file name.</comment>
+  </data>
+  <data name="StatusAttachmentSaved" xml:space="preserve">
+    <value>Saved attachment copy: {0}</value>
+    <comment>{0} = attachment file name.</comment>
+  </data>
+  <data name="StatusAttachmentsSaved" xml:space="preserve">
+    <value>Saved {0} decrypted attachment copies. Delete copies when no longer needed.</value>
+    <comment>{0} = number of saved copies.</comment>
+  </data>
+  <data name="StatusChildNameRemoved" xml:space="preserve">
+    <value>Removed the child name for {0}.</value>
+    <comment>{0} = school name or username.</comment>
+  </data>
+  <data name="StatusDragFinished" xml:space="preserve">
+    <value>Attachment drag finished. The decrypted source copy remains in the local opened folder.</value>
+  </data>
+  <data name="StatusDragTooEarly" xml:space="preserve">
+    <value>Drag ended before the copy was ready. Drag the attachment again.</value>
+  </data>
+  <data name="StatusLoadingArchive" xml:space="preserve">
+    <value>Loading archive...</value>
+  </data>
+  <data name="StatusNoArchive" xml:space="preserve">
+    <value>No offline archive yet. Refresh to download messages.</value>
+  </data>
+  <data name="StatusOffline" xml:space="preserve">
+    <value>{0} • Offline</value>
+    <comment>{0} = archive status (StatusArchiveReady).</comment>
+  </data>
+  <data name="StatusPasswordCleared" xml:space="preserve">
+    <value>Saved password cleared for {0}. Refresh will ask for it next time.</value>
+    <comment>{0} = child or account name.</comment>
+  </data>
+  <data name="StatusPasswordSaved" xml:space="preserve">
+    <value>Password verified and saved for {0}.</value>
+    <comment>{0} = child or account name.</comment>
+  </data>
+  <data name="StatusPreparingAttachment" xml:space="preserve">
+    <value>Preparing attachment copy...</value>
+  </data>
+  <data name="StatusPreparingDrag" xml:space="preserve">
+    <value>Preparing attachment for Windows drag-and-drop...</value>
+  </data>
+  <data name="StatusRenamed" xml:space="preserve">
+    <value>Renamed to {0}.</value>
+    <comment>{0} = new child name.</comment>
+  </data>
+  <data name="StatusSavingAttachment" xml:space="preserve">
+    <value>Saving attachment {0} of {1}...</value>
+    <comment>{0} = current attachment number; {1} = attachment count.</comment>
+  </data>
+  <data name="StatusSigningIn" xml:space="preserve">
+    <value>Signing in...</value>
+  </data>
+  <data name="StatusWaitForArchive" xml:space="preserve">
+    <value>Wait for the current archive operation to finish.</value>
+  </data>
+  <data name="StatusWaitForOperation" xml:space="preserve">
+    <value>Wait for the current operation to finish.</value>
+  </data>
+  <data name="StatusWelcome" xml:space="preserve">
+    <value>Sign in to download messages, or read your archive offline.</value>
+  </data>
+  <data name="ThemeErrorChoose" xml:space="preserve">
+    <value>Choose Light or Dark.</value>
+  </data>
+  <data name="ThemeErrorCleanup" xml:space="preserve">
+    <value>Could not remove a temporary theme setting file. Check disk access.</value>
+  </data>
+  <data name="ThemeErrorInvalid" xml:space="preserve">
+    <value>The theme setting is invalid. Choose Light or Dark to replace it.</value>
+  </data>
+  <data name="ThemeErrorRead" xml:space="preserve">
+    <value>Cannot read the theme setting. Choose a theme to save it again.</value>
+  </data>
+  <data name="ThemeErrorSave" xml:space="preserve">
+    <value>The theme changed, but could not be saved. Check disk access.</value>
+  </data>
+  <data name="ThemeSwitchToDarkTooltip" xml:space="preserve">
+    <value>Switch to Dark theme</value>
+    <comment>Title bar theme button tooltip while the Light theme is active.</comment>
+  </data>
+  <data name="ThemeSwitchToLightTooltip" xml:space="preserve">
+    <value>Switch to Light theme</value>
+    <comment>Title bar theme button tooltip while the Dark theme is active.</comment>
+  </data>
+  <data name="UpdateCheckTooltip" xml:space="preserve">
+    <value>Click to check for updates now</value>
+  </data>
+  <data name="UpdateChecking" xml:space="preserve">
+    <value>Checking for updates...</value>
+  </data>
+  <data name="UpdateCurrent" xml:space="preserve">
+    <value>You're on the latest version {0}</value>
+    <comment>{0} = installed app version.</comment>
+  </data>
+  <data name="UpdateDownloading" xml:space="preserve">
+    <value>Downloading {0}...</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateErrorBusy" xml:space="preserve">
+    <value>Wait for synchronization or attachment export to finish before updating.</value>
+  </data>
+  <data name="UpdateIgnore" xml:space="preserve">
+    <value>Ignore during this session</value>
+    <comment>Update menu option.</comment>
+  </data>
+  <data name="UpdateIgnored" xml:space="preserve">
+    <value>Update {0} ignored this session</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateInstallOnExit" xml:space="preserve">
+    <value>Install when I exit</value>
+    <comment>Update menu option.</comment>
+  </data>
+  <data name="UpdateMoreOptions" xml:space="preserve">
+    <value>More update options</value>
+    <comment>Tooltip and accessible name of the update menu button.</comment>
+  </data>
+  <data name="UpdateReady" xml:space="preserve">
+    <value>{0} is ready to install</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateRestart" xml:space="preserve">
+    <value>Update and restart</value>
+    <comment>Button that installs the downloaded update.</comment>
+  </data>
+  <data name="UpdateScheduled" xml:space="preserve">
+    <value>{0} will install when you exit</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateStatusName" xml:space="preserve">
+    <value>Update status</value>
+    <comment>Accessible name of the update status text.</comment>
+  </data>
+  <data name="WindowMaximizeName" xml:space="preserve">
+    <value>Maximize or restore</value>
+    <comment>Accessible name of the maximize/restore caption button.</comment>
+  </data>
+  <data name="WindowMaximizeTooltip" xml:space="preserve">
+    <value>Maximize / Restore</value>
+    <comment>Tooltip of the maximize/restore caption button.</comment>
+  </data>
+  <data name="WindowMinimize" xml:space="preserve">
+    <value>Minimize</value>
+    <comment>Minimize caption button tooltip and accessible name.</comment>
+  </data>
+</root>

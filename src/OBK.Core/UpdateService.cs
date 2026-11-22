@@ -1,3 +1,4 @@
+using OBK.Core.Localization;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -98,7 +99,7 @@ public sealed class UpdateService : IDisposable
         }
         catch (Exception error) when (error is HttpRequestException or TaskCanceledException && !cancel.IsCancellationRequested)
         {
-            throw new ObkException("Could not check for updates. OBK will try again later.", error);
+            throw new ObkException(SharedStrings.ErrorUpdateCheckFailed, error);
         }
     }
 
@@ -110,7 +111,7 @@ public sealed class UpdateService : IDisposable
             Directory.CreateDirectory(directory);
             var sums = await http.GetStringAsync(update.ChecksumsUrl, cancel);
             var expected = FindChecksum(sums, update.InstallerName) ??
-                throw new ObkException("The release has no checksum for its installer.");
+                throw new ObkException(SharedStrings.ErrorUpdateNoChecksum);
             var path = Path.Combine(directory, update.InstallerName);
             if (File.Exists(path) && await HashAsync(path, cancel) == expected) return path;
             var partial = path + ".download";
@@ -118,7 +119,7 @@ public sealed class UpdateService : IDisposable
             {
                 response.EnsureSuccessStatusCode();
                 if (response.Content.Headers.ContentLength > MaxInstallerBytes)
-                    throw new ObkException("The update installer is unexpectedly large.");
+                    throw new ObkException(SharedStrings.ErrorUpdateTooLarge);
                 await using var source = await response.Content.ReadAsStreamAsync(cancel);
                 await using var target = File.Create(partial);
                 await source.CopyToAsync(target, cancel);
@@ -126,14 +127,14 @@ public sealed class UpdateService : IDisposable
             if (await HashAsync(partial, cancel) != expected)
             {
                 File.Delete(partial);
-                throw new ObkException("The downloaded update failed verification and was discarded.");
+                throw new ObkException(SharedStrings.ErrorUpdateVerificationFailed);
             }
             File.Move(partial, path, overwrite: true);
             return path;
         }
         catch (Exception error) when (error is HttpRequestException or IOException or TaskCanceledException && !cancel.IsCancellationRequested)
         {
-            throw new ObkException("Could not download the update. OBK will try again later.", error);
+            throw new ObkException(SharedStrings.ErrorUpdateDownloadFailed, error);
         }
     }
 

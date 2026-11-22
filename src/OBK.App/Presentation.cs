@@ -1,4 +1,6 @@
+using OBK.App.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -105,6 +107,12 @@ public sealed class ThemeBrushConverter : IMultiValueConverter
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => throw new NotSupportedException();
 }
 
+/// <summary>A fixed option value paired with its localized display text.</summary>
+public sealed record DisplayOption<T>(T Value, string Label)
+{
+    public override string ToString() => Label;
+}
+
 public sealed class FolderRow(string key, string title, string icon, int count)
 {
     public string Key { get; } = key;
@@ -120,9 +128,9 @@ public sealed class MessageRow(Message message, string folder)
     public Message Message { get; } = message;
     public string Folder { get; } = folder;
     public bool Unread => Folder != "sent" && Message.Read == false;
-    public string Subject => MainViewModel.OneLine(Message.Title) is { Length: > 0 } title ? title : "(No subject)";
+    public string Subject => MainViewModel.OneLine(Message.Title) is { Length: > 0 } title ? title : SharedStrings.NoSubject;
     public string Person => MainViewModel.OneLine(MessageInsights.Counterpart(Message, Folder))
-        is { Length: > 0 } name ? name : "(Not supplied)";
+        is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
     public string Sent => Message.Date.ToString("dd MMM yyyy HH:mm");
     public string ShortSent
     {
@@ -151,7 +159,7 @@ public sealed class AccountRow(Login login, bool current, bool passwordSaved = f
         {
             Login.ChildName is null ? null : Login.SchoolName,
             Login.Username,
-            PasswordSaved ? "Password saved" : "Password not saved"
+            PasswordSaved ? AppStrings.AccountPasswordSaved : AppStrings.AccountPasswordNotSaved
         }.Where(v => !string.IsNullOrEmpty(v)));
     public string Detail => string.Join("\n", new[] { Label, Login.SchoolName, Login.Username }
         .Where(v => !string.IsNullOrEmpty(v)).Distinct());
@@ -171,12 +179,15 @@ public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool next, 
     public MainViewModel Owner { get; } = owner;
     public MessageRef Item { get; } = item;
     public bool IsNext { get; } = next;
-    public string Direction => (IsNext ? "Next" : "Previous") + (number is { } n ? $" ({n})" : "");
+    public string Direction => number is { } n
+        ? Localized.Format(IsNext ? AppStrings.RelatedNextNumbered : AppStrings.RelatedPreviousNumbered, n)
+        : IsNext ? AppStrings.RelatedNext : AppStrings.RelatedPrevious;
     public string Icon => IsNext ? "\uE72A" : "\uE72B";
-    public string Subject => MainViewModel.OneLine(Item.Message.Title) is { Length: > 0 } title ? title : "(No subject)";
-    public string From => Item.Folder == "sent" ? "you" :
-        MainViewModel.OneLine(Item.Message.SenderName) is { Length: > 0 } name ? name : "(Not supplied)";
-    public string Label => $"{Item.Message.Date.ToString("dd.MMM HH:mm", System.Globalization.CultureInfo.CurrentCulture)} \u2022 From: {From}";
+    public string Subject => MainViewModel.OneLine(Item.Message.Title) is { Length: > 0 } title ? title : SharedStrings.NoSubject;
+    public string From => Item.Folder == "sent" ? AppStrings.RelatedFromYou :
+        MainViewModel.OneLine(Item.Message.SenderName) is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
+    public string Label => Localized.Format(AppStrings.RelatedLabel,
+        Item.Message.Date.ToString("dd.MMM HH:mm", System.Globalization.CultureInfo.CurrentCulture), From);
 
     /// <summary>Chronological rows; numbers count outward from the current message when a side has several.</summary>
     public static IReadOnlyList<RelatedRow> Build(MainViewModel owner, RelatedMessages related)
@@ -207,18 +218,17 @@ public sealed class AttachmentRow(MainViewModel owner, Attachment attachment, At
     public bool Cached => info is not null;
     public bool CanOpen => Cached && FileNames.CanOpen(Name);
     public string BadgeKey => Palette.FileKey(System.IO.Path.GetExtension(Name));
-    public string Size => info is null ? "Not downloaded" : FormatSize(info.Size);
+    public string Size => info is null ? AppStrings.AttachmentNotDownloaded : FormatSize(info.Size);
     public string Type => System.IO.Path.GetExtension(Name).TrimStart('.').ToUpperInvariant() is { Length: > 0 } type
-        ? type.Length <= 4 ? type : "FILE" : "FILE";
-    public string Availability => Name + "\n" + (!Cached ? "Not downloaded. Refresh to cache this file." :
-        CanOpen ? "Cached offline. Open a decrypted copy in your default viewer." :
-        "Cached offline. This file type can be saved, but not opened directly.");
+        ? type.Length <= 4 ? type : AppStrings.AttachmentTypeFile : AppStrings.AttachmentTypeFile;
+    public string Availability => Name + "\n" + (!Cached ? AppStrings.AttachmentAvailabilityNotDownloaded :
+        CanOpen ? AppStrings.AttachmentAvailabilityOpenable : AppStrings.AttachmentAvailabilitySaveOnly);
     public static string FormatSize(long bytes) => bytes switch
     {
-        < 1024 => $"{bytes:N0} B",
-        < 1024 * 1024 => $"{bytes / 1024d:N0} KB",
-        < 1024L * 1024 * 1024 => $"{bytes / (1024d * 1024):0.#} MB",
-        _ => $"{bytes / (1024d * 1024 * 1024):0.#} GB"
+        < 1024 => Localized.Format(AppStrings.SizeBytes, bytes),
+        < 1024 * 1024 => Localized.Format(AppStrings.SizeKilobytes, bytes / 1024d),
+        < 1024L * 1024 * 1024 => Localized.Format(AppStrings.SizeMegabytes, bytes / (1024d * 1024)),
+        _ => Localized.Format(AppStrings.SizeGigabytes, bytes / (1024d * 1024 * 1024))
     };
 }
 

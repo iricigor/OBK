@@ -1,4 +1,6 @@
+using OBK.App.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
@@ -106,16 +108,16 @@ public partial class LoginWindow : Window
         if (app.Busy || busy) return;
         try
         {
-            if (!schoolConfirmed) throw new ObkException("Choose a school before signing in.");
+            if (!schoolConfirmed) throw new ObkException(AppStrings.LoginErrorChooseSchool);
             var url = KomensClient.NormalizeUrl(SchoolUrl.Text);
             var username = Username.Text.Trim();
             var password = Password.Password;
-            if (username.Length == 0) throw new ObkException("Enter your Komens username.");
-            if (password.Length == 0) throw new ObkException("Enter your Komens password.");
+            if (username.Length == 0) throw new ObkException(AppStrings.LoginErrorUsername);
+            if (password.Length == 0) throw new ObkException(AppStrings.LoginErrorPassword);
             var remember = Remember.IsChecked == true;
             var childName = OptionalLabel(ChildName.Text);
             SetBusy(true);
-            Status.Text = "Connecting to the school...";
+            Status.Text = AppStrings.LoginConnecting;
             await app.SynchronizeAsync(this, url, username, password, remember, false, childName,
                 selectedSchoolName);
         }
@@ -134,9 +136,9 @@ public partial class LoginWindow : Window
         if (app.Busy) return false;
         try
         {
-            if (!schoolConfirmed) throw new ObkException("Choose a school before opening offline messages.");
+            if (!schoolConfirmed) throw new ObkException(AppStrings.LoginErrorChooseSchoolOffline);
             var username = Username.Text.Trim();
-            if (username.Length == 0) throw new ObkException("Enter the username used to download the offline messages.");
+            if (username.Length == 0) throw new ObkException(AppStrings.LoginErrorOfflineUsername);
             var url = KomensClient.NormalizeUrl(SchoolUrl.Text);
             var childName = OptionalLabel(ChildName.Text);
             await Task.Run(() => app.Store.SaveAccount(url, username, childName, selectedSchoolName));
@@ -161,7 +163,7 @@ public partial class LoginWindow : Window
         if (busy || app.Busy)
         {
             e.Cancel = true;
-            Status.Text = "Wait for the current operation to finish.";
+            Status.Text = AppStrings.StatusWaitForOperation;
             return;
         }
         Password.Clear();
@@ -177,7 +179,7 @@ public partial class LoginWindow : Window
             {
                 const string resource = "OBK.App.Data.schools.json.gz";
                 using var stream = typeof(LoginWindow).Assembly.GetManifestResourceStream(resource) ??
-                    throw new ObkException("The school directory is unavailable. Enter the school website manually.");
+                    throw new ObkException(AppStrings.LoginErrorDirectoryUnavailable);
                 return SchoolDirectory.Load(stream);
             });
             schoolDirectory = loaded;
@@ -295,7 +297,7 @@ public partial class LoginWindow : Window
         {
             SchoolMatches.ItemsSource = null;
             SchoolMatches.Visibility = Visibility.Collapsed;
-            SchoolSearchStatus.Text = "Search by school name, town, or website.";
+            SchoolSearchStatus.Text = AppStrings.LoginSearchPrompt;
             return;
         }
         var result = schoolDirectory.Search(query);
@@ -304,17 +306,17 @@ public partial class LoginWindow : Window
         if (result.Total == 0)
         {
             SchoolMatches.Visibility = Visibility.Collapsed;
-            SchoolSearchStatus.Text = "No schools found. Check the spelling or enter the school website.";
+            SchoolSearchStatus.Text = AppStrings.LoginNoSchools;
         }
         else if (result.Total > result.Visible.Count)
         {
             SchoolMatches.Visibility = Visibility.Collapsed;
-            SchoolSearchStatus.Text = $"{result.Total:N0} matches. Type a little more to narrow the list.";
+            SchoolSearchStatus.Text = Localized.Format(AppStrings.LoginTooManyMatches, result.Total);
         }
         else
         {
             SchoolMatches.Visibility = Visibility.Visible;
-            SchoolSearchStatus.Text = $"{result.Total} {(result.Total == 1 ? "match" : "matches")}. Use up and down, then Enter to choose.";
+            SchoolSearchStatus.Text = Localized.Format(result.Total == 1 ? AppStrings.LoginOneMatch : AppStrings.LoginMatches, result.Total);
         }
     }
 
@@ -349,15 +351,15 @@ public partial class LoginWindow : Window
     private void ConfirmRememberedProfile(SavedLoginRow row, bool moveFocus)
     {
         var profile = row.Login;
-        ShowConfirmedSchool(row.SchoolLabel, row.DirectorySchool?.Towns ?? "Saved account",
+        ShowConfirmedSchool(row.SchoolLabel, row.DirectorySchool?.Towns ?? AppStrings.LoginSavedAccount,
             KomensClient.NormalizeUrl(profile.Url), moveFocus: false);
         Username.Text = profile.Username;
         Password.Password = profile.Password ?? "";
         ChildName.Text = profile.ChildName ?? "";
         SetRemember(profile.Password is not null);
         Status.Text = profile.Password is null ?
-            "Previous account selected. Enter the password." :
-            "Saved account ready. Sign in and sync, or read offline.";
+            AppStrings.LoginPreviousAccountSelected :
+            AppStrings.LoginSavedAccountReady;
         if (moveFocus) Password.Focus();
     }
 
@@ -401,7 +403,7 @@ public partial class LoginWindow : Window
     {
         var normalized = KomensClient.NormalizeUrl(url);
         var known = schoolDirectory?.FindByUrl(normalized);
-        ShowConfirmedSchool(known?.Name ?? knownSchoolName, known?.Towns ?? "Entered manually", normalized, moveFocus);
+        ShowConfirmedSchool(known?.Name ?? knownSchoolName, known?.Towns ?? AppStrings.LoginEnteredManually, normalized, moveFocus);
     }
 
     private void ShowConfirmedSchool(string? name, string towns, string normalizedUrl, bool moveFocus)
@@ -411,14 +413,14 @@ public partial class LoginWindow : Window
         updatingUrl = true;
         SchoolUrl.Text = normalizedUrl;
         updatingUrl = false;
-        SelectedSchoolName.Text = name ?? "School website";
+        SelectedSchoolName.Text = name ?? AppStrings.LoginSchoolWebsite;
         SelectedSchoolTowns.Text = towns;
         SelectedSchoolUrl.Text = normalizedUrl;
         SchoolChooserPanel.Visibility = Visibility.Collapsed;
         ManualUrlPanel.Visibility = Visibility.Collapsed;
         SelectedSchoolPanel.Visibility = Visibility.Visible;
         CredentialsPanel.Visibility = Visibility.Visible;
-        Status.Text = "School selected. Enter your Komens username and password.";
+        Status.Text = AppStrings.LoginSchoolSelected;
         UpdateActionButtons();
         if (moveFocus) Username.Focus();
     }
@@ -492,7 +494,7 @@ public sealed class SavedLoginRow(Login login, SchoolDirectoryEntry? directorySc
     public Login Login { get; } = login;
     public SchoolDirectoryEntry? DirectorySchool { get; } = directorySchool;
     public string? SchoolLabel => DirectorySchool?.Name ?? Login.SchoolName;
-    public string Title => Login.ChildName is { Length: > 0 } child ? child : SchoolLabel ?? "Saved account";
+    public string Title => Login.ChildName is { Length: > 0 } child ? child : SchoolLabel ?? AppStrings.LoginSavedAccount;
     public string Detail => string.Join(" \u2022 ", new[]
     {
         Login.ChildName is { Length: > 0 } ? SchoolLabel : null,

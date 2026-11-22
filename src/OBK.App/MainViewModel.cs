@@ -1,4 +1,6 @@
+using OBK.App.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 using System.ComponentModel;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -14,14 +16,14 @@ public sealed class MainViewModel : ObservableObject
     private Dictionary<string, List<Message>> folders = Folders.Empty();
     private Dictionary<string, AttachmentInfo?> attachmentInfo = [];
     private SchoolYear year = SchoolYear.Current();
-    private string school = "Your school";
+    private string school = AppStrings.MainDefaultSchool;
     private string? syncedAt;
     private Login? account;
     private bool syncing;
     private bool loading;
     private bool exporting;
     private bool goodStatus;
-    private string status = "Sign in to download messages, or read your archive offline.";
+    private string status = AppStrings.StatusWelcome;
     private FolderRow? selectedFolder;
     private MessageRow? selectedMessage;
     private readonly Dictionary<string, string> selectedMessageIds = [];
@@ -33,10 +35,10 @@ public sealed class MainViewModel : ObservableObject
     private IReadOnlyList<AttachmentRow> attachments = [];
     private IReadOnlyList<TextPart> body = [];
     private IReadOnlyList<RelatedRow> related = [];
-    private string subject = "Select a message";
-    private string sender = "Your offline workspace";
+    private string subject = AppStrings.ReaderNoSelection;
+    private string sender = AppStrings.ReaderNoSelectionSender;
     private string initials = "OB";
-    private string metadata = "Viewing cached messages makes no server requests.";
+    private string metadata = AppStrings.ReaderNoSelectionDetail;
     private string searchText = "";
     private MessageSort sort = MessageSort.Date;
     private MessageGrouping grouping = MessageGrouping.None;
@@ -131,15 +133,16 @@ public sealed class MainViewModel : ObservableObject
     public string AccountLabel => Account?.ChildName is { Length: > 0 } childName ? childName : School;
     public string AccountColorKey => Palette.PairKey(Account is { } a ? a.Url + "|" + a.Username : School);
     public string SenderColorKey => Palette.PairKey(Sender);
-    public string WindowTitle => AccountLabel == "Your school" ? "OBK - Offline Komens" :
-        $"OBK - Offline Komens - {AccountLabel}";
-    public string FolderTitle => selectedFolder?.Title ?? "Inbox";
+    public string WindowTitle => AccountLabel == AppStrings.MainDefaultSchool ? AppStrings.AppTitle :
+        Localized.Format(AppStrings.AppTitleWithAccount, AccountLabel);
+    public string FolderTitle => selectedFolder?.Title ?? SharedStrings.FolderInbox;
     public string FolderCaption
     {
         get
         {
             var total = FolderMessages(selectedFolder?.Key ?? "received").Count;
-            return SearchActive ? $"{messages.Count} of {total} messages match" : $"{total} messages";
+            return SearchActive ? Localized.Format(AppStrings.MainFolderSearchCount, messages.Count, total) :
+                Localized.Format(AppStrings.MainFolderCount, total);
         }
     }
     public IReadOnlyList<FolderRow> Navigation { get => navigation; private set => Set(ref navigation, value); }
@@ -148,8 +151,20 @@ public sealed class MainViewModel : ObservableObject
     public ICollectionView? MessagesView { get => messagesView; private set => Set(ref messagesView, value); }
     public bool EmptyFolder => !Loading && messages.Count == 0;
     public string EmptyFolderText => SearchActive && folderRows.Count > 0
-        ? $"No messages in {FolderTitle.ToLowerInvariant()} match \u201c{SearchText.Trim()}\u201d."
-        : $"No cached messages in {FolderTitle.ToLowerInvariant()}.\nRefresh to check your school.";
+        ? Localized.Format(selectedFolder?.Key switch
+        {
+            "sent" => AppStrings.MainEmptySearchSent,
+            "noticeboard" => AppStrings.MainEmptySearchNoticeboard,
+            "excuses" => AppStrings.MainEmptySearchExcuses,
+            _ => AppStrings.MainEmptySearchInbox
+        }, SearchText.Trim())
+        : selectedFolder?.Key switch
+        {
+            "sent" => AppStrings.MainEmptyFolderSent,
+            "noticeboard" => AppStrings.MainEmptyFolderNoticeboard,
+            "excuses" => AppStrings.MainEmptyFolderExcuses,
+            _ => AppStrings.MainEmptyFolderInbox
+        };
     public bool IsSyncing { get => syncing; private set { if (Set(ref syncing, value)) UpdateActions(); } }
     public bool Loading { get => loading; private set { if (Set(ref loading, value)) { UpdateActions(); Notify(nameof(EmptyFolder)); } } }
     public bool IsExporting { get => exporting; set { if (Set(ref exporting, value)) UpdateActions(); } }
@@ -172,15 +187,31 @@ public sealed class MainViewModel : ObservableObject
     public bool MultipleAttachments => attachments.Count > 1;
     public IReadOnlyList<AttachmentRow> VisibleAttachments => attachments.Count > 4 && !expanded ? attachments.Take(3).ToArray() : attachments;
     public bool HasMoreAttachments => attachments.Count > 4;
-    public string MoreAttachmentsLabel => expanded ? "Show fewer" : $"+{attachments.Count - 3} more";
+    public string MoreAttachmentsLabel => expanded ? AppStrings.AttachmentsShowFewer :
+        Localized.Format(AppStrings.AttachmentsMore, attachments.Count - 3);
     public bool AttachmentsExpanded
     {
         get => expanded;
         private set { if (Set(ref expanded, value)) { Notify(nameof(VisibleAttachments)); Notify(nameof(MoreAttachmentsLabel)); } }
     }
 
-    public IReadOnlyList<MessageSort> SortOptions { get; } = Enum.GetValues<MessageSort>();
-    public IReadOnlyList<MessageGrouping> GroupOptions { get; } = Enum.GetValues<MessageGrouping>();
+    public IReadOnlyList<DisplayOption<MessageSort>> SortOptions { get; } = Enum.GetValues<MessageSort>()
+        .Select(value => new DisplayOption<MessageSort>(value, value switch
+        {
+            MessageSort.Date => AppStrings.MainSortOptionDate,
+            MessageSort.Sender => AppStrings.MainSortOptionSender,
+            MessageSort.Title => AppStrings.MainSortOptionTitle,
+            _ => throw new ArgumentOutOfRangeException(nameof(value))
+        })).ToArray();
+    public IReadOnlyList<DisplayOption<MessageGrouping>> GroupOptions { get; } = Enum.GetValues<MessageGrouping>()
+        .Select(value => new DisplayOption<MessageGrouping>(value, value switch
+        {
+            MessageGrouping.None => AppStrings.MainGroupOptionNone,
+            MessageGrouping.Date => AppStrings.MainGroupOptionDate,
+            MessageGrouping.Sender => AppStrings.MainGroupOptionSender,
+            MessageGrouping.Title => AppStrings.MainGroupOptionTitle,
+            _ => throw new ArgumentOutOfRangeException(nameof(value))
+        })).ToArray();
     public bool SearchActive => SearchText.Trim().Length > 0;
     public string SearchText
     {
@@ -241,7 +272,7 @@ public sealed class MainViewModel : ObservableObject
     public async Task ActivateAccountAsync(string url, string username, SchoolYear? selectedYear = null,
         string? childName = null, string? schoolName = null)
     {
-        if (Loading || IsExporting) throw new ObkException("Wait for the current archive operation to finish.");
+        if (Loading || IsExporting) throw new ObkException(AppStrings.StatusWaitForArchive);
         Loading = true;
         try
         {
@@ -266,7 +297,7 @@ public sealed class MainViewModel : ObservableObject
             year = nextYear;
             folders = result.items;
             attachmentInfo = result.info;
-            School = Account.SchoolName ?? result.archive?.SchoolName ?? "Your school";
+            School = Account.SchoolName ?? result.archive?.SchoolName ?? AppStrings.MainDefaultSchool;
             syncedAt = result.archive?.SyncedAt;
             RebuildNavigation();
             SetStatus(CacheStatus(), syncedAt is not null);
@@ -299,21 +330,22 @@ public sealed class MainViewModel : ObservableObject
 
     public async Task RenameAccountAsync(AccountRow row, string? childName)
     {
-        if (!CanChangeAccount) throw new ObkException("Wait for the current operation to finish.");
+        if (!CanChangeAccount) throw new ObkException(AppStrings.StatusWaitForOperation);
         var login = row.Login;
         var label = childName?.Trim() is { Length: > 0 } name ? name : null;
         await Task.Run(() => store.RenameAccount(login.Url, login.Username, label));
         if (Account is { } current && current.Url == login.Url && current.Username == login.Username)
             Account = current with { ChildName = label };
         await ReloadAccountsAsync();
-        SetStatus(label is null ? $"Removed the child name for {login.SchoolName ?? login.Username}." : $"Renamed to {label}.", true);
+        SetStatus(label is null ? Localized.Format(AppStrings.StatusChildNameRemoved, login.SchoolName ?? login.Username) :
+            Localized.Format(AppStrings.StatusRenamed, label), true);
     }
 
     /// <summary>Signs in once to verify the password, then remembers it; nothing is saved when sign-in fails.</summary>
     public async Task VerifyAndRememberPasswordAsync(AccountRow row, string password)
     {
-        if (!CanChangeAccount) throw new ObkException("Wait for the current operation to finish.");
-        if (password.Length == 0) throw new ObkException("Enter the password.");
+        if (!CanChangeAccount) throw new ObkException(AppStrings.StatusWaitForOperation);
+        if (password.Length == 0) throw new ObkException(AppStrings.ErrorEnterPassword);
         var login = row.Login;
         await Task.Run(async () =>
         {
@@ -322,15 +354,15 @@ public sealed class MainViewModel : ObservableObject
             store.RememberPassword(login.Url, login.Username, password);
         });
         await ReloadAccountsAsync();
-        SetStatus($"Password verified and saved for {row.Label}.", true);
+        SetStatus(Localized.Format(AppStrings.StatusPasswordSaved, row.Label), true);
     }
 
     public async Task ForgetPasswordAsync(AccountRow row)
     {
-        if (!CanChangeAccount) throw new ObkException("Wait for the current operation to finish.");
+        if (!CanChangeAccount) throw new ObkException(AppStrings.StatusWaitForOperation);
         await Task.Run(() => store.ForgetPassword(row.Login.Url, row.Login.Username));
         await ReloadAccountsAsync();
-        SetStatus($"Saved password cleared for {row.Label}. Refresh will ask for it next time.", true);
+        SetStatus(Localized.Format(AppStrings.StatusPasswordCleared, row.Label), true);
     }
 
     private Dictionary<string, AttachmentInfo?> ReadAttachmentInfo(string url, string username, Dictionary<string, List<Message>> items) =>
@@ -338,20 +370,23 @@ public sealed class MainViewModel : ObservableObject
             .ToDictionary(a => a.Identifier, a => store.AttachmentInfo(url, username, a.Identifier));
 
     private string CacheStatus() => syncedAt is null ?
-        "No offline archive yet. Refresh to download messages." :
-        $"Offline archive ready \u2022 Synced ({folders.Values.Sum(m => m.Count)} messages, {attachmentInfo.Values.Count(a => a is not null)} attachments) \u2022 Last synchronized: {DateTimeOffset.Parse(syncedAt).ToLocalTime():dd MMM yyyy HH:mm}";
+        AppStrings.StatusNoArchive :
+        Localized.Format(AppStrings.StatusArchiveReady, folders.Values.Sum(m => m.Count),
+            attachmentInfo.Values.Count(a => a is not null),
+            DateTimeOffset.Parse(syncedAt).ToLocalTime().ToString("dd MMM yyyy HH:mm", System.Globalization.CultureInfo.CurrentCulture));
 
-    public void OfflineStatus() => SetStatus(syncedAt is null ? CacheStatus() : CacheStatus() + " \u2022 Offline", syncedAt is not null);
+    public void OfflineStatus() => SetStatus(syncedAt is null ? CacheStatus() :
+        Localized.Format(AppStrings.StatusOffline, CacheStatus()), syncedAt is not null);
 
     private void RebuildNavigation()
     {
         var key = selectedFolder?.Key ?? "received";
         Navigation =
         [
-            new("noticeboard", "Noticeboard", "\uE789", folders["noticeboard"].Count),
-            new("received", "Inbox", "\uE715", folders["received"].Count),
-            new("sent", "Sent", "\uE724", FolderMessages("sent").Count),
-            new("excuses", "Excuses", "\uE8A5", FolderMessages("excuses").Count)
+            new("noticeboard", Folders.Title("noticeboard"), "\uE789", folders["noticeboard"].Count),
+            new("received", Folders.Title("received"), "\uE715", folders["received"].Count),
+            new("sent", Folders.Title("sent"), "\uE724", FolderMessages("sent").Count),
+            new("excuses", SharedStrings.FolderExcuses, "\uE8A5", FolderMessages("excuses").Count)
         ];
         selectedFolder = Navigation.Single(f => f.Key == key);
         Notify(nameof(SelectedFolder));
@@ -448,10 +483,10 @@ public sealed class MainViewModel : ObservableObject
     private void ClearMessage()
     {
         ++messageVersion;
-        Subject = "Select a message";
-        Sender = "Your offline workspace";
+        Subject = AppStrings.ReaderNoSelection;
+        Sender = AppStrings.ReaderNoSelectionSender;
         Initials = "OB";
-        Metadata = "Viewing cached messages makes no server requests.";
+        Metadata = AppStrings.ReaderNoSelectionDetail;
         SelectedIsExcuse = false;
         Body = [];
         Related = [];
@@ -473,16 +508,16 @@ public sealed class MainViewModel : ObservableObject
         var info = attachmentInfo;
         var all = folders;
         Subject = row.Subject;
-        Sender = OneLine(row.Message.SenderName) is { Length: > 0 } name ? name : "(Not supplied)";
+        Sender = OneLine(row.Message.SenderName) is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
         var words = Sender.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => !w.Contains('.')).ToArray();
         Initials = string.IsNullOrWhiteSpace(row.Message.SenderName) || words.Length == 0 ? "?" :
             string.Concat(words.TakeLast(2).Select(w => w[0])).ToUpperInvariant();
         SelectedIsExcuse = row.IsExcuse;
-        Metadata = $"Sent: {row.Sent} \u2022 Folder: {FolderTitle}";
+        Metadata = Localized.Format(AppStrings.ReaderMetadata, row.Sent, FolderTitle);
         if (key == "sent" && !string.IsNullOrEmpty(row.Message.RelevantName))
-            Metadata += $"\nTo: {OneLine(row.Message.RelevantName)}";
+            Metadata += "\n" + Localized.Format(AppStrings.ReaderRecipient, OneLine(row.Message.RelevantName));
         if (row.Message.CanConfirm == true && row.Message.Confirmed != true)
-            Metadata += "\nConfirmation requested. OBK does not send confirmations.";
+            Metadata += "\n" + AppStrings.ReaderConfirmationRequested;
         try
         {
             var result = await Task.Run(() =>
@@ -498,7 +533,7 @@ public sealed class MainViewModel : ObservableObject
                 return (parts, files, related);
             });
             if (version != messageVersion) return;
-            Body = result.parts.Count == 0 ? [new("(No message content)", false, false, false, false)] : result.parts;
+            Body = result.parts.Count == 0 ? [new(AppStrings.ReaderNoContent, false, false, false, false)] : result.parts;
             SetAttachments(result.files);
             Related = RelatedRow.Build(this, result.related);
         }
@@ -535,7 +570,7 @@ public sealed class MainViewModel : ObservableObject
     public async Task SynchronizeAsync(string url, string username, string password, bool remember, bool fullRefresh,
         string? childName, string? schoolName, IProgress<string> loginProgress)
     {
-        if (!CanChangeAccount) throw new ObkException("Wait for the current operation to finish.");
+        if (!CanChangeAccount) throw new ObkException(AppStrings.StatusWaitForOperation);
         IsSyncing = true;
         var syncYear = SchoolYear.Current();
         var progress = new Progress<string>(text =>
@@ -564,7 +599,7 @@ public sealed class MainViewModel : ObservableObject
         }
         catch (ObkException error)
         {
-            ReportError(error.Message + " Existing offline archive was not replaced.");
+            ReportError(Localized.Format(AppStrings.ErrorSyncArchiveKept, error.Message));
             throw;
         }
         finally { IsSyncing = false; }
@@ -597,16 +632,19 @@ public sealed class MainViewModel : ObservableObject
             for (var i = 0; i < ready.Count; i++)
             {
                 var login = ready[i];
-                var prefix = ready.Count > 1 ? $"{Label(login)} ({i + 1}/{ready.Count}): " : $"{Label(login)}: ";
-                SetStatus(prefix + "Signing in...");
-                var progress = new Progress<string>(text => { if (IsSyncing) SetStatus(prefix + text); });
+                var position = i + 1;
+                string AccountStatus(string text) => ready.Count > 1
+                    ? Localized.Format(AppStrings.StatusAccountProgressNumbered, Label(login), position, ready.Count, text)
+                    : Localized.Format(AppStrings.StatusAccountProgress, Label(login), text);
+                SetStatus(AccountStatus(AppStrings.StatusSigningIn));
+                var progress = new Progress<string>(text => { if (IsSyncing) SetStatus(AccountStatus(text)); });
                 try
                 {
                     using var client = new KomensClient(login.Url);
                     var token = await Task.Run(() => client.SignInAsync(login.Username, login.Password!));
                     await DownloadAsync(client, token, login.Url, login.Username, syncYear, false, progress);
                 }
-                catch (ObkException error) { failures.Add($"{Label(login)}: {error.Message}"); }
+                catch (ObkException error) { failures.Add(Localized.Format(SharedStrings.ErrorInContext, Label(login), error.Message)); }
             }
         }
         finally { IsSyncing = false; }
@@ -615,9 +653,12 @@ public sealed class MainViewModel : ObservableObject
         else await ReloadAccountsAsync();
         var refreshed = ready.Count - failures.Count;
         var summary = new List<string>();
-        if (ready.Count > 0) summary.Add($"Refreshed {refreshed} of {ready.Count} saved account{(ready.Count == 1 ? "" : "s")}.");
-        if (failures.Count > 0) summary.Add("Failed: " + string.Join("; ", failures) + " Existing offline archives were kept.");
-        if (missing.Count > 0) summary.Add("Sign in needed (no saved password): " + string.Join(", ", missing.Select(Label)) + ".");
+        if (ready.Count > 0)
+            summary.Add(Localized.Format(ready.Count == 1 ? AppStrings.RefreshSummaryOne : AppStrings.RefreshSummaryMany,
+                refreshed, ready.Count));
+        if (failures.Count > 0) summary.Add(Localized.Format(AppStrings.RefreshSummaryFailed, string.Join("; ", failures)));
+        if (missing.Count > 0)
+            summary.Add(Localized.Format(AppStrings.RefreshSummarySignInNeeded, string.Join(", ", missing.Select(Label))));
         SetStatus(string.Join(" ", summary), failures.Count == 0 && missing.Count == 0);
         var prompt = missing.FirstOrDefault(m => Account is { } a && a.Url == m.Url && a.Username == m.Username) ??
             (ready.Count == 0 ? missing.FirstOrDefault() : null);
