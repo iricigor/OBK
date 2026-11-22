@@ -213,6 +213,14 @@ python -m unittest discover -s .\tools -p "test_api_probe.py"
 
 ## Windows desktop client
 
+### Validation optimization
+
+Planned in #20: run .NET tests and installer verification in parallel, cache
+NuGet packages, and use faster compression only for validation installers.
+Release and local installer compression will remain unchanged. Measure publish
+and installer compilation separately and compare cold- and warm-cache CI runs
+before user verification.
+
 Run the three-pane application from source with the .NET 10 SDK:
 
 ```powershell
