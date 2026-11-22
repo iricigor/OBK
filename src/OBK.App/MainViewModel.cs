@@ -435,8 +435,7 @@ public sealed class MainViewModel : ObservableObject
             if (version != messageVersion) return;
             Body = result.parts.Count == 0 ? [new("(No message content)", false, false, false, false)] : result.parts;
             SetAttachments(result.files);
-            Related = result.related.Previous.Select(r => new RelatedRow(this, r.Item, false))
-                .Concat(result.related.Responses.Select(r => new RelatedRow(this, r.Item, true))).ToArray();
+            Related = RelatedRow.Build(this, result.related);
         }
         catch (ObkException error) { if (version == messageVersion) ReportError(error.Message); }
     }

@@ -297,8 +297,10 @@ match. **Sort** orders by date (newest first), sender, or subject; **Group**
 groups by date (Today, Yesterday, This week, This month, then months), sender,
 or subject, ignoring Re:/Odp:/Fwd: prefixes.
 
-Below the message body, **Possibly related messages** lists possible previous
-messages and responses across Inbox and Sent. Komens lists do not expose reply
+Above the message body, **Possibly related** links possible previous and next
+messages across Inbox and Sent, oldest first, each showing its date (for example
+21.Sep) and sender (**From: you** for Sent). When a side has several, they are
+numbered outward from the current message, for example Previous (2), Previous (1). Komens lists do not expose reply
 links, so this is a heuristic: subjects must share enough words (prefixes,
 case, and diacritics are ignored, so an added or changed middle part such as
 "Hodnocení / Evaluation" still matches) and the other person must match. Matches

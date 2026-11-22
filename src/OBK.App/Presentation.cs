@@ -158,17 +158,27 @@ public sealed class AccountRow(Login login, bool current)
     }
 }
 
-public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool response)
+public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool next, int? number = null)
 {
     public MainViewModel Owner { get; } = owner;
     public MessageRef Item { get; } = item;
-    public bool IsResponse { get; } = response;
-    public string Direction => IsResponse ? "Response" : "Previous";
-    public string Icon => IsResponse ? "\uE72A" : "\uE72B";
+    public bool IsNext { get; } = next;
+    public string Direction => (IsNext ? "Next" : "Previous") + (number is { } n ? $" ({n})" : "");
+    public string Icon => IsNext ? "\uE72A" : "\uE72B";
     public string Subject => MainViewModel.OneLine(Item.Message.Title) is { Length: > 0 } title ? title : "(No subject)";
-    public string Label => $"{Item.Message.Date:dd MMM yyyy HH:mm} \u2022 " +
-        (MainViewModel.OneLine(MessageInsights.Counterpart(Item.Message, Item.Folder)) is { Length: > 0 } name ? name : "(Not supplied)") +
-        $" \u2022 {Folders.Names[Item.Folder]}";
+    public string From => Item.Folder == "sent" ? "you" :
+        MainViewModel.OneLine(Item.Message.SenderName) is { Length: > 0 } name ? name : "(Not supplied)";
+    public string Label => $"{Item.Message.Date.ToString("dd.MMM", System.Globalization.CultureInfo.CurrentCulture)} \u2022 From: {From}";
+
+    /// <summary>Chronological rows; numbers count outward from the current message when a side has several.</summary>
+    public static IReadOnlyList<RelatedRow> Build(MainViewModel owner, RelatedMessages related)
+    {
+        var previous = related.Previous.Select((r, i) =>
+            new RelatedRow(owner, r.Item, false, related.Previous.Count > 1 ? i + 1 : null)).Reverse();
+        var following = related.Responses.Select((r, i) =>
+            new RelatedRow(owner, r.Item, true, related.Responses.Count > 1 ? i + 1 : null));
+        return previous.Concat(following).ToArray();
+    }
 }
 
 public static class LinkOpener

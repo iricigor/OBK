@@ -25,6 +25,25 @@ public sealed class PresentationTests
     }
 
     [Fact]
+    public void RelatedRowsAreChronologicalNumberedOutwardAndShowTheSender()
+    {
+        Message Make(string id, int day, string sender) => new()
+        {
+            Id = id, Title = "Hodnocení", Text = "", Attachments = [],
+            SentDate = new DateTimeOffset(2026, 9, day, 10, 0, 0, TimeSpan.FromHours(2)).ToString("O"),
+            Sender = System.Text.Json.JsonSerializer.SerializeToElement(new { Name = sender })
+        };
+        var related = new RelatedMessages(
+            [new(new(Make("p1", 20, "Jan Novák"), "received"), 1), new(new(Make("p2", 10, "Parent"), "sent"), 1)],
+            [new(new(Make("n1", 25, "Jan Novák"), "received"), 1)]);
+        var rows = RelatedRow.Build(null!, related);
+        Assert.Equal(["p2", "p1", "n1"], rows.Select(r => r.Item.Message.Id));
+        Assert.Equal(["Previous (2)", "Previous (1)", "Next"], rows.Select(r => r.Direction));
+        Assert.Equal("you", rows[0].From);
+        Assert.Equal($"{new DateTime(2026, 9, 20):dd.MMM} \u2022 From: Jan Novák", rows[1].Label);
+    }
+
+    [Fact]
     public async Task ThemesAndAsyncSelectionsStayReactiveWithoutChangingArchiveReadState()
     {
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
