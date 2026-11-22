@@ -11,6 +11,21 @@ import make_app_icon
 
 
 class ApplicationIconTests(unittest.TestCase):
+    def test_small_icons_have_crisp_edges_and_a_visible_lid_gap(self):
+        for size in (16, 20, 24, 32):
+            with self.subTest(size=size):
+                image = make_app_icon.render(size)
+                self.assertEqual({make_app_icon.TILE, make_app_icon.PAPER, (0, 0, 0, 0)},
+                                 {color for count, color in image.getcolors()})
+                center = size // 2
+                lid_bottom = round(size * 0.35) - 1
+                box_top = round(size * 0.44)
+                self.assertGreaterEqual(box_top - lid_bottom - 1, 1)
+                self.assertEqual(make_app_icon.PAPER, image.getpixel((center, lid_bottom)))
+                for y in range(lid_bottom + 1, box_top):
+                    self.assertEqual(make_app_icon.TILE, image.getpixel((center, y)))
+                self.assertEqual(make_app_icon.PAPER, image.getpixel((center, box_top)))
+
     def test_generated_assets_match_their_rendered_frames(self):
         with tempfile.TemporaryDirectory() as directory:
             ico = Path(directory) / "windows" / "OBK.ico"

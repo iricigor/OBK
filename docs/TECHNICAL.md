@@ -120,7 +120,9 @@ executable, windows, and installer, and
 `src\OBK.Android\Resources\AppIcon\obk.png` for the Android launcher and splash.
 Both platforms use the same geometry and the interface's blue accent (`#0F6CBD`).
 Windows includes 16, 20, 24, 32, 40, 48, 64, 128, and 256 px frames; frames up to
-32 px enlarge the envelope and thicken its flap. The 512 px Android image leaves
+32 px use pixel-aligned shapes and a single blue V on the white box, omitting the
+inset envelope panel to keep the title-bar and taskbar icon clear. Larger frames
+retain the detailed emblem. The 512 px Android image leaves
 space around the box so circular launcher masks do not clip the white artwork.
 
 Regenerate and check both assets with Pillow installed:
