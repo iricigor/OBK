@@ -237,10 +237,6 @@ public sealed class MigrationTests : IDisposable
         Assert.Null(store.LoadArchive(Url, "other-user", year));
         Assert.Null(store.LoadArchive("https://other.example", "u", year));
         Assert.Null(store.LoadArchive(Url, "u", new(2025)));
-        store.LogOut();
-        Assert.Null(store.LastAccount());
-        Assert.Equal(2, store.RememberedLogins().Count);
-        Assert.NotNull(store.LoadArchive(Url, "u", year));
         store.ForgetCredentials();
         Assert.Null(store.RememberedLogin());
         Assert.NotNull(store.LoadArchive(Url, "u", year));

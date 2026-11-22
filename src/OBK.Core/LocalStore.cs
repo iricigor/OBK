@@ -180,13 +180,6 @@ public sealed class LocalStore
             .Where(profile => !SameAccount(profile, KomensClient.NormalizeUrl(url), username))
             .ToArray());
 
-    public void LogOut() => Access(connection =>
-    {
-        using var command = Command(connection,
-            "DELETE FROM settings WHERE name = 'last_account'");
-        return command.ExecuteNonQuery();
-    });
-
     public void SaveAccount(string url, string username, string? childName = null, string? schoolName = null)
     {
         url = KomensClient.NormalizeUrl(url);

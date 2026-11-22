@@ -232,11 +232,11 @@ fields so they cannot be reused unintentionally.
 remembered school and username is saved as its own encrypted profile. Accounts
 used without remembering the password are also retained in encrypted account
 history, so they can be recognized and selected later. The
-initial login and **Switch school / Log out** flow list previously used accounts;
+initial login and **Switch school** flow list previously used accounts;
 the list collapses while a school search is active, so up to six matches fit
-without scrolling. Choosing one restores its username and optional child name; passwords are filled
-only for explicitly remembered profiles. Choosing or searching for a different
-school starts with blank account fields.
+without scrolling. Choosing one restores its username and optional child name;
+passwords are filled only for explicitly remembered profiles. Choosing or
+searching for a different school starts with blank account fields.
 Nothing signs in silently.
 The action footer stays visible while the form scrolls, with **Read offline**
 separate from **Sign in and sync**.
@@ -261,8 +261,9 @@ per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
 startup. It contains only the theme, not credentials or archive data.
 The title bar retains native dragging, resizing, caption controls, and Windows
 11 maximize-button snap layouts. The active child or school is shown beside the
-OBK title. **Switch school / Log out** requires confirmation, clears the active
-account, and opens the previously used account picker. Saved credential
+OBK title. **Switch school** opens the previously used account picker directly.
+Closing the picker returns to the current school unchanged; the active account
+changes only after **Sign in and sync** or **Read offline**. Saved credential
 profiles and account history remain available; no offline archive is removed.
 Sync progress and errors appear in the header/footer without blocking offline
 reading.

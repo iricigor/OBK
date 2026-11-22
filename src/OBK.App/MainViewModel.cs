@@ -31,7 +31,6 @@ public sealed class MainViewModel : ObservableObject
     private string initials = "OB";
     private string metadata = "Viewing cached messages makes no server requests.";
     private bool expanded;
-    private bool confirmSwitch;
     private int folderVersion;
     private int messageVersion;
 
@@ -42,16 +41,7 @@ public sealed class MainViewModel : ObservableObject
         Theme = theme;
         SignInCommand = new RelayCommand(_ => openLogin(false), _ => CanChangeAccount);
         ToggleThemeCommand = new AsyncCommand(_ => Theme.ToggleAsync(), ReportError);
-        RequestSwitchCommand = new RelayCommand(_ => ConfirmSwitch = true, _ => CanChangeAccount);
-        CancelSwitchCommand = new RelayCommand(_ => ConfirmSwitch = false);
-        SwitchSchoolCommand = new AsyncCommand(async _ =>
-        {
-            await Task.Run(store.LogOut);
-            ClearAccount();
-            ConfirmSwitch = false;
-            SetStatus("Active account cleared. Remembered accounts and offline messages are unchanged.", true);
-            openLogin(true);
-        }, ReportError, _ => CanChangeAccount);
+        SwitchSchoolCommand = new RelayCommand(_ => openLogin(true), _ => CanChangeAccount);
         OpenAttachmentCommand = ExportCommand("open", export);
         SaveAttachmentCommand = ExportCommand("save", export);
         OpenFolderCommand = ExportCommand("folder", export);
@@ -68,8 +58,6 @@ public sealed class MainViewModel : ObservableObject
     public ThemeManager Theme { get; }
     public ICommand SignInCommand { get; }
     public ICommand ToggleThemeCommand { get; }
-    public ICommand RequestSwitchCommand { get; }
-    public ICommand CancelSwitchCommand { get; }
     public ICommand SwitchSchoolCommand { get; }
     public ICommand OpenAttachmentCommand { get; }
     public ICommand SaveAttachmentCommand { get; }
@@ -114,7 +102,6 @@ public sealed class MainViewModel : ObservableObject
     public bool CanChangeAccount => !IsSyncing && !Loading && !IsExporting;
     public string Status { get => status; private set => Set(ref status, value); }
     public bool GoodStatus { get => goodStatus; private set => Set(ref goodStatus, value); }
-    public bool ConfirmSwitch { get => confirmSwitch; set => Set(ref confirmSwitch, value); }
     public string Subject { get => subject; private set => Set(ref subject, value); }
     public string Sender { get => sender; private set => Set(ref sender, value); }
     public string Initials { get => initials; private set => Set(ref initials, value); }
@@ -202,19 +189,6 @@ public sealed class MainViewModel : ObservableObject
             SetStatus(CacheStatus(), syncedAt is not null);
         }
         finally { Loading = false; }
-    }
-
-    private void ClearAccount()
-    {
-        Account = null;
-        year = SchoolYear.Current();
-        folders = Folders.Empty();
-        attachmentInfo = [];
-        School = "Your school";
-        syncedAt = null;
-        selectedMessageIds.Clear();
-        Notify(nameof(YearLabel));
-        RebuildNavigation();
     }
 
     private Dictionary<string, AttachmentInfo?> ReadAttachmentInfo(string url, string username, Dictionary<string, List<Message>> items) =>

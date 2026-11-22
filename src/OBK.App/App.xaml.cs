@@ -101,6 +101,16 @@ public partial class App : Application
                         window.Height = 620;
                         window.UpdateLayout();
                         Capture(window, Path.ChangeExtension(resultPath, ".small.png"));
+                        string? switchUsername = null;
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                        {
+                            var picker = window.OwnedWindows.OfType<LoginWindow>().Single();
+                            switchUsername = picker.Username.Text;
+                            picker.Close();
+                        }));
+                        window.ViewModel.SwitchSchoolCommand.Execute(null);
+                        if (switchUsername != "" || window.Account?.Username != "installation-check")
+                            throw new ObkException("Cancelling Switch school did not return to the unchanged current account.");
                         var login = new LoginWindow(window, null, false, "", showSavedAccounts: true);
                         login.Show();
                         await login.DirectoryReady;

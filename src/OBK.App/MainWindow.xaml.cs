@@ -96,7 +96,7 @@ public partial class MainWindow : Window
         openingLogin = true;
         try
         {
-            Login? initial = Account;
+            Login? initial = showSavedAccounts ? null : Account;
             var remembered = false;
             var error = "";
             try
@@ -109,7 +109,6 @@ public partial class MainWindow : Window
                     if (saved is not null) { initial = saved; remembered = true; }
                     else initial ??= await Task.Run(Store.LastAccount);
                 }
-                else initial ??= await Task.Run(Store.LastAccount);
             }
             catch (ObkException problem) { error = problem.Message; }
             new LoginWindow(this, initial, remembered, error, showSavedAccounts).ShowDialog();
