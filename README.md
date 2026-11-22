@@ -115,9 +115,14 @@ refresh, offline folders/search, and opening or sharing downloaded attachments.
 It uses Android Keystore-backed encryption and remains read-only toward school
 servers.
 
-The hamburger menu shows **OBK — Offline Bakalari Komens**, with **Inbox**,
-**Noticeboard**, **Sent**, and **Excuses** first, then **Manage accounts**
-and **Settings**. **Settings** offers **Compact / Relaxed** message
+The hamburger menu shows **OBK — Offline Bakalari Komens**, with a compact
+**Children** section first: tap a child to switch accounts, or **Add child**.
+**Inbox**, **Noticeboard**, **Sent**, and **Excuses** follow, then **Manage accounts**
+and **Settings**. The larger child avatar overlaps the left end of the search
+bar; the magnifier sits on the right. Tapping the avatar opens a simple chooser
+with each account's avatar, name, school, username and active status, without
+account-management actions. Refresh summaries return to the normal archive
+timestamp after one minute. **Settings** offers **Compact / Relaxed** message
 list density and **Small / Medium / Large** reading sizes for the list and opened
 messages. The two-line list shows subject and date above the sender; long text is
 ellipsized. Defaults are Medium and Relaxed, with tighter spacing than the earlier

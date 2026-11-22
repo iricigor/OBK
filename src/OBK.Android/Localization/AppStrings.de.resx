@@ -135,6 +135,9 @@
   <data name="ReaderAccountPickerTitle" xml:space="preserve">
     <value>Kind oder Konto auswählen</value>
   </data>
+  <data name="ReaderDrawerChildren" xml:space="preserve">
+    <value>Kinder</value>
+  </data>
   <data name="ReaderNavigationMenu" xml:space="preserve">
     <value>Navigationsmenü öffnen</value>
   </data>

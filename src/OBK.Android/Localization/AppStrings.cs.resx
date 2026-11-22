@@ -135,6 +135,9 @@
   <data name="ReaderAccountPickerTitle" xml:space="preserve">
     <value>Vyberte dítě nebo účet</value>
   </data>
+  <data name="ReaderDrawerChildren" xml:space="preserve">
+    <value>Děti</value>
+  </data>
   <data name="ReaderNavigationMenu" xml:space="preserve">
     <value>Otevřít navigační nabídku</value>
   </data>

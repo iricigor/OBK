@@ -50,20 +50,7 @@ internal sealed class AccountsPage : ContentPage
         foreach (var login in known.OrderByDescending(login => active?.Url == login.Url && active.Username == login.Username))
         {
             var name = ReaderPage.AccountLabelConverter.Label(login);
-            var title = new Label { Text = name, FontSize = 18, FontAttributes = FontAttributes.Bold };
-            var details = new VerticalStackLayout { Spacing = 4 };
-            var titleRow = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 8 };
-            titleRow.Add(title);
-            if (active?.Url == login.Url && active.Username == login.Username)
-            {
-                var current = new Label { Text = AppStrings.AccountsActive, FontSize = 13, VerticalOptions = LayoutOptions.Center };
-                current.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
-                titleRow.Add(current, 1);
-            }
-            details.Add(titleRow);
-            if (!string.IsNullOrWhiteSpace(login.SchoolName))
-                details.Add(ReaderTheme.Metadata(new Label { Text = login.SchoolName }));
-            details.Add(ReaderTheme.Metadata(new Label { Text = login.Username }));
+            var details = ReaderTheme.AccountDetails(login, active);
             var saved = ReaderTheme.Metadata(new Label
             {
                 Text = login.Password is null ? AppStrings.AccountsPasswordNotSaved : AppStrings.AccountsPasswordSaved

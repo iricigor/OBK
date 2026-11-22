@@ -271,13 +271,21 @@ three-column layout. UI refinement does not imply adding missing desktop
 features or implementing the separately tracked language controls.
 
 The reader uses an integrated search bar above the list: the hamburger opens
-a navigation drawer headed **OBK / Offline Bakalari Komens** with **Inbox**,
-**Noticeboard**, **Sent**, and **Excuses** first, followed by **Manage accounts**
+a navigation drawer headed **OBK / Offline Bakalari Komens** with a compact
+**Children** section and **Add child** first, then **Inbox**,
+**Noticeboard**, **Sent**, and **Excuses**, followed by **Manage accounts**
 and **Settings**. The active folder is highlighted and announced in the drawer;
-selecting a folder closes it. Only search and the active-child avatar sit inside
-the search container, and the refresh icon refreshes all
-accounts. The avatar opens a native chooser showing child/account names.
-Sync status stays below the list. **Settings** offers
+selecting a folder or child closes it. Account rows show avatar, name, school
+where available, and active status. The active-child avatar is 56 dp tall,
+overlapping the left end of the 48-dp search surface by 4 dp above and below;
+the magnifier is at its right end. The refresh icon refreshes all accounts.
+The avatar opens a normal chooser page sharing Manage accounts' identity rows
+(avatar, name, school, username and active status), without management actions.
+Tapping a row selects that account and returns to the reader; language switching
+also rebuilds the chooser. Sync status stays below the list. Refresh summaries
+expire after one minute using monotonic elapsed time; a new operation or leaving
+the reader cancels the pending reset so it cannot overwrite newer state.
+**Settings** offers
 **System**, **Light**, and **Dark** appearance, **Small / Medium / Large** reading
 sizes, and **Compact / Relaxed** list density. The list uses two lines: a
 single-line, ellipsized subject and right-aligned short date, then an ellipsized

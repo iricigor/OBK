@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
+using OBK.AndroidApp.Localization;
 using OBK.Core;
 
 namespace OBK.AndroidApp;
@@ -68,6 +69,65 @@ internal static class ReaderTheme
         };
         border.SetAppThemeColor(VisualElement.BackgroundColorProperty, Color.FromArgb(colors.LightBackground), Color.FromArgb(colors.DarkBackground));
         return border;
+    }
+
+    public static VerticalStackLayout AccountDetails(Login login, Login? active, bool compact = false)
+    {
+        var title = new Label
+        {
+            Text = ReaderPage.AccountLabelConverter.Label(login), FontSize = compact ? 16 : 18,
+            FontAttributes = FontAttributes.Bold, MaxLines = compact ? 1 : -1,
+            LineBreakMode = compact ? LineBreakMode.TailTruncation : LineBreakMode.WordWrap
+        };
+        var heading = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 8 };
+        heading.Add(title);
+        if (active?.Url == login.Url && active.Username == login.Username)
+        {
+            var current = new Label { Text = AppStrings.AccountsActive, FontSize = 13, VerticalOptions = LayoutOptions.Center };
+            current.SetAppThemeColor(Label.TextColorProperty, Accent, DarkAccent);
+            heading.Add(current, 1);
+        }
+        var details = new VerticalStackLayout { Spacing = 4, VerticalOptions = LayoutOptions.Center };
+        details.Add(heading);
+        if (!string.IsNullOrWhiteSpace(login.SchoolName))
+            details.Add(Metadata(new Label
+            {
+                Text = login.SchoolName, MaxLines = compact ? 1 : -1,
+                LineBreakMode = compact ? LineBreakMode.TailTruncation : LineBreakMode.WordWrap
+            }));
+        if (!compact)
+            details.Add(Metadata(new Label { Text = login.Username }));
+        return details;
+    }
+
+    public static Grid AccountChoice(Login login, IReadOnlyList<Login> known, Login? active, EventHandler select, bool compact = false)
+    {
+        var avatar = AccountAvatar(login, known);
+        avatar.VerticalOptions = LayoutOptions.Center;
+        var details = AccountDetails(login, active, compact);
+        var content = new Grid
+        {
+            Padding = new Thickness(8, compact ? 4 : 8),
+            ColumnDefinitions = [new(48), new(GridLength.Star)], ColumnSpacing = 12
+        };
+        content.Add(avatar);
+        content.Add(details, 1);
+        content.InputTransparent = true;
+        AutomationProperties.SetIsInAccessibleTree(content, false);
+        var button = StartAlignedButton(new Button { BackgroundColor = Colors.Transparent });
+        var description = string.Join(", ", new[]
+        {
+            ReaderPage.AccountLabelConverter.Label(login), login.SchoolName, login.Username,
+            active?.Url == login.Url && active.Username == login.Username ? AppStrings.AccountsActive : null
+        }.Where(text => !string.IsNullOrWhiteSpace(text)));
+        SemanticProperties.SetDescription(button, description);
+        button.Clicked += select;
+        var row = new Grid { MinimumHeightRequest = 48 };
+        if (active?.Url == login.Url && active.Username == login.Username)
+            row.SetAppThemeColor(VisualElement.BackgroundColorProperty, Color.FromArgb("#EAEFF5"), Color.FromArgb("#1B2129"));
+        row.Add(content);
+        row.Add(button);
+        return Apply(row);
     }
 
     public static ImageButton Icon(string name, string description)
