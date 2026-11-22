@@ -11,6 +11,7 @@ internal sealed class TransferScanPage : ContentPage
 {
     private readonly Action<Login> imported;
     private readonly Label status = new() { Text = AppStrings.ScanInstructions, Padding = new Thickness(24, 16) };
+    private readonly Grid layout = new() { RowDefinitions = [new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star)] };
     private CameraBarcodeReaderView? camera;
     private int scanned;
 
@@ -18,6 +19,8 @@ internal sealed class TransferScanPage : ContentPage
     {
         this.imported = imported;
         Title = AppStrings.ScanTitle;
+        layout.Add(status, 0, 0);
+        Content = layout;
         ReaderTheme.Apply(this);
     }
 
@@ -45,11 +48,7 @@ internal sealed class TransferScanPage : ContentPage
             IsDetecting = true
         };
         camera.BarcodesDetected += Detected;
-        var layout = new Grid { RowDefinitions = [new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star)] };
-        layout.Add(status, 0, 0);
         layout.Add(camera, 0, 1);
-        Content = layout;
-        ReaderTheme.Apply(this);
     }
 
     protected override void OnDisappearing()
@@ -63,9 +62,9 @@ internal sealed class TransferScanPage : ContentPage
         if (camera is null) return;
         camera.IsDetecting = false;
         camera.BarcodesDetected -= Detected;
+        layout.Remove(camera);
         camera.Handler?.DisconnectHandler();
         camera = null;
-        Content = status;
     }
 
     private void Detected(object? sender, BarcodeDetectionEventArgs e)
@@ -80,9 +79,15 @@ internal sealed class TransferScanPage : ContentPage
         if (Interlocked.Exchange(ref scanned, 1) == 1) return;
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            StopCamera();
-            Navigation.InsertPageBefore(new TransferUnlockPage(value.Trim(), imported), this);
-            await Navigation.PopAsync();
+            // The user may have left with Back after the camera thread detected the code.
+            if (!Navigation.NavigationStack.Contains(this)) return;
+            try
+            {
+                StopCamera();
+                Navigation.InsertPageBefore(new TransferUnlockPage(value.Trim(), imported), this);
+                await Navigation.PopAsync();
+            }
+            catch (Exception error) when (error is ArgumentException or InvalidOperationException) { }
         });
     }
 }
