@@ -42,8 +42,8 @@ passwords or private messages. See [Privacy](#privacy) and the
 - **Light and dark themes**, a resizable sidebar that can shrink to icons, and
   **automatic updates**.
 - **Settings** at the bottom of the sidebar – choose the theme, reading size and
-message list density, rename children, save, change, or clear saved passwords,
-check for updates, and transfer an account to OBK on Android.
+  message list density, rename children, save, change, or clear saved passwords,
+  check for updates, and transfer an account to OBK on Android.
 
 OBK only reads messages. It cannot send messages, replies, excuses, or
 confirmations, and it never marks messages as read on the server.
