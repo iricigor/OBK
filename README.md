@@ -115,6 +115,10 @@ refresh, offline folders/search, and opening or sharing downloaded attachments.
 It uses Android Keystore-backed encryption and remains read-only toward school
 servers.
 
+Planned reader improvements are tracked in [#62](https://github.com/iricigor/OBK/issues/62):
+a two-line message list, Compact/Relaxed density, and Small/Medium/Large reading
+size preferences for the list and opened messages.
+
 To avoid typing credentials on the phone, open **Settings > Accounts >
 Transfer to Android** in OBK on Windows, then tap **Scan from PC** on Android's
 sign-in page and enter the three words shown. The QR code is encrypted and the
