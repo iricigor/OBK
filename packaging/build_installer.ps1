@@ -4,6 +4,8 @@ param(
     [ValidatePattern('^1\.0\.(0|[1-9][0-9]*)$')]
     [string]$Version,
     [string]$Iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe',
+    [bool]$LocalBuild = $true,
+    [string]$BuildTimestamp,
     [switch]$FastCompression,
     [Parameter(Mandatory, ParameterSetName = 'Prepare')]
     [switch]$PrepareOnly,
@@ -22,8 +24,10 @@ if (-not $CompilePreparedStage) {
         Remove-Item -LiteralPath $stage -Recurse -Force
     }
     $timer = [Diagnostics.Stopwatch]::StartNew()
+    $buildProperties = @("-p:LocalBuild=$LocalBuild")
+    if ($BuildTimestamp) { $buildProperties += "-p:BuildTimestamp=$BuildTimestamp" }
     dotnet publish (Join-Path $root 'src\OBK.App\OBK.App.csproj') -c Release -r win-x64 --self-contained true `
-        -p:Version=$Version -o $stage --nologo --verbosity quiet
+        -p:Version=$Version @buildProperties -o $stage --nologo --verbosity quiet
     if ($LASTEXITCODE -ne 0) { throw 'Self-contained application publish failed.' }
     $timer.Stop()
     Write-Host ('Application publish: {0:F1} seconds' -f $timer.Elapsed.TotalSeconds)

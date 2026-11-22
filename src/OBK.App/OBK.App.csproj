@@ -11,7 +11,17 @@
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <ApplicationIcon>Assets\OBK.ico</ApplicationIcon>
     <NeutralLanguage>en</NeutralLanguage>
+    <LocalBuild Condition="'$(LocalBuild)' == ''">true</LocalBuild>
+    <BuildTimestamp Condition="'$(BuildTimestamp)' == ''">$([System.DateTime]::UtcNow.ToString('O'))</BuildTimestamp>
   </PropertyGroup>
+  <Target Name="ValidateLocalBuild" BeforeTargets="GenerateAssemblyInfo">
+    <Error Condition="'$(LocalBuild)' != 'true' and '$(LocalBuild)' != 'false'"
+           Text="LocalBuild must be true or false." />
+  </Target>
+  <ItemGroup>
+    <AssemblyMetadata Include="LocalBuild" Value="$(LocalBuild)" />
+    <AssemblyMetadata Include="BuildTimestamp" Value="$(BuildTimestamp)" />
+  </ItemGroup>
   <ItemGroup>
     <LocalizedStrings Include="Localization\AppStrings.resx" />
   </ItemGroup>
