@@ -681,6 +681,12 @@ the publication job uses it to create releases and upload assets.
 
 ### Local build and verification
 
+Planned in #47: local Windows builds (including Release-configuration local
+installers) will show a top-right **DEV BUILD** ribbon with the UTC build time.
+Mouse or keyboard acknowledgment will hide it until the process exits.
+Official release builds will explicitly disable it, independently of signing.
+Android and PR/test-specific labels are outside this change's scope.
+
 Development runs from source using the .NET command above.
 To build an installer, install the .NET 10 SDK and Inno Setup 6
 (6.3 or later). From the repository root:
