@@ -27,7 +27,8 @@ public partial class MainWindow : Window
     private bool compact;
     private bool openingLogin;
 
-    public MainWindow(LocalStore store, bool showLogin = true)
+    public UpdateManager Updates { get; }
+    public MainWindow(LocalStore store, bool showLogin = true, bool enableUpdates = true)
     {
         Store = store;
         this.showLogin = showLogin;
@@ -40,10 +41,15 @@ public partial class MainWindow : Window
         CloseCommand = new RelayCommand(_ => Close());
         var theme = new ThemeManager(Path.Combine(Path.GetDirectoryName(store.Path)!, "appearance.json"));
         ViewModel = new MainViewModel(store, theme, OpenLoginDialog, ExportAsync, SaveAllAsync);
+        Updates = new UpdateManager(new UpdateService(Path.Combine(Path.GetDirectoryName(store.Path)!, "updates")),
+            UpdateService.InstalledVersion, () => !Busy && !ViewModel.IsExporting, Close);
         InitializeComponent();
         DataContext = ViewModel;
+        UpdateText.DataContext = UpdateActions.DataContext = Updates;
+        Closed += (_, _) => Updates.OnExit();
         ViewModel.PropertyChanged += (_, e) =>
         {
+            if (enableUpdates && e.PropertyName == nameof(MainViewModel.Account) && ViewModel.Account is not null) Updates.Start();
             if (e.PropertyName != nameof(MainViewModel.SelectedMessage)) return;
             ReadingScroll.ScrollToTop();
             if (ViewModel.SelectedMessage is { } row)
@@ -63,11 +69,14 @@ public partial class MainWindow : Window
         if (showLogin) OpenLoginDialog(true);
     }
 
+    private void UpdateMenuClick(object sender, RoutedEventArgs e) => Updates.MenuOpen = !Updates.MenuOpen;
+
     private void WindowClosing(object? sender, CancelEventArgs e)
     {
         if (Busy || ViewModel.IsExporting)
         {
             e.Cancel = true;
+            Updates.CancelRestart();
             ViewModel.ReportError("Wait for synchronization or attachment export to finish before closing OBK.");
         }
     }

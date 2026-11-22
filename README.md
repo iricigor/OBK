@@ -85,6 +85,17 @@ or access control**. Anyone with the file can decompress it. Do not publish a
 plaintext duplicate alongside it; compression does not hide names in upstream
 public sources or elsewhere on a website.
 
+## Automatic updates
+
+OBK checks the latest stable [GitHub release](https://github.com/iricigor/OBK/releases)
+one minute after an account is opened, then every five minutes. The status bar shows
+the installed version when current. A newer installer is downloaded in the
+background and verified against the release's `SHA256SUMS.txt`; a failed
+check or download shows a message and is retried at the next interval. Once ready,
+**Update and restart** installs it silently and reopens OBK. Its dropdown offers
+**Ignore during this session** and **Install when I exit**. There is no setting to
+disable checks yet; only HTTPS assets from this repository's releases are used.
+
 ## Purpose and scope
 
 OBK is a read-only Bakaláři Komens client that downloads messages for offline

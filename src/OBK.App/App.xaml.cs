@@ -72,7 +72,7 @@ public partial class App : Application
                     await store.SaveAttachmentAsync("https://school.example", "installation-check", attachment, source, expectedSize: 459712, contentType: "application/pdf");
                 }
             });
-            var window = new MainWindow(store, showLogin: false);
+            var window = new MainWindow(store, showLogin: false, enableUpdates: false);
             MainWindow = window;
             window.Show();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(async () =>
