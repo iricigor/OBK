@@ -310,6 +310,7 @@ public sealed class PresentationTests
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         void AssertRepositoryLink()
                         {
+                            Console.Error.WriteLine($"Verifying repository link in {LanguageSettings.Code}.");
                             main.ViewModel.OpenSettingsCommand.Execute(null);
                             ((Expander)main.FindName("AboutSection")).IsExpanded = true;
                             main.UpdateLayout();
@@ -318,6 +319,7 @@ public sealed class PresentationTests
                             Assert.Equal(SharedStrings.RepositoryLink, new TextRange(link.ContentStart, link.ContentEnd).Text);
                             Assert.True(link.Focus());
                             Assert.True(link.IsKeyboardFocused);
+                            Console.Error.WriteLine($"Repository link verified in {LanguageSettings.Code}.");
                             ((Expander)main.FindName("AboutSection")).IsExpanded = false;
                             main.ViewModel.CloseSettingsCommand.Execute(null);
                         }
@@ -502,7 +504,11 @@ public sealed class PresentationTests
                     finally { main.Close(); }
                     completion.SetResult();
                 }
-                catch (Exception error) { completion.SetException(error); }
+                catch (Exception error)
+                {
+                    Console.Error.WriteLine(error);
+                    completion.SetException(error);
+                }
                 finally
                 {
                     SharedStrings.Culture = null;
