@@ -130,6 +130,18 @@ remain square. Native API failures are reported in the status bar after
 initialization, without preventing offline use. Windows 10 retains the
 existing frame, and login/prompt dialogs are unchanged.
 
+## Interface text and localization
+
+*Planned (#28):* app-owned interface text moves into `.resx` resource sets,
+with English as the only shipped language:
+
+- `src\OBK.Core\Resources\Strings.resx`: shared text, used by both apps.
+- `src\OBK.App\Resources\Strings.resx`: Windows-only text.
+- `src\OBK.Android\Resources\Strings.resx`: Android-only text.
+
+A CI check will verify that every translation of a set is complete. Czech
+(#29), Ukrainian, and German (#30) follow later.
+
 ## Purpose and scope
 
 OBK is a read-only Bakaláři Komens client that downloads messages for offline
