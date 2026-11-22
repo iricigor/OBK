@@ -110,6 +110,10 @@ still apply. OBK is not affiliated with or endorsed by Bakaláři.
 
 ## Android preview
 
+Planned reader refinement: compact children-first drawer navigation, a larger
+left-hand child avatar overlapping the search bar, and a refresh summary that
+returns to the normal archive timestamp after one minute.
+
 The Android 10+ .NET MAUI reader supports school sign-in, multiple children, manual
 refresh, offline folders/search, and opening or sharing downloaded attachments.
 It uses Android Keystore-backed encryption and remains read-only toward school
