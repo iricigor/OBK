@@ -7,8 +7,8 @@ internal sealed class MessagePage : ContentPage
 {
     private readonly ReaderSession session;
     private readonly Login account;
-    private readonly VerticalStackLayout content = new() { Padding = 24, Spacing = 16 };
-    private readonly Label status = new();
+    private readonly VerticalStackLayout content = new() { Padding = 20, Spacing = 16 };
+    private readonly Label status = new() { IsVisible = false };
     private readonly List<Button> actions = [];
     private readonly Message message;
     private bool loaded;
@@ -20,12 +20,20 @@ internal sealed class MessagePage : ContentPage
         this.account = account;
         this.message = message;
         Title = AppStrings.MessagePageTitle;
-        content.Add(new Label { Text = message.Title, FontSize = 24, FontAttributes = FontAttributes.Bold });
-        content.Add(new Label { Text = $"{message.SenderName}\n{message.Date:g}" });
-        content.Add(new Label { Text = AppStrings.MessageOfflineNotice });
+        content.Add(new VerticalStackLayout
+        {
+            Spacing = 4,
+            Children =
+            {
+                new Label { Text = message.Title, FontSize = 20, FontAttributes = FontAttributes.Bold },
+                new Label { Text = message.SenderName, FontSize = 14 },
+                ReaderTheme.Metadata(new Label { Text = $"{message.Date:g}" })
+            }
+        });
         content.Add(status);
         Content = new ScrollView { Content = content };
         ReaderTheme.Apply(this);
+        this.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
     }
 
     protected override async void OnAppearing()
@@ -53,7 +61,7 @@ internal sealed class MessagePage : ContentPage
             if (links.Count > 0) content.Add(new Label { Text = AppStrings.MessageLinksHeader, FontAttributes = FontAttributes.Bold });
             foreach (var link in links)
             {
-                var button = new Button { Text = link, LineBreakMode = LineBreakMode.WordWrap };
+                var button = ReaderTheme.Subtle(new Button { Text = link, LineBreakMode = LineBreakMode.WordWrap, HorizontalOptions = LayoutOptions.Fill });
                 button.Clicked += async (_, _) => await PerformAsync(async () =>
                 {
                     if (!await Launcher.TryOpenAsync(link))
@@ -67,14 +75,16 @@ internal sealed class MessagePage : ContentPage
             foreach (var attachment in message.Attachments)
             {
                 var info = await Task.Run(() => session.Store.AttachmentInfo(account.Url, account.Username, attachment.Identifier));
-                content.Add(new Label { Text = attachment.SafeName });
+                var fileContent = new VerticalStackLayout { Spacing = 8 };
+                fileContent.Add(new Label { Text = attachment.SafeName, FontSize = 14, FontAttributes = FontAttributes.Bold });
+                content.Add(ReaderTheme.Panel(fileContent, 12));
                 if (info is null)
                 {
-                    content.Add(new Label { Text = AppStrings.MessageAttachmentNotDownloaded });
+                    fileContent.Add(ReaderTheme.Metadata(new Label { Text = AppStrings.MessageAttachmentNotDownloaded }));
                     continue;
                 }
-                var open = new Button { Text = AppStrings.MessageOpenAttachment, IsVisible = FileNames.CanOpen(attachment.SafeName) };
-                var share = new Button { Text = AppStrings.MessageShareAttachment };
+                var open = new Button { Text = AppStrings.MessageOpenAttachment, IsVisible = FileNames.CanOpen(attachment.SafeName), LineBreakMode = LineBreakMode.WordWrap };
+                var share = ReaderTheme.Subtle(new Button { Text = AppStrings.MessageShareAttachment, LineBreakMode = LineBreakMode.WordWrap });
                 open.Clicked += async (_, _) => await PerformAsync(async () =>
                 {
                     var path = await session.ExportAsync(account, attachment);
@@ -90,16 +100,20 @@ internal sealed class MessagePage : ContentPage
                 });
                 actions.Add(open);
                 actions.Add(share);
-                content.Add(open);
-                content.Add(share);
+                var fileActions = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Star)], ColumnSpacing = 8 };
+                fileActions.Add(open, 0);
+                fileActions.Add(share, 1);
+                fileContent.Add(fileActions);
             }
+            content.Add(ReaderTheme.Metadata(new Label { Text = AppStrings.MessageOfflineNotice }));
             if (message.Attachments.Count > 0)
-                content.Add(new Label { Text = AppStrings.MessageDecryptedCopyNotice });
+                content.Add(ReaderTheme.Metadata(new Label { Text = AppStrings.MessageDecryptedCopyNotice }));
             ReaderTheme.Apply(content);
         }
         catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
         {
             status.Text = error.Message;
+            status.IsVisible = true;
             await DisplayAlertAsync(AppStrings.MessageReadFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
     }
@@ -122,6 +136,7 @@ internal sealed class MessagePage : ContentPage
         catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException or FeatureNotSupportedException)
         {
             status.Text = error.Message;
+            status.IsVisible = true;
             await DisplayAlertAsync(AppStrings.MessageActionFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
         finally
