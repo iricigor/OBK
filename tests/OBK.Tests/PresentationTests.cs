@@ -414,6 +414,93 @@ public sealed class PresentationTests
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         AssertNativeRounding();
 
+                        var readerFolders = Folders.Empty();
+                        Message ReaderMessage(string id, string title, int day) => new()
+                        {
+                            Id = id, Title = title, Text = "<p>Reader surface fixture</p>",
+                            SentDate = SchoolYear.Current().Start.AddDays(day).ToString("O"),
+                            Sender = System.Text.Json.JsonSerializer.SerializeToElement(new { Name = "Test Teacher" }),
+                            Read = true, Attachments = []
+                        };
+                        readerFolders["received"].Add(ReaderMessage("original", "Reader shades", 1));
+                        readerFolders["received"][0].Attachments.Add(new Attachment { Id = "reader-file", Name = "schedule.pdf" });
+                        readerFolders["received"].Add(ReaderMessage("unrelated", "Separate notice", 3));
+                        readerFolders["sent"].Add(ReaderMessage("reply", "Re: Reader shades", 2));
+                        await Task.Run(() => store.SaveArchive("https://school.example", "reader-shades",
+                            SchoolYear.Current(), "Reader test school", readerFolders));
+                        await main.ViewModel.ActivateAccountAsync("https://school.example", "reader-shades");
+                        await main.ViewModel.FolderReady;
+                        main.ViewModel.SelectedMessage = main.ViewModel.Messages.Single(row => row.Message.Id == "original");
+                        await main.ViewModel.MessageReady;
+                        var header = (Border)main.FindName("MessageHeader");
+                        var band = (Border)main.FindName("RelatedBand");
+                        var attachmentBand = (Border)main.FindName("AttachmentBand");
+                        var attachmentPanel = (StackPanel)main.FindName("AttachmentPanel");
+                        var contentReader = (RichTextBox)main.FindName("ContentReader");
+                        Assert.Same(attachmentBand, attachmentPanel.Parent);
+                        Assert.False(attachmentBand.IsAncestorOf(contentReader));
+                        var relatedPanel = (StackPanel)main.FindName("RelatedPanel");
+                        var relatedItems = Assert.IsType<ItemsControl>(relatedPanel.Children[1]);
+                        Assert.True(main.ViewModel.HasRelated);
+                        foreach (var mode in new[] { "Light", "Dark" })
+                        {
+                            main.ViewModel.Theme.Apply(mode);
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                            main.UpdateLayout();
+                            Assert.Equal(Visibility.Visible, band.Visibility);
+                            Assert.Equal(Visibility.Visible, attachmentBand.Visibility);
+                            Assert.Equal(band.ActualWidth, attachmentBand.ActualWidth);
+                            var attachmentSurface = ((SolidColorBrush)attachmentBand.Background).Color;
+                            Assert.NotEqual(((SolidColorBrush)readingPane.Background).Color, attachmentSurface);
+                            Assert.NotEqual(((SolidColorBrush)header.Background).Color, ((SolidColorBrush)band.Background).Color);
+                            Assert.Equal(header.ActualWidth, band.ActualWidth);
+                            Assert.True(header.ActualWidth > 0);
+                            Assert.Equal(new CornerRadius(7, 7, 0, 0), header.CornerRadius);
+                            var secondary = (SolidColorBrush)main.FindResource("MessageHeaderSecondary");
+                            var primary = (SolidColorBrush)main.FindResource("TextPrimary");
+                            var accent = (SolidColorBrush)main.FindResource("Accent");
+                            var relatedLink = (SolidColorBrush)main.FindResource("RelatedLink");
+                            Assert.True(Contrast(primary.Color, attachmentSurface) >= 4.5);
+                            Assert.True(Contrast(accent.Color, attachmentSurface) >= 4.5);
+                            Assert.True(Contrast(primary.Color, ((SolidColorBrush)header.Background).Color) >= 4.5);
+                            Assert.True(Contrast(secondary.Color, ((SolidColorBrush)header.Background).Color) >= 4.5);
+                            Assert.True(Contrast(secondary.Color, ((SolidColorBrush)band.Background).Color) >= 4.5);
+                            foreach (var surfaceKey in new[] { "MessageHeaderSurface", "Hover", "Selection" })
+                                Assert.True(Contrast(relatedLink.Color, ((SolidColorBrush)main.FindResource(surfaceKey)).Color) >= 4.5,
+                                    $"{mode} related links must remain readable on {surfaceKey}.");
+                            var presenter = Assert.IsType<ContentPresenter>(relatedItems.ItemContainerGenerator.ContainerFromIndex(0));
+                            var relatedButton = Assert.IsType<Button>(VisualTreeHelper.GetChild(presenter, 0));
+                            Assert.True(relatedButton.Focus());
+                            Assert.True(relatedButton.IsKeyboardFocused);
+                            var chrome = Assert.IsType<Border>(VisualTreeHelper.GetChild(relatedButton, 0));
+                            Assert.Equal(accent.Color, ((SolidColorBrush)chrome.BorderBrush).Color);
+                            Assert.True(Contrast(accent.Color, ((SolidColorBrush)band.Background).Color) >= 3);
+                        }
+                        main.Width = 880;
+                        main.Height = 620;
+                        await main.ViewModel.Theme.SetReadingSizeAsync("Large");
+                        main.UpdateLayout();
+                        Assert.Equal(header.ActualWidth, band.ActualWidth);
+                        Assert.True(band.ActualHeight > 0);
+                        main.ViewModel.OpenRelatedCommand.Execute(Assert.Single(main.ViewModel.Related));
+                        await main.ViewModel.FolderReady;
+                        await main.ViewModel.MessageReady;
+                        Assert.Equal("sent", main.ViewModel.SelectedFolder!.Key);
+                        Assert.Equal("reply", main.ViewModel.SelectedMessage!.Message.Id);
+                        main.ViewModel.SelectedFolder = main.ViewModel.Navigation.Single(folder => folder.Key == "received");
+                        await main.ViewModel.FolderReady;
+                        main.ViewModel.SelectedMessage = main.ViewModel.Messages.Single(row => row.Message.Id == "unrelated");
+                        await main.ViewModel.MessageReady;
+                        main.UpdateLayout();
+                        Assert.False(main.ViewModel.HasRelated);
+                        Assert.Equal(Visibility.Collapsed, band.Visibility);
+                        Assert.Equal(0, band.ActualHeight);
+                        Assert.Equal(Visibility.Collapsed, attachmentBand.Visibility);
+                        Assert.Equal(0, attachmentBand.ActualHeight);
+                        await main.ViewModel.Theme.SetReadingSizeAsync("Medium");
+                        main.Width = 1000;
+                        main.Height = 700;
+
                         await main.ViewModel.ActivateAccountAsync("https://school.example", "test");
                         main.ViewModel.SelectedFolder = main.ViewModel.Navigation.Single(folder => folder.Key == "sent");
                         await main.ViewModel.FolderReady;
@@ -528,6 +615,22 @@ public sealed class PresentationTests
         thread.Start();
         await completion.Task.WaitAsync(TimeSpan.FromSeconds(30));
         thread.Join();
+    }
+
+    private static double Contrast(Color foreground, Color background)
+    {
+        static double Luminance(Color color)
+        {
+            static double Linear(byte value)
+            {
+                var channel = value / 255.0;
+                return channel <= 0.04045 ? channel / 12.92 : Math.Pow((channel + 0.055) / 1.055, 2.4);
+            }
+            return 0.2126 * Linear(color.R) + 0.7152 * Linear(color.G) + 0.0722 * Linear(color.B);
+        }
+        var first = Luminance(foreground);
+        var second = Luminance(background);
+        return (Math.Max(first, second) + 0.05) / (Math.Min(first, second) + 0.05);
     }
 
     [DllImport("dwmapi.dll", ExactSpelling = true)]
