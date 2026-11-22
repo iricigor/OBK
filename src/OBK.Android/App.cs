@@ -1,11 +1,14 @@
 using OBK.AndroidApp.Localization;
+using OBK.Core;
+using OBK.Core.Localization;
 
 namespace OBK.AndroidApp;
 
 public sealed class App : Application
 {
+    private bool switchingLanguage;
+    private static string LanguagePath => Path.Combine(FileSystem.AppDataDirectory, "language.json");
     internal const string AppearancePreference = "reader_appearance";
-
     public App()
     {
         UserAppTheme = Preferences.Default.Get(AppearancePreference, nameof(AppTheme.Unspecified)) switch
@@ -42,8 +45,62 @@ public sealed class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
+        var window = new Window();
+        window.Created += async (_, _) =>
+        {
+            var osLanguage = Java.Util.Locale.Default?.ToLanguageTag() ?? "und";
+            var language = LanguageSettings.Detect(osLanguage);
+            string? failure = null;
+            try { language = await LanguageSettings.LoadAsync(LanguagePath, osLanguage); }
+            catch (ObkException error) { failure = error.Message; }
+            LanguageSettings.Apply(language);
+            AppStrings.Culture = LanguageSettings.Culture;
+            var surface = BuildNavigation();
+            window.Page = surface.Shell;
+            if (failure is not null)
+                await surface.Reader.DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, failure, AppStrings.AlertOkButton);
+        };
+        window.Page = new ContentPage { Content = new ActivityIndicator { IsRunning = true } };
+        return window;
+    }
+
+    internal async Task SwitchLanguageAsync(ContentPage source)
+    {
+        if (switchingLanguage) throw new ObkException(SharedStrings.ErrorLanguageBusy);
+        var stack = source.Navigation.NavigationStack;
+        if (stack.FirstOrDefault() is not ReaderPage reader ||
+            reader.Busy || stack.OfType<SignInPage>().Any(page => page.Busy) ||
+            stack.OfType<MessagePage>().Any(page => page.Busy) ||
+            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage)))
+            throw new ObkException(SharedStrings.ErrorLanguageBusy);
+        switchingLanguage = true;
+        try
+        {
+            var next = LanguageSettings.NextCode;
+            await LanguageSettings.SaveAsync(LanguagePath, next);
+            LanguageSettings.Apply(next);
+            AppStrings.Culture = LanguageSettings.Culture;
+            var surface = BuildNavigation(reader);
+            foreach (var page in stack.Skip(1))
+            {
+                Page replacement = page switch
+                {
+                    SignInPage signIn => signIn.Rebuild(surface.Reader.AccountSavedAsync),
+                    MessagePage message => message.Rebuild(),
+                    SettingsPage => surface.Reader.CreateSettingsPage(),
+                    _ => throw new ObkException(SharedStrings.ErrorLanguageBusy)
+                };
+                await surface.Navigation.PushAsync(replacement, animated: false);
+            }
+            source.Window!.Page = surface.Shell;
+        }
+        finally { switchingLanguage = false; }
+    }
+
+    private static (ReaderNavigation Shell, NavigationPage Navigation, ReaderPage Reader) BuildNavigation(ReaderPage? previous = null)
+    {
         var flyout = new ReaderNavigation { FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover };
-        var reader = new ReaderPage(() => flyout.IsPresented = true);
+        var reader = previous?.Rebuild(() => flyout.IsPresented = true) ?? new ReaderPage(() => flyout.IsPresented = true);
         var navigation = new NavigationPage(reader);
         navigation.SetAppThemeColor(NavigationPage.BarBackgroundColorProperty, Color.FromArgb("#EAEFF5"), Color.FromArgb("#1B2129"));
         navigation.SetAppThemeColor(NavigationPage.BarTextColorProperty, Color.FromArgb("#1A1A1A"), Colors.White);
@@ -63,7 +120,7 @@ public sealed class App : Application
             }
         });
         flyout.Detail = navigation;
-        return new Window(flyout);
+        return (flyout, navigation, reader);
     }
 
     private sealed class ReaderNavigation : FlyoutPage

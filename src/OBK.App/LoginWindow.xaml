@@ -13,11 +13,23 @@
         <DockPanel>
             <Grid DockPanel.Dock="Top" Height="40">
                 <TextBlock Text="OBK" Foreground="{DynamicResource TextSecondary}" FontSize="12" VerticalAlignment="Center" Margin="24,0"/>
-                <Button HorizontalAlignment="Right" Width="40" Height="40" Style="{StaticResource SubtleButton}"
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button x:Name="LanguageButton" Width="64" Height="40" Style="{StaticResource SubtleButton}"
+                        Click="SwitchLanguage">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE774;" FontSize="12" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="LanguageCodeText" FontSize="12" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Width="46" Height="40" Style="{StaticResource SubtleButton}" Click="SwitchTheme">
+                    <TextBlock x:Name="ThemeIcon" Style="{StaticResource Icon}" FontSize="12"/>
+                </Button>
+                <Button Width="40" Height="40" Style="{StaticResource SubtleButton}"
                         Click="CloseWindow" ToolTip="{x:Static loc:AppStrings.LoginCloseTooltip}" AutomationProperties.Name="{x:Static loc:AppStrings.LoginCloseName}"
                         shell:WindowChrome.IsHitTestVisibleInChrome="True">
                     <TextBlock Style="{StaticResource Icon}" Text="&#xE8BB;" FontSize="10"/>
                 </Button>
+                </StackPanel>
             </Grid>
             <Grid>
                 <Grid.RowDefinitions>
@@ -131,7 +143,7 @@
 
                         <Grid x:Name="CredentialsPanel" Visibility="Collapsed">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="108"/>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
@@ -143,19 +155,21 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Label Content="{x:Static loc:AppStrings.FieldUsername}" Target="{Binding ElementName=Username}" Padding="0"
-                                   VerticalAlignment="Center" Margin="0,0,0,10"/>
+                                   VerticalAlignment="Center" Margin="0,0,12,10"/>
                             <TextBox x:Name="Username" Grid.Column="1" Margin="0,0,0,10" AutomationProperties.Name="{x:Static loc:AppStrings.FieldUsername}"/>
                             <Label Grid.Row="1" Content="{x:Static loc:AppStrings.FieldPassword}" Target="{Binding ElementName=Password}" Padding="0"
-                                   VerticalAlignment="Center" Margin="0,0,0,10"/>
+                                   VerticalAlignment="Center" Margin="0,0,12,10"/>
                             <PasswordBox x:Name="Password" Grid.Row="1" Grid.Column="1" Margin="0,0,0,10"
                                          AutomationProperties.Name="{x:Static loc:AppStrings.FieldPassword}" PasswordChanged="PasswordChanged"/>
                             <Label Grid.Row="2" Content="{x:Static loc:AppStrings.FieldChildName}" Target="{Binding ElementName=ChildName}" Padding="0"
-                                   VerticalAlignment="Center"/>
+                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
                             <TextBox x:Name="ChildName" Grid.Row="2" Grid.Column="1" AutomationProperties.Name="{x:Static loc:AppStrings.LoginChildNameOptional}"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Static loc:AppStrings.LoginChildNameHint}"
                                        Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,14"/>
-                            <CheckBox x:Name="Remember" Grid.Row="4" Grid.Column="1" Content="{x:Static loc:AppStrings.LoginRemember}"
-                                      Unchecked="RememberUnchecked" Margin="0,0,0,6"/>
+                            <CheckBox x:Name="Remember" Grid.Row="4" Grid.ColumnSpan="2"
+                                      Unchecked="RememberUnchecked" Margin="0,0,0,6">
+                                <TextBlock Text="{x:Static loc:AppStrings.LoginRemember}" TextWrapping="Wrap"/>
+                            </CheckBox>
                             <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Static loc:AppStrings.LoginEncryptionNote}"
                                        Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="28,0,0,0"/>
                         </Grid>

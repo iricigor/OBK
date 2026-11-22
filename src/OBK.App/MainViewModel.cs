@@ -252,7 +252,11 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
-    private void UpdateActions() => CommandManager.InvalidateRequerySuggested();
+    private void UpdateActions()
+    {
+        Notify(nameof(CanChangeAccount));
+        CommandManager.InvalidateRequerySuggested();
+    }
     public void SetStatus(string text, bool ready = false) { Status = text; GoodStatus = ready; }
     public void ReportError(string text) => SetStatus(text);
     public static string OneLine(string? value) => Regex.Replace(value ?? "", @"\s+", " ").Trim();
@@ -315,7 +319,7 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             var known = await Task.Run(store.KnownLogins);
-            var comparer = StringComparer.Create(System.Globalization.CultureInfo.CurrentCulture, true);
+            var comparer = StringComparer.Create(LanguageSettings.Culture, true);
             Accounts = known.Select(login => new AccountRow(login with { Password = null },
                     Account is { } current && current.Url == login.Url && current.Username == login.Username,
                     login.Password is not null))
@@ -377,7 +381,39 @@ public sealed class MainViewModel : ObservableObject
         AppStrings.StatusNoArchive :
         Localized.Format(AppStrings.StatusArchiveReady, folders.Values.Sum(m => m.Count),
             attachmentInfo.Values.Count(a => a is not null),
-            DateTimeOffset.Parse(syncedAt).ToLocalTime().ToString("dd MMM yyyy HH:mm", System.Globalization.CultureInfo.CurrentCulture));
+            DateTimeOffset.Parse(syncedAt).ToLocalTime().ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
+
+    public sealed record ReaderState(Login? Account, SchoolYear Year, string Folder, string Search,
+        MessageSort Sort, MessageGrouping Grouping, Dictionary<string, string> MessageIds,
+        bool NavigationExpanded, bool SettingsOpen, bool AttachmentsExpanded);
+
+    public ReaderState CaptureState() => new(Account, year, SelectedFolder?.Key ?? "received", SearchText,
+        Sort, Grouping, new(selectedMessageIds), NavigationExpanded, SettingsOpen, AttachmentsExpanded);
+
+    public async Task RestoreStateAsync(ReaderState state)
+    {
+        if (state.Account is { } login)
+            await ActivateAccountAsync(login.Url, login.Username, state.Year, login.ChildName, login.SchoolName);
+        else await ReloadAccountsAsync();
+        await FolderReady;
+        selectedMessageIds.Clear();
+        foreach (var (key, id) in state.MessageIds) selectedMessageIds[key] = id;
+        searchText = state.Search;
+        sort = state.Sort;
+        grouping = state.Grouping;
+        selectedFolder = Navigation.Single(folder => folder.Key == state.Folder);
+        Notify(nameof(SearchText));
+        Notify(nameof(SearchActive));
+        Notify(nameof(Sort));
+        Notify(nameof(Grouping));
+        Notify(nameof(SelectedFolder));
+        FolderReady = RefreshFolderAsync();
+        await FolderReady;
+        await MessageReady;
+        NavigationExpanded = state.NavigationExpanded;
+        SettingsOpen = state.SettingsOpen;
+        AttachmentsExpanded = state.AttachmentsExpanded;
+    }
 
     public void OfflineStatus() => SetStatus(syncedAt is null ? CacheStatus() :
         Localized.Format(AppStrings.StatusOffline, CacheStatus()), syncedAt is not null);

@@ -13,8 +13,8 @@ public sealed class UpdateManager : ObservableObject, IDisposable
     public static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(5);
     private readonly UpdateService service;
     private readonly Version installed;
-    private readonly Func<bool> canRestart;
-    private readonly Action restart;
+    private Func<bool> canRestart;
+    private Action restart;
     private readonly CancellationTokenSource stop = new();
     private UpdateState state = UpdateState.Current;
     private AvailableUpdate? update;
@@ -38,6 +38,12 @@ public sealed class UpdateManager : ObservableObject, IDisposable
     }
 
     public ICommand InstallCommand { get; }
+    public void SetHost(Func<bool> canRestart, Action restart)
+    {
+        this.canRestart = canRestart;
+        this.restart = restart;
+        NotifyAll();
+    }
     public ICommand InstallOnExitCommand { get; }
     public ICommand IgnoreCommand { get; }
     public ICommand CheckNowCommand { get; }

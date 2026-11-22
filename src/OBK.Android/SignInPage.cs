@@ -22,11 +22,15 @@ internal sealed class SignInPage : ContentPage
     private readonly ActivityIndicator progress = new() { IsVisible = false };
     private readonly VerticalStackLayout addressFields;
     private bool busy;
+    private readonly Login? initial;
+    internal bool Busy => busy;
 
     public SignInPage(ReaderSession session, Login? login, Func<Login, Task> saved)
     {
         this.session = session;
         this.saved = saved;
+        initial = login;
+        LanguageToolbar.Add(this);
         Title = login is null ? AppStrings.SignInTitleAddChild : AppStrings.SignInTitleSignIn;
         addressFields = Field(AppStrings.SignInSchoolAddressLabel, url);
         addressFields.IsVisible = login is not null;
@@ -45,6 +49,7 @@ internal sealed class SignInPage : ContentPage
             password.Text = login.Password;
             remember.IsChecked = login.Password is not null;
         }
+
         schoolSearch.TextChanged += (_, _) =>
         {
             schoolResults.Children.Clear();
@@ -102,6 +107,19 @@ internal sealed class SignInPage : ContentPage
         ReaderTheme.Apply(this);
     }
 
+    internal SignInPage Rebuild(Func<Login, Task> saved)
+    {
+        var rebuilt = new SignInPage(session, initial, saved);
+        rebuilt.url.Text = url.Text;
+        rebuilt.username.Text = username.Text;
+        rebuilt.password.Text = password.Text;
+        rebuilt.child.Text = child.Text;
+        rebuilt.remember.IsChecked = remember.IsChecked;
+        rebuilt.schoolSearch.Text = schoolSearch.Text;
+        rebuilt.addressFields.IsVisible = addressFields.IsVisible;
+        rebuilt.manualAddress.Text = addressFields.IsVisible ? AppStrings.SignInHideAddressButton : AppStrings.SignInManualAddressButton;
+        return rebuilt;
+    }
     private static VerticalStackLayout Field(string label, View input) => new()
     {
         Spacing = 4,

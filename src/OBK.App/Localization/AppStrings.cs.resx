@@ -1,0 +1,979 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountPasswordNotSaved" xml:space="preserve">
+    <value>Heslo není uloženo</value>
+    <comment>Account detail in Settings.</comment>
+  </data>
+  <data name="AccountPasswordSaved" xml:space="preserve">
+    <value>Heslo je uloženo</value>
+    <comment>Account detail in Settings.</comment>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>OBK - Offline Komens</value>
+    <comment>Product title shown in the title bar and window caption.</comment>
+  </data>
+  <data name="AppTitleWithAccount" xml:space="preserve">
+    <value>OBK - Offline Komens - {0}</value>
+    <comment>Window caption. {0} = active child name or school name.</comment>
+  </data>
+  <data name="BuildRibbonLabel" xml:space="preserve">
+    <value>VÝVOJOVÁ VERZE</value>
+    <comment>Diagonal corner ribbon for locally built Windows apps.</comment>
+  </data>
+  <data name="BuildRibbonDismiss" xml:space="preserve">
+    <value>Potvrdit vývojovou verzi</value>
+    <comment>Accessible name of the ribbon button.</comment>
+  </data>
+  <data name="BuildRibbonTooltip" xml:space="preserve">
+    <value>Místní vývojová verze sestavená {0}. Kliknutím nebo klávesou Enter či mezerníkem skryjete tento pruh do zavření OBK.</value>
+    <comment>{0} = full ISO 8601 UTC build timestamp.</comment>
+  </data>
+  <data name="AttachmentAvailabilityNotDownloaded" xml:space="preserve">
+    <value>Není staženo. Obnovte zprávy a uložte soubor do mezipaměti.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentAvailabilityOpenable" xml:space="preserve">
+    <value>Uloženo pro offline použití. Otevřete dešifrovanou kopii ve výchozím prohlížeči souborů.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentAvailabilitySaveOnly" xml:space="preserve">
+    <value>Uloženo pro offline použití. Tento typ souboru lze uložit, ale nelze ho přímo otevřít.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentNotDownloaded" xml:space="preserve">
+    <value>Není staženo</value>
+    <comment>Shown instead of the file size for attachments that are not cached.</comment>
+  </data>
+  <data name="AttachmentOpen" xml:space="preserve">
+    <value>Otevřít</value>
+    <comment>Attachment context menu item and Open button tooltip.</comment>
+  </data>
+  <data name="AttachmentOpenFolder" xml:space="preserve">
+    <value>Otevřít složku</value>
+    <comment>Attachment context menu item that shows the decrypted copy in Explorer.</comment>
+  </data>
+  <data name="AttachmentOpenName" xml:space="preserve">
+    <value>Otevřít přílohu</value>
+    <comment>Accessible name of the attachment Open button.</comment>
+  </data>
+  <data name="AttachmentSaveAll" xml:space="preserve">
+    <value>Uložit vše</value>
+  </data>
+  <data name="AttachmentSaveAllTooltip" xml:space="preserve">
+    <value>Uložit kopie všech příloh. Pokud některá příloha není stažena, nejprve synchronizujte zprávy.</value>
+  </data>
+  <data name="AttachmentSaveAs" xml:space="preserve">
+    <value>Uložit jako...</value>
+    <comment>Attachment context menu item and Save button tooltip.</comment>
+  </data>
+  <data name="AttachmentSaveName" xml:space="preserve">
+    <value>Uložit přílohu</value>
+    <comment>Accessible name of the attachment Save button.</comment>
+  </data>
+  <data name="AttachmentTypeFile" xml:space="preserve">
+    <value>SOUB</value>
+    <comment>Short badge for attachments without a recognized file extension; keep at most four characters.</comment>
+  </data>
+  <data name="AttachmentsMore" xml:space="preserve">
+    <value>Další: +{0}</value>
+    <comment>Button that shows hidden attachments. {0} = number of hidden attachments.</comment>
+  </data>
+  <data name="AttachmentsShowFewer" xml:space="preserve">
+    <value>Zobrazit méně</value>
+    <comment>Button that collapses the attachment list.</comment>
+  </data>
+  <data name="CommonCancel" xml:space="preserve">
+    <value>Zrušit</value>
+  </data>
+  <data name="CommonClose" xml:space="preserve">
+    <value>Zavřít</value>
+    <comment>Close button tooltip and accessible name for a window.</comment>
+  </data>
+  <data name="DialogReplaceFilesMessage" xml:space="preserve">
+    <value>Některé soubory v této složce již existují. Nahradit je kopiemi příloh?</value>
+  </data>
+  <data name="DialogReplaceFilesTitle" xml:space="preserve">
+    <value>Nahradit soubory?</value>
+  </data>
+  <data name="DialogSaveAllTitle" xml:space="preserve">
+    <value>Uložit všechny dešifrované kopie příloh</value>
+    <comment>Folder picker title.</comment>
+  </data>
+  <data name="DialogSaveAttachmentTitle" xml:space="preserve">
+    <value>Uložit dešifrovanou kopii přílohy</value>
+    <comment>Save file dialog title.</comment>
+  </data>
+  <data name="ErrorAttachmentCannotOpen" xml:space="preserve">
+    <value>Tento typ souboru nelze přímo otevřít. Použijte Uložit jako.</value>
+  </data>
+  <data name="ErrorAttachmentFolder" xml:space="preserve">
+    <value>Složku pro dešifrovanou kopii přílohy nelze vytvořit. Zkontrolujte přístup k disku.</value>
+  </data>
+  <data name="ErrorAttachmentNoViewer" xml:space="preserve">
+    <value>Kopie byla vytvořena, ale Windows ji nemohl otevřít. Nainstalujte výchozí prohlížeč pro tento typ souboru nebo použijte Uložit jako.</value>
+  </data>
+  <data name="ErrorCloseBusy" xml:space="preserve">
+    <value>Před zavřením OBK počkejte na dokončení synchronizace nebo exportu příloh.</value>
+  </data>
+  <data name="ErrorEnterPassword" xml:space="preserve">
+    <value>Zadejte heslo.</value>
+  </data>
+  <data name="ErrorRoundedCorners" xml:space="preserve">
+    <value>Windows nemohl zapnout zaoblené rohy okna (0x{0:X8}). Aplikaci lze dál používat; pro další pokus restartujte OBK.</value>
+    <comment>{0} = Windows error code, shown as eight hexadecimal digits.</comment>
+  </data>
+  <data name="ErrorSaveAllPartial" xml:space="preserve">
+    <value>{0} Uložené kopie: {1} z {2}.</value>
+    <comment>{0} = error message; {1} = copies saved before the error; {2} = total copies.</comment>
+  </data>
+  <data name="ErrorStartupTitle" xml:space="preserve">
+    <value>OBK nelze spustit</value>
+    <comment>Message box caption when the app cannot open its local data.</comment>
+  </data>
+  <data name="ErrorSyncArchiveKept" xml:space="preserve">
+    <value>{0} Stávající offline archiv nebyl nahrazen.</value>
+    <comment>{0} = synchronization error message.</comment>
+  </data>
+  <data name="ErrorUnexpected" xml:space="preserve">
+    <value>Neočekávaná chyba aplikace ({0}). Restartujte OBK; do hlášení chyb neuvádějte přihlašovací údaje ani obsah zpráv.</value>
+    <comment>{0} = technical .NET exception type name.</comment>
+  </data>
+  <data name="ErrorUnexpectedTitle" xml:space="preserve">
+    <value>Chyba OBK</value>
+    <comment>Message box caption for unexpected errors.</comment>
+  </data>
+  <data name="FieldChildName" xml:space="preserve">
+    <value>Jméno dítěte</value>
+    <comment>Field label for the optional child display name.</comment>
+  </data>
+  <data name="FieldPassword" xml:space="preserve">
+    <value>Heslo</value>
+    <comment>Field label for the Komens password.</comment>
+  </data>
+  <data name="FieldUsername" xml:space="preserve">
+    <value>Uživatelské jméno</value>
+    <comment>Field label for the Komens username.</comment>
+  </data>
+  <data name="LoginBackToSearch" xml:space="preserve">
+    <value>Zpět na hledání školy</value>
+  </data>
+  <data name="LoginChangeSchool" xml:space="preserve">
+    <value>Změnit</value>
+    <comment>Button that changes the selected school.</comment>
+  </data>
+  <data name="LoginChildNameHint" xml:space="preserve">
+    <value>Nepovinné. Zobrazí se v názvu aplikace místo názvu školy.</value>
+  </data>
+  <data name="LoginChildNameOptional" xml:space="preserve">
+    <value>Jméno dítěte (nepovinné)</value>
+    <comment>Accessible name of the child name field.</comment>
+  </data>
+  <data name="LoginCloseName" xml:space="preserve">
+    <value>Zavřít přihlášení</value>
+    <comment>Accessible name of the sign-in window close button.</comment>
+  </data>
+  <data name="LoginCloseTooltip" xml:space="preserve">
+    <value>Zavřít bez přihlášení</value>
+  </data>
+  <data name="LoginConnecting" xml:space="preserve">
+    <value>Připojování ke škole...</value>
+  </data>
+  <data name="LoginEncryptionNote" xml:space="preserve">
+    <value>Přihlašovací údaje a zprávy jsou šifrovány pro tento účet Windows.</value>
+  </data>
+  <data name="LoginEnteredManually" xml:space="preserve">
+    <value>Zadáno ručně</value>
+    <comment>Shown instead of the school's towns when its website was typed manually.</comment>
+  </data>
+  <data name="LoginErrorChooseSchool" xml:space="preserve">
+    <value>Před přihlášením vyberte školu.</value>
+  </data>
+  <data name="LoginErrorChooseSchoolOffline" xml:space="preserve">
+    <value>Před otevřením offline zpráv vyberte školu.</value>
+  </data>
+  <data name="LoginErrorDirectoryUnavailable" xml:space="preserve">
+    <value>Seznam škol není dostupný. Zadejte web školy ručně.</value>
+  </data>
+  <data name="LoginErrorOfflineUsername" xml:space="preserve">
+    <value>Zadejte uživatelské jméno použité ke stažení offline zpráv.</value>
+  </data>
+  <data name="LoginErrorPassword" xml:space="preserve">
+    <value>Zadejte své heslo do Komens.</value>
+  </data>
+  <data name="LoginErrorUsername" xml:space="preserve">
+    <value>Zadejte své uživatelské jméno do Komens.</value>
+  </data>
+  <data name="LoginFindAnotherSchool" xml:space="preserve">
+    <value>Nebo najděte jinou školu</value>
+  </data>
+  <data name="LoginHeading" xml:space="preserve">
+    <value>Přihlášení do Komens</value>
+  </data>
+  <data name="LoginIntro" xml:space="preserve">
+    <value>Vyberte školu, přihlaste se a synchronizujte zprávy pro čtení offline.</value>
+  </data>
+  <data name="LoginLoadingDirectory" xml:space="preserve">
+    <value>Načítání přiloženého seznamu škol...</value>
+  </data>
+  <data name="LoginManualUrlButton" xml:space="preserve">
+    <value>Nemůžete najít svou školu? Zadejte její web</value>
+  </data>
+  <data name="LoginMatches" xml:space="preserve">
+    <value>Počet výsledků: {0}. Vyberte šipkami nahoru a dolů a potvrďte klávesou Enter.</value>
+    <comment>Used when more than one school matches. {0} = number of matching schools.</comment>
+  </data>
+  <data name="LoginMatchingSchools" xml:space="preserve">
+    <value>Nalezené školy</value>
+    <comment>Accessible name of the school search results.</comment>
+  </data>
+  <data name="LoginNoSchools" xml:space="preserve">
+    <value>Žádná škola nebyla nalezena. Zkontrolujte zápis nebo zadejte web školy.</value>
+  </data>
+  <data name="LoginOneMatch" xml:space="preserve">
+    <value>Počet výsledků: {0}. Vyberte šipkami nahoru a dolů a potvrďte klávesou Enter.</value>
+    <comment>Used when exactly one school matches. {0} = 1.</comment>
+  </data>
+  <data name="LoginPreviousAccountSelected" xml:space="preserve">
+    <value>Byl vybrán dříve použitý účet. Zadejte heslo.</value>
+  </data>
+  <data name="LoginReadOffline" xml:space="preserve">
+    <value>Číst offline</value>
+    <comment>Button that opens the offline archive without signing in.</comment>
+  </data>
+  <data name="LoginRemember" xml:space="preserve">
+    <value>Zapamatovat přihlašovací údaje pro tento účet Windows</value>
+  </data>
+  <data name="LoginSavedAccount" xml:space="preserve">
+    <value>Uložený účet</value>
+    <comment>Fallback title or detail for a previously used account without a known school.</comment>
+  </data>
+  <data name="LoginSavedAccountReady" xml:space="preserve">
+    <value>Uložený účet je připraven. Přihlaste se a synchronizujte zprávy, nebo čtěte offline.</value>
+  </data>
+  <data name="LoginSavedAccountsHint" xml:space="preserve">
+    <value>Vyberte dítě nebo uživatelské jméno. Uložená hesla se vyplní automaticky.</value>
+  </data>
+  <data name="LoginSavedAccountsTitle" xml:space="preserve">
+    <value>Dříve použité účty</value>
+  </data>
+  <data name="LoginSchoolLabel" xml:space="preserve">
+    <value>Škola</value>
+    <comment>Label and accessible name of the school search field.</comment>
+  </data>
+  <data name="LoginSchoolSearchHelp" xml:space="preserve">
+    <value>Hledat podle názvu školy, obce nebo webu</value>
+    <comment>Accessible help text of the school search field.</comment>
+  </data>
+  <data name="LoginSchoolSelected" xml:space="preserve">
+    <value>Škola byla vybrána. Zadejte své uživatelské jméno a heslo do Komens.</value>
+  </data>
+  <data name="LoginSchoolUrlHint" xml:space="preserve">
+    <value>Použijte HTTPS adresu školy. Neuvádějte /login.</value>
+  </data>
+  <data name="LoginSchoolUrlLabel" xml:space="preserve">
+    <value>Web školy (HTTPS)</value>
+  </data>
+  <data name="LoginSchoolWebsite" xml:space="preserve">
+    <value>Web školy</value>
+    <comment>Shown as the school name when only its website is known.</comment>
+  </data>
+  <data name="LoginSearchPrompt" xml:space="preserve">
+    <value>Hledejte podle názvu školy, obce nebo webu.</value>
+    <comment>Status below the empty school search field.</comment>
+  </data>
+  <data name="LoginSelectedSchool" xml:space="preserve">
+    <value>VYBRANÁ ŠKOLA</value>
+    <comment>Small uppercase caption above the selected school.</comment>
+  </data>
+  <data name="LoginSignIn" xml:space="preserve">
+    <value>Přihlásit a synchronizovat</value>
+  </data>
+  <data name="LoginSyncFailed" xml:space="preserve">
+    <value>{0} Stávající offline zprávy zůstávají dostupné.</value>
+    <comment>{0} = sign-in or synchronization error message.</comment>
+  </data>
+  <data name="LoginTitle" xml:space="preserve">
+    <value>Přihlášení ke škole</value>
+    <comment>Sign-in window title.</comment>
+  </data>
+  <data name="LoginTooManyMatches" xml:space="preserve">
+    <value>Počet výsledků: {0:N0}. Zadejte více znaků pro zúžení seznamu.</value>
+    <comment>{0} = number of matching schools.</comment>
+  </data>
+  <data name="LoginUseWebsite" xml:space="preserve">
+    <value>Použít tento web</value>
+  </data>
+  <data name="MainClearSearch" xml:space="preserve">
+    <value>Vymazat hledání</value>
+    <comment>Tooltip and accessible name of the clear-search button.</comment>
+  </data>
+  <data name="MainDefaultSchool" xml:space="preserve">
+    <value>Vaše škola</value>
+    <comment>Placeholder account label before any school is known.</comment>
+  </data>
+  <data name="MainEmptyFolderExcuses" xml:space="preserve">
+    <value>V omluvenkách nejsou žádné uložené zprávy.
+Obnovte zprávy a ověřte stav u školy.</value>
+    <comment>Empty state of the Excuses folder.</comment>
+  </data>
+  <data name="MainEmptyFolderInbox" xml:space="preserve">
+    <value>V doručených nejsou žádné uložené zprávy.
+Obnovte zprávy a ověřte stav u školy.</value>
+    <comment>Empty state of the Inbox folder.</comment>
+  </data>
+  <data name="MainEmptyFolderNoticeboard" xml:space="preserve">
+    <value>Na nástěnce nejsou žádné uložené zprávy.
+Obnovte zprávy a ověřte stav u školy.</value>
+    <comment>Empty state of the Noticeboard folder.</comment>
+  </data>
+  <data name="MainEmptyFolderSent" xml:space="preserve">
+    <value>V odeslaných nejsou žádné uložené zprávy.
+Obnovte zprávy a ověřte stav u školy.</value>
+    <comment>Empty state of the Sent folder.</comment>
+  </data>
+  <data name="MainEmptySearchExcuses" xml:space="preserve">
+    <value>Žádná zpráva v omluvenkách neodpovídá hledání „{0}“.</value>
+    <comment>Search found nothing in the Excuses folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchInbox" xml:space="preserve">
+    <value>Žádná zpráva v doručených neodpovídá hledání „{0}“.</value>
+    <comment>Search found nothing in the Inbox folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchNoticeboard" xml:space="preserve">
+    <value>Žádná zpráva na nástěnce neodpovídá hledání „{0}“.</value>
+    <comment>Search found nothing in the Noticeboard folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchSent" xml:space="preserve">
+    <value>Žádná zpráva v odeslaných neodpovídá hledání „{0}“.</value>
+    <comment>Search found nothing in the Sent folder. {0} = search text.</comment>
+  </data>
+  <data name="MainFolderCount" xml:space="preserve">
+    <value>Počet zpráv: {0}</value>
+    <comment>{0} = number of messages in the selected folder.</comment>
+  </data>
+  <data name="MainFolderSearchCount" xml:space="preserve">
+    <value>Nalezené zprávy: {0} z {1}</value>
+    <comment>Folder caption while searching. {0} = matching messages; {1} = all messages in the folder.</comment>
+  </data>
+  <data name="MainGroupHeaderTooltip" xml:space="preserve">
+    <value>Sbalit nebo rozbalit tuto skupinu</value>
+  </data>
+  <data name="MainGroupLabel" xml:space="preserve">
+    <value>Seskupení</value>
+    <comment>Label before the message grouping drop-down.</comment>
+  </data>
+  <data name="MainGroupName" xml:space="preserve">
+    <value>Seskupit zprávy podle</value>
+    <comment>Accessible name of the grouping drop-down.</comment>
+  </data>
+  <data name="MainGroupOptionDate" xml:space="preserve">
+    <value>Datum</value>
+    <comment>Grouping option: group messages by date.</comment>
+  </data>
+  <data name="MainGroupOptionNone" xml:space="preserve">
+    <value>Žádné</value>
+    <comment>Grouping option: no grouping.</comment>
+  </data>
+  <data name="MainGroupOptionSender" xml:space="preserve">
+    <value>Odesílatel</value>
+    <comment>Grouping option: group messages by sender.</comment>
+  </data>
+  <data name="MainGroupOptionTitle" xml:space="preserve">
+    <value>Předmět</value>
+    <comment>Grouping option: group messages by subject.</comment>
+  </data>
+  <data name="MainMessagesName" xml:space="preserve">
+    <value>Zprávy</value>
+    <comment>Accessible name of the message list.</comment>
+  </data>
+  <data name="MainRefresh" xml:space="preserve">
+    <value>Obnovit</value>
+    <comment>Button that downloads new messages.</comment>
+  </data>
+  <data name="MainRefreshTooltip" xml:space="preserve">
+    <value>Stáhnout nové zprávy pro všechny uložené děti</value>
+  </data>
+  <data name="MainRefreshing" xml:space="preserve">
+    <value>Obnovování...</value>
+    <comment>Refresh button text while synchronizing.</comment>
+  </data>
+  <data name="MainResizeMessageList" xml:space="preserve">
+    <value>Změnit velikost seznamu zpráv</value>
+    <comment>Tooltip and accessible name of the message list splitter.</comment>
+  </data>
+  <data name="MainSearchMessages" xml:space="preserve">
+    <value>Hledat zprávy</value>
+    <comment>Search box placeholder and accessible name.</comment>
+  </data>
+  <data name="MainSearchTooltip" xml:space="preserve">
+    <value>Hledat v předmětu, obsahu, odesílateli a datu</value>
+  </data>
+  <data name="MainSortLabel" xml:space="preserve">
+    <value>Řazení</value>
+    <comment>Label before the message sort drop-down.</comment>
+  </data>
+  <data name="MainSortName" xml:space="preserve">
+    <value>Seřadit zprávy podle</value>
+    <comment>Accessible name of the sort drop-down.</comment>
+  </data>
+  <data name="MainSortOptionDate" xml:space="preserve">
+    <value>Datum</value>
+    <comment>Sort option: sort messages by date.</comment>
+  </data>
+  <data name="MainSortOptionSender" xml:space="preserve">
+    <value>Odesílatel</value>
+    <comment>Sort option: sort messages by sender.</comment>
+  </data>
+  <data name="MainSortOptionTitle" xml:space="preserve">
+    <value>Předmět</value>
+    <comment>Sort option: sort messages by subject.</comment>
+  </data>
+  <data name="MessageExcuseBadge" xml:space="preserve">
+    <value>Omluvenka</value>
+    <comment>Short badge on excuse notes in the message list.</comment>
+  </data>
+  <data name="MessageExcuseLabel" xml:space="preserve">
+    <value>Omluvenka</value>
+    <comment>Excuse badge in the reader and its tooltip in the list; 'omluvenka' is the Czech Komens term.</comment>
+  </data>
+  <data name="MessageHasAttachments" xml:space="preserve">
+    <value>Obsahuje přílohy</value>
+    <comment>Accessible name of the attachment icon in the message list.</comment>
+  </data>
+  <data name="PromptPasswordAction" xml:space="preserve">
+    <value>Ověřit a uložit</value>
+    <comment>Submit button of the password dialog.</comment>
+  </data>
+  <data name="PromptPasswordDescription" xml:space="preserve">
+    <value>OBK se přihlásí ke škole {0} jako {1} a ověří heslo. Heslo se uloží pouze po úspěšném přihlášení, zašifrované pro váš účet Windows.</value>
+    <comment>{0} = school name or website; {1} = Komens username.</comment>
+  </data>
+  <data name="PromptRenameAction" xml:space="preserve">
+    <value>Přejmenovat</value>
+    <comment>Submit button of the rename dialog.</comment>
+  </data>
+  <data name="PromptRenameDescription" xml:space="preserve">
+    <value>Toto jméno se zobrazí v postranním panelu místo názvu školy. Ponechte ho prázdné, pokud chcete zobrazit „{0}“.</value>
+    <comment>{0} = school name or username shown when no child name is set.</comment>
+  </data>
+  <data name="PromptRenameTitle" xml:space="preserve">
+    <value>Přejmenovat dítě</value>
+    <comment>Rename dialog heading.</comment>
+  </data>
+  <data name="PromptVerifyingPassword" xml:space="preserve">
+    <value>Přihlašování pro ověření hesla...</value>
+  </data>
+  <data name="ReaderConfirmationRequested" xml:space="preserve">
+    <value>Je požadováno potvrzení. OBK potvrzení neodesílá.</value>
+  </data>
+  <data name="ReaderContentName" xml:space="preserve">
+    <value>Obsah zprávy</value>
+    <comment>Accessible name of the message body.</comment>
+  </data>
+  <data name="ReaderMetadata" xml:space="preserve">
+    <value>Odesláno: {0} • Složka: {1}</value>
+    <comment>{0} = date and time the message was sent; {1} = folder name.</comment>
+  </data>
+  <data name="ReaderNoContent" xml:space="preserve">
+    <value>(Zpráva nemá obsah)</value>
+  </data>
+  <data name="ReaderNoSelection" xml:space="preserve">
+    <value>Vyberte zprávu</value>
+    <comment>Reader heading when no message is selected.</comment>
+  </data>
+  <data name="ReaderNoSelectionDetail" xml:space="preserve">
+    <value>Prohlížení uložených zpráv neodesílá žádné požadavky na server.</value>
+  </data>
+  <data name="ReaderNoSelectionSender" xml:space="preserve">
+    <value>Váš offline prostor</value>
+    <comment>Reader sender line when no message is selected.</comment>
+  </data>
+  <data name="ReaderNotSupplied" xml:space="preserve">
+    <value>(Neuvedeno)</value>
+    <comment>Shown when a message has no sender or recipient name.</comment>
+  </data>
+  <data name="ReaderRecipient" xml:space="preserve">
+    <value>Komu: {0}</value>
+    <comment>{0} = recipient name of a sent message.</comment>
+  </data>
+  <data name="ReaderRelatedHelpName" xml:space="preserve">
+    <value>O možných souvisejících zprávách</value>
+    <comment>Accessible name of the help icon.</comment>
+  </data>
+  <data name="ReaderRelatedHelpTooltip" xml:space="preserve">
+    <value>Vybráno podle podobného předmětu a stejné osoby. Komens neuvádí skutečné vazby mezi odpověďmi, takže zprávy nemusí souviset a výběr nemusí být úplný.</value>
+  </data>
+  <data name="ReaderRelatedTitle" xml:space="preserve">
+    <value>Možná souvisí</value>
+  </data>
+  <data name="RefreshSummaryFailed" xml:space="preserve">
+    <value>Selhalo: {0} Stávající offline archivy byly zachovány.</value>
+    <comment>{0} = semicolon-separated list of 'account: error' entries.</comment>
+  </data>
+  <data name="RefreshSummaryMany" xml:space="preserve">
+    <value>Obnovené uložené účty: {0} z {1}.</value>
+    <comment>Used when {1} is not 1. {0} = refreshed accounts; {1} = accounts with a saved password.</comment>
+  </data>
+  <data name="RefreshSummaryOne" xml:space="preserve">
+    <value>Obnovené uložené účty: {0} z {1}.</value>
+    <comment>Used when {1} is 1. {0} = refreshed accounts; {1} = accounts with a saved password.</comment>
+  </data>
+  <data name="RefreshSummarySignInNeeded" xml:space="preserve">
+    <value>Je nutné přihlášení (heslo není uloženo): {0}.</value>
+    <comment>{0} = comma-separated account names.</comment>
+  </data>
+  <data name="RelatedFromYou" xml:space="preserve">
+    <value>vy</value>
+    <comment>Sender of a related message that you sent; inserted into RelatedLabel.</comment>
+  </data>
+  <data name="RelatedLabel" xml:space="preserve">
+    <value>{0} • Od: {1}</value>
+    <comment>Related message link. {0} = short date and time; {1} = sender name or 'you'.</comment>
+  </data>
+  <data name="RelatedNext" xml:space="preserve">
+    <value>Další</value>
+    <comment>Direction of a later related message.</comment>
+  </data>
+  <data name="RelatedNextNumbered" xml:space="preserve">
+    <value>Další ({0})</value>
+    <comment>Direction of a later related message. {0} = position counted from the current message.</comment>
+  </data>
+  <data name="RelatedPrevious" xml:space="preserve">
+    <value>Předchozí</value>
+    <comment>Direction of an earlier related message.</comment>
+  </data>
+  <data name="RelatedPreviousNumbered" xml:space="preserve">
+    <value>Předchozí ({0})</value>
+    <comment>Direction of an earlier related message. {0} = position counted from the current message.</comment>
+  </data>
+  <data name="SettingsAbout" xml:space="preserve">
+    <value>O aplikaci</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAboutDescription" xml:space="preserve">
+    <value>Verze {0} a aktualizace</value>
+    <comment>About section subtitle. {0} = installed app version.</comment>
+  </data>
+  <data name="SettingsAccounts" xml:space="preserve">
+    <value>Účty</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAccountsDescription" xml:space="preserve">
+    <value>Uložená hesla a jména dětí</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Vzhled</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAppearanceDescription" xml:space="preserve">
+    <value>Motiv a velikost textu</value>
+  </data>
+  <data name="SettingsBack" xml:space="preserve">
+    <value>Zpět ke zprávám</value>
+    <comment>Button that closes Settings.</comment>
+  </data>
+  <data name="SettingsBackTooltip" xml:space="preserve">
+    <value>Vrátit se ke zprávám</value>
+  </data>
+  <data name="SettingsChangePassword" xml:space="preserve">
+    <value>Změnit heslo</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsChangePasswordFor" xml:space="preserve">
+    <value>Změnit heslo pro {0}</value>
+    <comment>Dialog heading and accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsChangePasswordTooltip" xml:space="preserve">
+    <value>Ověřit nové heslo u školy a poté ho uložit</value>
+  </data>
+  <data name="SettingsCheckNow" xml:space="preserve">
+    <value>Zkontrolovat nyní</value>
+    <comment>Button that checks for app updates.</comment>
+  </data>
+  <data name="SettingsCheckNowTooltip" xml:space="preserve">
+    <value>Zkontrolovat novější verzi OBK na GitHubu</value>
+  </data>
+  <data name="SettingsClearPassword" xml:space="preserve">
+    <value>Odstranit heslo</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsClearPasswordFor" xml:space="preserve">
+    <value>Odstranit uložené heslo pro {0}</value>
+    <comment>Accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsClearPasswordTooltip" xml:space="preserve">
+    <value>Zapomenout uložené heslo; offline zprávy zůstanou zachovány</value>
+  </data>
+  <data name="SettingsInstalledVersion" xml:space="preserve">
+    <value>Nainstalovaná verze</value>
+  </data>
+  <data name="SettingsListDensity" xml:space="preserve">
+    <value>Hustota seznamu zpráv</value>
+  </data>
+  <data name="SettingsListDensityCompact" xml:space="preserve">
+    <value>Kompaktní</value>
+    <comment>Message list density option.</comment>
+  </data>
+  <data name="SettingsListDensityDescription" xml:space="preserve">
+    <value>Mezery mezi zprávami v seznamu</value>
+  </data>
+  <data name="SettingsListDensityName" xml:space="preserve">
+    <value>Hustota seznamu zpráv</value>
+    <comment>Accessible name of the message list density options.</comment>
+  </data>
+  <data name="SettingsListDensityRelaxed" xml:space="preserve">
+    <value>Vzdušná</value>
+    <comment>Message list density option.</comment>
+  </data>
+  <data name="SettingsNoAccounts" xml:space="preserve">
+    <value>Zatím nejsou žádné účty. Pro přihlášení použijte Přidat dítě v postranním panelu.</value>
+    <comment>'Add child' refers to the SidebarAddChild button.</comment>
+  </data>
+  <data name="SettingsReadingSize" xml:space="preserve">
+    <value>Velikost textu</value>
+  </data>
+  <data name="SettingsReadingSizeDescription" xml:space="preserve">
+    <value>Velikost textu v seznamu zpráv a při čtení</value>
+  </data>
+  <data name="SettingsReadingSizeLarge" xml:space="preserve">
+    <value>Velká</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsReadingSizeMedium" xml:space="preserve">
+    <value>Střední</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsReadingSizeName" xml:space="preserve">
+    <value>Velikost textu</value>
+    <comment>Accessible name of the reading size options.</comment>
+  </data>
+  <data name="SettingsReadingSizeSmall" xml:space="preserve">
+    <value>Malá</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsRename" xml:space="preserve">
+    <value>Přejmenovat</value>
+    <comment>Button in the account row that renames the child.</comment>
+  </data>
+  <data name="SettingsRenameName" xml:space="preserve">
+    <value>Přejmenovat {0}</value>
+    <comment>Accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsRenameTooltip" xml:space="preserve">
+    <value>Změnit jméno dítěte v postranním panelu</value>
+  </data>
+  <data name="SettingsSavePassword" xml:space="preserve">
+    <value>Uložit heslo</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsSavePasswordFor" xml:space="preserve">
+    <value>Uložit heslo pro {0}</value>
+    <comment>Dialog heading and accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsSavePasswordTooltip" xml:space="preserve">
+    <value>Ověřit heslo u školy a uložit ho, aby tlačítko Obnovit mohlo stáhnout zprávy pro toto dítě</value>
+  </data>
+  <data name="SettingsSavedAccountsName" xml:space="preserve">
+    <value>Uložené účty</value>
+    <comment>Accessible name of the account list in Settings.</comment>
+  </data>
+  <data name="SettingsTheme" xml:space="preserve">
+    <value>Motiv</value>
+  </data>
+  <data name="SettingsThemeDark" xml:space="preserve">
+    <value>Tmavý</value>
+    <comment>Theme option.</comment>
+  </data>
+  <data name="SettingsThemeDarkName" xml:space="preserve">
+    <value>Tmavý motiv</value>
+    <comment>Accessible name of the Dark theme option.</comment>
+  </data>
+  <data name="SettingsThemeDescription" xml:space="preserve">
+    <value>Vyberte vzhled OBK</value>
+  </data>
+  <data name="SettingsThemeLight" xml:space="preserve">
+    <value>Světlý</value>
+    <comment>Theme option.</comment>
+  </data>
+  <data name="SettingsThemeLightName" xml:space="preserve">
+    <value>Světlý motiv</value>
+    <comment>Accessible name of the Light theme option.</comment>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Nastavení</value>
+    <comment>Settings page title, sidebar button and accessible name.</comment>
+  </data>
+  <data name="SettingsUpdates" xml:space="preserve">
+    <value>Aktualizace</value>
+    <comment>Settings row title.</comment>
+  </data>
+  <data name="SidebarAddChild" xml:space="preserve">
+    <value>Přidat dítě</value>
+    <comment>Sidebar button that opens sign-in for another child or school.</comment>
+  </data>
+  <data name="SidebarAddChildTooltip" xml:space="preserve">
+    <value>Přihlásit další dítě nebo školu</value>
+  </data>
+  <data name="SidebarChildrenName" xml:space="preserve">
+    <value>Děti</value>
+    <comment>Accessible name of the sidebar list of signed-in children.</comment>
+  </data>
+  <data name="SidebarCollapseTooltip" xml:space="preserve">
+    <value>Zobrazit jen ikony</value>
+    <comment>Tooltip of the button that collapses the sidebar to icons.</comment>
+  </data>
+  <data name="SidebarExpandTooltip" xml:space="preserve">
+    <value>Rozbalit postranní panel</value>
+  </data>
+  <data name="SidebarFoldersName" xml:space="preserve">
+    <value>Složky</value>
+    <comment>Accessible name of the folder list.</comment>
+  </data>
+  <data name="SidebarResizeName" xml:space="preserve">
+    <value>Změnit velikost postranního panelu</value>
+    <comment>Accessible name of the sidebar splitter.</comment>
+  </data>
+  <data name="SidebarResizeTooltip" xml:space="preserve">
+    <value>Změnit velikost postranního panelu; zúžením zobrazíte jen ikony</value>
+  </data>
+  <data name="SizeBytes" xml:space="preserve">
+    <value>{0:N0} B</value>
+    <comment>File size. {0} = size in bytes.</comment>
+  </data>
+  <data name="SizeGigabytes" xml:space="preserve">
+    <value>{0:0.#} GB</value>
+    <comment>File size. {0} = size in gigabytes.</comment>
+  </data>
+  <data name="SizeKilobytes" xml:space="preserve">
+    <value>{0:N0} KB</value>
+    <comment>File size. {0} = size in kilobytes.</comment>
+  </data>
+  <data name="SizeMegabytes" xml:space="preserve">
+    <value>{0:0.#} MB</value>
+    <comment>File size. {0} = size in megabytes.</comment>
+  </data>
+  <data name="StatusAccountProgress" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Refresh progress for one account. {0} = account name; {1} = progress text.</comment>
+  </data>
+  <data name="StatusAccountProgressNumbered" xml:space="preserve">
+    <value>{0} ({1}/{2}): {3}</value>
+    <comment>Refresh progress. {0} = account name; {1} = account position; {2} = account count; {3} = progress text.</comment>
+  </data>
+  <data name="StatusArchiveReady" xml:space="preserve">
+    <value>Offline archiv je připraven • Synchronizováno (zprávy: {0}, přílohy: {1}) • Poslední synchronizace: {2}</value>
+    <comment>{0} = message count; {1} = cached attachment count; {2} = last synchronization date and time.</comment>
+  </data>
+  <data name="StatusAttachmentOpened" xml:space="preserve">
+    <value>Otevřena dešifrovaná kopie: {0}. Zůstává v místní složce otevřených příloh.</value>
+    <comment>{0} = attachment file name.</comment>
+  </data>
+  <data name="StatusAttachmentSaved" xml:space="preserve">
+    <value>Uložena kopie přílohy: {0}</value>
+    <comment>{0} = attachment file name.</comment>
+  </data>
+  <data name="StatusAttachmentsSaved" xml:space="preserve">
+    <value>Uložené dešifrované kopie příloh: {0}. Kopie odstraňte, až je nebudete potřebovat.</value>
+    <comment>{0} = number of saved copies.</comment>
+  </data>
+  <data name="StatusChildNameRemoved" xml:space="preserve">
+    <value>Jméno dítěte pro {0} bylo odstraněno.</value>
+    <comment>{0} = school name or username.</comment>
+  </data>
+  <data name="StatusDragFinished" xml:space="preserve">
+    <value>Přetažení přílohy bylo dokončeno. Dešifrovaná zdrojová kopie zůstává v místní složce otevřených příloh.</value>
+  </data>
+  <data name="StatusDragTooEarly" xml:space="preserve">
+    <value>Přetažení skončilo dříve, než byla kopie připravena. Přetáhněte přílohu znovu.</value>
+  </data>
+  <data name="StatusLoadingArchive" xml:space="preserve">
+    <value>Načítání archivu...</value>
+  </data>
+  <data name="StatusNoArchive" xml:space="preserve">
+    <value>Offline archiv zatím neexistuje. Obnovte zprávy a stáhněte je.</value>
+  </data>
+  <data name="StatusOffline" xml:space="preserve">
+    <value>{0} • Offline</value>
+    <comment>{0} = archive status (StatusArchiveReady).</comment>
+  </data>
+  <data name="StatusPasswordCleared" xml:space="preserve">
+    <value>Uložené heslo pro {0} bylo odstraněno. Při příštím obnovení ho bude nutné zadat.</value>
+    <comment>{0} = child or account name.</comment>
+  </data>
+  <data name="StatusPasswordSaved" xml:space="preserve">
+    <value>Heslo pro {0} bylo ověřeno a uloženo.</value>
+    <comment>{0} = child or account name.</comment>
+  </data>
+  <data name="StatusPreparingAttachment" xml:space="preserve">
+    <value>Příprava kopie přílohy...</value>
+  </data>
+  <data name="StatusPreparingDrag" xml:space="preserve">
+    <value>Příprava přílohy pro přetažení ve Windows...</value>
+  </data>
+  <data name="StatusRenamed" xml:space="preserve">
+    <value>Přejmenováno na {0}.</value>
+    <comment>{0} = new child name.</comment>
+  </data>
+  <data name="StatusSavingAttachment" xml:space="preserve">
+    <value>Ukládání přílohy {0} z {1}...</value>
+    <comment>{0} = current attachment number; {1} = attachment count.</comment>
+  </data>
+  <data name="StatusSigningIn" xml:space="preserve">
+    <value>Přihlašování...</value>
+  </data>
+  <data name="StatusWaitForArchive" xml:space="preserve">
+    <value>Počkejte na dokončení probíhající operace s archivem.</value>
+  </data>
+  <data name="StatusWaitForOperation" xml:space="preserve">
+    <value>Počkejte na dokončení probíhající operace.</value>
+  </data>
+  <data name="StatusWelcome" xml:space="preserve">
+    <value>Přihlaste se a stáhněte zprávy, nebo čtěte svůj archiv offline.</value>
+  </data>
+  <data name="ThemeErrorChoose" xml:space="preserve">
+    <value>Vyberte Světlý nebo Tmavý motiv.</value>
+  </data>
+  <data name="ThemeErrorCleanup" xml:space="preserve">
+    <value>Dočasný soubor nastavení motivu se nepodařilo odstranit. Zkontrolujte přístup k disku.</value>
+  </data>
+  <data name="ThemeErrorInvalid" xml:space="preserve">
+    <value>Nastavení motivu je neplatné. Vyberte Světlý nebo Tmavý motiv a nahraďte ho.</value>
+  </data>
+  <data name="ThemeErrorRead" xml:space="preserve">
+    <value>Nastavení motivu nelze přečíst. Vyberte motiv a uložte ho znovu.</value>
+  </data>
+  <data name="ThemeErrorSave" xml:space="preserve">
+    <value>Motiv byl změněn, ale nelze ho uložit. Zkontrolujte přístup k disku.</value>
+  </data>
+  <data name="ThemeSwitchToDarkTooltip" xml:space="preserve">
+    <value>Přepnout na tmavý motiv</value>
+    <comment>Title bar theme button tooltip while the Light theme is active.</comment>
+  </data>
+  <data name="ThemeSwitchToLightTooltip" xml:space="preserve">
+    <value>Přepnout na světlý motiv</value>
+    <comment>Title bar theme button tooltip while the Dark theme is active.</comment>
+  </data>
+  <data name="UpdateCheckTooltip" xml:space="preserve">
+    <value>Kliknutím zkontrolujete aktualizace</value>
+  </data>
+  <data name="UpdateChecking" xml:space="preserve">
+    <value>Kontrola aktualizací...</value>
+  </data>
+  <data name="UpdateCurrent" xml:space="preserve">
+    <value>Používáte nejnovější verzi {0}</value>
+    <comment>{0} = installed app version.</comment>
+  </data>
+  <data name="UpdateDownloading" xml:space="preserve">
+    <value>Stahování verze {0}...</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateErrorBusy" xml:space="preserve">
+    <value>Před aktualizací počkejte na dokončení synchronizace nebo exportu příloh.</value>
+  </data>
+  <data name="UpdateIgnore" xml:space="preserve">
+    <value>Ignorovat do zavření aplikace</value>
+    <comment>Update menu option.</comment>
+  </data>
+  <data name="UpdateIgnored" xml:space="preserve">
+    <value>Aktualizace {0} je ignorována do zavření aplikace</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateInstallOnExit" xml:space="preserve">
+    <value>Nainstalovat při ukončení</value>
+    <comment>Update menu option.</comment>
+  </data>
+  <data name="UpdateMoreOptions" xml:space="preserve">
+    <value>Další možnosti aktualizace</value>
+    <comment>Tooltip and accessible name of the update menu button.</comment>
+  </data>
+  <data name="UpdateReady" xml:space="preserve">
+    <value>Verze {0} je připravena k instalaci</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateRestart" xml:space="preserve">
+    <value>Aktualizovat a restartovat</value>
+    <comment>Button that installs the downloaded update.</comment>
+  </data>
+  <data name="UpdateScheduled" xml:space="preserve">
+    <value>Verze {0} se nainstaluje při ukončení</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateStatusName" xml:space="preserve">
+    <value>Stav aktualizace</value>
+    <comment>Accessible name of the update status text.</comment>
+  </data>
+  <data name="WindowMaximizeName" xml:space="preserve">
+    <value>Maximalizovat nebo obnovit</value>
+    <comment>Accessible name of the maximize/restore caption button.</comment>
+  </data>
+  <data name="WindowMaximizeTooltip" xml:space="preserve">
+    <value>Maximalizovat / Obnovit</value>
+    <comment>Tooltip of the maximize/restore caption button.</comment>
+  </data>
+  <data name="WindowMinimize" xml:space="preserve">
+    <value>Minimalizovat</value>
+    <comment>Minimize caption button tooltip and accessible name.</comment>
+  </data>
+  <data name="SettingsTransfer" xml:space="preserve">
+    <value>Přenést do Androidu</value>
+    <comment>Button on an account row in Settings.</comment>
+  </data>
+  <data name="SettingsTransferFor" xml:space="preserve">
+    <value>Přenést {0} do Androidu</value>
+    <comment>{0} = account label. Accessible name of the button.</comment>
+  </data>
+  <data name="SettingsTransferTooltip" xml:space="preserve">
+    <value>Zobrazit šifrovaný QR kód a tři slova pro přidání tohoto účtu do OBK na Androidu. Vyžaduje uložené heslo.</value>
+  </data>
+  <data name="TransferCountdown" xml:space="preserve">
+    <value>QR kód se rozmaže za {0} s</value>
+    <comment>{0} = seconds remaining.</comment>
+  </data>
+  <data name="TransferDescription" xml:space="preserve">
+    <value>Na telefonu otevřete OBK, klepněte na Naskenovat z PC, naskenujte tento kód a zadejte tři slova.</value>
+  </data>
+  <data name="TransferHidden" xml:space="preserve">
+    <value>QR kód je rozmazán kvůli ochraně soukromí. Slova zůstanou do zavření tohoto okna; pro další skenování zobrazte nový kód.</value>
+  </data>
+  <data name="TransferPreparing" xml:space="preserve">
+    <value>Šifrování…</value>
+  </data>
+  <data name="TransferQrName" xml:space="preserve">
+    <value>Šifrovaný QR kód účtu</value>
+    <comment>Accessible name of the QR image.</comment>
+  </data>
+  <data name="TransferScope" xml:space="preserve">
+    <value>Přenáší se pouze adresa školy, uživatelské jméno, heslo a jméno dítěte. Zprávy zůstávají na tomto počítači.</value>
+  </data>
+  <data name="TransferShowNew" xml:space="preserve">
+    <value>Zobrazit nový kód</value>
+  </data>
+  <data name="TransferStepScan" xml:space="preserve">
+    <value>Naskenujte v OBK na Androidu</value>
+  </data>
+  <data name="TransferStepWords" xml:space="preserve">
+    <value>Poté zadejte tato slova</value>
+  </data>
+  <data name="TransferTitle" xml:space="preserve">
+    <value>Přenést do Androidu</value>
+  </data>
+  <data name="TransferWarning" xml:space="preserve">
+    <value>Kód a slova uchovejte v soukromí. Kdokoli má obojí, může získat heslo tohoto účtu. Rozmazání kódu nezneplatní již pořízenou fotografii.</value>
+  </data>
+  <data name="TransferWordsName" xml:space="preserve">
+    <value>Slova pro přenos</value>
+    <comment>Accessible name of the words text.</comment>
+  </data>
+</root>

@@ -1,5 +1,6 @@
 using OBK.AndroidApp.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 
 namespace OBK.AndroidApp;
 
@@ -13,6 +14,9 @@ internal sealed class MessagePage : ContentPage
     private readonly Message message;
     private bool loaded;
     private bool busy;
+    private bool loading;
+    internal bool Busy => busy || loading;
+    internal MessagePage Rebuild() => new(session, account, message);
 
     public MessagePage(ReaderSession session, Login account, Message message)
     {
@@ -20,6 +24,7 @@ internal sealed class MessagePage : ContentPage
         this.account = account;
         this.message = message;
         Title = AppStrings.MessagePageTitle;
+        LanguageToolbar.Add(this);
         content.Add(new VerticalStackLayout
         {
             Spacing = 4,
@@ -27,7 +32,7 @@ internal sealed class MessagePage : ContentPage
             {
                 new Label { Text = message.Title, FontSize = 20, FontAttributes = FontAttributes.Bold },
                 new Label { Text = message.SenderName, FontSize = 14 },
-                ReaderTheme.Metadata(new Label { Text = $"{message.Date:g}" })
+                ReaderTheme.Metadata(new Label { Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) })
             }
         });
         content.Add(status);
@@ -41,6 +46,7 @@ internal sealed class MessagePage : ContentPage
         base.OnAppearing();
         if (loaded) return;
         loaded = true;
+        loading = true;
         try
         {
             var parts = await Task.Run(() => MessageRenderer.Render(message.Text));
@@ -116,6 +122,7 @@ internal sealed class MessagePage : ContentPage
             status.IsVisible = true;
             await DisplayAlertAsync(AppStrings.MessageReadFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
+        finally { loading = false; }
     }
 
     private static ReadOnlyFile AttachmentFile(string path, string? contentType)

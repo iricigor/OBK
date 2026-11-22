@@ -14,6 +14,7 @@ internal sealed class SettingsPage : ContentPage
     {
         this.accountsAvailable = accountsAvailable;
         this.currentAccount = currentAccount;
+        LanguageToolbar.Add(this);
         Title = AppStrings.SettingsPageTitle;
         var appearance = new Picker
         {
