@@ -132,15 +132,45 @@ existing frame, and login/prompt dialogs are unchanged.
 
 ## Interface text and localization
 
-*Planned (#28):* app-owned interface text moves into `.resx` resource sets,
-with English as the only shipped language:
+App-owned interface text lives in `.resx` resource sets. English is the neutral
+language and currently the only shipped one; Czech (#29), Ukrainian, and German
+(#30) follow later.
 
-- `src\OBK.Core\Resources\Strings.resx`: shared text, used by both apps.
-- `src\OBK.App\Resources\Strings.resx`: Windows-only text.
-- `src\OBK.Android\Resources\Strings.resx`: Android-only text.
+| Resource set | Used by | Generated class |
+| --- | --- | --- |
+| `src\OBK.Core\Localization\SharedStrings.resx` | Errors, folder names, date groups, and other text shared by both apps | `OBK.Core.Localization.SharedStrings` |
+| `src\OBK.App\Localization\AppStrings.resx` | Windows app only | `OBK.App.Localization.AppStrings` |
+| `src\OBK.Android\Localization\AppStrings.resx` | Android app only | `OBK.AndroidApp.Localization.AppStrings` |
 
-A CI check will verify that every translation of a set is complete. Czech
-(#29), Ukrainian, and German (#30) follow later.
+`src\Localization.targets` generates a public class with one property per key
+before compilation, so a misspelled key fails the build. WPF uses
+`{x:Static loc:AppStrings.Key}` with
+`xmlns:loc="clr-namespace:OBK.App.Localization"`; C# uses the class directly.
+
+Conventions:
+
+- Keys are PascalCase and prefixed by area (`Login…`, `Settings…`, `Error…`).
+- Text with inserted values uses composite placeholders (`{0}`, `{1:N0}`) and
+  `Localized.Format(...)`, never concatenated fragments, because word order
+  differs between languages. Each placeholder is described in a `<comment>`.
+- Persisted or compared values (theme, sort and grouping options) remain
+  invariant identifiers; only their display text is localized.
+- School-provided content (messages, names, attachments), technical
+  identifiers, and `--smoke-test` diagnostics are not localized.
+- API requests and stored data stay culture-independent.
+
+To add a language, add `<Name>.<culture>.resx` (for example
+`AppStrings.cs.resx`) next to each neutral file, translating every key. Runtime
+falls back to English for missing keys, so completeness is enforced by a
+separate check instead. The **Localization resource completeness** job in
+**🧪 Validation** discovers every resource set and language and fails on
+invalid XML, missing or extra keys, duplicate keys, empty values, or
+placeholders that differ from English. Run it locally with:
+
+```powershell
+python -m unittest discover -s .\tools -p "test_check_localization.py"
+python .\tools\check_localization.py
+```
 
 ## Purpose and scope
 
