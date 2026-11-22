@@ -105,7 +105,6 @@
                     </Button>
                     <Border Height="1" Background="{DynamicResource Stroke}" Margin="8,10,8,0"/>
                 </StackPanel>
-                <TextBlock DockPanel.Dock="Bottom" Text="OFFLINE KOMENS" FontSize="10" Foreground="{DynamicResource TextSecondary}" Margin="12,16"/>
                 <ListBox x:Name="FolderList" ItemsSource="{Binding Navigation}" SelectedItem="{Binding SelectedFolder}"
                          AutomationProperties.Name="Folders">
                     <ListBox.ItemContainerStyle>
