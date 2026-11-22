@@ -199,6 +199,10 @@ toward school servers and requires device verification before merge.
 
 ### Android preview
 
+The launcher icon uses `Resources\AppIcon\obk.png` declared as a `MauiIcon`.
+The Android application manifest must reference MAUI's generated `@mipmap/obk`
+and `@mipmap/obk_round` resources for normal and round launcher icons.
+
 `src\OBK.Android\OBK.Android.csproj` targets `net10.0-android` with minimum API
 29. `OBK.Core` also targets portable `net10.0`, and `LocalStore` accepts an
 `ILocalDataProtection` implementation and an explicit database path. Its
