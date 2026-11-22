@@ -149,13 +149,13 @@ existing frame, and login/prompt dialogs are unchanged.
 
 ## Message-reader surfaces
 
-The Windows reader's agreed blue-shades treatment is tracked in #60: a
+The Windows reader uses the blue-shades treatment tracked in #60: a
 slate-blue subject/sender header, a lighter blue band for possibly related
 messages, and the existing neutral body surface. The related band is hidden
 when there are no matches. Both themes use dedicated dynamic brush resources
 so theme switching preserves readable metadata and navigation links.
 Message discovery, navigation, attachments, and reading-size behavior remain
-unchanged. Implementation and local user verification are pending.
+unchanged.
 
 ## Interface text and localization
 

@@ -423,156 +423,165 @@
             </Canvas>
             <Border x:Name="ReadingPane" Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8"
                     Visibility="{Binding ShowMessages, Converter={StaticResource VisibleIf}}">
-                <ScrollViewer x:Name="ReadingScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="24">
+                <ScrollViewer x:Name="ReadingScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
-                        <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="{DynamicResource ReaderSubjectSize}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
-                        <Border HorizontalAlignment="Left" Background="{DynamicResource Avatar3Bg}" CornerRadius="4" Padding="8,2" Margin="0,0,0,8"
-                                Visibility="{Binding SelectedIsExcuse, Converter={StaticResource VisibleIf}}">
-                            <TextBlock Text="{x:Static loc:AppStrings.MessageExcuseLabel}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource Avatar3Fg}"/>
+                        <Border x:Name="MessageHeader" Background="{DynamicResource MessageHeaderSurface}" CornerRadius="7,7,0,0" Padding="24,24,24,20">
+                            <StackPanel>
+                                <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="{DynamicResource ReaderSubjectSize}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                <Border HorizontalAlignment="Left" Background="{DynamicResource Avatar3Bg}" CornerRadius="4" Padding="8,2" Margin="0,0,0,8"
+                                        Visibility="{Binding SelectedIsExcuse, Converter={StaticResource VisibleIf}}">
+                                    <TextBlock Text="{x:Static loc:AppStrings.MessageExcuseLabel}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource Avatar3Fg}"/>
+                                </Border>
+                                <Grid Margin="0,4,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                    <Border Width="36" Height="36" CornerRadius="18" VerticalAlignment="Top">
+                                        <Border.Background>
+                                            <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
+                                                <Binding Path="SenderColorKey"/>
+                                                <Binding Path="Theme.IsDark"/>
+                                            </MultiBinding>
+                                        </Border.Background>
+                                        <TextBlock Text="{Binding Initials}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Foreground>
+                                                <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                                    <Binding Path="SenderColorKey"/>
+                                                    <Binding Path="Theme.IsDark"/>
+                                                </MultiBinding>
+                                            </TextBlock.Foreground>
+                                        </TextBlock>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                        <TextBlock Text="{Binding Sender}" FontSize="{DynamicResource ReaderSenderSize}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Metadata}" FontSize="{DynamicResource ReaderMetaSize}" TextWrapping="Wrap" Foreground="{DynamicResource MessageHeaderSecondary}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
                         </Border>
-                        <Grid Margin="0,4,0,20">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                            <Border Width="36" Height="36" CornerRadius="18" VerticalAlignment="Top">
-                                <Border.Background>
-                                    <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
-                                        <Binding Path="SenderColorKey"/>
-                                        <Binding Path="Theme.IsDark"/>
-                                    </MultiBinding>
-                                </Border.Background>
-                                <TextBlock Text="{Binding Initials}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <TextBlock.Foreground>
-                                        <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
-                                            <Binding Path="SenderColorKey"/>
-                                            <Binding Path="Theme.IsDark"/>
-                                        </MultiBinding>
-                                    </TextBlock.Foreground>
-                                </TextBlock>
-                            </Border>
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                <TextBlock Text="{Binding Sender}" FontSize="{DynamicResource ReaderSenderSize}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                <TextBlock Text="{Binding Metadata}" FontSize="{DynamicResource ReaderMetaSize}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                        <Border x:Name="RelatedBand" Background="{DynamicResource RelatedSurface}" Padding="24,16,24,12"
+                                Visibility="{Binding HasRelated, Converter={StaticResource VisibleIf}}">
+                            <StackPanel x:Name="RelatedPanel">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="{x:Static loc:AppStrings.ReaderRelatedTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource MessageHeaderSecondary}" VerticalAlignment="Center"/>
+                                    <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="12" Margin="6,0,0,0" Foreground="{DynamicResource MessageHeaderSecondary}"
+                                               VerticalAlignment="Center" Background="Transparent" Cursor="Help" ToolTipService.InitialShowDelay="0"
+                                               AutomationProperties.Name="{x:Static loc:AppStrings.ReaderRelatedHelpName}"
+                                               ToolTip="{x:Static loc:AppStrings.ReaderRelatedHelpTooltip}"/>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding Related}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
+                                                    Padding="8,4" Margin="0,0,6,4" ToolTip="{Binding Subject}" BorderBrush="{DynamicResource RelatedStroke}" BorderThickness="1"
+                                                    Background="{DynamicResource MessageHeaderSurface}"
+                                                    AutomationProperties.Name="{Binding Label}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Style="{StaticResource Icon}" Text="{Binding Icon}" FontSize="11" Foreground="{DynamicResource RelatedLink}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Direction}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource MessageHeaderSecondary}" Margin="6,0,6,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Label}" FontSize="12" Foreground="{DynamicResource RelatedLink}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </StackPanel>
-                        </Grid>
-                        <StackPanel x:Name="RelatedPanel" Margin="0,0,0,16" Visibility="{Binding HasRelated, Converter={StaticResource VisibleIf}}">
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                <TextBlock Text="{x:Static loc:AppStrings.ReaderRelatedTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
-                                <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="12" Margin="6,0,0,0" Foreground="{DynamicResource TextSecondary}"
-                                           VerticalAlignment="Center" Background="Transparent" Cursor="Help" ToolTipService.InitialShowDelay="0"
-                                           AutomationProperties.Name="{x:Static loc:AppStrings.ReaderRelatedHelpName}"
-                                           ToolTip="{x:Static loc:AppStrings.ReaderRelatedHelpTooltip}"/>
-                            </StackPanel>
-                            <ItemsControl ItemsSource="{Binding Related}">
-                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
-                                                Padding="8,4" Margin="0,0,6,4" ToolTip="{Binding Subject}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1"
-                                                AutomationProperties.Name="{Binding Label}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Style="{StaticResource Icon}" Text="{Binding Icon}" FontSize="11" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Direction}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="6,0,6,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Label}" FontSize="12" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                        <Border Height="1" Background="{DynamicResource Stroke}" Margin="0,0,0,16"/>
-                        <StackPanel x:Name="AttachmentPanel" Visibility="{Binding HasAttachments, Converter={StaticResource VisibleIf}}" Margin="0,0,0,20">
-                            <ItemsControl ItemsSource="{Binding VisibleAttachments}">
-                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border x:Name="AttachmentCard" Width="230" Height="46" CornerRadius="6"
-                                                Background="{DynamicResource AppBackground}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" Margin="0,0,8,8">
-                                            <Border.ContextMenu>
-                                                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                                                    <MenuItem Header="{x:Static loc:AppStrings.AttachmentOpen}" Command="{Binding Owner.OpenAttachmentCommand}" CommandParameter="{Binding}"/>
-                                                    <MenuItem Header="{x:Static loc:AppStrings.AttachmentSaveAs}" Command="{Binding Owner.SaveAttachmentCommand}" CommandParameter="{Binding}"/>
-                                                    <MenuItem Header="{x:Static loc:AppStrings.AttachmentOpenFolder}" Command="{Binding Owner.OpenFolderCommand}" CommandParameter="{Binding}"/>
-                                                </ContextMenu>
-                                            </Border.ContextMenu>
-                                            <Grid>
-                                                <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenAttachmentCommand}" CommandParameter="{Binding}"
-                                                        ToolTip="{Binding Availability}" ToolTipService.ShowOnDisabled="True" AutomationProperties.Name="{Binding Name}" Padding="8,4"
-                                                        PreviewMouseLeftButtonDown="AttachmentMouseDown" PreviewMouseMove="AttachmentMouseMove"
-                                                        HorizontalContentAlignment="Stretch">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                                        <Grid Width="30" Height="30">
-                                                            <Border CornerRadius="4">
-                                                                <Border.Background>
-                                                                    <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
-                                                                        <Binding Path="BadgeKey"/>
-                                                                        <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                                    </MultiBinding>
-                                                                </Border.Background>
-                                                                <TextBlock Text="{Binding Type}" FontSize="9" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                                    <TextBlock.Foreground>
-                                                                        <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                        </Border>
+                        <StackPanel Margin="24,20,24,24">
+                            <StackPanel x:Name="AttachmentPanel" Visibility="{Binding HasAttachments, Converter={StaticResource VisibleIf}}" Margin="0,0,0,20">
+                                <ItemsControl ItemsSource="{Binding VisibleAttachments}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border x:Name="AttachmentCard" Width="230" Height="46" CornerRadius="6"
+                                                    Background="{DynamicResource AppBackground}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" Margin="0,0,8,8">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                                        <MenuItem Header="{x:Static loc:AppStrings.AttachmentOpen}" Command="{Binding Owner.OpenAttachmentCommand}" CommandParameter="{Binding}"/>
+                                                        <MenuItem Header="{x:Static loc:AppStrings.AttachmentSaveAs}" Command="{Binding Owner.SaveAttachmentCommand}" CommandParameter="{Binding}"/>
+                                                        <MenuItem Header="{x:Static loc:AppStrings.AttachmentOpenFolder}" Command="{Binding Owner.OpenFolderCommand}" CommandParameter="{Binding}"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
+                                                <Grid>
+                                                    <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenAttachmentCommand}" CommandParameter="{Binding}"
+                                                            ToolTip="{Binding Availability}" ToolTipService.ShowOnDisabled="True" AutomationProperties.Name="{Binding Name}" Padding="8,4"
+                                                            PreviewMouseLeftButtonDown="AttachmentMouseDown" PreviewMouseMove="AttachmentMouseMove"
+                                                            HorizontalContentAlignment="Stretch">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                                            <Grid Width="30" Height="30">
+                                                                <Border CornerRadius="4">
+                                                                    <Border.Background>
+                                                                        <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
                                                                             <Binding Path="BadgeKey"/>
                                                                             <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
                                                                         </MultiBinding>
-                                                                    </TextBlock.Foreground>
-                                                                </TextBlock>
-                                                            </Border>
-                                                            <Ellipse Width="7" Height="7" Fill="{DynamicResource StatusGood}" Stroke="{DynamicResource Surface}" StrokeThickness="1"
-                                                                     VerticalAlignment="Bottom" HorizontalAlignment="Right" Visibility="{Binding Cached, Converter={StaticResource VisibleIf}}"/>
+                                                                    </Border.Background>
+                                                                    <TextBlock Text="{Binding Type}" FontSize="9" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                                        <TextBlock.Foreground>
+                                                                            <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                                                                <Binding Path="BadgeKey"/>
+                                                                                <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                                            </MultiBinding>
+                                                                        </TextBlock.Foreground>
+                                                                    </TextBlock>
+                                                                </Border>
+                                                                <Ellipse Width="7" Height="7" Fill="{DynamicResource StatusGood}" Stroke="{DynamicResource Surface}" StrokeThickness="1"
+                                                                         VerticalAlignment="Bottom" HorizontalAlignment="Right" Visibility="{Binding Cached, Converter={StaticResource VisibleIf}}"/>
+                                                            </Grid>
+                                                            <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Name}" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                                <TextBlock Text="{Binding Size}" FontSize="10" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                                            </StackPanel>
                                                         </Grid>
-                                                        <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                                            <TextBlock Text="{Binding Name}" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            <TextBlock Text="{Binding Size}" FontSize="10" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
-                                                        </StackPanel>
-                                                    </Grid>
-                                                </Button>
-                                                <StackPanel x:Name="AttachmentActions" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                            Background="{DynamicResource AppBackground}" Margin="0,0,4,0">
-                                                    <StackPanel.Style>
-                                                        <Style TargetType="StackPanel">
-                                                            <Setter Property="Opacity" Value="0"/>
-                                                            <Setter Property="IsHitTestVisible" Value="False"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Value="True">
-                                                                    <DataTrigger.Binding>
-                                                                        <MultiBinding Converter="{StaticResource AnyTrue}">
-                                                                            <Binding Path="IsMouseOver" ElementName="AttachmentCard"/>
-                                                                            <Binding Path="IsKeyboardFocusWithin" ElementName="AttachmentCard"/>
-                                                                        </MultiBinding>
-                                                                    </DataTrigger.Binding>
-                                                                    <Setter Property="IsHitTestVisible" Value="True"/>
-                                                                    <DataTrigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/></Storyboard></BeginStoryboard></DataTrigger.EnterActions>
-                                                                    <DataTrigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12"/></Storyboard></BeginStoryboard></DataTrigger.ExitActions>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </StackPanel.Style>
-                                                    <Button Style="{StaticResource IconButton}" Command="{Binding Owner.OpenAttachmentCommand}" CommandParameter="{Binding}" ToolTip="{x:Static loc:AppStrings.AttachmentOpen}" AutomationProperties.Name="{x:Static loc:AppStrings.AttachmentOpenName}">
-                                                        <TextBlock Style="{StaticResource Icon}" Text="&#xE8A7;" FontSize="14"/>
                                                     </Button>
-                                                    <Button Style="{StaticResource IconButton}" Command="{Binding Owner.SaveAttachmentCommand}" CommandParameter="{Binding}" ToolTip="{x:Static loc:AppStrings.AttachmentSaveAs}" AutomationProperties.Name="{x:Static loc:AppStrings.AttachmentSaveName}">
-                                                        <TextBlock Style="{StaticResource Icon}" Text="&#xE74E;" FontSize="14"/>
-                                                    </Button>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="{Binding MoreAttachmentsLabel}" Command="{Binding ExpandAttachmentsCommand}"
-                                        Visibility="{Binding HasMoreAttachments, Converter={StaticResource VisibleIf}}" Margin="0,0,8,0"/>
-                                <Button Content="{x:Static loc:AppStrings.AttachmentSaveAll}" Command="{Binding SaveAllCommand}" Style="{StaticResource SubtleButton}"
-                                        Foreground="{DynamicResource Accent}" Visibility="{Binding MultipleAttachments, Converter={StaticResource VisibleIf}}"
-                                        ToolTip="{x:Static loc:AppStrings.AttachmentSaveAllTooltip}" ToolTipService.ShowOnDisabled="True"/>
+                                                    <StackPanel x:Name="AttachmentActions" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                                Background="{DynamicResource AppBackground}" Margin="0,0,4,0">
+                                                        <StackPanel.Style>
+                                                            <Style TargetType="StackPanel">
+                                                                <Setter Property="Opacity" Value="0"/>
+                                                                <Setter Property="IsHitTestVisible" Value="False"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Value="True">
+                                                                        <DataTrigger.Binding>
+                                                                            <MultiBinding Converter="{StaticResource AnyTrue}">
+                                                                                <Binding Path="IsMouseOver" ElementName="AttachmentCard"/>
+                                                                                <Binding Path="IsKeyboardFocusWithin" ElementName="AttachmentCard"/>
+                                                                            </MultiBinding>
+                                                                        </DataTrigger.Binding>
+                                                                        <Setter Property="IsHitTestVisible" Value="True"/>
+                                                                        <DataTrigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/></Storyboard></BeginStoryboard></DataTrigger.EnterActions>
+                                                                        <DataTrigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12"/></Storyboard></BeginStoryboard></DataTrigger.ExitActions>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </StackPanel.Style>
+                                                        <Button Style="{StaticResource IconButton}" Command="{Binding Owner.OpenAttachmentCommand}" CommandParameter="{Binding}" ToolTip="{x:Static loc:AppStrings.AttachmentOpen}" AutomationProperties.Name="{x:Static loc:AppStrings.AttachmentOpenName}">
+                                                            <TextBlock Style="{StaticResource Icon}" Text="&#xE8A7;" FontSize="14"/>
+                                                        </Button>
+                                                        <Button Style="{StaticResource IconButton}" Command="{Binding Owner.SaveAttachmentCommand}" CommandParameter="{Binding}" ToolTip="{x:Static loc:AppStrings.AttachmentSaveAs}" AutomationProperties.Name="{x:Static loc:AppStrings.AttachmentSaveName}">
+                                                            <TextBlock Style="{StaticResource Icon}" Text="&#xE74E;" FontSize="14"/>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="{Binding MoreAttachmentsLabel}" Command="{Binding ExpandAttachmentsCommand}"
+                                            Visibility="{Binding HasMoreAttachments, Converter={StaticResource VisibleIf}}" Margin="0,0,8,0"/>
+                                    <Button Content="{x:Static loc:AppStrings.AttachmentSaveAll}" Command="{Binding SaveAllCommand}" Style="{StaticResource SubtleButton}"
+                                            Foreground="{DynamicResource Accent}" Visibility="{Binding MultipleAttachments, Converter={StaticResource VisibleIf}}"
+                                            ToolTip="{x:Static loc:AppStrings.AttachmentSaveAllTooltip}" ToolTipService.ShowOnDisabled="True"/>
+                                </StackPanel>
                             </StackPanel>
+                            <RichTextBox x:Name="ContentReader" local:MessageDocument.Parts="{Binding Body}" IsReadOnly="True" IsDocumentEnabled="True"
+                                         PreviewMouseWheel="ReaderMouseWheel"
+                                         BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimary}"
+                                         SelectionBrush="{DynamicResource Accent}" Padding="0" FontSize="14"
+                                         VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"
+                                         AutomationProperties.Name="{x:Static loc:AppStrings.ReaderContentName}"/>
                         </StackPanel>
-                        <RichTextBox x:Name="ContentReader" local:MessageDocument.Parts="{Binding Body}" IsReadOnly="True" IsDocumentEnabled="True"
-                                     PreviewMouseWheel="ReaderMouseWheel"
-                                     BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimary}"
-                                     SelectionBrush="{DynamicResource Accent}" Padding="0" FontSize="14"
-                                     VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"
-                                     AutomationProperties.Name="{x:Static loc:AppStrings.ReaderContentName}"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>

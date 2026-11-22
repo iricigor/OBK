@@ -13,6 +13,11 @@
     <SolidColorBrush x:Key="Danger" Color="#C42B1C"/>
     <SolidColorBrush x:Key="DangerText" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="HeaderSurface" Color="#1B2129"/>
+    <SolidColorBrush x:Key="MessageHeaderSurface" Color="#20364A"/>
+    <SolidColorBrush x:Key="RelatedSurface" Color="#354D62"/>
+    <SolidColorBrush x:Key="MessageHeaderSecondary" Color="#CBDDEB"/>
+    <SolidColorBrush x:Key="RelatedStroke" Color="#91ADC3"/>
+    <SolidColorBrush x:Key="RelatedLink" Color="#4CC2FF"/>
     <SolidColorBrush x:Key="FolderInbox" Color="#4CC2FF"/>
     <SolidColorBrush x:Key="FolderSent" Color="#4DB6AC"/>
     <SolidColorBrush x:Key="FolderNotice" Color="#FBBF24"/>
