@@ -10,8 +10,8 @@ internal sealed class ReaderPage : ContentPage
     private readonly Picker folders = new() { Title = AppStrings.ReaderFolderPickerTitle };
     private readonly SearchBar search = new() { Placeholder = AppStrings.ReaderSearchPlaceholder };
     private readonly Label status = new() { Text = AppStrings.ReaderStatusOpening };
-    private readonly Button refresh = new() { Text = AppStrings.ReaderRefreshAll };
-    private readonly Button signIn = new() { Text = AppStrings.ReaderAccountsButton };
+    private readonly Button refresh = new() { Text = AppStrings.ReaderRefreshAll, LineBreakMode = LineBreakMode.WordWrap };
+    private readonly Button signIn = new() { Text = AppStrings.ReaderAccountsButton, LineBreakMode = LineBreakMode.WordWrap };
     private readonly ActivityIndicator progress = new() { IsVisible = false };
     private readonly CollectionView messages = new() { SelectionMode = SelectionMode.Single };
     private readonly Label empty = new();
@@ -22,12 +22,14 @@ internal sealed class ReaderPage : ContentPage
     private bool busy;
     private bool loadingAccounts;
     private bool initialized;
+    internal bool Busy => busy;
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private static readonly string[] FolderKeys = ["received", "noticeboard", "sent", "excuses"];
 
     public ReaderPage()
     {
         Title = "OBK";
+        LanguageToolbar.Add(this);
         folders.ItemsSource = new[] { SharedStrings.FolderInbox, SharedStrings.FolderNoticeboard, SharedStrings.FolderSent, SharedStrings.FolderExcuses };
         folders.SelectedIndex = 0;
         accounts.ItemDisplayBinding = new Binding(".", converter: new AccountLabelConverter());
@@ -47,7 +49,7 @@ internal sealed class ReaderPage : ContentPage
             var sender = new Label { MaxLines = 1 };
             sender.SetBinding(Label.TextProperty, nameof(Message.SenderName));
             var date = new Label();
-            date.SetBinding(Label.TextProperty, new Binding(nameof(Message.Date), stringFormat: "{0:g}"));
+            date.SetBinding(Label.TextProperty, new Binding(nameof(Message.Date), converter: new DateConverter()));
             return ReaderTheme.Apply(new VerticalStackLayout
             {
                 Padding = new Thickness(16, 12),
@@ -63,6 +65,7 @@ internal sealed class ReaderPage : ContentPage
                 messages.SelectedItem = null;
                 await RunAsync(() => Navigation.PushAsync(new MessagePage(session, account, message)));
             }
+
         };
         var actions = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Star)], ColumnSpacing = 8 };
         actions.Add(refresh, 0);
@@ -81,6 +84,33 @@ internal sealed class ReaderPage : ContentPage
         ReaderTheme.Apply(empty);
         SetBusy(false);
     }
+
+    internal ReaderPage Rebuild()
+    {
+        var rebuilt = new ReaderPage
+        {
+            session = session,
+            known = known,
+            archive = archive,
+            account = account,
+            initialized = initialized,
+            loadingAccounts = true
+        };
+        rebuilt.accounts.ItemsSource = known.ToList();
+        rebuilt.accounts.SelectedIndex = accounts.SelectedIndex;
+        rebuilt.folders.SelectedIndex = folders.SelectedIndex;
+        rebuilt.search.Text = search.Text;
+        rebuilt.loadingAccounts = false;
+        rebuilt.status.Text = account is null ? AppStrings.ReaderStatusNoAccounts :
+            archive is null ? AppStrings.ReaderStatusNoArchive : ArchiveStatus(archive);
+        rebuilt.ApplySearch();
+        rebuilt.SetBusy(false);
+        return rebuilt;
+    }
+
+    internal Task AccountSavedAsync(Login login) => RunAsync(() => ReloadAsync(login));
+    private static string ArchiveStatus(Archive archive) => Localized.Format(AppStrings.ReaderStatusArchiveReady,
+        DateTimeOffset.Parse(archive.SyncedAt).ToLocalTime().ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
 
     protected override async void OnAppearing()
     {
@@ -169,7 +199,7 @@ internal sealed class ReaderPage : ContentPage
         archive = loaded;
         search.Text = "";
         status.Text = loaded is null ? AppStrings.ReaderStatusNoArchive :
-            Localized.Format(AppStrings.ReaderStatusArchiveReady, DateTimeOffset.Parse(loaded.SyncedAt));
+            ArchiveStatus(loaded);
         ApplySearch();
     }
 
@@ -182,7 +212,7 @@ internal sealed class ReaderPage : ContentPage
             archive.Folders[key];
         var query = search.Text?.Trim() ?? "";
         if (query.Length > 0)
-            items = items.Where(item => $"{item.Title}\n{item.SenderName}\n{item.Text}\n{item.SentDate}\n{item.Date:g}"
+            items = items.Where(item => $"{item.Title}\n{item.SenderName}\n{item.Text}\n{item.SentDate}\n{MessageInsights.DateSearchText(item.Date)}"
                 .Contains(query, StringComparison.CurrentCultureIgnoreCase));
         messages.ItemsSource = items.OrderByDescending(item => item.Date).ToList();
         empty.Text = query.Length > 0 ? AppStrings.ReaderEmptySearch :
@@ -267,6 +297,14 @@ internal sealed class ReaderPage : ContentPage
             (login.SchoolName is { } school ? Localized.Format(AppStrings.AccountSchoolAndUsername, school, login.Username) : login.Username);
         public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
             value is Login login ? Label(login) : "";
+        public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
+            throw new NotSupportedException();
+    }
+
+    private sealed class DateConverter : IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
+            value is DateTimeOffset date ? date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) : "";
         public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
             throw new NotSupportedException();
     }

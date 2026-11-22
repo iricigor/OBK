@@ -41,6 +41,9 @@ passwords or private messages. See [Privacy](#privacy) and the
 - **Clickable links** in messages, and attachments that open with one click.
 - **Light and dark themes**, a resizable sidebar that can shrink to icons, and
   **automatic updates**.
+- **Czech and English interface** – switch with **CS / EN**, including before
+  sign-in. Your choice is remembered; dates and numbers follow it. School
+  messages are never translated.
 - **Settings** at the bottom of the sidebar – choose the theme, reading size and
   message list density, rename children, save, change, or clear saved passwords,
   check for updates, and transfer an account to OBK on Android.
@@ -68,6 +71,10 @@ when one is ready.
 4. Click **Refresh** to download new messages for every child.
 
 OBK downloads messages for the current school year (September–August).
+
+On first launch, OBK uses your system's Czech or English language; other system
+languages default to Czech. The language button is beside the Windows theme
+button and in Android's toolbar.
 
 ## Privacy
 
@@ -123,6 +130,6 @@ workflow runs. They are for device verification, not production distribution;
 installing previews from different build machines may require uninstalling the
 previous preview, which deletes its local archives and encryption key.
 Production signing and GitHub release APKs follow preview verification.
-Play Store publishing and localization come later.
+Play Store publishing and additional interface languages come later.
 
 See the [Android build and verification instructions](docs/TECHNICAL.md#android-preview).

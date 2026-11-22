@@ -26,6 +26,11 @@
                 <TextBlock Text="{x:Static loc:AppStrings.AppTitle}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button x:Name="LanguageButton" Width="46" Height="40" MinHeight="0" Style="{StaticResource SubtleButton}"
+                        Click="SwitchLanguage" Content="{Binding LanguageCode, RelativeSource={RelativeSource AncestorType=Window}}"
+                        ToolTip="{Binding LanguageTooltip, RelativeSource={RelativeSource AncestorType=Window}}"
+                        AutomationProperties.Name="{Binding LanguageTooltip, RelativeSource={RelativeSource AncestorType=Window}}"
+                        IsEnabled="{Binding CanChangeAccount}"/>
                 <Button Width="46" Height="40" MinHeight="0" Style="{StaticResource SubtleButton}" Command="{Binding ToggleThemeCommand}"
                         ToolTip="{Binding Theme.ToggleTooltip}" AutomationProperties.Name="{Binding Theme.ToggleTooltip}">
                     <TextBlock Style="{StaticResource Icon}" Text="{Binding Theme.ToggleIcon}" FontSize="12"/>

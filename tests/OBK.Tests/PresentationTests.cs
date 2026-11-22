@@ -1,5 +1,7 @@
 using OBK.App;
 using OBK.Core;
+using OBK.Core.Localization;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -14,6 +16,7 @@ using Xunit;
 
 namespace OBK.Tests;
 
+[Collection("Language")]
 public sealed class PresentationTests
 {
     [Theory]
@@ -77,6 +80,10 @@ public sealed class PresentationTests
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var thread = new Thread(() =>
         {
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUiCulture = CultureInfo.CurrentUICulture;
+            var originalDefault = CultureInfo.DefaultThreadCurrentCulture;
+            var originalDefaultUi = CultureInfo.DefaultThreadCurrentUICulture;
             var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
             _ = application.Dispatcher.BeginInvoke(new Action(async () =>
             {
@@ -389,6 +396,42 @@ public sealed class PresentationTests
                         await main.ViewModel.Theme.ToggleAsync();
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         AssertNativeRounding();
+
+                        await main.ViewModel.ActivateAccountAsync("https://school.example", "test");
+                        main.ViewModel.SelectedFolder = main.ViewModel.Navigation.Single(folder => folder.Key == "sent");
+                        await main.ViewModel.FolderReady;
+                        main.ViewModel.SearchText = "sent Sep";
+                        main.ViewModel.Sort = MessageSort.Sender;
+                        main.ViewModel.Grouping = MessageGrouping.Sender;
+                        await main.ViewModel.FolderReady;
+                        main.ViewModel.SelectedMessage = main.ViewModel.Messages.Single(row => row.Message.Id == "sent-old");
+                        await main.ViewModel.MessageReady;
+                        var updates = main.Updates;
+                        var appearance = main.ViewModel.Theme;
+                        var wasDark = appearance.IsDark;
+                        LanguageSettings.Apply("en");
+                        main = await main.ChangeLanguageAsync();
+                        Assert.Equal("cs", LanguageSettings.Code);
+                        Assert.Equal("CS", ((Button)main.FindName("LanguageButton")).Content);
+                        Assert.Equal("Odeslané", main.ViewModel.FolderTitle);
+                        Assert.Equal("test", main.Account!.Username);
+                        Assert.Equal("sent Sep", main.ViewModel.SearchText);
+                        Assert.Equal(MessageSort.Sender, main.ViewModel.Sort);
+                        Assert.Equal(MessageGrouping.Sender, main.ViewModel.Grouping);
+                        Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
+                        Assert.Same(updates, main.Updates);
+                        Assert.Same(appearance, main.ViewModel.Theme);
+                        Assert.Equal(wasDark, appearance.IsDark);
+                        Assert.Equal("cs", await LanguageSettings.LoadAsync(Path.Combine(directory, "language.json"), "en-US"));
+                        Assert.Equal("20. 11. 2026 14:09",
+                            new DateTime(2026, 11, 20, 14, 9, 0).ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
+                        Assert.Equal("1,5 MB", AttachmentRow.FormatSize(1572864));
+                        Assert.Equal("listopad 2025", MessageInsights.DateGroup(new DateTimeOffset(2025, 11, 1, 12, 0, 0, TimeSpan.Zero), new DateTime(2026, 11, 22)));
+                        main = await main.ChangeLanguageAsync();
+                        Assert.Equal("en", LanguageSettings.Code);
+                        Assert.Equal("Sent", main.ViewModel.FolderTitle);
+                        Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
+                        Assert.Equal("1.5 MB", AttachmentRow.FormatSize(1572864));
                     }
                     finally { main.Close(); }
                     completion.SetResult();
@@ -396,6 +439,12 @@ public sealed class PresentationTests
                 catch (Exception error) { completion.SetException(error); }
                 finally
                 {
+                    SharedStrings.Culture = null;
+                    OBK.App.Localization.AppStrings.Culture = null;
+                    CultureInfo.CurrentCulture = originalCulture;
+                    CultureInfo.CurrentUICulture = originalUiCulture;
+                    CultureInfo.DefaultThreadCurrentCulture = originalDefault;
+                    CultureInfo.DefaultThreadCurrentUICulture = originalDefaultUi;
                     if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
                     application.Shutdown();
                 }

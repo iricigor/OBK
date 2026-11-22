@@ -32,7 +32,29 @@ public partial class App : Application
         }
         if (!smoke)
         {
-            try { new MainWindow(await Task.Run(() => new LocalStore())).Show(); }
+            try
+            {
+                var store = await Task.Run(() => new LocalStore());
+                string? languageError = null;
+                var osLanguage = System.Globalization.CultureInfo.CurrentUICulture.Name;
+                var language = LanguageSettings.Detect(osLanguage);
+                try
+                {
+                    language = await LanguageSettings.LoadAsync(
+                        Path.Combine(Path.GetDirectoryName(store.Path)!, "language.json"), osLanguage);
+                }
+                catch (ObkException error) { languageError = error.Message; }
+                LanguageSettings.Apply(language);
+                AppStrings.Culture = LanguageSettings.Culture;
+                var window = new MainWindow(store);
+                MainWindow = window;
+                window.Show();
+                if (languageError is not null)
+                {
+                    await window.InitializeAsync();
+                    window.ViewModel.ReportError(languageError);
+                }
+            }
             catch (ObkException error)
             {
                 MessageBox.Show(error.Message, AppStrings.ErrorStartupTitle, MessageBoxButton.OK, MessageBoxImage.Error);
@@ -231,7 +253,31 @@ public partial class App : Application
                         for (var wait = 0; wait < 100 && !login.Remember.IsEnabled; wait++) await Task.Delay(50);
                         if (store.RememberedLogins().Any(profile => profile.Username == "installation-check"))
                             throw new ObkException("Unchecking Remember did not forget the saved password.");
-                        login.Close();
+                        login.Password.Password = "fictional-only";
+                        login.LanguageButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                        var languageForm = login.LanguageForm ?? throw new ObkException("Sign-in language switch did not preserve its form.");
+                        var readerState = window.ViewModel.CaptureState();
+                        window = await window.ChangeLanguageAsync();
+                        if (window.ViewModel.SelectedMessage?.Message.Id != readerState.MessageIds[readerState.Folder] ||
+                            window.ViewModel.SearchText != readerState.Search || window.ViewModel.Grouping != readerState.Grouping)
+                            throw new ObkException("Language switching lost reader state.");
+                        foreach (var size in new[] { "Small", "Medium", "Large" })
+                        {
+                            await window.ViewModel.Theme.SetReadingSizeAsync(size);
+                            window.UpdateLayout();
+                            Capture(window, Path.ChangeExtension(resultPath, $".cs.{size.ToLowerInvariant()}.png"));
+                        }
+                        var translatedLogin = new LoginWindow(window, null, false, "", showSavedAccounts: true);
+                        await translatedLogin.RestoreFormAsync(languageForm);
+                        translatedLogin.Show();
+                        if (translatedLogin.Username.Text != languageForm.Username ||
+                            translatedLogin.Password.Password != languageForm.Password ||
+                            translatedLogin.ChildName.Text != languageForm.ChildName ||
+                            translatedLogin.Remember.IsChecked != languageForm.Remember)
+                            throw new ObkException("Language switching lost sign-in form fields.");
+                        translatedLogin.UpdateLayout();
+                        Capture(translatedLogin, Path.ChangeExtension(resultPath, ".cs.login.png"));
+                        translatedLogin.Close();
                         if (store.LastAccount()!.Username != "installation-check")
                             throw new ObkException("Closing the sign-in window changed the active offline account.");
                     }

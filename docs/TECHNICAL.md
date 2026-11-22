@@ -133,16 +133,32 @@ existing frame, and login/prompt dialogs are unchanged.
 ## Interface text and localization
 
 App-owned interface text lives in `.resx` resource sets. English is the neutral
-language and currently the only shipped one; Czech (#29), Ukrainian, and German
-(#30) follow later.
+language; Czech is also supported. Ukrainian and German (#30) follow later.
 
-The agreed Czech-language follow-up (#29) adds an EN/CS button beside the
-theme control, including sign-in, on Windows and Android. It will persist an
-explicit choice, otherwise detect supported OS languages with Czech fallback,
-and rebuild the interface immediately while preserving reader state. Display
-dates and numbers will follow that choice; school content and persisted/API
-formats remain unchanged. This work proceeds independently of Android UI PR
-#50; overlapping reader and sign-in changes will be reconciled after it merges.
+The EN/CS button cycles languages beside the Windows theme button, including
+sign-in. Android keeps its system-controlled theme and places EN/CS in the
+native toolbar on reader, sign-in, and message pages. The tooltip/accessibility
+description names the next language. An explicit choice is stored in
+`language.json` beside the Windows database or in Android's app-private data
+directory. No account data or credentials are stored in this file.
+
+Without a saved choice, the Windows display language or Android locale selects
+English or Czech; any other language selects Czech. Missing settings use OS
+detection; unreadable or invalid settings report an error rather than silently
+ignoring corruption. A failed save reports an error and keeps the current
+language so the selection can be retried.
+
+Switching rebuilds the Windows window or Android navigation stack immediately,
+without restarting or downloading school data. The account, folder, selected
+message, search, and existing sort/group state are preserved, as are sign-in
+form fields. Windows retains its update controller and appearance settings.
+Switching is unavailable during synchronization, archive loading, or attachment
+operations. Display dates use shared translatable layouts; month group names
+and numbers use the selected culture. API/storage formats and school content
+remain unchanged. Resource lookup and formatting use the selected culture
+explicitly, including asynchronous work started before a switch.
+Date searches include both supported languages' layouts so switching does not
+invalidate a query containing an English month abbreviation.
 
 | Resource set | Used by | Generated class |
 | --- | --- | --- |
@@ -172,7 +188,7 @@ To add a language, add `<Name>.<culture>.resx` (for example
 falls back to English for missing keys, so completeness is enforced by a
 separate check instead. The **Localization resource completeness** job in
 **🧪 Validation** discovers every resource set and language and fails on
-invalid XML, missing or extra keys, duplicate keys, empty values, or
+invalid XML, a language missing from any resource set, missing or extra keys, duplicate keys, empty values, or
 placeholders that differ from English. Run it locally with:
 
 ```powershell

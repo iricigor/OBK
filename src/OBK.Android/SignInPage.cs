@@ -20,11 +20,15 @@ internal sealed class SignInPage : ContentPage
     private readonly Button submit = new() { Text = AppStrings.SignInSubmitButton };
     private readonly ActivityIndicator progress = new();
     private bool busy;
+    private readonly Login? initial;
+    internal bool Busy => busy;
 
     public SignInPage(ReaderSession session, Login? login, Func<Login, Task> saved)
     {
         this.session = session;
         this.saved = saved;
+        initial = login;
+        LanguageToolbar.Add(this);
         Title = login is null ? AppStrings.SignInTitleAddChild : AppStrings.SignInTitleSignIn;
         if (login is not null)
         {
@@ -34,6 +38,7 @@ internal sealed class SignInPage : ContentPage
             password.Text = login.Password;
             remember.IsChecked = login.Password is not null;
         }
+
         schoolSearch.TextChanged += (_, _) =>
         {
             schoolResults.Children.Clear();
@@ -58,11 +63,9 @@ internal sealed class SignInPage : ContentPage
         submit.Clicked += async (_, _) => await SignInAsync();
         var scan = new Button { Text = AppStrings.SignInScanFromPc };
         scan.Clicked += async (_, _) => { if (!busy) await TransferScanPage.OpenAsync(this, Import); };
-        var remembered = new HorizontalStackLayout
-        {
-            Spacing = 8,
-            Children = { remember, new Label { Text = AppStrings.SignInRememberCredentials, VerticalOptions = LayoutOptions.Center } }
-        };
+        var remembered = new Grid { ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)], ColumnSpacing = 8 };
+        remembered.Add(remember);
+        remembered.Add(new Label { Text = AppStrings.SignInRememberCredentials, VerticalOptions = LayoutOptions.Center }, 1);
         Content = new ScrollView
         {
             Content = new VerticalStackLayout
@@ -84,6 +87,18 @@ internal sealed class SignInPage : ContentPage
             }
         };
         ReaderTheme.Apply(this);
+    }
+
+    internal SignInPage Rebuild(Func<Login, Task> saved)
+    {
+        var rebuilt = new SignInPage(session, initial, saved);
+        rebuilt.url.Text = url.Text;
+        rebuilt.username.Text = username.Text;
+        rebuilt.password.Text = password.Text;
+        rebuilt.child.Text = child.Text;
+        rebuilt.remember.IsChecked = remember.IsChecked;
+        rebuilt.schoolSearch.Text = schoolSearch.Text;
+        return rebuilt;
     }
 
     // Fills the form from a PC transfer; the user still reviews it and decides whether to remember the password.

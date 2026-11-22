@@ -39,6 +39,36 @@ class CheckLocalizationTests(unittest.TestCase):
         self.write("Core/Shared.resx", resx(Title="Inbox"))
         self.assertEqual([], self.errors())
 
+    def test_culture_required_in_every_set(self):
+        self.write("Core/Shared.resx", resx(Title="Inbox"))
+        self.write("App/Strings.resx", resx(Title="Inbox"))
+        self.write("App/Strings.cs.resx", resx(Title="Doručené"))
+        errors = self.errors()
+        self.assertEqual(1, len(errors))
+        self.assertIn(str(self.root / "Core/Shared.cs.resx"), errors[0])
+        self.assertIn("missing translation for culture 'cs'", errors[0])
+
+    def test_deleting_entire_translation_fails(self):
+        for folder in ("Core", "App"):
+            self.write(f"{folder}/Strings.resx", resx(Title="Inbox"))
+            self.write(f"{folder}/Strings.cs.resx", resx(Title="Doručené"))
+        self.assertEqual([], self.errors())
+        (self.root / "Core/Strings.cs.resx").unlink()
+        self.assertTrue(any("missing translation for culture 'cs'" in e for e in self.errors()))
+
+    def test_culture_union_includes_regional_cultures(self):
+        for folder in ("Core", "App"):
+            self.write(f"{folder}/Strings.resx", resx(Title="Inbox"))
+        self.write("Core/Strings.cs.resx", resx(Title="Doručené"))
+        self.write("App/Strings.de-DE.resx", resx(Title="Posteingang"))
+        errors = self.errors()
+        self.assertEqual(2, len(errors))
+        self.assertTrue(any("missing translation for culture 'cs'" in e for e in errors))
+        self.assertTrue(any("missing translation for culture 'de-DE'" in e for e in errors))
+        self.write("App/Strings.cs.resx", resx(Title="Doručené"))
+        self.write("Core/Strings.de-DE.resx", resx(Title="Posteingang"))
+        self.assertEqual([], self.errors())
+
     def test_missing_and_extra_keys_fail(self):
         self.write("Strings.resx", resx(Title="Inbox", Sent="Sent"))
         self.write("Strings.de-DE.resx", resx(Title="Posteingang", Other="Andere"))

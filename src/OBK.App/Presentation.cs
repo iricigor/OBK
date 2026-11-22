@@ -131,15 +131,16 @@ public sealed class MessageRow(Message message, string folder)
     public string Subject => MainViewModel.OneLine(Message.Title) is { Length: > 0 } title ? title : SharedStrings.NoSubject;
     public string Person => MainViewModel.OneLine(MessageInsights.Counterpart(Message, Folder))
         is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
-    public string Sent => Message.Date.ToString("dd MMM yyyy HH:mm");
+    public string Sent => Message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture);
     public string ShortSent
     {
         get
         {
             var local = Message.Date.LocalDateTime;
             var today = DateTime.Today;
-            return local.Date == today ? local.ToString("HH:mm") :
-                local.Year == today.Year ? local.ToString("d MMM") : local.ToString("d MMM yyyy");
+            return local.Date == today ? local.ToString(SharedStrings.DateTimeFormat, LanguageSettings.Culture) :
+                local.Year == today.Year ? local.ToString(SharedStrings.DateShortFormat, LanguageSettings.Culture) :
+                local.ToString(SharedStrings.DateShortYearFormat, LanguageSettings.Culture);
         }
     }
     public bool HasFiles => Message.Attachments.Count > 0;
@@ -187,7 +188,7 @@ public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool next, 
     public string From => Item.Folder == "sent" ? AppStrings.RelatedFromYou :
         MainViewModel.OneLine(Item.Message.SenderName) is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
     public string Label => Localized.Format(AppStrings.RelatedLabel,
-        Item.Message.Date.ToString("dd.MMM HH:mm", System.Globalization.CultureInfo.CurrentCulture), From);
+        Item.Message.Date.ToString(SharedStrings.DateRelatedFormat, LanguageSettings.Culture), From);
 
     /// <summary>Chronological rows; numbers count outward from the current message when a side has several.</summary>
     public static IReadOnlyList<RelatedRow> Build(MainViewModel owner, RelatedMessages related)

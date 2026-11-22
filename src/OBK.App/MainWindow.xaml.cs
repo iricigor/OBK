@@ -35,14 +35,21 @@ public partial class MainWindow : Window
     private Point dragOrigin;
     private bool compact;
     private bool openingLogin;
+    private bool replacing;
+    private bool switchingLanguage;
+    private readonly bool enableUpdates;
     private int? cornerPreferenceError;
     private static bool buildAcknowledged;
 
     public UpdateManager Updates { get; }
-    public MainWindow(LocalStore store, bool showLogin = true, bool enableUpdates = true)
+    public string LanguageCode => LanguageSettings.Code.ToUpperInvariant();
+    public string LanguageTooltip => LanguageSettings.SwitchTooltip;
+    public MainWindow(LocalStore store, bool showLogin = true, bool enableUpdates = true, UpdateManager? updates = null,
+        ThemeManager? appearance = null)
     {
         Store = store;
         this.showLogin = showLogin;
+        this.enableUpdates = enableUpdates;
         MinimizeCommand = new RelayCommand(_ => SystemCommands.MinimizeWindow(this));
         MaximizeCommand = new RelayCommand(_ =>
         {
@@ -50,7 +57,7 @@ public partial class MainWindow : Window
             else SystemCommands.MaximizeWindow(this);
         });
         CloseCommand = new RelayCommand(_ => Close());
-        var theme = new ThemeManager(Path.Combine(Path.GetDirectoryName(store.Path)!, "appearance.json"));
+        var theme = appearance ?? new ThemeManager(Path.Combine(Path.GetDirectoryName(store.Path)!, "appearance.json"));
         ViewModel = new MainViewModel(store, theme, OpenLoginDialog, ExportAsync, SaveAllAsync);
         RenameAccountCommand = new RelayCommand(p => { if (p is AccountRow row) RenameAccount(row); },
             p => p is AccountRow && ViewModel.CanChangeAccount);
@@ -60,9 +67,10 @@ public partial class MainWindow : Window
             message => ViewModel.ReportError(message), p => p is AccountRow && ViewModel.CanChangeAccount);
         TransferAccountCommand = new RelayCommand(p => { if (p is AccountRow row) TransferAccount(row); },
             p => p is AccountRow { PasswordSaved: true } && ViewModel.CanChangeAccount);
-        Updates = new UpdateManager(new UpdateService(Path.Combine(Path.GetDirectoryName(store.Path)!, "updates")),
-            UpdateService.InstalledVersion, () => !Busy && !ViewModel.IsExporting, Close);
+        Updates = updates ?? new UpdateManager(new UpdateService(Path.Combine(Path.GetDirectoryName(store.Path)!, "updates")),
+            UpdateService.InstalledVersion, () => !Busy && !ViewModel.IsExporting && !switchingLanguage, Close);
         InitializeComponent();
+        Language = System.Windows.Markup.XmlLanguage.GetLanguage(LanguageSettings.Culture.Name);
         var build = BuildIdentity.Current;
         BuildRibbonTimestamp.Text = build.TimestampText;
         BuildRibbon.ToolTip = Localized.Format(AppStrings.BuildRibbonTooltip, build.FullTimestampText);
@@ -75,7 +83,12 @@ public partial class MainWindow : Window
         }
         DataContext = ViewModel;
         UpdateText.DataContext = UpdateActions.DataContext = Updates;
-        Closed += (_, _) => Updates.OnExit();
+        Closed += (_, _) =>
+        {
+            if (replacing) return;
+            Updates.OnExit();
+            Updates.Dispose();
+        };
         ViewModel.PropertyChanged += (_, e) =>
         {
             if (enableUpdates && e.PropertyName == nameof(MainViewModel.Account) && ViewModel.Account is not null) Updates.Start();
@@ -94,6 +107,58 @@ public partial class MainWindow : Window
     }
 
     public Task InitializeAsync() => initialization ??= ViewModel.InitializeAsync();
+    private async void SwitchLanguage(object sender, RoutedEventArgs e)
+    {
+        if (switchingLanguage) return;
+        LanguageButton.IsEnabled = false;
+        try { await ChangeLanguageAsync(); }
+        catch (ObkException error) { ViewModel.ReportError(error.Message); }
+        finally
+        {
+            LanguageButton.SetBinding(IsEnabledProperty, nameof(MainViewModel.CanChangeAccount));
+        }
+    }
+
+    public async Task<MainWindow> ChangeLanguageAsync()
+    {
+        if (switchingLanguage || !ViewModel.CanChangeAccount) throw new ObkException(SharedStrings.ErrorLanguageBusy);
+        switchingLanguage = true;
+        WindowRoot.IsEnabled = false;
+        try
+        {
+            await ViewModel.FolderReady;
+            await ViewModel.MessageReady;
+            var state = ViewModel.CaptureState();
+            var next = LanguageSettings.NextCode;
+            await LanguageSettings.SaveAsync(Path.Combine(Path.GetDirectoryName(Store.Path)!, "language.json"), next);
+            LanguageSettings.Apply(next);
+            AppStrings.Culture = LanguageSettings.Culture;
+            var replacement = new MainWindow(Store, showLogin: false, enableUpdates, Updates, ViewModel.Theme);
+            replacement.initialization = replacement.ViewModel.RestoreStateAsync(state);
+            await replacement.InitializeAsync();
+            replacement.expandedNavigationWidth = expandedNavigationWidth;
+            var bounds = WindowState == WindowState.Normal ?
+                new Rect(Left, Top, Width, Height) : RestoreBounds;
+            replacement.Left = bounds.Left;
+            replacement.Top = bounds.Top;
+            replacement.Width = bounds.Width;
+            replacement.Height = bounds.Height;
+            replacement.WindowState = WindowState;
+            replacement.Show();
+            replacement.NavigationColumn.Width = new GridLength(state.NavigationExpanded ? expandedNavigationWidth : IconNavigationWidth);
+            replacement.MessageColumn.Width = MessageColumn.Width;
+            replacement.AppearanceSection.IsExpanded = AppearanceSection.IsExpanded;
+            replacement.AccountsSection.IsExpanded = AccountsSection.IsExpanded;
+            replacement.AboutSection.IsExpanded = AboutSection.IsExpanded;
+            Updates.SetHost(() => !replacement.Busy && !replacement.ViewModel.IsExporting && !replacement.switchingLanguage, replacement.Close);
+            Application.Current.MainWindow = replacement;
+            replacing = true;
+            Close();
+            replacement.Activate();
+            return replacement;
+        }
+        finally { switchingLanguage = false; WindowRoot.IsEnabled = true; }
+    }
     private async void WindowLoaded(object sender, RoutedEventArgs e)
     {
         await InitializeAsync();
@@ -172,7 +237,7 @@ public partial class MainWindow : Window
 
     private void WindowClosing(object? sender, CancelEventArgs e)
     {
-        if (Busy || ViewModel.IsExporting)
+        if (Busy || ViewModel.IsExporting || (switchingLanguage && !replacing))
         {
             e.Cancel = true;
             Updates.CancelRestart();
@@ -218,8 +283,23 @@ public partial class MainWindow : Window
                 }
             }
             catch (ObkException problem) { error = problem.Message; }
-            new LoginWindow(this, initial, remembered, error, showSavedAccounts).ShowDialog();
+            var host = this;
+            LoginWindow.FormState? form = null;
+            while (true)
+            {
+                var dialog = new LoginWindow(host, initial, remembered, error, showSavedAccounts);
+                if (form is not null) await dialog.RestoreFormAsync(form);
+                if (error.Length > 0) dialog.StatusText = error;
+                host.openingLogin = true;
+                dialog.ShowDialog();
+                host.openingLogin = false;
+                if (dialog.LanguageForm is not { } preserved) break;
+                form = preserved;
+                try { host = await host.ChangeLanguageAsync(); error = ""; }
+                catch (ObkException problem) { error = problem.Message; }
+            }
         }
+        catch (ObkException problem) { ((MainWindow)Application.Current.MainWindow).ViewModel.ReportError(problem.Message); }
         finally { openingLogin = false; }
     }
 

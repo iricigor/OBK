@@ -26,6 +26,9 @@ public partial class LoginWindow : Window
     public string StatusText { set => Status.Text = value; }
     internal Task DirectoryReady { get; }
     internal int AvailableSchoolCount => schoolDirectory?.Count ?? 0;
+    internal FormState? LanguageForm { get; private set; }
+    internal sealed record FormState(string Url, string Username, string Password, string ChildName,
+        bool Remember, string Search, bool Confirmed, string? SchoolName, bool Manual);
 
     public LoginWindow(MainWindow app, Login? initial, bool remembered, string error, bool showSavedAccounts = false)
     {
@@ -34,6 +37,11 @@ public partial class LoginWindow : Window
         this.showSavedAccounts = showSavedAccounts;
         Owner = app;
         InitializeComponent();
+        Language = System.Windows.Markup.XmlLanguage.GetLanguage(LanguageSettings.Culture.Name);
+        LanguageButton.Content = app.LanguageCode;
+        LanguageButton.ToolTip = app.LanguageTooltip;
+        System.Windows.Automation.AutomationProperties.SetName(LanguageButton, app.LanguageTooltip);
+        UpdateThemeButton();
         MaxHeight = SystemParameters.WorkArea.Height;
         SizeChanged += (_, _) => KeepOnScreen();
         SchoolUrl.Text = initial?.Url ?? "";
@@ -52,9 +60,56 @@ public partial class LoginWindow : Window
                 if (ManualUrlPanel.Visibility == Visibility.Visible) SchoolUrl.Focus();
                 else if (SchoolSearch.IsEnabled) SchoolSearch.Focus();
             }
+
             else if (Username.Text.Length > 0) Password.Focus();
             else Username.Focus();
         };
+    }
+
+    private void SwitchLanguage(object sender, RoutedEventArgs e)
+    {
+        if (busy || app.Busy) { Status.Text = SharedStrings.ErrorLanguageBusy; return; }
+        LanguageForm = new(SchoolUrl.Text, Username.Text, Password.Password, ChildName.Text,
+            Remember.IsChecked == true, SchoolSearch.Text, schoolConfirmed, selectedSchoolName,
+            ManualUrlPanel.Visibility == Visibility.Visible);
+        completed = true;
+        Close();
+    }
+
+    internal async Task RestoreFormAsync(FormState form)
+    {
+        await DirectoryReady;
+        if (form.Confirmed) ConfirmManualSchool(form.Url, form.SchoolName, moveFocus: false);
+        else
+        {
+            schoolConfirmed = false;
+            SchoolChooserPanel.Visibility = Visibility.Visible;
+            SelectedSchoolPanel.Visibility = CredentialsPanel.Visibility = Visibility.Collapsed;
+            SchoolSearch.Text = form.Search;
+            if (form.Manual) ShowManualUrl();
+            SchoolUrl.Text = form.Url;
+        }
+        Username.Text = form.Username;
+        Password.Password = form.Password;
+        ChildName.Text = form.ChildName;
+        SetRemember(form.Remember);
+        UpdateActionButtons();
+    }
+
+    private void UpdateThemeButton()
+    {
+        ThemeIcon.Text = app.ViewModel.Theme.ToggleIcon;
+        if (ThemeIcon.Parent is System.Windows.Controls.Button button)
+        {
+            button.ToolTip = app.ViewModel.Theme.ToggleTooltip;
+            System.Windows.Automation.AutomationProperties.SetName(button, app.ViewModel.Theme.ToggleTooltip);
+        }
+    }
+
+    private async void SwitchTheme(object sender, RoutedEventArgs e)
+    {
+        try { await app.ViewModel.Theme.ToggleAsync(); UpdateThemeButton(); }
+        catch (ObkException error) { Status.Text = error.Message; }
     }
 
     private async void RememberUnchecked(object sender, RoutedEventArgs e)
@@ -94,6 +149,7 @@ public partial class LoginWindow : Window
     public void SetBusy(bool busy)
     {
         this.busy = busy;
+        LanguageButton.IsEnabled = !busy;
         SchoolSearch.IsEnabled = schoolDirectory is not null && !busy;
         ManualUrlButton.IsEnabled = schoolDirectory is not null && !busy;
         BackToSchoolSearchButton.IsEnabled = schoolDirectory is not null && !busy;

@@ -204,8 +204,8 @@
     <value>Search subject, sender, text or date</value>
   </data>
   <data name="ReaderStatusArchiveReady" xml:space="preserve">
-    <value>Offline archive ready. Last sync: {0:g}</value>
-    <comment>{0} = date and time of the last successful download (short date/time format).</comment>
+    <value>Offline archive ready. Last sync: {0}</value>
+    <comment>{0} = already localized last synchronization date and time.</comment>
   </data>
   <data name="ReaderStatusNoAccounts" xml:space="preserve">
     <value>Add a child to download messages. Reading cached messages never contacts your school.</value>

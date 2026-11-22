@@ -250,4 +250,47 @@
   <data name="ErrorTransferWrongWords" xml:space="preserve">
     <value>These words do not unlock this QR code. Check them on your PC, or show a new code there and scan again.</value>
   </data>
+  <data name="LanguageSwitchTooltip" xml:space="preserve">
+    <value>Switch to {0}</value>
+    <comment>{0} = next language's native name.</comment>
+  </data>
+  <data name="ErrorLanguageInvalid" xml:space="preserve">
+    <value>The saved language setting is invalid. Choose a language to replace it.</value>
+  </data>
+  <data name="ErrorLanguageRead" xml:space="preserve">
+    <value>Cannot read the language setting. Choose a language to save it again.</value>
+  </data>
+  <data name="ErrorLanguageSave" xml:space="preserve">
+    <value>Cannot save the language choice. Check storage access and try again.</value>
+  </data>
+  <data name="ErrorLanguageCleanup" xml:space="preserve">
+    <value>Could not remove a temporary language setting file. Check storage access.</value>
+  </data>
+  <data name="ErrorLanguageBusy" xml:space="preserve">
+    <value>Wait for the current operation to finish before switching language.</value>
+  </data>
+  <data name="DateLongFormat" xml:space="preserve">
+    <value>dd MMM yyyy HH:mm</value>
+    <comment>.NET custom date/time layout for a full message timestamp; not a composite-format string.</comment>
+  </data>
+  <data name="DateShortFormat" xml:space="preserve">
+    <value>d MMM</value>
+    <comment>.NET custom date/time layout for a short message date without a year; not a composite-format string.</comment>
+  </data>
+  <data name="DateShortYearFormat" xml:space="preserve">
+    <value>d MMM yyyy</value>
+    <comment>.NET custom date/time layout for a short message date with a year; not a composite-format string.</comment>
+  </data>
+  <data name="DateTimeFormat" xml:space="preserve">
+    <value>HH:mm</value>
+    <comment>.NET custom date/time layout for a message time in 24-hour notation; not a composite-format string.</comment>
+  </data>
+  <data name="DateRelatedFormat" xml:space="preserve">
+    <value>dd.MMM HH:mm</value>
+    <comment>.NET custom date/time layout for a related-message date and time; not a composite-format string.</comment>
+  </data>
+  <data name="DateGroupMonthFormat" xml:space="preserve">
+    <value>MMMM yyyy</value>
+    <comment>.NET custom date/time layout for a month/year group heading; not a composite-format string.</comment>
+  </data>
 </root>

@@ -40,11 +40,26 @@ public static partial class MessageInsights
     public static string SearchText(Message message, string folder)
     {
         var body = string.Concat(MessageRenderer.Render(message.Text).Select(p => p.Text));
-        var date = message.Date;
         return Fold(string.Join('\n', message.Title, body, message.SenderName, message.RelevantName,
-            date.ToString("dd MMM yyyy HH:mm"), date.ToString("d. M. yyyy", CultureInfo.InvariantCulture),
-            date.ToString("d.M.yyyy", CultureInfo.InvariantCulture), date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture),
-            date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+            DateSearchText(message.Date)));
+    }
+
+    public static string DateSearchText(DateTimeOffset date)
+    {
+        var localized = new[] { "en", "cs" }.Select(code =>
+        {
+            var culture = CultureInfo.GetCultureInfo(code);
+            var format = SharedStrings.ResourceManager.GetString(nameof(SharedStrings.DateLongFormat), culture) ??
+                throw new InvalidOperationException("The date search resource is missing.");
+            return date.ToString(format, culture);
+        });
+        return string.Join('\n', localized.Concat(new[]
+        {
+            date.ToString("d. M. yyyy", CultureInfo.InvariantCulture),
+            date.ToString("d.M.yyyy", CultureInfo.InvariantCulture),
+            date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture),
+            date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+        }));
     }
 
     /// <summary>Every whitespace-separated query term must occur in the folded search text.</summary>
@@ -63,14 +78,14 @@ public static partial class MessageInsights
         var weekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
         if (day >= weekStart) return SharedStrings.GroupThisWeek;
         if (day.Year == today.Year && day.Month == today.Month) return SharedStrings.GroupThisMonth;
-        return day.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
+        return day.ToString(SharedStrings.DateGroupMonthFormat, LanguageSettings.Culture);
     }
 
     /// <summary>Orders items for display and assigns each its group label; groups stay contiguous.</summary>
     public static IReadOnlyList<(T Item, string Group)> Arrange<T>(IEnumerable<T> items, Func<T, Message> message,
         Func<T, string> person, MessageSort sort, MessageGrouping grouping, DateTime today)
     {
-        var comparer = StringComparer.Create(CultureInfo.CurrentCulture, CompareOptions.IgnoreCase);
+        var comparer = StringComparer.Create(LanguageSettings.Culture, CompareOptions.IgnoreCase);
         var rows = items.Select(item => (Item: item, Message: message(item), Person: person(item))).ToList();
         IOrderedEnumerable<(T Item, Message Message, string Person)> Within(
             IEnumerable<(T Item, Message Message, string Person)> source) => sort switch
