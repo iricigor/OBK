@@ -158,13 +158,17 @@ public sealed class AccountRow(Login login, bool current)
     }
 }
 
-public sealed class RelatedRow(MainViewModel owner, MessageRef item)
+public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool response)
 {
     public MainViewModel Owner { get; } = owner;
     public MessageRef Item { get; } = item;
+    public bool IsResponse { get; } = response;
+    public string Direction => IsResponse ? "Response" : "Previous";
+    public string Icon => IsResponse ? "\uE72A" : "\uE72B";
     public string Subject => MainViewModel.OneLine(Item.Message.Title) is { Length: > 0 } title ? title : "(No subject)";
-    public string Detail => $"{Folders.Names[Item.Folder]} \u2022 {Item.Message.Date:dd MMM yyyy HH:mm} \u2022 " +
-        (MainViewModel.OneLine(MessageInsights.Counterpart(Item.Message, Item.Folder)) is { Length: > 0 } name ? name : "(Not supplied)");
+    public string Label => $"{Item.Message.Date:dd MMM yyyy HH:mm} \u2022 " +
+        (MainViewModel.OneLine(MessageInsights.Counterpart(Item.Message, Item.Folder)) is { Length: > 0 } name ? name : "(Not supplied)") +
+        $" \u2022 {Folders.Names[Item.Folder]}";
 }
 
 public static class LinkOpener

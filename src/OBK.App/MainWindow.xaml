@@ -305,6 +305,31 @@
                                 <TextBlock Text="{Binding Metadata}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Grid>
+                        <StackPanel x:Name="RelatedPanel" Margin="0,0,0,16" Visibility="{Binding HasRelated, Converter={StaticResource VisibleIf}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <TextBlock Text="Possibly related" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="12" Margin="6,0,0,0" Foreground="{DynamicResource TextSecondary}"
+                                           VerticalAlignment="Center" Background="Transparent" Cursor="Help" ToolTipService.InitialShowDelay="0"
+                                           AutomationProperties.Name="About possibly related messages"
+                                           ToolTip="Matched by similar subject and the same person. Komens does not report actual reply links, so these may be unrelated or incomplete."/>
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding Related}">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
+                                                Padding="8,4" Margin="0,0,6,4" ToolTip="{Binding Subject}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1"
+                                                AutomationProperties.Name="{Binding Label}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource Icon}" Text="{Binding Icon}" FontSize="11" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Direction}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" Margin="6,0,6,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Label}" FontSize="12" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                         <Border Height="1" Background="{DynamicResource Stroke}" Margin="0,0,0,16"/>
                         <StackPanel x:Name="AttachmentPanel" Visibility="{Binding HasAttachments, Converter={StaticResource VisibleIf}}" Margin="0,0,0,20">
                             <ItemsControl ItemsSource="{Binding VisibleAttachments}">
@@ -400,64 +425,6 @@
                                      SelectionBrush="{DynamicResource Accent}" Padding="0" FontSize="14"
                                      VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"
                                      AutomationProperties.Name="Message content"/>
-                        <StackPanel x:Name="RelatedPanel" Margin="0,24,0,0" Visibility="{Binding HasRelated, Converter={StaticResource VisibleIf}}">
-                            <Border Height="1" Background="{DynamicResource Stroke}" Margin="0,0,0,12"/>
-                            <TextBlock Text="Possibly related messages" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Matched by similar subject and the same person. Komens does not report actual reply links, so these may be unrelated."
-                                       FontSize="11.5" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,8"/>
-                            <ItemsControl ItemsSource="{Binding PreviousMessages}">
-                                <ItemsControl.Style>
-                                    <Style TargetType="ItemsControl">
-                                        <Style.Triggers><DataTrigger Binding="{Binding PreviousMessages.Count}" Value="0"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
-                                    </Style>
-                                </ItemsControl.Style>
-                                <ItemsControl.Template>
-                                    <ControlTemplate TargetType="ItemsControl">
-                                        <StackPanel>
-                                            <TextBlock Text="POSSIBLE PREVIOUS MESSAGES" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,4"/>
-                                            <ItemsPresenter/>
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </ItemsControl.Template>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
-                                                HorizontalContentAlignment="Stretch" Padding="8,4" Margin="0,0,0,2" AutomationProperties.Name="{Binding Subject}">
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Subject}" FontSize="12.5" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Accent}"/>
-                                                <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <ItemsControl ItemsSource="{Binding Responses}">
-                                <ItemsControl.Style>
-                                    <Style TargetType="ItemsControl">
-                                        <Style.Triggers><DataTrigger Binding="{Binding Responses.Count}" Value="0"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
-                                    </Style>
-                                </ItemsControl.Style>
-                                <ItemsControl.Template>
-                                    <ControlTemplate TargetType="ItemsControl">
-                                        <StackPanel>
-                                            <TextBlock Text="POSSIBLE RESPONSES" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,4"/>
-                                            <ItemsPresenter/>
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </ItemsControl.Template>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
-                                                HorizontalContentAlignment="Stretch" Padding="8,4" Margin="0,0,0,2" AutomationProperties.Name="{Binding Subject}">
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Subject}" FontSize="12.5" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Accent}"/>
-                                                <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Border>

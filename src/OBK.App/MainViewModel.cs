@@ -32,8 +32,7 @@ public sealed class MainViewModel : ObservableObject
     private ICollectionView? messagesView;
     private IReadOnlyList<AttachmentRow> attachments = [];
     private IReadOnlyList<TextPart> body = [];
-    private IReadOnlyList<RelatedRow> previousMessages = [];
-    private IReadOnlyList<RelatedRow> responses = [];
+    private IReadOnlyList<RelatedRow> related = [];
     private string subject = "Select a message";
     private string sender = "Your offline workspace";
     private string initials = "OB";
@@ -143,17 +142,12 @@ public sealed class MainViewModel : ObservableObject
     public string Metadata { get => metadata; private set => Set(ref metadata, value); }
     public bool SelectedIsExcuse { get => selectedIsExcuse; private set => Set(ref selectedIsExcuse, value); }
     public IReadOnlyList<TextPart> Body { get => body; private set => Set(ref body, value); }
-    public IReadOnlyList<RelatedRow> PreviousMessages
+    public IReadOnlyList<RelatedRow> Related
     {
-        get => previousMessages;
-        private set { if (Set(ref previousMessages, value)) Notify(nameof(HasRelated)); }
+        get => related;
+        private set { if (Set(ref related, value)) Notify(nameof(HasRelated)); }
     }
-    public IReadOnlyList<RelatedRow> Responses
-    {
-        get => responses;
-        private set { if (Set(ref responses, value)) Notify(nameof(HasRelated)); }
-    }
-    public bool HasRelated => previousMessages.Count > 0 || responses.Count > 0;
+    public bool HasRelated => related.Count > 0;
     public bool HasAttachments => attachments.Count > 0;
     public bool MultipleAttachments => attachments.Count > 1;
     public IReadOnlyList<AttachmentRow> VisibleAttachments => attachments.Count > 4 && !expanded ? attachments.Take(3).ToArray() : attachments;
@@ -391,8 +385,7 @@ public sealed class MainViewModel : ObservableObject
         Metadata = "Viewing cached messages makes no server requests.";
         SelectedIsExcuse = false;
         Body = [];
-        PreviousMessages = [];
-        Responses = [];
+        Related = [];
         SetAttachments([]);
     }
 
@@ -438,8 +431,8 @@ public sealed class MainViewModel : ObservableObject
             if (version != messageVersion) return;
             Body = result.parts.Count == 0 ? [new("(No message content)", false, false, false, false)] : result.parts;
             SetAttachments(result.files);
-            PreviousMessages = result.related.Previous.Select(r => new RelatedRow(this, r.Item)).ToArray();
-            Responses = result.related.Responses.Select(r => new RelatedRow(this, r.Item)).ToArray();
+            Related = result.related.Previous.Select(r => new RelatedRow(this, r.Item, false))
+                .Concat(result.related.Responses.Select(r => new RelatedRow(this, r.Item, true))).ToArray();
         }
         catch (ObkException error) { if (version == messageVersion) ReportError(error.Message); }
     }
