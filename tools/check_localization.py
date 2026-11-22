@@ -3,6 +3,7 @@
 Each resource set is a neutral English file such as ``AppStrings.resx`` plus any
 translations named ``AppStrings.<culture>.resx`` in the same directory. Sets are
 discovered automatically, so new languages are checked without configuration.
+Every discovered language must have a translation in every neutral resource set.
 """
 
 import argparse
@@ -78,10 +79,14 @@ def check(root):
     if not sets:
         errors.append(f"{root}: no .resx resource sets found")
     keys = 0
+    required_cultures = {culture for cultures in sets.values() for culture in cultures}
     for base, cultures in sets.items():
         neutral, problems = parse_resx(base)
         keys += len(neutral)
         errors += [f"{base}: {problem}" for problem in problems]
+        for culture in sorted(required_cultures - cultures.keys()):
+            path = base.with_name(f"{base.stem}.{culture}.resx")
+            errors.append(f"{path}: missing translation for culture '{culture}'")
         for culture, path in sorted(cultures.items()):
             translated, problems = parse_resx(path)
             errors += [f"{path}: {problem}" for problem in problems]
@@ -90,7 +95,7 @@ def check(root):
             for key in sorted(neutral.keys() & translated.keys()):
                 if placeholders(neutral[key]) != placeholders(translated[key]):
                     errors.append(f"{path}: '{key}' placeholders differ from {base.name}")
-    languages = sorted({"en"} | {culture for cultures in sets.values() for culture in cultures})
+    languages = sorted({"en"} | required_cultures)
     summary = f"Checked {len(sets)} resource sets ({keys} keys) for languages: {', '.join(languages)}."
     return errors, summary
 

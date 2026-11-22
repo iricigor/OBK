@@ -16,10 +16,11 @@ internal sealed class ReaderPage : ContentPage
     private readonly SearchBar search = new() { Placeholder = AppStrings.ReaderSearchPlaceholder, BackgroundColor = Colors.Transparent };
     private readonly Label status = ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderStatusOpening });
     private readonly ImageButton refresh = ReaderTheme.Icon("refresh", AppStrings.ReaderRefreshAll);
+    private readonly Button language;
     private readonly ActivityIndicator progress = new() { IsVisible = false };
     private readonly CollectionView messages = new() { SelectionMode = SelectionMode.Single };
     private readonly Label empty = new();
-    private readonly Button addChild = new() { Text = AppStrings.ReaderAccountsSheetAddChild, IsVisible = false };
+    private readonly Button addChild = ReaderTheme.Primary(new Button { Text = AppStrings.ReaderAccountsSheetAddChild, IsVisible = false });
     private ReaderSession? session;
     private IReadOnlyList<Login> known = [];
     private Archive? archive;
@@ -27,6 +28,7 @@ internal sealed class ReaderPage : ContentPage
     private bool busy;
     private int folderIndex;
     private bool initialized;
+    internal bool Busy => busy;
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private static readonly string[] FolderKeys = ["received", "noticeboard", "sent", "excuses"];
     private static readonly string[] FolderIcons = ["inbox", "noticeboard", "sent", "excuses"];
@@ -35,6 +37,7 @@ internal sealed class ReaderPage : ContentPage
     public ReaderPage(Action openMenu)
     {
         Title = "OBK";
+        language = LanguageToolbar.CreateButton(this);
         NavigationPage.SetHasNavigationBar(this, false);
         menu.Clicked += (_, _) => openMenu();
         child.Clicked += async (_, _) =>
@@ -68,7 +71,7 @@ internal sealed class ReaderPage : ContentPage
             var sender = ReaderTheme.Metadata(new Label { MaxLines = 1 });
             sender.SetBinding(Label.TextProperty, nameof(Message.SenderName));
             var date = ReaderTheme.Metadata(new Label());
-            date.SetBinding(Label.TextProperty, new Binding(nameof(Message.Date), stringFormat: "{0:g}"));
+            date.SetBinding(Label.TextProperty, new Binding(nameof(Message.Date), converter: new DateConverter()));
             return ReaderTheme.Apply(new VerticalStackLayout
             {
                 Padding = new Thickness(16, 12),
@@ -85,6 +88,7 @@ internal sealed class ReaderPage : ContentPage
                 messages.SelectedItem = null;
                 await RunAsync(() => Navigation.PushAsync(new MessagePage(session, account, message)));
             }
+
         };
         var searchContent = new Grid { ColumnDefinitions = [new(48), new(GridLength.Star), new(48)] };
         searchContent.Add(folder, 0);
@@ -100,10 +104,11 @@ internal sealed class ReaderPage : ContentPage
         header.Add(menu, 0);
         header.Add(searchPanel, 1);
         header.Add(refresh, 2);
-        var footer = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)], ColumnSpacing = 8 };
+        var footer = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 8 };
         progress.WidthRequest = progress.HeightRequest = 24;
         footer.Add(progress, 0);
         footer.Add(status, 1);
+        footer.Add(language, 2);
         var layout = new Grid { RowDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)] };
         layout.Add(header);
         layout.Add(messages, 0, 1);
@@ -116,8 +121,33 @@ internal sealed class ReaderPage : ContentPage
         SetBusy(false);
     }
 
-    internal Task OpenSettingsAsync() => Navigation.PushAsync(new SettingsPage(
-        AccountActionsAsync, () => session is not null, () => account is null ? null : AccountLabelConverter.Label(account)));
+    internal ReaderPage Rebuild(Action openMenu)
+    {
+        var rebuilt = new ReaderPage(openMenu)
+        {
+            session = session,
+            known = known,
+            archive = archive,
+            account = account,
+            initialized = initialized,
+            folderIndex = folderIndex
+        };
+        rebuilt.search.Text = search.Text;
+        rebuilt.status.Text = account is null ? AppStrings.ReaderStatusNoAccounts :
+            archive is null ? AppStrings.ReaderStatusNoArchive : ArchiveStatus(archive);
+        rebuilt.ApplySearch();
+        rebuilt.UpdateContext();
+        rebuilt.SetBusy(false);
+        return rebuilt;
+    }
+
+    internal Task AccountSavedAsync(Login login) => RunAsync(() => ReloadAsync(login));
+    private static string ArchiveStatus(Archive archive) => Localized.Format(AppStrings.ReaderStatusArchiveReady,
+        DateTimeOffset.Parse(archive.SyncedAt).ToLocalTime().ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
+
+    internal SettingsPage CreateSettingsPage() => new(
+        AccountActionsAsync, () => session is not null, () => account is null ? null : AccountLabelConverter.Label(account));
+    internal Task OpenSettingsAsync() => Navigation.PushAsync(CreateSettingsPage());
 
     private void UpdateContext()
     {
@@ -153,6 +183,7 @@ internal sealed class ReaderPage : ContentPage
         progress.IsRunning = value;
         progress.IsVisible = value;
         menu.IsEnabled = !value;
+        language.IsEnabled = !value;
         child.IsEnabled = !value && known.Count > 0;
         folder.IsEnabled = !value;
         search.IsEnabled = !value;
@@ -216,7 +247,7 @@ internal sealed class ReaderPage : ContentPage
         UpdateContext();
         search.Text = "";
         status.Text = loaded is null ? AppStrings.ReaderStatusNoArchive :
-            Localized.Format(AppStrings.ReaderStatusArchiveReady, DateTimeOffset.Parse(loaded.SyncedAt));
+            ArchiveStatus(loaded);
         ApplySearch();
     }
 
@@ -229,7 +260,7 @@ internal sealed class ReaderPage : ContentPage
             archive.Folders[key];
         var query = search.Text?.Trim() ?? "";
         if (query.Length > 0)
-            items = items.Where(item => $"{item.Title}\n{item.SenderName}\n{item.Text}\n{item.SentDate}\n{item.Date:g}"
+            items = items.Where(item => $"{item.Title}\n{item.SenderName}\n{item.Text}\n{item.SentDate}\n{MessageInsights.DateSearchText(item.Date)}"
                 .Contains(query, StringComparison.CurrentCultureIgnoreCase));
         messages.ItemsSource = items.OrderByDescending(item => item.Date).ToList();
         addChild.IsVisible = session is not null && known.Count == 0;
@@ -313,5 +344,13 @@ internal sealed class ReaderPage : ContentPage
     {
         public static string Label(Login login) => !string.IsNullOrWhiteSpace(login.ChildName) ? login.ChildName :
             (login.SchoolName is { } school ? Localized.Format(AppStrings.AccountSchoolAndUsername, school, login.Username) : login.Username);
+    }
+
+    private sealed class DateConverter : IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
+            value is DateTimeOffset date ? date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) : "";
+        public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
+            throw new NotSupportedException();
     }
 }

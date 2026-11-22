@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountSchoolAndUsername" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>Account label when no child name is set. {0} = school name, {1} = Komens username.</comment>
+  </data>
+  <data name="AlertOkButton" xml:space="preserve">
+    <value>OK</value>
+    <comment>Dismiss button for error and attention alerts.</comment>
+  </data>
+  <data name="ErrorArchiveNotOpen" xml:space="preserve">
+    <value>Šifrovaný archiv není otevřen.</value>
+  </data>
+  <data name="ErrorAuthenticatedEncryptionUnavailable" xml:space="preserve">
+    <value>Autentizované šifrování Androidu není dostupné.</value>
+  </data>
+  <data name="ErrorEncryptionKeyMissing" xml:space="preserve">
+    <value>Šifrovací klíč Androidu chybí. Stávající místní data nelze dešifrovat; náhradní klíč nebyl vytvořen.</value>
+  </data>
+  <data name="ErrorEnterUsernameAndPassword" xml:space="preserve">
+    <value>Zadejte své školní uživatelské jméno a heslo.</value>
+  </data>
+  <data name="ErrorInvalidAttachmentContentType" xml:space="preserve">
+    <value>Příloha má neplatný typ obsahu.</value>
+  </data>
+  <data name="ErrorInvalidEncryptedFormat" xml:space="preserve">
+    <value>Místní data Androidu mají neplatný šifrovaný formát.</value>
+  </data>
+  <data name="ErrorKeyAccessFailed" xml:space="preserve">
+    <value>Android nemohl získat přístup k místnímu šifrovacímu klíči.</value>
+  </data>
+  <data name="ErrorKeyCreationFailed" xml:space="preserve">
+    <value>Android nemohl vytvořit místní šifrovací klíč.</value>
+  </data>
+  <data name="ErrorKeystoreUnavailable" xml:space="preserve">
+    <value>Android Keystore není dostupný; žádná místní data nebyla otevřena.</value>
+  </data>
+  <data name="ErrorLocalDecryptFailed" xml:space="preserve">
+    <value>Android nemohl dešifrovat místní data. Klíč může být nedostupný nebo data poškozená; nešifrovaná náhrada se nepoužívá.</value>
+  </data>
+  <data name="ErrorLocalDecryptNoResult" xml:space="preserve">
+    <value>Android nedešifroval místní data.</value>
+  </data>
+  <data name="ErrorLocalEncryptFailed" xml:space="preserve">
+    <value>Android nemohl zašifrovat místní data. Nešifrovaná náhrada se nepoužívá.</value>
+  </data>
+  <data name="ErrorLocalEncryptNoResult" xml:space="preserve">
+    <value>Android nezašifroval místní data.</value>
+  </data>
+  <data name="ErrorNoAppForAttachment" xml:space="preserve">
+    <value>Žádná nainstalovaná aplikace nemůže otevřít tuto přílohu. Použijte Sdílet / uložit kopii.</value>
+    <comment>"Share / save a copy" must match the MessageShareAttachment button text.</comment>
+  </data>
+  <data name="ErrorNoAppForLink" xml:space="preserve">
+    <value>Žádná nainstalovaná aplikace nemůže otevřít tento odkaz.</value>
+  </data>
+  <data name="ErrorNoEncryptionNonce" xml:space="preserve">
+    <value>Android neposkytl jednorázovou hodnotu nonce pro šifrování.</value>
+  </data>
+  <data name="ErrorSchoolDirectoryMissing" xml:space="preserve">
+    <value>V této instalaci chybí offline seznam škol.</value>
+  </data>
+  <data name="ErrorStorageCheckFailed" xml:space="preserve">
+    <value>Šifrované úložiště Androidu neprošlo kontrolou inicializace.</value>
+  </data>
+  <data name="ErrorStorageInitFailed" xml:space="preserve">
+    <value>Android nemohl inicializovat šifrované úložiště. Nešifrovaná náhrada se nepoužívá.</value>
+  </data>
+  <data name="ErrorSyncInProgress" xml:space="preserve">
+    <value>Pro jiný účet stále probíhá stahování. Před dalším obnovením počkejte na jeho dokončení.</value>
+  </data>
+  <data name="ErrorUnsupportedNonce" xml:space="preserve">
+    <value>Android vrátil nepodporovanou hodnotu nonce pro šifrování.</value>
+  </data>
+  <data name="ErrorVerificationCannotSync" xml:space="preserve">
+    <value>Fiktivní ověřovací data nemohou kontaktovat školu. Pro přihlášení restartujte aplikaci bez ověřovacího příznaku.</value>
+    <comment>Shown only in developer verification builds started with the verification flag.</comment>
+  </data>
+  <data name="MessageActionFailedAlertTitle" xml:space="preserve">
+    <value>Nelze otevřít ani sdílet</value>
+    <comment>Alert title when opening a link or opening/sharing an attachment fails.</comment>
+  </data>
+  <data name="MessageAttachmentNotDownloaded" xml:space="preserve">
+    <value>Není staženo. Obnovte tento účet a uložte přílohu do mezipaměti.</value>
+  </data>
+  <data name="MessageAttachmentsHeader" xml:space="preserve">
+    <value>Přílohy</value>
+    <comment>Section heading above the message's attachments.</comment>
+  </data>
+  <data name="MessageDecryptedCopyNotice" xml:space="preserve">
+    <value>Otevření nebo sdílení vytvoří dešifrovanou kopii v soukromé mezipaměti OBK. Ta se vymaže při příštím spuštění aplikace; kopie uložené v jiné aplikaci jsou mimo kontrolu OBK.</value>
+  </data>
+  <data name="MessageLinksHeader" xml:space="preserve">
+    <value>Odkazy</value>
+    <comment>Section heading above links found in the message.</comment>
+  </data>
+  <data name="MessageOfflineNotice" xml:space="preserve">
+    <value>Offline kopie. Otevření této zprávy nekontaktuje vaši školu.</value>
+  </data>
+  <data name="MessageOpenAttachment" xml:space="preserve">
+    <value>Otevřít přílohu</value>
+    <comment>Button that opens an attachment in another app.</comment>
+  </data>
+  <data name="MessageOpenAttachmentChooserTitle" xml:space="preserve">
+    <value>Otevřít přílohu</value>
+    <comment>Title of the Android app chooser shown when opening an attachment.</comment>
+  </data>
+  <data name="MessagePageTitle" xml:space="preserve">
+    <value>Zpráva</value>
+    <comment>Title of the message detail page.</comment>
+  </data>
+  <data name="MessageReadFailedAlertTitle" xml:space="preserve">
+    <value>Tuto zprávu nelze přečíst</value>
+  </data>
+  <data name="MessageShareAttachment" xml:space="preserve">
+    <value>Sdílet / uložit kopii</value>
+    <comment>Button that shares an attachment or saves a copy via another app.</comment>
+  </data>
+  <data name="MessageShareAttachmentChooserTitle" xml:space="preserve">
+    <value>Sdílet přílohu</value>
+    <comment>Title of the Android share sheet for an attachment.</comment>
+  </data>
+  <data name="ReaderAccountPickerTitle" xml:space="preserve">
+    <value>Vyberte dítě nebo účet</value>
+  </data>
+  <data name="ReaderNavigationMenu" xml:space="preserve">
+    <value>Otevřít navigační nabídku</value>
+  </data>
+  <data name="ReaderAccountOption" xml:space="preserve">
+    <value>{0}. {1}</value>
+  </data>
+  <data name="ReaderSelectedChild" xml:space="preserve">
+    <value>Dítě: {0}. Změnit dítě nebo účet</value>
+  </data>
+  <data name="ReaderSelectedFolder" xml:space="preserve">
+    <value>Složka: {0}. Změnit složku</value>
+  </data>
+  <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Nastavení</value>
+  </data>
+  <data name="SettingsManageAccounts" xml:space="preserve">
+    <value>Spravovat účty</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Vzhled</value>
+  </data>
+  <data name="SettingsThemeSystem" xml:space="preserve">
+    <value>Podle systému</value>
+  </data>
+  <data name="SettingsThemeLight" xml:space="preserve">
+    <value>Světlý</value>
+  </data>
+  <data name="SettingsThemeDark" xml:space="preserve">
+    <value>Tmavý</value>
+  </data>
+  <data name="SettingsThemeExplanation" xml:space="preserve">
+    <value>Volba Podle systému přebírá vzhled Androidu. Vaše volba se uloží na tomto zařízení.</value>
+  </data>
+  <data name="ReaderAccountLabel" xml:space="preserve">
+    <value>Dítě / účet</value>
+  </data>
+  <data name="ReaderFolderLabel" xml:space="preserve">
+    <value>Složka</value>
+  </data>
+  <data name="ReaderAccountStatus" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Status or failure line for one account during Refresh all. {0} = account label, {1} = progress or error text.</comment>
+  </data>
+  <data name="ReaderAccountsButton" xml:space="preserve">
+    <value>Přidat dítě / přihlásit se</value>
+  </data>
+  <data name="ReaderAccountsSheetAddChild" xml:space="preserve">
+    <value>Přidat dítě</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetCancel" xml:space="preserve">
+    <value>Zrušit</value>
+    <comment>Accounts action sheet cancel button.</comment>
+  </data>
+  <data name="ReaderAccountsSheetForgetPassword" xml:space="preserve">
+    <value>Zapomenout uložené heslo tohoto účtu</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetSignIn" xml:space="preserve">
+    <value>Přihlásit se k tomuto účtu</value>
+    <comment>Accounts action sheet option.</comment>
+  </data>
+  <data name="ReaderAccountsSheetTitle" xml:space="preserve">
+    <value>Účty</value>
+    <comment>Title of the accounts action sheet.</comment>
+  </data>
+  <data name="ReaderEmptyFolder" xml:space="preserve">
+    <value>V této složce nejsou žádné uložené zprávy.</value>
+  </data>
+  <data name="ReaderEmptyNoArchive" xml:space="preserve">
+    <value>Zde se zobrazí stažené zprávy.</value>
+  </data>
+  <data name="ReaderEmptySearch" xml:space="preserve">
+    <value>Žádná uložená zpráva neodpovídá vašemu hledání.</value>
+  </data>
+  <data name="ReaderFolderPickerTitle" xml:space="preserve">
+    <value>Složka zpráv</value>
+  </data>
+  <data name="ReaderOperationFailedAlertTitle" xml:space="preserve">
+    <value>OBK nemohl dokončit operaci</value>
+  </data>
+  <data name="ReaderRefreshAlertTitle" xml:space="preserve">
+    <value>Obnovení vyžaduje pozornost</value>
+  </data>
+  <data name="ReaderRefreshAll" xml:space="preserve">
+    <value>Obnovit vše</value>
+    <comment>Button that refreshes every saved account.</comment>
+  </data>
+  <data name="ReaderRefreshFailed" xml:space="preserve">
+    <value>Selhalo: {0} Stávající offline archivy byly zachovány.</value>
+    <comment>Part of the Refresh all summary. {0} = semicolon-separated list of "account: error" entries.</comment>
+  </data>
+  <data name="ReaderRefreshSignInNeeded" xml:space="preserve">
+    <value>Je nutné přihlášení: {0}.</value>
+    <comment>Part of the Refresh all summary. {0} = comma-separated account labels without a saved password.</comment>
+  </data>
+  <data name="ReaderRefreshSummary" xml:space="preserve">
+    <value>Obnovené účty: {0} z {1}.</value>
+    <comment>Start of the Refresh all summary. {0} = accounts refreshed successfully, {1} = all known accounts.</comment>
+  </data>
+  <data name="ReaderRetryOpening" xml:space="preserve">
+    <value>Znovu otevřít archiv</value>
+    <comment>Refresh button text when the encrypted archive could not be opened.</comment>
+  </data>
+  <data name="ReaderSearchPlaceholder" xml:space="preserve">
+    <value>Hledat zprávy</value>
+  </data>
+  <data name="ReaderStatusArchiveReady" xml:space="preserve">
+    <value>Offline archiv je připraven. Poslední synchronizace: {0}</value>
+    <comment>{0} = already localized last synchronization date and time.</comment>
+  </data>
+  <data name="ReaderStatusNoAccounts" xml:space="preserve">
+    <value>Přidejte dítě a stáhněte zprávy. Čtení uložených zpráv nikdy nekontaktuje vaši školu.</value>
+  </data>
+  <data name="ReaderStatusNoArchive" xml:space="preserve">
+    <value>Offline archiv zatím neexistuje. Přihlaste se a stáhněte zprávy.</value>
+  </data>
+  <data name="ReaderStatusOpening" xml:space="preserve">
+    <value>Otevírání šifrovaného offline archivu...</value>
+  </data>
+  <data name="ReaderStatusPasswordForgotten" xml:space="preserve">
+    <value>Uložené heslo bylo zapomenuto. Offline zprávy a přílohy jsou stále dostupné.</value>
+  </data>
+  <data name="SignInChildLabel" xml:space="preserve">
+    <value>Jméno dítěte</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInChildPlaceholder" xml:space="preserve">
+    <value>Jméno dítěte (nepovinné)</value>
+    <comment>Field placeholder.</comment>
+  </data>
+  <data name="SignInFailedAlertTitle" xml:space="preserve">
+    <value>Přihlášení nebo stahování selhalo</value>
+  </data>
+  <data name="SignInHeading" xml:space="preserve">
+    <value>Stáhněte jednou. Čtěte offline.</value>
+  </data>
+  <data name="SignInMatchingSchools" xml:space="preserve">
+    <value>Nalezené školy: {0}</value>
+    <comment>{0} = number of matching schools (1 to 6).</comment>
+  </data>
+  <data name="SignInNoSchoolMatch" xml:space="preserve">
+    <value>Žádná škola neodpovídá hledání. Níže můžete zadat její HTTPS adresu.</value>
+  </data>
+  <data name="SignInPasswordLabel" xml:space="preserve">
+    <value>Heslo</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInPasswordNotice" xml:space="preserve">
+    <value>Heslo se uloží pouze při volbě Zapamatovat přihlašovací údaje.</value>
+    <comment>"Remember credentials" must match SignInRememberCredentials.</comment>
+  </data>
+  <data name="SignInPasswordPlaceholder" xml:space="preserve">
+    <value>Heslo</value>
+    <comment>Field placeholder.</comment>
+  </data>
+  <data name="SignInReadOnlyNotice" xml:space="preserve">
+    <value>OBK zprávy pouze čte. Nikdy neodesílá odpovědi, potvrzení ani oznámení o přečtení.</value>
+  </data>
+  <data name="SignInRememberCredentials" xml:space="preserve">
+    <value>Zapamatovat přihlašovací údaje</value>
+    <comment>Checkbox label.</comment>
+  </data>
+  <data name="SignInSchoolAddressLabel" xml:space="preserve">
+    <value>HTTPS adresa školy</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInManualAddressButton" xml:space="preserve">
+    <value>Zadat adresu školy ručně</value>
+  </data>
+  <data name="SignInHideAddressButton" xml:space="preserve">
+    <value>Skrýt adresu školy</value>
+  </data>
+  <data name="SignInSchoolSearchPlaceholder" xml:space="preserve">
+    <value>Hledat školu nebo obec</value>
+  </data>
+  <data name="SignInSubmitButton" xml:space="preserve">
+    <value>Přihlásit a stáhnout</value>
+  </data>
+  <data name="SignInTitleAddChild" xml:space="preserve">
+    <value>Přidat dítě</value>
+    <comment>Sign-in page title when adding a new account.</comment>
+  </data>
+  <data name="SignInTitleSignIn" xml:space="preserve">
+    <value>Přihlásit se</value>
+    <comment>Sign-in page title for an existing account.</comment>
+  </data>
+  <data name="SignInTooManySchools" xml:space="preserve">
+    <value>Nalezené školy: {0}. Zadejte více znaků pro zúžení výsledků.</value>
+    <comment>{0} = number of matching schools (more than 6).</comment>
+  </data>
+  <data name="SignInUsernameLabel" xml:space="preserve">
+    <value>Uživatelské jméno</value>
+    <comment>Field label.</comment>
+  </data>
+  <data name="SignInUsernamePlaceholder" xml:space="preserve">
+    <value>Uživatelské jméno do Komens</value>
+    <comment>Field placeholder. Komens is the school messaging system name.</comment>
+  </data>
+  <data name="StatusSigningIn" xml:space="preserve">
+    <value>Přihlašování...</value>
+    <comment>Progress status while signing in.</comment>
+  </data>
+  <data name="ScanCameraDenied" xml:space="preserve">
+    <value>OBK používá kameru pouze ke skenování kódu pro přenos. Povolte přístup ke kameře v nastavení Androidu, nebo se přihlaste ručně.</value>
+  </data>
+  <data name="ScanCameraDeniedTitle" xml:space="preserve">
+    <value>Je nutný přístup ke kameře</value>
+  </data>
+  <data name="ScanInstructions" xml:space="preserve">
+    <value>Namiřte kameru na QR kód zobrazený v OBK na počítači.</value>
+  </data>
+  <data name="ScanTitle" xml:space="preserve">
+    <value>Naskenovat kód z PC</value>
+  </data>
+  <data name="SignInImported" xml:space="preserve">
+    <value>Údaje byly importovány z počítače. Zkontrolujte je, zvolte, zda si má aplikace zapamatovat heslo, a klepněte na Přihlásit a stáhnout.</value>
+  </data>
+  <data name="SignInScanFromPc" xml:space="preserve">
+    <value>Naskenovat z PC</value>
+  </data>
+  <data name="SignInScanHint" xml:space="preserve">
+    <value>Už používáte OBK ve Windows? Otevřete v něm Nastavení, Účty, Přenést do Androidu.</value>
+  </data>
+  <data name="UnlockButton" xml:space="preserve">
+    <value>Odemknout</value>
+  </data>
+  <data name="UnlockFailedTitle" xml:space="preserve">
+    <value>Odemknutí se nezdařilo</value>
+  </data>
+  <data name="UnlockHint" xml:space="preserve">
+    <value>Slova zůstanou na počítači, dokud na něm nezavřete okno přenosu.</value>
+  </data>
+  <data name="UnlockInstructions" xml:space="preserve">
+    <value>QR kód byl naskenován. Zadejte tři slova zobrazená na počítači.</value>
+  </data>
+  <data name="UnlockTitle" xml:space="preserve">
+    <value>Zadejte slova</value>
+  </data>
+  <data name="UnlockWordsLabel" xml:space="preserve">
+    <value>Slova pro přenos</value>
+  </data>
+  <data name="UnlockWorking" xml:space="preserve">
+    <value>Odemykání…</value>
+  </data>
+</root>
