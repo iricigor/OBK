@@ -1,0 +1,16 @@
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <parameters>
+    <parameter name="version" required="true" />
+  </parameters>
+  <zip-file>
+    <pe-file path="OBK.exe" product-name="OBK" product-version="${version}">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="OBK.dll" product-name="OBK" product-version="${version}">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="OBK.Core.dll" product-name="OBK" product-version="${version}">
+      <authenticode-sign />
+    </pe-file>
+  </zip-file>
+</artifact-configuration>

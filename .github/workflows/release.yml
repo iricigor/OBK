@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: numbered-windows-release
@@ -21,14 +22,21 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       published: ${{ steps.version.outputs.published }}
+      signing-enabled: ${{ steps.version.outputs.signing-enabled }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Choose 1.0.<build ID> version or resume this commit's release
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
+          SIGNPATH_ENABLED: ${{ vars.SIGNPATH_ENABLED }}
         shell: pwsh
         run: |
+          if ($env:SIGNPATH_ENABLED -cnotin @('', 'false', 'true')) {
+            throw 'SIGNPATH_ENABLED must be unset, false, or true.'
+          }
+          $signingEnabled = ($env:SIGNPATH_ENABLED -ceq 'true').ToString().ToLowerInvariant()
+          "signing-enabled=$signingEnabled" >> $env:GITHUB_OUTPUT
           $pages = gh api "repos/$env:GITHUB_REPOSITORY/releases" --paginate --slurp | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0) { throw 'Cannot list releases.' }
           $releases = @($pages | ForEach-Object { $_ } | Where-Object { $_.tag_name -match '^v(0\.1|1\.0)\.(0|[1-9][0-9]*)$' })
@@ -51,6 +59,9 @@ jobs:
     uses: ./.github/workflows/windows-build.yml
     with:
       version: ${{ needs.version.outputs.version }}
+      sign-release: ${{ needs.version.outputs.signing-enabled == 'true' }}
+    secrets:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
   publish:
     needs: [version, build]
     runs-on: windows-2025
@@ -58,6 +69,7 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: windows-installer
@@ -66,8 +78,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           APP_VERSION: ${{ needs.version.outputs.version }}
+          SIGN_RELEASE: ${{ needs.version.outputs.signing-enabled }}
+          SIGNPATH_CERTIFICATE_THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_THUMBPRINT }}
         shell: pwsh
         run: |
+          $installer = ".\dist\OBK-$env:APP_VERSION-windows-x64-setup.exe"
+          $hash = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          $expected = "$hash  OBK-$env:APP_VERSION-windows-x64-setup.exe"
+          if ((Get-Content -LiteralPath '.\dist\SHA256SUMS.txt' -Raw).Trim() -cne $expected) {
+            throw 'Final installer checksum does not match SHA256SUMS.txt.'
+          }
+          if ($env:SIGN_RELEASE -eq 'true') {
+            .\packaging\verify_signatures.ps1 -Files $installer -Version "$env:APP_VERSION" -CertificateThumbprint "$env:SIGNPATH_CERTIFICATE_THUMBPRINT"
+          }
           $tag = "v$env:APP_VERSION"
           gh release view $tag --repo $env:GITHUB_REPOSITORY --json isDraft > $null 2>&1
           if ($LASTEXITCODE -ne 0) {

@@ -1,39 +1,51 @@
+[CmdletBinding(DefaultParameterSetName = 'Build')]
 param(
     [Parameter(Mandatory)]
     [ValidatePattern('^1\.0\.(0|[1-9][0-9]*)$')]
     [string]$Version,
     [string]$Iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe',
-    [switch]$FastCompression
+    [switch]$FastCompression,
+    [Parameter(Mandatory, ParameterSetName = 'Prepare')]
+    [switch]$PrepareOnly,
+    [Parameter(Mandatory, ParameterSetName = 'Compile')]
+    [switch]$CompilePreparedStage
 )
 
 $ErrorActionPreference = 'Stop'
-if (-not (Test-Path -LiteralPath $Iscc -PathType Leaf)) {
+if (-not $PrepareOnly -and -not (Test-Path -LiteralPath $Iscc -PathType Leaf)) {
     throw "Inno Setup 6 compiler not found: $Iscc"
 }
 $root = Split-Path $PSScriptRoot -Parent
 $stage = Join-Path $root 'dist\stage'
-if (Test-Path -LiteralPath $stage) {
-    Remove-Item -LiteralPath $stage -Recurse -Force
+if (-not $CompilePreparedStage) {
+    if (Test-Path -LiteralPath $stage) {
+        Remove-Item -LiteralPath $stage -Recurse -Force
+    }
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+    dotnet publish (Join-Path $root 'src\OBK.App\OBK.App.csproj') -c Release -r win-x64 --self-contained true `
+        -p:Version=$Version -o $stage --nologo --verbosity quiet
+    if ($LASTEXITCODE -ne 0) { throw 'Self-contained application publish failed.' }
+    $timer.Stop()
+    Write-Host ('Application publish: {0:F1} seconds' -f $timer.Elapsed.TotalSeconds)
+    Copy-Item (Join-Path $root 'README.md') $stage
+    Copy-Item (Join-Path $root 'LICENSE') $stage
+    Copy-Item (Join-Path $root 'docs\CODE_SIGNING.md') $stage
+    Copy-Item (Join-Path $PSScriptRoot 'THIRD-PARTY-NOTICES.txt') $stage
+    $licenses = Join-Path $stage 'licenses'
+    New-Item -ItemType Directory -Path $licenses | Out-Null
+    $dotnetRoot = Split-Path (Get-Command dotnet -ErrorAction Stop).Source -Parent
+    Copy-Item (Join-Path $dotnetRoot 'LICENSE.txt') (Join-Path $licenses 'dotnet-LICENSE.txt')
+    Copy-Item (Join-Path $dotnetRoot 'ThirdPartyNotices.txt') (Join-Path $licenses 'dotnet-ThirdPartyNotices.txt')
+    Invoke-WebRequest 'https://raw.githubusercontent.com/AngleSharp/AngleSharp/v1.10.5/LICENSE' `
+        -OutFile (Join-Path $licenses 'AngleSharp-LICENSE.txt')
+    Invoke-WebRequest 'https://raw.githubusercontent.com/ericsink/SQLitePCL.raw/ed046114d5a30534e13294d94d78eb73de896ad4/LICENSE.TXT' `
+        -OutFile (Join-Path $licenses 'SQLitePCLRaw-LICENSE.txt')
+    Invoke-WebRequest 'https://raw.githubusercontent.com/ericsink/SQLitePCL.raw/ed046114d5a30534e13294d94d78eb73de896ad4/NOTICE.TXT' `
+        -OutFile (Join-Path $licenses 'SQLitePCLRaw-NOTICE.txt')
 }
-$timer = [Diagnostics.Stopwatch]::StartNew()
-dotnet publish (Join-Path $root 'src\OBK.App\OBK.App.csproj') -c Release -r win-x64 --self-contained true `
-    -p:Version=$Version -o $stage --nologo --verbosity quiet
-if ($LASTEXITCODE -ne 0) { throw 'Self-contained application publish failed.' }
-$timer.Stop()
-Write-Host ('Application publish: {0:F1} seconds' -f $timer.Elapsed.TotalSeconds)
-Copy-Item (Join-Path $root 'README.md') $stage
-Copy-Item (Join-Path $PSScriptRoot 'THIRD-PARTY-NOTICES.txt') $stage
-$licenses = Join-Path $stage 'licenses'
-New-Item -ItemType Directory -Path $licenses | Out-Null
-$dotnetRoot = Split-Path (Get-Command dotnet -ErrorAction Stop).Source -Parent
-Copy-Item (Join-Path $dotnetRoot 'LICENSE.txt') (Join-Path $licenses 'dotnet-LICENSE.txt')
-Copy-Item (Join-Path $dotnetRoot 'ThirdPartyNotices.txt') (Join-Path $licenses 'dotnet-ThirdPartyNotices.txt')
-Invoke-WebRequest 'https://raw.githubusercontent.com/AngleSharp/AngleSharp/v1.10.5/LICENSE' `
-    -OutFile (Join-Path $licenses 'AngleSharp-LICENSE.txt')
-Invoke-WebRequest 'https://raw.githubusercontent.com/ericsink/SQLitePCL.raw/ed046114d5a30534e13294d94d78eb73de896ad4/LICENSE.TXT' `
-    -OutFile (Join-Path $licenses 'SQLitePCLRaw-LICENSE.txt')
-Invoke-WebRequest 'https://raw.githubusercontent.com/ericsink/SQLitePCL.raw/ed046114d5a30534e13294d94d78eb73de896ad4/NOTICE.TXT' `
-    -OutFile (Join-Path $licenses 'SQLitePCLRaw-NOTICE.txt')
+
+$ownedFiles = @('OBK.exe', 'OBK.dll', 'OBK.Core.dll') | ForEach-Object { Join-Path $stage $_ }
+& (Join-Path $PSScriptRoot 'verify_signatures.ps1') -Files $ownedFiles -Version $Version -MetadataOnly
 
 $result = Join-Path $root 'dist\publish-smoke.json'
 $process = Start-Process (Join-Path $stage 'OBK.exe') `
@@ -46,11 +58,15 @@ if ($process.ExitCode -ne 0 -or -not (Test-Path $result) -or -not (Get-Content $
     throw 'Published application smoke test failed.'
 }
 Remove-Item -LiteralPath $result
+if ($PrepareOnly) {
+    Write-Host "Prepared application: $stage"
+    return
+}
 $compilerArguments = @('/Q', "/DAppVersion=$Version")
 if ($FastCompression) {
     $compilerArguments += '/DFastCompression'
 }
-$timer.Restart()
+$timer = [Diagnostics.Stopwatch]::StartNew()
 & $Iscc @compilerArguments (Join-Path $PSScriptRoot 'installer.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
 $timer.Stop()
