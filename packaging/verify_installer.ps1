@@ -1,9 +1,20 @@
+[CmdletBinding(DefaultParameterSetName = 'Unsigned')]
 param(
     [Parameter(Mandatory)]
-    [string]$Installer
+    [string]$Installer,
+    [Parameter(Mandatory, ParameterSetName = 'Signed')]
+    [ValidatePattern('^1\.0\.(0|[1-9][0-9]*)$')]
+    [string]$Version,
+    [Parameter(Mandatory, ParameterSetName = 'Signed')]
+    [ValidatePattern('^[A-Fa-f0-9]{40}$')]
+    [string]$CertificateThumbprint
 )
 
 $ErrorActionPreference = 'Stop'
+if ($PSCmdlet.ParameterSetName -eq 'Signed') {
+    & (Join-Path $PSScriptRoot 'verify_signatures.ps1') -Files $Installer `
+        -Version $Version -CertificateThumbprint $CertificateThumbprint
+}
 $directory = Join-Path ([IO.Path]::GetTempPath()) ("OBK installer check " + [guid]::NewGuid())
 $install = Join-Path $directory 'app'
 $result = Join-Path $directory 'result.json'
@@ -36,6 +47,11 @@ try {
     }
     if ((Test-Path (Join-Path $install 'runtime')) -or (Test-Path (Join-Path $install 'app'))) {
         throw 'Installer left the old Python runtime/application directories behind.'
+    }
+    if ($PSCmdlet.ParameterSetName -eq 'Signed') {
+        $ownedFiles = @('OBK.exe', 'OBK.dll', 'OBK.Core.dll') | ForEach-Object { Join-Path $install $_ }
+        & (Join-Path $PSScriptRoot 'verify_signatures.ps1') -Files $ownedFiles `
+            -Version $Version -CertificateThumbprint $CertificateThumbprint
     }
     # Use the same executable as the Start-menu shortcut.
     Invoke-CheckedProcess (Join-Path $install 'OBK.exe') @(

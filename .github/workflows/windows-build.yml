@@ -9,9 +9,16 @@ on:
       fast-compression:
         type: boolean
         default: false
+      sign-release:
+        type: boolean
+        default: false
+    secrets:
+      SIGNPATH_API_TOKEN:
+        required: false
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   tests:
@@ -33,10 +40,12 @@ jobs:
             tests/**/*.csproj
       - name: Run mocked API, cache compatibility, and encryption tests
         run: dotnet test .\tests\OBK.Tests\OBK.Tests.csproj -c Release --nologo --verbosity minimal
+      - name: Test signing verification failure cases
+        run: .\tests\verify_signatures.Tests.ps1
   installer:
     name: Installer smoke test
     runs-on: windows-2025
-    timeout-minutes: 20
+    timeout-minutes: 90
     defaults:
       run:
         shell: pwsh
@@ -50,15 +59,122 @@ jobs:
             global.json
             src/**/*.csproj
             tests/**/*.csproj
+      - name: Validate production signing configuration
+        if: inputs.sign-release
+        env:
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          SIGNPATH_SIGNING_POLICY_SLUG: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          SIGNPATH_APPLICATION_CONFIGURATION_SLUG: ${{ vars.SIGNPATH_APPLICATION_CONFIGURATION_SLUG }}
+          SIGNPATH_INSTALLER_CONFIGURATION_SLUG: ${{ vars.SIGNPATH_INSTALLER_CONFIGURATION_SLUG }}
+          SIGNPATH_CERTIFICATE_THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_THUMBPRINT }}
+        run: |
+          if ($env:GITHUB_EVENT_NAME -ne 'push' -or $env:GITHUB_REF -ne 'refs/heads/main' -or $env:GITHUB_REPOSITORY -ne 'iricigor/OBK') {
+            throw 'Production signing is restricted to pushes to iricigor/OBK main.'
+          }
+          @('SIGNPATH_API_TOKEN', 'SIGNPATH_ORGANIZATION_ID', 'SIGNPATH_PROJECT_SLUG',
+            'SIGNPATH_SIGNING_POLICY_SLUG', 'SIGNPATH_APPLICATION_CONFIGURATION_SLUG',
+            'SIGNPATH_INSTALLER_CONFIGURATION_SLUG', 'SIGNPATH_CERTIFICATE_THUMBPRINT') | ForEach-Object {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))) {
+              throw "Missing required signing configuration: $_"
+            }
+          }
+          if ($env:SIGNPATH_CERTIFICATE_THUMBPRINT -notmatch '^[A-Fa-f0-9]{40}$') {
+            throw 'SIGNPATH_CERTIFICATE_THUMBPRINT must be the approved certificate thumbprint (40 hex digits).'
+          }
+      - name: Prepare OBK binaries for signing
+        if: inputs.sign-release
+        env:
+          APP_VERSION: ${{ inputs.version }}
+        run: .\packaging\build_installer.ps1 -Version "$env:APP_VERSION" -PrepareOnly
+      - name: Upload only OBK-owned unsigned binaries
+        if: inputs.sign-release
+        id: unsigned-application
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unsigned-windows-application
+          path: |
+            dist\stage\OBK.exe
+            dist\stage\OBK.dll
+            dist\stage\OBK.Core.dll
+          if-no-files-found: error
+          retention-days: 7
+      - name: Request manually approved application signing
+        if: inputs.sign-release
+        uses: SignPath/github-action-submit-signing-request@a2c5b60d9c75f073142b653c354b632eedce097b # v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_APPLICATION_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.unsigned-application.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 1800
+          output-artifact-directory: dist\signed-application
+          parameters: |
+            version: ${{ toJSON(inputs.version) }}
+      - name: Verify and stage signed OBK binaries
+        if: inputs.sign-release
+        env:
+          APP_VERSION: ${{ inputs.version }}
+          SIGNPATH_CERTIFICATE_THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_THUMBPRINT }}
+        run: |
+          $files = @('OBK.exe', 'OBK.dll', 'OBK.Core.dll') | ForEach-Object { Join-Path '.\dist\signed-application' $_ }
+          .\packaging\verify_signatures.ps1 -Files $files -Version "$env:APP_VERSION" -CertificateThumbprint "$env:SIGNPATH_CERTIFICATE_THUMBPRINT"
+          $files | ForEach-Object { Copy-Item -LiteralPath $_ -Destination '.\dist\stage' -Force }
       - name: Build installer with the runner's Inno Setup 6
         env:
           APP_VERSION: ${{ inputs.version }}
           FAST_COMPRESSION: ${{ inputs.fast-compression }}
-        run: .\packaging\build_installer.ps1 -Version "$env:APP_VERSION" -FastCompression:($env:FAST_COMPRESSION -eq 'true')
+          SIGN_RELEASE: ${{ inputs.sign-release }}
+        run: .\packaging\build_installer.ps1 -Version "$env:APP_VERSION" -FastCompression:($env:FAST_COMPRESSION -eq 'true') -CompilePreparedStage:($env:SIGN_RELEASE -eq 'true')
+      - name: Upload unsigned installer containing signed OBK binaries
+        if: inputs.sign-release
+        id: unsigned-installer
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unsigned-windows-installer
+          path: dist\OBK-${{ inputs.version }}-windows-x64-setup.exe
+          if-no-files-found: error
+          retention-days: 7
+      - name: Request manually approved installer signing
+        if: inputs.sign-release
+        uses: SignPath/github-action-submit-signing-request@a2c5b60d9c75f073142b653c354b632eedce097b # v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_INSTALLER_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.unsigned-installer.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 1800
+          output-artifact-directory: dist\signed-installer
+          parameters: |
+            version: ${{ toJSON(inputs.version) }}
+      - name: Verify and replace installer with signed output
+        if: inputs.sign-release
+        env:
+          APP_VERSION: ${{ inputs.version }}
+          SIGNPATH_CERTIFICATE_THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_THUMBPRINT }}
+        run: |
+          $file = ".\dist\signed-installer\OBK-$env:APP_VERSION-windows-x64-setup.exe"
+          .\packaging\verify_signatures.ps1 -Files $file -Version "$env:APP_VERSION" -CertificateThumbprint "$env:SIGNPATH_CERTIFICATE_THUMBPRINT"
+          Copy-Item -LiteralPath $file -Destination '.\dist' -Force
       - name: Verify installed app and uninstall
         env:
           APP_VERSION: ${{ inputs.version }}
-        run: .\packaging\verify_installer.ps1 -Installer ".\dist\OBK-$env:APP_VERSION-windows-x64-setup.exe"
+          SIGN_RELEASE: ${{ inputs.sign-release }}
+          SIGNPATH_CERTIFICATE_THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_THUMBPRINT }}
+        run: |
+          $parameters = @{ Installer = ".\dist\OBK-$env:APP_VERSION-windows-x64-setup.exe" }
+          if ($env:SIGN_RELEASE -eq 'true') {
+            $parameters.Version = $env:APP_VERSION
+            $parameters.CertificateThumbprint = $env:SIGNPATH_CERTIFICATE_THUMBPRINT
+          }
+          .\packaging\verify_installer.ps1 @parameters
       - name: Write SHA-256 checksum
         env:
           APP_VERSION: ${{ inputs.version }}

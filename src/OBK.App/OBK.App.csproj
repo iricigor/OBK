@@ -7,6 +7,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>OBK</AssemblyName>
+    <Product>OBK</Product>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <ApplicationIcon>Assets\OBK.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>

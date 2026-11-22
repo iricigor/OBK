@@ -478,8 +478,11 @@ Tkinter, or .NET installed separately. Installation is per-user, normally under
 `%LOCALAPPDATA%\Programs\OBK`, with a Start-menu shortcut. It does not change
 PATH or file associations.
 
-Installers are **unsigned**: Windows or SmartScreen may warn about an unknown
-publisher. Verify the download's origin and compare its SHA-256 hash with the
+Current installers are **unsigned** while SignPath enrollment is pending.
+The [code signing policy](CODE_SIGNING.md) describes opt-in production signing,
+signing roles, privacy, and enrollment. Windows or SmartScreen may warn about an
+unknown publisher; signing does not guarantee all warnings disappear.
+Verify the download's origin and compare its SHA-256 hash with the
 release's `SHA256SUMS.txt` before deciding whether to run it:
 
 ```powershell
@@ -511,6 +514,14 @@ Release runs are serialized with a queue of up to 100 pending runs so multiple
 merges do not compete for a version; GitHub does not guarantee dispatch order.
 Direct pushes to `main` also trigger releases.
 
+When `SIGNPATH_ENABLED=true`, release builds request manually approved SignPath
+signing for OBK-owned binaries, compile the installer from that signed stage,
+and request installer signing. Final signatures and installed binaries are
+verified before the smoke test and checksum generation. Missing configuration
+or signing failures block publication instead of falling back to unsigned
+artifacts. PR/local builds remain unsigned. See the
+[configuration and verification instructions](CODE_SIGNING.md).
+
 Publication creates a draft release, uploads both assets, and only then makes
 it public. Retry a failed run from the Actions UI: a draft for the same commit
 is resumed, while an already published release is not duplicated. A failed
@@ -541,9 +552,17 @@ dotnet test .\tests\OBK.Tests\OBK.Tests.csproj -c Release
 For a non-default compiler location, pass `-Iscc "C:\path\to\ISCC.exe"` to the
 build script. Build output is under `dist`, which is not committed.
 The script uses `dotnet publish -c Release -r win-x64 --self-contained true`.
-The published app, README, and dependency license texts are packaged; Python
+The published app, README, MIT license, code signing policy, and dependency
+license texts are packaged; Python
 tools, user data, and repository tests are excluded. NuGet restore and license
 downloads need internet access at build time, not for offline reading.
+
+The signing workflow uses `-PrepareOnly` to publish and smoke-test the stage
+without compiling an installer, then `-CompilePreparedStage` to compile after
+replacing only the three OBK-owned binaries with verified signed copies.
+The latter rechecks product/version metadata and smoke-tests the prepared app
+without republishing and discarding its signatures. These modes are mutually
+exclusive; neither mode is needed for a normal unsigned local build.
 
 The app's `--smoke-test` mode creates and destroys the offline window, checks
 SQLite initialization, Windows DPAPI, and synthetic message rendering, then exits.

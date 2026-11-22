@@ -6,6 +6,9 @@
 AppId=OBK-369698EA-C752-47FB-A855-C323D53150A9{param:VerificationId|}
 AppName=OBK
 AppVersion={#AppVersion}
+VersionInfoProductName=OBK
+VersionInfoProductVersion={#AppVersion}
+VersionInfoVersion={#AppVersion}
 AppPublisher=OBK contributors
 AppPublisherURL=https://github.com/iricigor/OBK
 DefaultDirName={localappdata}\Programs\OBK

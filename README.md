@@ -78,6 +78,19 @@ OBK downloads messages for the current school year (September–August).
 - OBK uses the same interface as the official Bakaláři mobile app. It is not an
   official Bakaláři product, and some schools may disable this access.
 
+## Code signing policy
+
+SignPath Foundation enrollment is pending; current releases remain unsigned.
+See the [code signing policy](docs/CODE_SIGNING.md) for signing responsibilities,
+privacy details, enrollment instructions, and release verification.
+
+## License
+
+OBK-owned code is available under the [MIT license](LICENSE). Bundled dependencies
+retain their own licenses and notices. This license does not grant rights to
+Bakaláři software, school data, or API access; the service's applicable terms
+still apply. OBK is not affiliated with or endorsed by Bakaláři.
+
 ## More information
 
 - [Technical documentation](docs/TECHNICAL.md) – building from source, data
