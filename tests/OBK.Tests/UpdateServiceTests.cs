@@ -16,6 +16,7 @@ public sealed class UpdateServiceTests
     [Theory]
     [InlineData("v0.1.3", "0.1.2", true)]
     [InlineData("v0.1.10", "0.1.9", true)]
+    [InlineData("v1.0.25", "0.1.10", true)]
     [InlineData("v0.1.2", "0.1.2", false)]
     [InlineData("v0.1.1", "0.1.2", false)]
     public void OnlyNewerReleasesAreOffered(string tag, string installed, bool offered)

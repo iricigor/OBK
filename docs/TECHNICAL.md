@@ -438,7 +438,7 @@ retrieval still need independent verification.
 
 ## Windows installer and releases
 
-Download `OBK-0.1.N-windows-x64-setup.exe` from this repository's
+Download `OBK-1.0.N-windows-x64-setup.exe` from this repository's
 [GitHub Releases](https://github.com/iricigor/OBK/releases). The installer bundles
 the self-contained 64-bit .NET/WPF app, SQLite, an inert HTML parser, and
 dependency licenses. Windows 10 or later is required; users do not need Python,
@@ -451,7 +451,7 @@ publisher. Verify the download's origin and compare its SHA-256 hash with the
 release's `SHA256SUMS.txt` before deciding whether to run it:
 
 ```powershell
-Get-FileHash .\OBK-0.1.0-windows-x64-setup.exe -Algorithm SHA256
+Get-FileHash .\OBK-1.0.0-windows-x64-setup.exe -Algorithm SHA256
 ```
 
 Reinstalling a newer version upgrades the same application directory and removes
@@ -467,12 +467,13 @@ Pull requests targeting `main` run **Validation** on Windows: .NET mocked API,
 cache-format compatibility, DPAPI and attachment tests,
 an installer build, and silent install/start/uninstall verification. The
 `windows-installer` workflow artifact contains the installer and its checksum
-for manual verification; PR artifacts use placeholder version `0.1.0` and are
+for manual verification; PR artifacts use placeholder version `1.0.0` and are
 not published releases. The same validation supports GitHub's merge queue.
 
 After each push to `main` (including a PR merge), **Release** repeats those
-checks and publishes the installer only after they pass. Numbered releases
-start at `v0.1.0`, then increment the patch number. The tag targets the exact
+checks and publishes the installer only after they pass. Releases are numbered
+`v1.0.<build ID>`, where the build ID is the **Release** workflow's run number
+(earlier releases used `v0.1.N`; `1.0` versions supersede them for updates). The tag targets the exact
 validated commit, not whichever commit happens to be latest on `main`.
 Release runs are serialized with a queue of up to 100 pending runs so multiple
 merges do not compete for a version; GitHub does not guarantee dispatch order.
@@ -501,8 +502,8 @@ To build an installer, install the .NET 10 SDK and Inno Setup 6
 
 ```powershell
 dotnet test .\tests\OBK.Tests\OBK.Tests.csproj -c Release
-.\packaging\build_installer.ps1 -Version 0.1.0
-.\packaging\verify_installer.ps1 -Installer .\dist\OBK-0.1.0-windows-x64-setup.exe
+.\packaging\build_installer.ps1 -Version 1.0.0
+.\packaging\verify_installer.ps1 -Installer .\dist\OBK-1.0.0-windows-x64-setup.exe
 ```
 
 For a non-default compiler location, pass `-Iscc "C:\path\to\ISCC.exe"` to the
