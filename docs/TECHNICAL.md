@@ -136,6 +136,14 @@ App-owned interface text lives in `.resx` resource sets. English is the neutral
 language and currently the only shipped one; Czech (#29), Ukrainian, and German
 (#30) follow later.
 
+The agreed Czech-language follow-up (#29) adds an EN/CS button beside the
+theme control, including sign-in, on Windows and Android. It will persist an
+explicit choice, otherwise detect supported OS languages with Czech fallback,
+and rebuild the interface immediately while preserving reader state. Display
+dates and numbers will follow that choice; school content and persisted/API
+formats remain unchanged. This work proceeds independently of Android UI PR
+#50; overlapping reader and sign-in changes will be reconciled after it merges.
+
 | Resource set | Used by | Generated class |
 | --- | --- | --- |
 | `src\OBK.Core\Localization\SharedStrings.resx` | Errors, folder names, date groups, and other text shared by both apps | `OBK.Core.Localization.SharedStrings` |
