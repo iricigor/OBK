@@ -717,6 +717,26 @@ the publication job uses it to create releases and upload assets.
 
 ### Local build and verification
 
+Local Windows builds (Debug or Release, including local installers) show an
+orange diagonal **DEV BUILD** ribbon in the top-right corner below the window
+controls, with the UTC build time. It overlays the reader and Settings on a
+higher z-order without moving or resizing their content. Only the diagonal
+strip intercepts clicks; the rest of its transparent corner area remains
+click-through. Click it, or focus it with Tab and press Enter/Space, to hide
+it until the process exits. It returns after relaunch and uses system colors
+in high contrast. Window controls are unchanged.
+
+The desktop project stamps `LocalBuild=true` and the actual UTC `BuildTimestamp`
+as assembly metadata, independently of compiler configuration or signing.
+CI installer builds explicitly pass `-LocalBuild:$false`; official releases
+(signed or unsigned) and CI validation installers have no ribbon.
+For a release-style source build, use `-p:LocalBuild=false`. A repeatable build
+can override the ISO 8601 timestamp with an explicit offset or `Z`, for example
+`-p:BuildTimestamp=2026-11-22T14:00:00Z`. The installer script accepts the same
+override as `-BuildTimestamp`. Invalid metadata fails explicitly rather than
+displaying a fabricated timestamp. Android and PR/test-specific labels are
+outside this feature's scope.
+
 Development runs from source using the .NET command above.
 To build an installer, install the .NET 10 SDK and Inno Setup 6
 (6.3 or later). From the repository root:

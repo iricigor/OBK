@@ -28,6 +28,18 @@
     <value>OBK - Offline Komens - {0}</value>
     <comment>Window caption. {0} = active child name or school name.</comment>
   </data>
+  <data name="BuildRibbonLabel" xml:space="preserve">
+    <value>DEV BUILD</value>
+    <comment>Diagonal corner ribbon for locally built Windows apps.</comment>
+  </data>
+  <data name="BuildRibbonDismiss" xml:space="preserve">
+    <value>Acknowledge development build</value>
+    <comment>Accessible name of the ribbon button.</comment>
+  </data>
+  <data name="BuildRibbonTooltip" xml:space="preserve">
+    <value>Local development build, built {0}. Click or press Enter/Space to hide this ribbon until OBK closes.</value>
+    <comment>{0} = full ISO 8601 UTC build timestamp.</comment>
+  </data>
   <data name="AttachmentAvailabilityNotDownloaded" xml:space="preserve">
     <value>Not downloaded. Refresh to cache this file.</value>
     <comment>Attachment tooltip line below the file name.</comment>

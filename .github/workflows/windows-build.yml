@@ -87,7 +87,7 @@ jobs:
         if: inputs.sign-release
         env:
           APP_VERSION: ${{ inputs.version }}
-        run: .\packaging\build_installer.ps1 -Version "$env:APP_VERSION" -PrepareOnly
+        run: .\packaging\build_installer.ps1 -Version "$env:APP_VERSION" -LocalBuild:$false -PrepareOnly
       - name: Upload only OBK-owned unsigned binaries
         if: inputs.sign-release
         id: unsigned-application
@@ -129,7 +129,7 @@ jobs:
           APP_VERSION: ${{ inputs.version }}
           FAST_COMPRESSION: ${{ inputs.fast-compression }}
           SIGN_RELEASE: ${{ inputs.sign-release }}
-        run: .\packaging\build_installer.ps1 -Version "$env:APP_VERSION" -FastCompression:($env:FAST_COMPRESSION -eq 'true') -CompilePreparedStage:($env:SIGN_RELEASE -eq 'true')
+        run: .\packaging\build_installer.ps1 -Version "$env:APP_VERSION" -LocalBuild:$false -FastCompression:($env:FAST_COMPRESSION -eq 'true') -CompilePreparedStage:($env:SIGN_RELEASE -eq 'true')
       - name: Upload unsigned installer containing signed OBK binaries
         if: inputs.sign-release
         id: unsigned-installer
