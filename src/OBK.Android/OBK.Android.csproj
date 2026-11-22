@@ -15,6 +15,7 @@
     <SupportedOSPlatformVersion>29.0</SupportedOSPlatformVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <PublishTrimmed>false</PublishTrimmed>
+    <RunAOTCompilation>false</RunAOTCompilation>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>

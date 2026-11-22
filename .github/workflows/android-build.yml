@@ -42,6 +42,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Android SDK/JDK installation failed.' }
       - name: Build standalone development-signed preview
         run: .\packaging\build_android_preview.ps1
+      - name: Verify Release signing with a disposable test key
+        run: .\tests\android_release.Tests.ps1
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android-preview
