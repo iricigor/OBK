@@ -24,6 +24,7 @@
   <Import Project="..\Localization.targets" />
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\obk.png" />
+    <MauiImage Include="Resources\Images\*.svg" BaseSize="24,24" />
     <MauiSplashScreen Include="Resources\AppIcon\obk.png" Color="#0F6CBD" BaseSize="128,128" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <ProjectReference Include="..\OBK.Core\OBK.Core.csproj" />

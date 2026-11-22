@@ -206,12 +206,18 @@ and colors have semantic light/dark roles. Keep Android-native navigation,
 three-column layout. UI refinement does not imply adding missing desktop
 features or implementing the separately tracked language controls.
 
-The reader keeps account/folder selectors and search above the list, with
-**Refresh all** in the app bar, **Accounts** in its overflow menu, and sync
-status below the list. On sign-in, school search is primary; **Enter school
+The reader uses an integrated search bar above the list: the hamburger opens
+a navigation drawer with **Settings**, folder selection and the active-child
+avatar sit inside the search container, and the refresh icon refreshes all
+accounts. Icon descriptions identify the active child/folder; native choosers
+show their names. Sync status stays below the list. **Settings** offers
+**System**, **Light**, and **Dark** appearance plus the existing account actions.
+Appearance applies immediately and persists in app-private preferences; this
+non-sensitive UI preference is separate from encrypted school/account settings.
+On sign-in, school search is primary; **Enter school
 address manually** reveals the editable HTTPS address (already visible for
 an existing account). Message links and attachment actions stay explicit taps,
-with privacy notices beneath the content. Light/dark colors follow the system.
+with privacy notices beneath the content. Appearance follows Android by default.
 
 `src\OBK.Android\OBK.Android.csproj` targets `net10.0-android` with minimum API
 29. `OBK.Core` also targets portable `net10.0`, and `LocalStore` accepts an

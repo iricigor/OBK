@@ -15,6 +15,21 @@ internal static class ReaderTheme
     internal static readonly Color Accent = Color.FromArgb("#0F6CBD");
     internal static readonly Color DarkAccent = Color.FromArgb("#4CC2FF");
 
+    public static ImageButton Icon(string name, string description)
+    {
+        var button = new ImageButton
+        {
+            WidthRequest = 48, HeightRequest = 48, MinimumWidthRequest = 48, MinimumHeightRequest = 48,
+            Padding = 12, CornerRadius = 24, BackgroundColor = Colors.Transparent, Aspect = Aspect.AspectFit
+        };
+        SetIcon(button, name);
+        SemanticProperties.SetDescription(button, description);
+        return button;
+    }
+
+    public static void SetIcon(ImageButton button, string name) =>
+        button.SetAppTheme<ImageSource>(ImageButton.SourceProperty, ImageSource.FromFile($"{name}.png"), ImageSource.FromFile($"{name}_dark.png"));
+
     public static Label Metadata(Label label)
     {
         if (!label.IsSet(Label.FontSizeProperty)) label.FontSize = 13;
