@@ -323,13 +323,13 @@
                             </ListBox.GroupStyle>
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="12,8">
+                                    <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="{DynamicResource ListRowPadding}">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
                                             <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" VerticalAlignment="Center" Margin="0,0,4,0"
                                                      Visibility="{Binding Unread, Converter={StaticResource VisibleIf}}"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" FontSize="13" ToolTip="{Binding Subject}">
+                                            <TextBlock Grid.Column="1" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" FontSize="{DynamicResource ListSubjectSize}" ToolTip="{Binding Subject}">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="FontWeight" Value="Normal"/>
@@ -337,11 +337,11 @@
                                                     </Style>
                                                 </TextBlock.Style>
                                             </TextBlock>
-                                            <TextBlock Grid.Column="2" Text="{Binding ShortSent}" ToolTip="{Binding Sent}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}"
+                                            <TextBlock Grid.Column="2" Text="{Binding ShortSent}" ToolTip="{Binding Sent}" FontSize="{DynamicResource ListDateSize}" Foreground="{DynamicResource TextSecondary}"
                                                        VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Person}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
-                                                       TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
-                                            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8,2,0,0">
+                                            <TextBlock Grid.Row="1" Grid.Column="1"                                             Text="{Binding Person}" FontSize="{DynamicResource ListSenderSize}" Foreground="{DynamicResource TextSecondary}"
+                                                                                                   TextTrimming="CharacterEllipsis" Margin="{DynamicResource ListLineGap}"/>
+                                                                                        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="{DynamicResource ListBadgeMargin}">
                                                 <Border Background="{DynamicResource Avatar3Bg}" CornerRadius="4" Padding="5,0" VerticalAlignment="Center"
                                                         Visibility="{Binding IsExcuse, Converter={StaticResource VisibleIf}}" ToolTip="{x:Static loc:AppStrings.MessageExcuseLabel}">
                                                     <TextBlock Text="{x:Static loc:AppStrings.MessageExcuseBadge}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource Avatar3Fg}"/>
@@ -365,7 +365,7 @@
                     Visibility="{Binding ShowMessages, Converter={StaticResource VisibleIf}}">
                 <ScrollViewer x:Name="ReadingScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="24">
                     <StackPanel>
-                        <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="{DynamicResource ReaderSubjectSize}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
                         <Border HorizontalAlignment="Left" Background="{DynamicResource Avatar3Bg}" CornerRadius="4" Padding="8,2" Margin="0,0,0,8"
                                 Visibility="{Binding SelectedIsExcuse, Converter={StaticResource VisibleIf}}">
                             <TextBlock Text="{x:Static loc:AppStrings.MessageExcuseLabel}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource Avatar3Fg}"/>
@@ -389,8 +389,8 @@
                                 </TextBlock>
                             </Border>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                <TextBlock Text="{Binding Sender}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                <TextBlock Text="{Binding Metadata}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding Sender}" FontSize="{DynamicResource ReaderSenderSize}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Metadata}" FontSize="{DynamicResource ReaderMetaSize}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Grid>
                         <StackPanel x:Name="RelatedPanel" Margin="0,0,0,16" Visibility="{Binding HasRelated, Converter={StaticResource VisibleIf}}">
@@ -564,17 +564,35 @@
                                 </StackPanel>
                             </Grid>
                             <Border Height="1" Background="{DynamicResource Stroke}" Margin="20,0"/>
-                            <Grid Margin="72,14,20,14" ToolTip="{x:Static loc:AppStrings.SettingsReadingSizeTooltip}" ToolTipService.ShowOnDisabled="True">
+                            <Grid Margin="72,14,20,14">
                                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="{x:Static loc:AppStrings.SettingsReadingSize}" FontSize="13.5"/>
-                                    <TextBlock Text="{x:Static loc:AppStrings.SettingsComingLater}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{x:Static loc:AppStrings.SettingsReadingSizeDescription}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                 </StackPanel>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" IsEnabled="False"
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
                                             AutomationProperties.Name="{x:Static loc:AppStrings.SettingsReadingSizeName}">
-                                    <Button Style="{StaticResource SegmentButton}" Content="{x:Static loc:AppStrings.SettingsReadingSizeSmall}"/>
-                                    <Button Style="{StaticResource SegmentButton}" Content="{x:Static loc:AppStrings.SettingsReadingSizeMedium}" Tag="True"/>
-                                    <Button Style="{StaticResource SegmentButton}" Content="{x:Static loc:AppStrings.SettingsReadingSizeLarge}"/>
+                                    <Button x:Name="SmallTextButton" Style="{StaticResource SegmentButton}" Content="{x:Static loc:AppStrings.SettingsReadingSizeSmall}"
+                                            Command="{Binding SetReadingSizeCommand}" CommandParameter="Small" Tag="{Binding Theme.IsSmallText}"/>
+                                    <Button x:Name="MediumTextButton" Style="{StaticResource SegmentButton}" Content="{x:Static loc:AppStrings.SettingsReadingSizeMedium}"
+                                            Command="{Binding SetReadingSizeCommand}" CommandParameter="Medium" Tag="{Binding Theme.IsMediumText}"/>
+                                    <Button x:Name="LargeTextButton" Style="{StaticResource SegmentButton}" Content="{x:Static loc:AppStrings.SettingsReadingSizeLarge}"
+                                            Command="{Binding SetReadingSizeCommand}" CommandParameter="Large" Tag="{Binding Theme.IsLargeText}"/>
+                                </StackPanel>
+                            </Grid>
+                            <Border Height="1" Background="{DynamicResource Stroke}" Margin="20,0"/>
+                            <Grid Margin="72,14,20,14">
+                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{x:Static loc:AppStrings.SettingsListDensity}" FontSize="13.5"/>
+                                    <TextBlock Text="{x:Static loc:AppStrings.SettingsListDensityDescription}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
+                                            AutomationProperties.Name="{x:Static loc:AppStrings.SettingsListDensityName}">
+                                    <Button x:Name="CompactListButton" Style="{StaticResource SegmentButton}" Content="{x:Static loc:AppStrings.SettingsListDensityCompact}"
+                                            Command="{Binding SetListDensityCommand}" CommandParameter="Compact" Tag="{Binding Theme.IsCompactList}"/>
+                                    <Button x:Name="RelaxedListButton" Style="{StaticResource SegmentButton}" Content="{x:Static loc:AppStrings.SettingsListDensityRelaxed}"
+                                            Command="{Binding SetListDensityCommand}" CommandParameter="Relaxed" Tag="{Binding Theme.IsRelaxedList}"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>

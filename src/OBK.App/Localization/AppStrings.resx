@@ -604,12 +604,26 @@ Refresh to check your school.</value>
   <data name="SettingsClearPasswordTooltip" xml:space="preserve">
     <value>Forget the saved password; offline messages are kept</value>
   </data>
-  <data name="SettingsComingLater" xml:space="preserve">
-    <value>Coming later</value>
-    <comment>Subtitle of a setting that is not available yet.</comment>
-  </data>
   <data name="SettingsInstalledVersion" xml:space="preserve">
     <value>Installed version</value>
+  </data>
+  <data name="SettingsListDensity" xml:space="preserve">
+    <value>Message list density</value>
+  </data>
+  <data name="SettingsListDensityCompact" xml:space="preserve">
+    <value>Compact</value>
+    <comment>Message list density option.</comment>
+  </data>
+  <data name="SettingsListDensityDescription" xml:space="preserve">
+    <value>Space between messages in the list</value>
+  </data>
+  <data name="SettingsListDensityName" xml:space="preserve">
+    <value>Message list density</value>
+    <comment>Accessible name of the message list density options.</comment>
+  </data>
+  <data name="SettingsListDensityRelaxed" xml:space="preserve">
+    <value>Relaxed</value>
+    <comment>Message list density option.</comment>
   </data>
   <data name="SettingsNoAccounts" xml:space="preserve">
     <value>No accounts yet. Use Add child in the sidebar to sign in.</value>
@@ -617,6 +631,9 @@ Refresh to check your school.</value>
   </data>
   <data name="SettingsReadingSize" xml:space="preserve">
     <value>Reading size</value>
+  </data>
+  <data name="SettingsReadingSizeDescription" xml:space="preserve">
+    <value>Text size of the message list and the reader</value>
   </data>
   <data name="SettingsReadingSizeLarge" xml:space="preserve">
     <value>Large</value>
@@ -627,15 +644,12 @@ Refresh to check your school.</value>
     <comment>Reading size option.</comment>
   </data>
   <data name="SettingsReadingSizeName" xml:space="preserve">
-    <value>Reading size, coming later</value>
-    <comment>Accessible name of the disabled reading size options.</comment>
+    <value>Reading size</value>
+    <comment>Accessible name of the reading size options.</comment>
   </data>
   <data name="SettingsReadingSizeSmall" xml:space="preserve">
     <value>Small</value>
     <comment>Reading size option.</comment>
-  </data>
-  <data name="SettingsReadingSizeTooltip" xml:space="preserve">
-    <value>Reading size will be available in a later version.</value>
   </data>
   <data name="SettingsRename" xml:space="preserve">
     <value>Rename</value>

@@ -496,13 +496,14 @@ The sun/moon button switches **Light** and **Dark** immediately, including
 message text, login controls, menus, and window chrome. **Settings > Appearance**
 offers the same choice; both stay in sync. The choice is saved
 per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
-startup. It contains only the theme, not credentials or archive data.
+startup. It contains only the theme, reading size and list density, not credentials or archive data.
 
 **Settings**, at the bottom of the sidebar, replaces the message list and
 reading pane with Windows 11-style sections that start collapsed:
 
-- **Appearance**: Light or Dark theme. **Reading size** is shown but disabled
-  until a later version.
+- **Appearance**: Light or Dark theme; **Reading size** (Small, Medium, Large)
+  scaling the message list and reader text; and **Message list density**
+  (Compact, Relaxed) for row spacing. Medium and Relaxed match the original look.
 - **Accounts**: each known child or school, with **Rename** for the optional
   child name (empty shows the school name), and **Save password**, or
   **Change password** and **Clear password** when one is saved. Saving or

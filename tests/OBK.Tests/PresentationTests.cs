@@ -245,7 +245,20 @@ public sealed class PresentationTests
                     Assert.True(theme.IsDark);
                     await theme.ToggleAsync();
                     Assert.Equal(Colors.White, ((SolidColorBrush)surface.Background).Color);
-                    await File.WriteAllTextAsync(Path.Combine(directory, "appearance.json"), "{\"Theme\":\"invalid\"}");
+                    var settingsPath = Path.Combine(directory, "appearance.json");
+                    await theme.SetReadingSizeAsync("Large");
+                    await theme.SetListDensityAsync("Compact");
+                    Assert.Equal(16.0, (double)application.Resources["ReaderBodySize"]);
+                    Assert.Equal(new Thickness(12, 4, 12, 4), (Thickness)application.Resources["ListRowPadding"]);
+                    var restored = new ThemeManager(settingsPath);
+                    await restored.InitializeAsync();
+                    Assert.True(restored.IsLargeText && restored.IsCompactList && restored.IsLight);
+                    await File.WriteAllTextAsync(settingsPath, "{\"Theme\":\"Light\",\"ReadingSize\":\"huge\",\"ListDensity\":\"tiny\"}");
+                    await restored.InitializeAsync();
+                    Assert.True(restored.IsMediumText && restored.IsRelaxedList);
+                    Assert.Equal(14.0, (double)application.Resources["ReaderBodySize"]);
+                    await Assert.ThrowsAsync<ObkException>(() => restored.SetReadingSizeAsync("huge"));
+                    await File.WriteAllTextAsync(settingsPath, "{\"Theme\":\"invalid\"}");
                     await Assert.ThrowsAsync<ObkException>(() => theme.InitializeAsync());
                     window.Close();
 

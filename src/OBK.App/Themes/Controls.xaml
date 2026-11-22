@@ -1,6 +1,19 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    <!-- Medium / Relaxed defaults; ThemeManager replaces them when the user changes reading size or list density. -->
+    <sys:Double x:Key="ListSubjectSize">13</sys:Double>
+    <sys:Double x:Key="ListSenderSize">12</sys:Double>
+    <sys:Double x:Key="ListDateSize">11.5</sys:Double>
+    <sys:Double x:Key="ReaderSubjectSize">18</sys:Double>
+    <sys:Double x:Key="ReaderSenderSize">14</sys:Double>
+    <sys:Double x:Key="ReaderMetaSize">12</sys:Double>
+    <sys:Double x:Key="ReaderBodySize">14</sys:Double>
+    <sys:Double x:Key="ReaderLineHeight">21</sys:Double>
+    <Thickness x:Key="ListRowPadding">12,8</Thickness>
+    <Thickness x:Key="ListLineGap">0,2,0,0</Thickness>
+    <Thickness x:Key="ListBadgeMargin">8,2,0,0</Thickness>
     <Style TargetType="Window">
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontSize" Value="14"/>

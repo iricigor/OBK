@@ -242,16 +242,17 @@ public static class MessageDocument
     private static async void PartsChanged(DependencyObject target, DependencyPropertyChangedEventArgs e)
     {
         if (target is not RichTextBox reader || e.NewValue is not IReadOnlyList<TextPart> parts) return;
-        var paragraph = new Paragraph { Margin = new Thickness(0), LineHeight = 21 };
+        var paragraph = new Paragraph { Margin = new Thickness(0) };
+        paragraph.SetResourceReference(Block.LineHeightProperty, "ReaderLineHeight");
         var count = 0;
         foreach (var part in parts)
         {
             var run = new Run(part.Text)
             {
                 FontWeight = part.Bold || part.Heading ? FontWeights.SemiBold : FontWeights.Normal,
-                FontStyle = part.Italic ? FontStyles.Italic : FontStyles.Normal,
-                FontSize = part.Heading ? 18 : 14
+                FontStyle = part.Italic ? FontStyles.Italic : FontStyles.Normal
             };
+            run.SetResourceReference(TextElement.FontSizeProperty, part.Heading ? "ReaderSubjectSize" : "ReaderBodySize");
             if (part.Underline) run.TextDecorations = TextDecorations.Underline;
             if (part.Link is { } link)
             {
