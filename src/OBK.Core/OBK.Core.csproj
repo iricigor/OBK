@@ -6,7 +6,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Product>OBK</Product>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
+  <ItemGroup>
+    <LocalizedStrings Include="Localization\SharedStrings.resx" />
+  </ItemGroup>
+  <Import Project="..\Localization.targets" />
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.15" />

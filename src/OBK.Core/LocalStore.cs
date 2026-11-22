@@ -1,3 +1,4 @@
+using OBK.Core.Localization;
 using Microsoft.Data.Sqlite;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,7 +13,7 @@ public sealed class LocalStore
     public LocalStore(string? path = null, ILocalDataProtection? protection = null)
     {
         if (!OperatingSystem.IsWindows() && (path is null || protection is null))
-            throw new ObkException("This platform requires an explicit database path and local data protection.");
+            throw new ObkException(SharedStrings.ErrorPlatformStorageRequired);
         this.protection = protection ?? new WindowsDataProtection();
         Path = path ?? DatabasePath();
         Access(connection =>
@@ -41,7 +42,7 @@ public sealed class LocalStore
     {
         var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrEmpty(local))
-            throw new ObkException("Windows LOCALAPPDATA is unavailable; no local database was opened.");
+            throw new ObkException(SharedStrings.ErrorLocalAppDataUnavailable);
         return System.IO.Path.Combine(local, "OBK", "obk.sqlite3");
     }
 
@@ -61,7 +62,7 @@ public sealed class LocalStore
         try { using var connection = Open(); return operation(connection); }
         catch (Exception error) when (error is SqliteException or IOException or UnauthorizedAccessException)
         {
-            throw new ObkException("Cannot access the local OBK database. Check disk space and access.");
+            throw new ObkException(SharedStrings.ErrorDatabaseAccess);
         }
     }
 
@@ -78,22 +79,22 @@ public sealed class LocalStore
     public static byte[] Protect(byte[] value)
     {
         if (!OperatingSystem.IsWindows())
-            throw new ObkException("Windows data protection is unavailable on this platform.");
+            throw new ObkException(SharedStrings.ErrorDataProtectionUnavailable);
         try { return ProtectedData.Protect(value, null, DataProtectionScope.CurrentUser); }
         catch (CryptographicException)
         {
-            throw new ObkException("Windows could not encrypt local data. No plaintext fallback is used.");
+            throw new ObkException(SharedStrings.ErrorEncryptFailed);
         }
     }
 
     public static byte[] Unprotect(byte[] value)
     {
         if (!OperatingSystem.IsWindows())
-            throw new ObkException("Windows data protection is unavailable on this platform.");
+            throw new ObkException(SharedStrings.ErrorDataProtectionUnavailable);
         try { return ProtectedData.Unprotect(value, null, DataProtectionScope.CurrentUser); }
         catch (CryptographicException)
         {
-            throw new ObkException("Windows could not decrypt local data. Use the Windows account that created it; no plaintext fallback is used.");
+            throw new ObkException(SharedStrings.ErrorDecryptFailed);
         }
     }
 
@@ -109,9 +110,9 @@ public sealed class LocalStore
         try
         {
             return JsonSerializer.Deserialize<T>(value) ??
-                throw new ObkException("Local OBK data is damaged and could not be decoded.");
+                throw new ObkException(SharedStrings.ErrorLocalDataDamaged);
         }
-        catch (JsonException) { throw new ObkException("Local OBK data is damaged and could not be decoded."); }
+        catch (JsonException) { throw new ObkException(SharedStrings.ErrorLocalDataDamaged); }
     }
 
     private Login? Setting(string name) => Access(connection =>
@@ -122,7 +123,7 @@ public sealed class LocalStore
         if (value is null) return null;
         var login = DecodeStored<Login>((byte[])value);
         if (login.Url is null || login.Username is null || (name == "remembered_login" && login.Password is null))
-            throw new ObkException("The saved sign-in setting is damaged. Sign in again.");
+            throw new ObkException(SharedStrings.ErrorSavedSignInDamaged);
         return login;
     });
     public Login? RememberedLogin() => RememberedLogins().LastOrDefault();
@@ -137,7 +138,7 @@ public sealed class LocalStore
             if (command.ExecuteScalar() is not byte[] value) return (IReadOnlyList<Login>)[];
             var profiles = DecodeStored<List<Login>>(value);
             if (profiles.Any(profile => profile.Url is null || profile.Username is null))
-                throw new ObkException("The saved account list is damaged. Sign in again.");
+                throw new ObkException(SharedStrings.ErrorSavedAccountsDamaged);
             return (IReadOnlyList<Login>)profiles;
         });
         var archived = Access(connection =>
@@ -180,7 +181,7 @@ public sealed class LocalStore
             var profiles = DecodeStored<List<Login>>(value);
             if (profiles.Any(profile => profile.Url is null || profile.Username is null ||
                 profile.Password is null))
-                throw new ObkException("The saved sign-in list is damaged. Sign in again.");
+                throw new ObkException(SharedStrings.ErrorSavedSignInsDamaged);
             return (IReadOnlyList<Login>)profiles;
         }
         var legacy = Setting("remembered_login");
@@ -206,7 +207,7 @@ public sealed class LocalStore
         childName = OptionalLabel(childName);
         var known = KnownLogins();
         if (!known.Any(profile => SameAccount(profile, url, username)))
-            throw new ObkException("This account is no longer saved.");
+            throw new ObkException(SharedStrings.ErrorAccountNotSaved);
         Login Renamed(Login profile) => SameAccount(profile, url, username) ? profile with { ChildName = childName } : profile;
         var history = EncodeStored(known.Select(profile => Renamed(profile) with { Password = null }).ToList());
         var remembered = EncodeStored(RememberedLogins().Select(Renamed).ToList());
@@ -239,7 +240,7 @@ public sealed class LocalStore
     {
         url = KomensClient.NormalizeUrl(url);
         var known = KnownLogins().FirstOrDefault(profile => SameAccount(profile, url, username)) ??
-            throw new ObkException("This account is no longer saved.");
+            throw new ObkException(SharedStrings.ErrorAccountNotSaved);
         var remembered = RememberedLogins().Where(profile => !SameAccount(profile, url, username)).ToList();
         remembered.Add(known with { Password = password });
         SaveRememberedLogins(remembered);
@@ -384,7 +385,7 @@ public sealed class LocalStore
         var folders = DecodeStored<Dictionary<string, List<Message>>>((byte[])reader[1]);
         Folders.Validate(folders);
         var stamp = reader.GetString(2);
-        if (!DateTimeOffset.TryParse(stamp, out _)) throw new ObkException("The offline synchronization timestamp is damaged.");
+        if (!DateTimeOffset.TryParse(stamp, out _)) throw new ObkException(SharedStrings.ErrorSyncTimestampDamaged);
         return new Archive(reader.GetString(0), folders, stamp);
     });
 
@@ -398,7 +399,7 @@ public sealed class LocalStore
         var info = DecodeStored<AttachmentInfo>((byte[])value);
         if (info.Name is null || info.Name != FileNames.Sanitize(info.Name) || info.Size < 0 ||
             info.Sha256 is null || !System.Text.RegularExpressions.Regex.IsMatch(info.Sha256, "^[0-9a-f]{64}$"))
-            throw new ObkException("Cached attachment metadata is damaged.");
+            throw new ObkException(SharedStrings.ErrorAttachmentMetadataDamaged);
         return info;
     });
 
@@ -408,7 +409,7 @@ public sealed class LocalStore
     {
         url = KomensClient.NormalizeUrl(url);
         var id = attachment.Identifier;
-        if (expectedSize < 0) throw new ObkException("The attachment has an invalid download size.");
+        if (expectedSize < 0) throw new ObkException(SharedStrings.ErrorAttachmentInvalidSize);
         try
         {
             using var connection = Open();
@@ -436,7 +437,7 @@ public sealed class LocalStore
                 chunk.ExecuteNonQuery();
             }
             if (expectedSize is not null && size != expectedSize)
-                throw new ObkException("The attachment download was incomplete. Retry sync; no incomplete copy was saved.");
+                throw new ObkException(SharedStrings.ErrorAttachmentDownloadIncomplete);
             var metadata = EncodeStored(new AttachmentInfo(attachment.SafeName, size,
                 Convert.ToHexString(digest.GetHashAndReset()).ToLowerInvariant(), contentType));
             using var complete = Command(connection,
@@ -446,13 +447,13 @@ public sealed class LocalStore
             transaction.Commit();
             return size;
         }
-        catch (SqliteException) { throw new ObkException("Cannot cache an attachment. Check disk space and access."); }
+        catch (SqliteException) { throw new ObkException(SharedStrings.ErrorAttachmentCacheFailed); }
     }
 
     public string ExportAttachment(string url, string username, string id, string destination)
     {
         var info = AttachmentInfo(url, username, id) ??
-            throw new ObkException("This attachment is not downloaded. Sign in and sync first.");
+            throw new ObkException(SharedStrings.ErrorAttachmentNotDownloaded);
         destination = System.IO.Path.GetFullPath(destination);
         var temporary = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(destination)!, $".obk-{Guid.NewGuid():N}.tmp");
         try
@@ -470,14 +471,14 @@ public sealed class LocalStore
                     long size = 0;
                     while (reader.Read())
                     {
-                        if (reader.GetInt32(0) != index++) throw new ObkException("The cached attachment is incomplete.");
+                        if (reader.GetInt32(0) != index++) throw new ObkException(SharedStrings.ErrorAttachmentCacheIncomplete);
                         var chunk = protection.Unprotect((byte[])reader[1]);
                         digest.AppendData(chunk);
                         size += chunk.Length;
                         output.Write(chunk);
                     }
                     if (size != info.Size || Convert.ToHexString(digest.GetHashAndReset()).ToLowerInvariant() != info.Sha256)
-                        throw new ObkException("The cached attachment failed its integrity check.");
+                        throw new ObkException(SharedStrings.ErrorAttachmentIntegrity);
                     return true;
                 });
             }
@@ -489,15 +490,15 @@ public sealed class LocalStore
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
             throw new ObkException(OperatingSystem.IsWindows()
-                ? "Cannot write the attachment copy. Check disk access and that Windows downloaded-file protection is supported by the destination."
-                : "Cannot write the attachment copy. Check disk space and destination access.");
+                ? SharedStrings.ErrorAttachmentCopyProtected
+                : SharedStrings.ErrorAttachmentCopy);
         }
         finally
         {
             try { if (File.Exists(temporary)) File.Delete(temporary); }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException)
             {
-                throw new ObkException("Could not remove a temporary decrypted attachment copy from the destination folder.");
+                throw new ObkException(SharedStrings.ErrorAttachmentCopyCleanup);
             }
 
         }

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ErrorAccountNotSaved" xml:space="preserve">
+    <value>This account is no longer saved.</value>
+  </data>
+  <data name="ErrorApiAccessRejected" xml:space="preserve">
+    <value>API access rejected (HTTP {0}). The account or token may not have Komens access.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorApiRequestFailed" xml:space="preserve">
+    <value>API request failed (HTTP {0}). Check school availability and API compatibility.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorArchiveDamaged" xml:space="preserve">
+    <value>The offline message archive is damaged.</value>
+  </data>
+  <data name="ErrorAttachmentCacheFailed" xml:space="preserve">
+    <value>Cannot cache an attachment. Check disk space and access.</value>
+  </data>
+  <data name="ErrorAttachmentCacheIncomplete" xml:space="preserve">
+    <value>The cached attachment is incomplete.</value>
+  </data>
+  <data name="ErrorAttachmentCopy" xml:space="preserve">
+    <value>Cannot write the attachment copy. Check disk space and destination access.</value>
+  </data>
+  <data name="ErrorAttachmentCopyCleanup" xml:space="preserve">
+    <value>Could not remove a temporary decrypted attachment copy from the destination folder.</value>
+  </data>
+  <data name="ErrorAttachmentCopyProtected" xml:space="preserve">
+    <value>Cannot write the attachment copy. Check disk access and that Windows downloaded-file protection is supported by the destination.</value>
+  </data>
+  <data name="ErrorAttachmentDownloadIncomplete" xml:space="preserve">
+    <value>The attachment download was incomplete. Retry sync; no incomplete copy was saved.</value>
+  </data>
+  <data name="ErrorAttachmentIntegrity" xml:space="preserve">
+    <value>The cached attachment failed its integrity check.</value>
+  </data>
+  <data name="ErrorAttachmentInvalidSize" xml:space="preserve">
+    <value>The attachment has an invalid download size.</value>
+  </data>
+  <data name="ErrorAttachmentMetadataDamaged" xml:space="preserve">
+    <value>Cached attachment metadata is damaged.</value>
+  </data>
+  <data name="ErrorAttachmentNoId" xml:space="preserve">
+    <value>An attachment has no valid ID; it cannot be downloaded.</value>
+  </data>
+  <data name="ErrorAttachmentNotDownloaded" xml:space="preserve">
+    <value>This attachment is not downloaded. Sign in and sync first.</value>
+  </data>
+  <data name="ErrorConnectionFailed" xml:space="preserve">
+    <value>Connection failed, even after a retry. Check internet access and the school's HTTPS certificate. No certificate checks were bypassed.</value>
+  </data>
+  <data name="ErrorDataProtectionUnavailable" xml:space="preserve">
+    <value>Windows data protection is unavailable on this platform.</value>
+  </data>
+  <data name="ErrorDatabaseAccess" xml:space="preserve">
+    <value>Cannot access the local OBK database. Check disk space and access.</value>
+  </data>
+  <data name="ErrorDecryptFailed" xml:space="preserve">
+    <value>Windows could not decrypt local data. Use the Windows account that created it; no plaintext fallback is used.</value>
+  </data>
+  <data name="ErrorDirectoryDamaged" xml:space="preserve">
+    <value>The bundled school directory is damaged. Enter the school URL manually.</value>
+  </data>
+  <data name="ErrorDirectoryEmpty" xml:space="preserve">
+    <value>The bundled school directory is empty.</value>
+  </data>
+  <data name="ErrorDirectoryFormat" xml:space="preserve">
+    <value>The bundled school directory format is not supported.</value>
+  </data>
+  <data name="ErrorDirectoryNoSchools" xml:space="preserve">
+    <value>The bundled school directory has no usable HTTPS schools.</value>
+  </data>
+  <data name="ErrorEncryptFailed" xml:space="preserve">
+    <value>Windows could not encrypt local data. No plaintext fallback is used.</value>
+  </data>
+  <data name="ErrorInAttachment" xml:space="preserve">
+    <value>Attachment {0} of {1}: {2}</value>
+    <comment>{0} = attachment number; {1} = total attachments; {2} = error message.</comment>
+  </data>
+  <data name="ErrorInContext" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0} = folder name; {1} = error message.</comment>
+  </data>
+  <data name="ErrorIncompleteFolderSet" xml:space="preserve">
+    <value>An incomplete folder set cannot replace the offline archive.</value>
+  </data>
+  <data name="ErrorInvalidJson" xml:space="preserve">
+    <value>The school returned an invalid JSON response. Check API compatibility.</value>
+  </data>
+  <data name="ErrorInvalidSentDate" xml:space="preserve">
+    <value>A message has an invalid sent date; synchronization stopped.</value>
+  </data>
+  <data name="ErrorLocalAppDataUnavailable" xml:space="preserve">
+    <value>Windows LOCALAPPDATA is unavailable; no local database was opened.</value>
+  </data>
+  <data name="ErrorLocalDataDamaged" xml:space="preserve">
+    <value>Local OBK data is damaged and could not be decoded.</value>
+  </data>
+  <data name="ErrorMissingCredentials" xml:space="preserve">
+    <value>Enter both a username and password.</value>
+  </data>
+  <data name="ErrorNoAccessToken" xml:space="preserve">
+    <value>Sign-in returned no usable access token.</value>
+  </data>
+  <data name="ErrorNoSchoolName" xml:space="preserve">
+    <value>The school profile did not return a school name.</value>
+  </data>
+  <data name="ErrorPaginationLimit" xml:space="preserve">
+    <value>The school did not finish pagination after 10,000 pages. No incomplete archive was saved.</value>
+  </data>
+  <data name="ErrorPlatformStorageRequired" xml:space="preserve">
+    <value>This platform requires an explicit database path and local data protection.</value>
+  </data>
+  <data name="ErrorRedirectBlocked" xml:space="preserve">
+    <value>The school redirected the request. Check the base URL; redirects are blocked to protect credentials.</value>
+  </data>
+  <data name="ErrorRepeatedPage" xml:space="preserve">
+    <value>The school repeated a page without new messages. Synchronization stopped rather than saving an incomplete archive.</value>
+  </data>
+  <data name="ErrorResponseTooLarge" xml:space="preserve">
+    <value>The API response exceeded the 2 MB limit.</value>
+  </data>
+  <data name="ErrorSavedAccountsDamaged" xml:space="preserve">
+    <value>The saved account list is damaged. Sign in again.</value>
+  </data>
+  <data name="ErrorSavedSignInDamaged" xml:space="preserve">
+    <value>The saved sign-in setting is damaged. Sign in again.</value>
+  </data>
+  <data name="ErrorSavedSignInsDamaged" xml:space="preserve">
+    <value>The saved sign-in list is damaged. Sign in again.</value>
+  </data>
+  <data name="ErrorSignInRejected" xml:space="preserve">
+    <value>Sign-in rejected (HTTP {0}). Check credentials. The documented mobile login may also be disabled or incompatible.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorSyncTimestampDamaged" xml:space="preserve">
+    <value>The offline synchronization timestamp is damaged.</value>
+  </data>
+  <data name="ErrorTimeout" xml:space="preserve">
+    <value>The school did not respond within {0:0} seconds, even after a retry. Check internet access or try again later.</value>
+    <comment>{0} = timeout in seconds.</comment>
+  </data>
+  <data name="ErrorUnknownFolder" xml:space="preserve">
+    <value>Unknown Komens folder.</value>
+  </data>
+  <data name="ErrorUnrecognizedMessage" xml:space="preserve">
+    <value>Komens returned an unrecognized message format.</value>
+  </data>
+  <data name="ErrorUnrecognizedMessageList" xml:space="preserve">
+    <value>Komens returned an unrecognized message-list format.</value>
+  </data>
+  <data name="ErrorUpdateCheckFailed" xml:space="preserve">
+    <value>Could not check for updates. OBK will try again later.</value>
+  </data>
+  <data name="ErrorUpdateDownloadFailed" xml:space="preserve">
+    <value>Could not download the update. OBK will try again later.</value>
+  </data>
+  <data name="ErrorUpdateNoChecksum" xml:space="preserve">
+    <value>The release has no checksum for its installer.</value>
+  </data>
+  <data name="ErrorUpdateTooLarge" xml:space="preserve">
+    <value>The update installer is unexpectedly large.</value>
+  </data>
+  <data name="ErrorUpdateVerificationFailed" xml:space="preserve">
+    <value>The downloaded update failed verification and was discarded.</value>
+  </data>
+  <data name="ErrorUrlIsLoginPage" xml:space="preserve">
+    <value>Enter the school's base URL, not its /login page.</value>
+  </data>
+  <data name="ErrorUrlNotHttps" xml:space="preserve">
+    <value>Use an HTTPS school URL without credentials, query, or fragment.</value>
+  </data>
+  <data name="FolderInbox" xml:space="preserve">
+    <value>Inbox</value>
+  </data>
+  <data name="FolderNoticeboard" xml:space="preserve">
+    <value>Noticeboard</value>
+  </data>
+  <data name="FolderSent" xml:space="preserve">
+    <value>Sent</value>
+  </data>
+  <data name="GroupThisMonth" xml:space="preserve">
+    <value>This month</value>
+  </data>
+  <data name="GroupThisWeek" xml:space="preserve">
+    <value>This week</value>
+  </data>
+  <data name="GroupToday" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="GroupYesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="ImageNotLoaded" xml:space="preserve">
+    <value>[Image not loaded]</value>
+  </data>
+  <data name="ImageWithDescription" xml:space="preserve">
+    <value>[Image: {0}]</value>
+    <comment>Placeholder for an image in a message body. {0} = image description from the message.</comment>
+  </data>
+  <data name="NoSubject" xml:space="preserve">
+    <value>(No subject)</value>
+    <comment>Shown instead of an empty message subject.</comment>
+  </data>
+  <data name="ProgressAttachment" xml:space="preserve">
+    <value>Attachment {0} of {1}: {2}...</value>
+    <comment>{0} = attachment number; {1} = total attachments; {2} = file name.</comment>
+  </data>
+  <data name="ProgressFolderPage" xml:space="preserve">
+    <value>{0}: page {1}, {2} messages...</value>
+    <comment>{0} = folder name; {1} = page number; {2} = messages downloaded so far.</comment>
+  </data>
+</root>

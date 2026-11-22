@@ -1,3 +1,4 @@
+using OBK.Core.Localization;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using System.Text.RegularExpressions;
@@ -58,8 +59,8 @@ public static partial class MessageRenderer
             if (tag == "br") Add("\n", bold, italic, underline, heading);
             if (tag == "li") Add("- ", bold, italic, underline, heading);
             if (tag is "td" or "th") Add("\t", bold, italic, underline, heading);
-            if (tag == "img") Add(element!.GetAttribute("alt") is { Length: > 0 } alt ? $"[Image: {alt}]" :
-                "[Image not loaded]", bold, italic, underline, heading, link);
+            if (tag == "img") Add(element!.GetAttribute("alt") is { Length: > 0 } alt ? Localized.Format(SharedStrings.ImageWithDescription, alt) :
+                SharedStrings.ImageNotLoaded, bold, italic, underline, heading, link);
             foreach (var child in node.ChildNodes) Visit(child, bold, italic, underline, heading, pre, link);
             if (tag == "a" && link is not null && !parts.Skip(count).Any(p => p.Link is not null && p.Text.Trim().Length > 0))
                 Add(element!.GetAttribute("href")!.Trim(), bold, italic, underline, heading, link);

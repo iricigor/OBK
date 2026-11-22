@@ -1,0 +1,23 @@
+<Project>
+  <!--
+    Generates public typed accessors for neutral string resources before compilation.
+    Explicit generation is needed because WPF compiles XAML x:Static references in a
+    temporary assembly that skips standard strongly typed resource generation.
+  -->
+  <ItemGroup>
+    <Compile Include="@(LocalizedStrings->'$(IntermediateOutputPath)%(Filename).Designer.cs')" />
+  </ItemGroup>
+
+  <Target Name="GenerateLocalizedStrings" BeforeTargets="MarkupCompilePass1;CoreCompile"
+          Inputs="@(LocalizedStrings)" Outputs="$(IntermediateOutputPath)%(LocalizedStrings.Filename).Designer.cs">
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <GenerateResource Sources="@(LocalizedStrings)"
+                      OutputResources="$(IntermediateOutputPath)%(LocalizedStrings.Filename).typed.resources"
+                      StronglyTypedLanguage="CSharp"
+                      StronglyTypedNamespace="$(RootNamespace).Localization"
+                      StronglyTypedClassName="%(LocalizedStrings.Filename)"
+                      StronglyTypedFileName="$(IntermediateOutputPath)%(LocalizedStrings.Filename).Designer.cs"
+                      PublicClass="true"
+                      ExecuteAsTool="false" />
+  </Target>
+</Project>

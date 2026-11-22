@@ -1,3 +1,4 @@
+using OBK.Core.Localization;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
@@ -33,9 +34,9 @@ public sealed class KomensClient : IDisposable
             !Uri.TryCreate(text, UriKind.Absolute, out var uri) || uri.Scheme != "https" ||
             string.IsNullOrEmpty(uri.Host) || uri.UserInfo.Length != 0 ||
             text.Contains('?') || text.Contains('#') || uri.Port is < 1 or > 65535)
-            throw new ObkException("Use an HTTPS school URL without credentials, query, or fragment.");
+            throw new ObkException(SharedStrings.ErrorUrlNotHttps);
         if (uri.AbsolutePath.TrimEnd('/').EndsWith("/login", StringComparison.OrdinalIgnoreCase))
-            throw new ObkException("Enter the school's base URL, not its /login page.");
+            throw new ObkException(SharedStrings.ErrorUrlIsLoginPage);
         // Keep the original spelling to reuse the Python cache's account keys.
         return text.TrimEnd('/');
     }
@@ -52,12 +53,12 @@ public sealed class KomensClient : IDisposable
         var status = (int)response.StatusCode;
         response.Dispose();
         if (status is >= 300 and < 400)
-            throw new ObkException("The school redirected the request. Check the base URL; redirects are blocked to protect credentials.");
+            throw new ObkException(SharedStrings.ErrorRedirectBlocked);
         if (path == "/api/login" && status is 400 or 401 or 403)
-            throw new ObkException($"Sign-in rejected (HTTP {status}). Check credentials. The documented mobile login may also be disabled or incompatible.");
+            throw new ObkException(Localized.Format(SharedStrings.ErrorSignInRejected, status));
         if (status is 401 or 403)
-            throw new ObkException($"API access rejected (HTTP {status}). The account or token may not have Komens access.");
-        throw new ObkException($"API request failed (HTTP {status}). Check school availability and API compatibility.");
+            throw new ObkException(Localized.Format(SharedStrings.ErrorApiAccessRejected, status));
+        throw new ObkException(Localized.Format(SharedStrings.ErrorApiRequestFailed, status));
     }
 
     // Network failures and timeouts get one fresh attempt; HTTP errors and invalid data fail immediately.
@@ -71,8 +72,8 @@ public sealed class KomensClient : IDisposable
             {
                 if (tries < MaxAttempts) continue;
                 throw new ObkException(error is OperationCanceledException
-                    ? $"The school did not respond within {requestTimeout.TotalSeconds:0} seconds, even after a retry. Check internet access or try again later."
-                    : "Connection failed, even after a retry. Check internet access and the school's HTTPS certificate. No certificate checks were bypassed.");
+                    ? Localized.Format(SharedStrings.ErrorTimeout, requestTimeout.TotalSeconds)
+                    : SharedStrings.ErrorConnectionFailed);
             }
         }
     }
@@ -88,20 +89,20 @@ public sealed class KomensClient : IDisposable
             while ((count = await source.ReadAsync(buffer, cancellation)) != 0)
             {
                 if (output.Length + count > MaxResponseBytes)
-                    throw new ObkException("The API response exceeded the 2 MB limit.");
+                    throw new ObkException(SharedStrings.ErrorResponseTooLarge);
                 output.Write(buffer, 0, count);
             }
             try { return JsonDocument.Parse(output.ToArray()); }
             catch (JsonException)
             {
-                throw new ObkException("The school returned an invalid JSON response. Check API compatibility.");
+                throw new ObkException(SharedStrings.ErrorInvalidJson);
             }
         });
 
     public async Task<string> SignInAsync(string username, string password)
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
-            throw new ObkException("Enter both a username and password.");
+            throw new ObkException(SharedStrings.ErrorMissingCredentials);
         using var result = await JsonAsync("/api/login", body: () => new FormUrlEncodedContent(
             new Dictionary<string, string>
             {
@@ -112,7 +113,7 @@ public sealed class KomensClient : IDisposable
             !result.RootElement.TryGetProperty("access_token", out var field) ||
             field.ValueKind != JsonValueKind.String || string.IsNullOrEmpty(field.GetString()) ||
             field.GetString()!.Any(c => char.IsWhiteSpace(c) || char.IsControl(c)))
-            throw new ObkException("Sign-in returned no usable access token.");
+            throw new ObkException(SharedStrings.ErrorNoAccessToken);
         return field.GetString()!;
     }
 
@@ -122,14 +123,14 @@ public sealed class KomensClient : IDisposable
         if (result.RootElement.ValueKind != JsonValueKind.Object ||
             !result.RootElement.TryGetProperty("SchoolOrganizationName", out var field) ||
             field.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(field.GetString()))
-            throw new ObkException("The school profile did not return a school name.");
+            throw new ObkException(SharedStrings.ErrorNoSchoolName);
         return field.GetString()!.Trim();
     }
 
     public async Task<List<Message>> FetchFolderAsync(
         string token, string folder, SchoolYear year, List<Message>? cached = null, IProgress<string>? progress = null)
     {
-        if (!Folders.Names.ContainsKey(folder)) throw new ObkException("Unknown Komens folder.");
+        if (!Folders.Keys.Contains(folder)) throw new ObkException(SharedStrings.ErrorUnknownFolder);
         var messages = new Dictionary<string, Message>();
         foreach (var message in cached ?? [])
         {
@@ -151,36 +152,36 @@ public sealed class KomensClient : IDisposable
                 }), Encoding.UTF8, "application/json"));
             if (result.RootElement.ValueKind != JsonValueKind.Object ||
                 !result.RootElement.TryGetProperty("Messages", out var list) || list.ValueKind != JsonValueKind.Array)
-                throw new ObkException("Komens returned an unrecognized message-list format.");
+                throw new ObkException(SharedStrings.ErrorUnrecognizedMessageList);
             List<Message> batch;
             try { batch = list.Deserialize<List<Message>>()!; }
-            catch (JsonException) { throw new ObkException("Komens returned an unrecognized message format."); }
+            catch (JsonException) { throw new ObkException(SharedStrings.ErrorUnrecognizedMessage); }
             if (batch.Count == 0)
                 return messages.Values.OrderByDescending(m => m.Date.DateTime).ToList();
             var newIds = 0;
             foreach (var message in batch)
             {
-                if (message is null) throw new ObkException("Komens returned an unrecognized message format.");
+                if (message is null) throw new ObkException(SharedStrings.ErrorUnrecognizedMessage);
                 message.Validate();
                 if (seen.Add(message.Id)) newIds++;
                 if (message.Date.Date >= year.Start && message.Date.Date < year.End)
                     messages[message.Id] = message;
             }
             if (newIds == 0)
-                throw new ObkException("The school repeated a page without new messages. Synchronization stopped rather than saving an incomplete archive.");
-            progress?.Report($"{Folders.Names[folder]}: page {page}, {messages.Count} messages...");
+                throw new ObkException(SharedStrings.ErrorRepeatedPage);
+            progress?.Report(Localized.Format(SharedStrings.ProgressFolderPage, Folders.Title(folder), page, messages.Count));
         }
-        throw new ObkException("The school did not finish pagination after 10,000 pages. No incomplete archive was saved.");
+        throw new ObkException(SharedStrings.ErrorPaginationLimit);
     }
 
     public async Task<Dictionary<string, List<Message>>> FetchYearAsync(
         string token, SchoolYear year, Dictionary<string, List<Message>>? cached = null, IProgress<string>? progress = null)
     {
         var result = Folders.Empty();
-        foreach (var folder in Folders.Names.Keys)
+        foreach (var folder in Folders.Keys)
         {
             try { result[folder] = await FetchFolderAsync(token, folder, year, cached?[folder], progress); }
-            catch (ObkException error) { throw new ObkException($"{Folders.Names[folder]}: {error.Message}"); }
+            catch (ObkException error) { throw new ObkException(Localized.Format(SharedStrings.ErrorInContext, Folders.Title(folder), error.Message)); }
         }
         return result;
     }
@@ -198,7 +199,7 @@ public sealed class KomensClient : IDisposable
         foreach (var attachment in attachments.Values)
         {
             index++;
-            progress?.Report($"Attachment {index} of {attachments.Count}: {attachment.SafeName}...");
+            progress?.Report(Localized.Format(SharedStrings.ProgressAttachment, index, attachments.Count, attachment.SafeName));
             try
             {
                 if (store.AttachmentInfo(BaseUrl, username, attachment.Identifier) is not null) continue;
@@ -212,7 +213,7 @@ public sealed class KomensClient : IDisposable
                         idleTimeout: requestTimeout);
                 });
             }
-            catch (ObkException error) { throw new ObkException($"Attachment {index} of {attachments.Count}: {error.Message}"); }
+            catch (ObkException error) { throw new ObkException(Localized.Format(SharedStrings.ErrorInAttachment, index, attachments.Count, error.Message)); }
         }
         return attachments.Count;
     }
