@@ -12,4 +12,19 @@
     <SolidColorBrush x:Key="StatusGood" Color="#107C10"/>
     <SolidColorBrush x:Key="Danger" Color="#C42B1C"/>
     <SolidColorBrush x:Key="DangerText" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="HeaderSurface" Color="#EAEFF5"/>
+    <SolidColorBrush x:Key="FolderInbox" Color="#0F6CBD"/>
+    <SolidColorBrush x:Key="FolderSent" Color="#00897B"/>
+    <SolidColorBrush x:Key="FolderNotice" Color="#D97706"/>
+    <SolidColorBrush x:Key="Avatar0Bg" Color="#E0F2F1"/><SolidColorBrush x:Key="Avatar0Fg" Color="#00695C"/>
+    <SolidColorBrush x:Key="Avatar1Bg" Color="#E8EAF6"/><SolidColorBrush x:Key="Avatar1Fg" Color="#3949AB"/>
+    <SolidColorBrush x:Key="Avatar2Bg" Color="#F3E5F5"/><SolidColorBrush x:Key="Avatar2Fg" Color="#7B1FA2"/>
+    <SolidColorBrush x:Key="Avatar3Bg" Color="#FDE7E2"/><SolidColorBrush x:Key="Avatar3Fg" Color="#B3412B"/>
+    <SolidColorBrush x:Key="Avatar4Bg" Color="#FFF3D6"/><SolidColorBrush x:Key="Avatar4Fg" Color="#8A5A00"/>
+    <SolidColorBrush x:Key="Avatar5Bg" Color="#DDF3E4"/><SolidColorBrush x:Key="Avatar5Fg" Color="#1B7A3E"/>
+    <SolidColorBrush x:Key="BadgePdfBg" Color="#FBE9EA"/><SolidColorBrush x:Key="BadgePdfFg" Color="#D13438"/>
+    <SolidColorBrush x:Key="BadgePptxBg" Color="#FCEBE3"/><SolidColorBrush x:Key="BadgePptxFg" Color="#D83B01"/>
+    <SolidColorBrush x:Key="BadgeDocxBg" Color="#E3ECF9"/><SolidColorBrush x:Key="BadgeDocxFg" Color="#185ABD"/>
+    <SolidColorBrush x:Key="BadgeXlsxBg" Color="#E1F2E8"/><SolidColorBrush x:Key="BadgeXlsxFg" Color="#107C41"/>
+    <SolidColorBrush x:Key="BadgeFileBg" Color="#ECEFF1"/><SolidColorBrush x:Key="BadgeFileFg" Color="#475569"/>
 </ResourceDictionary>

@@ -71,9 +71,44 @@ public sealed class AnyTrueConverter : IMultiValueConverter
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => throw new NotSupportedException();
 }
 
+public static class Palette
+{
+    public const int PairCount = 6;
+
+    // FNV-1a keeps assignments stable across launches, unlike string.GetHashCode.
+    public static int PairIndex(string? value)
+    {
+        var hash = 2166136261u;
+        foreach (var c in (value ?? "").Trim().ToLowerInvariant())
+            hash = (hash ^ c) * 16777619u;
+        return (int)(hash % PairCount);
+    }
+
+    public static string PairKey(string? value) => "Avatar" + PairIndex(value);
+
+    public static string FileKey(string? extension) => (extension ?? "").TrimStart('.').ToLowerInvariant() switch
+    {
+        "pdf" => "BadgePdf",
+        "pptx" => "BadgePptx",
+        "docx" => "BadgeDocx",
+        "xlsx" => "BadgeXlsx",
+        _ => "BadgeFile"
+    };
+}
+
+// Resolves a themed brush by key; the second binding only re-triggers it when the theme changes.
+public sealed class ThemeBrushConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) =>
+        values.Length > 0 && values[0] is string key && Application.Current.TryFindResource(key + parameter) is { } brush
+            ? brush : DependencyProperty.UnsetValue;
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => throw new NotSupportedException();
+}
+
 public sealed class FolderRow(string key, string title, string icon, int count)
 {
     public string Key { get; } = key;
+    public string AccentKey { get; } = key switch { "sent" => "FolderSent", "noticeboard" => "FolderNotice", _ => "FolderInbox" };
     public string Title { get; } = title;
     public string Icon { get; } = icon;
     public int Count { get; } = count;
@@ -97,6 +132,7 @@ public sealed class AttachmentRow(MainViewModel owner, Attachment attachment, At
     public string Name => info?.Name ?? Attachment.SafeName;
     public bool Cached => info is not null;
     public bool CanOpen => Cached && FileNames.CanOpen(Name);
+    public string BadgeKey => Palette.FileKey(System.IO.Path.GetExtension(Name));
     public string Size => info is null ? "Not downloaded" : FormatSize(info.Size);
     public string Type => System.IO.Path.GetExtension(Name).TrimStart('.').ToUpperInvariant() is { Length: > 0 } type
         ? type.Length <= 4 ? type : "FILE" : "FILE";
@@ -122,7 +158,7 @@ public static class MessageDocument
     private static async void PartsChanged(DependencyObject target, DependencyPropertyChangedEventArgs e)
     {
         if (target is not RichTextBox reader || e.NewValue is not IReadOnlyList<TextPart> parts) return;
-        var paragraph = new Paragraph { Margin = new Thickness(0), LineHeight = 21.7 };
+        var paragraph = new Paragraph { Margin = new Thickness(0), LineHeight = 21 };
         var count = 0;
         foreach (var part in parts)
         {

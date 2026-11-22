@@ -73,6 +73,7 @@ public sealed class MainViewModel : ObservableObject
         {
             if (!Set(ref account, value)) return;
             Notify(nameof(AccountLabel));
+            Notify(nameof(AccountColorKey));
             Notify(nameof(WindowTitle));
         }
     }
@@ -83,10 +84,13 @@ public sealed class MainViewModel : ObservableObject
         {
             if (!Set(ref school, value)) return;
             Notify(nameof(AccountLabel));
+            Notify(nameof(AccountColorKey));
             Notify(nameof(WindowTitle));
         }
     }
     public string AccountLabel => Account?.ChildName is { Length: > 0 } childName ? childName : School;
+    public string AccountColorKey => Palette.PairKey(Account is { } a ? a.Url + "|" + a.Username : School);
+    public string SenderColorKey => Palette.PairKey(Sender);
     public string WindowTitle => AccountLabel == "Your school" ? "OBK - Offline Komens" :
         $"OBK - Offline Komens - {AccountLabel}";
     public string YearLabel => $"School year {year.Label} | Sept 1 - Aug 31";
@@ -103,7 +107,7 @@ public sealed class MainViewModel : ObservableObject
     public string Status { get => status; private set => Set(ref status, value); }
     public bool GoodStatus { get => goodStatus; private set => Set(ref goodStatus, value); }
     public string Subject { get => subject; private set => Set(ref subject, value); }
-    public string Sender { get => sender; private set => Set(ref sender, value); }
+    public string Sender { get => sender; private set { if (Set(ref sender, value)) Notify(nameof(SenderColorKey)); } }
     public string Initials { get => initials; private set => Set(ref initials, value); }
     public string Metadata { get => metadata; private set => Set(ref metadata, value); }
     public IReadOnlyList<TextPart> Body { get => body; private set => Set(ref body, value); }

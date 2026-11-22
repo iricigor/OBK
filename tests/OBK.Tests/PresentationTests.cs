@@ -13,6 +13,18 @@ namespace OBK.Tests;
 public sealed class PresentationTests
 {
     [Fact]
+    public void PaletteAssignmentsAreStableAndFileKindsAreCaseInsensitive()
+    {
+        Assert.Equal(Palette.PairIndex("Jana Nováková"), Palette.PairIndex("  jana nováková "));
+        Assert.Equal(1, Palette.PairIndex("Test School Office"));
+        Assert.All(new[] { "", "a", "Marko", "Teacher" }, v => Assert.InRange(Palette.PairIndex(v), 0, Palette.PairCount - 1));
+        Assert.Equal("BadgePdf", Palette.FileKey(".PDF"));
+        Assert.Equal("BadgePptx", Palette.FileKey("pptx"));
+        Assert.Equal("BadgeFile", Palette.FileKey(""));
+        Assert.Equal("BadgeFile", Palette.FileKey("zip"));
+    }
+
+    [Fact]
     public async Task ThemesAndAsyncSelectionsStayReactiveWithoutChangingArchiveReadState()
     {
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

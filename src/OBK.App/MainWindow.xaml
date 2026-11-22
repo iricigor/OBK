@@ -13,10 +13,11 @@
     <Grid x:Name="WindowRoot" Background="{DynamicResource AppBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
-            <RowDefinition Height="72"/>
+            <RowDefinition Height="56"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="28"/>
         </Grid.RowDefinitions>
+        <Border Grid.RowSpan="2" Background="{DynamicResource HeaderSurface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1"/>
         <Grid>
             <StackPanel Orientation="Horizontal" Margin="20,0,150,0" VerticalAlignment="Center">
                 <TextBlock Style="{StaticResource Icon}" Text="&#xE715;" Foreground="{DynamicResource Accent}" FontSize="14" Margin="0,0,8,0"/>
@@ -41,15 +42,28 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="1" Margin="20,8,20,16">
+        <Grid Grid.Row="1" Margin="20,0,20,0">
             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="OBK" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                <TextBlock Text="{Binding AccountLabel}" ToolTip="{Binding AccountLabel}" MaxWidth="360"
-                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}"
-                           Margin="0,0,20,0"/>
+                <TextBlock Text="OBK" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                <Border CornerRadius="12" Padding="10,3" VerticalAlignment="Center" Margin="0,0,12,0" MaxWidth="360" ToolTip="{Binding AccountLabel}">
+                    <Border.Background>
+                        <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
+                            <Binding Path="AccountColorKey"/>
+                            <Binding Path="Theme.IsDark"/>
+                        </MultiBinding>
+                    </Border.Background>
+                    <TextBlock Text="{Binding AccountLabel}" FontSize="12.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis">
+                        <TextBlock.Foreground>
+                            <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                <Binding Path="AccountColorKey"/>
+                                <Binding Path="Theme.IsDark"/>
+                            </MultiBinding>
+                        </TextBlock.Foreground>
+                    </TextBlock>
+                </Border>
                 <Border x:Name="YearBadge" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}"
-                        BorderThickness="1" CornerRadius="16" Padding="12,6" VerticalAlignment="Center">
+                        BorderThickness="1" CornerRadius="12" Padding="10,3" VerticalAlignment="Center">
                     <TextBlock x:Name="YearLabel" Text="{Binding YearLabel}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                 </Border>
             </StackPanel>
@@ -59,7 +73,7 @@
                     <TextBlock Style="{StaticResource Icon}" Text="{Binding Theme.ToggleIcon}"/>
                 </Button>
                 <Button x:Name="SwitchSchoolButton" Style="{StaticResource SubtleButton}" Command="{Binding SwitchSchoolCommand}"
-                        Content="Switch school" Margin="0,0,8,0"/>
+                        Content="Switch school" FontSize="12.5" Margin="0,0,8,0"/>
                 <Button x:Name="SyncButton" Style="{StaticResource PrimaryButton}" Command="{Binding SignInCommand}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock x:Name="SyncIcon" Text="&#xE895;" FontFamily="{StaticResource IconFont}"
@@ -104,7 +118,7 @@
                 <ColumnDefinition Width="*" MinWidth="300"/>
             </Grid.ColumnDefinitions>
             <DockPanel Margin="4,8,4,0">
-                <TextBlock Text="{Binding School}" FontWeight="SemiBold" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="12,0,12,18"/>
+                <TextBlock Text="{Binding School}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="12,0,12,18"/>
                 <TextBlock DockPanel.Dock="Bottom" Text="OFFLINE KOMENS" FontSize="10" Foreground="{DynamicResource TextSecondary}" Margin="12,16"/>
                 <ListBox x:Name="FolderList" ItemsSource="{Binding Navigation}" SelectedItem="{Binding SelectedFolder}"
                          AutomationProperties.Name="Folders">
@@ -117,10 +131,28 @@
                         <DataTemplate>
                             <Grid Margin="12,0,10,0">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="24"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Icon}" Style="{StaticResource Icon}" FontSize="16" HorizontalAlignment="Left"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="8,0" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Icon}" Style="{StaticResource Icon}" FontSize="16" HorizontalAlignment="Left">
+                                    <TextBlock.Foreground>
+                                        <MultiBinding Converter="{StaticResource ThemeBrush}">
+                                            <Binding Path="AccentKey"/>
+                                            <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                        </MultiBinding>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
+                                <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="8,0" TextTrimming="CharacterEllipsis" FontSize="13.5">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Normal"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                                 <Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="10" MinWidth="24" Padding="6,2" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Count}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Count}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
                                 </Border>
                             </Grid>
                         </DataTemplate>
@@ -140,15 +172,15 @@
                                  ItemContainerStyle="{StaticResource SelectableRow}" AutomationProperties.Name="Messages">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="12">
+                                    <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="12,10">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition/><ColumnDefinition Width="20"/></Grid.ColumnDefinitions>
                                             <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" VerticalAlignment="Top" Margin="0,7,4,0"
                                                      Visibility="{Binding Unread, Converter={StaticResource VisibleIf}}"/>
                                             <StackPanel Grid.Column="1">
-                                                <TextBlock Text="{Binding Subject}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="40" FontSize="14" FontWeight="SemiBold" ToolTip="{Binding Subject}"/>
-                                                <TextBlock Text="{Binding Person}" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,6,0,0"/>
-                                                <TextBlock Text="{Binding Sent}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                                                <TextBlock Text="{Binding Subject}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" LineStackingStrategy="BlockLineHeight" LineHeight="17" MaxHeight="34" FontSize="13" FontWeight="SemiBold" ToolTip="{Binding Subject}"/>
+                                                <TextBlock Text="{Binding Person}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
+                                                <TextBlock Text="{Binding Sent}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                             </StackPanel>
                                             <TextBlock Grid.Column="2" Text="&#xE723;" Style="{StaticResource Icon}" FontSize="13" VerticalAlignment="Top" Margin="6,3,0,0"
                                                        Foreground="{DynamicResource TextSecondary}" Visibility="{Binding HasFiles, Converter={StaticResource VisibleIf}}"
@@ -166,11 +198,24 @@
             <Border Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
                 <ScrollViewer x:Name="ReadingScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="24">
                     <StackPanel>
-                        <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,20"/>
+                        <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,20"/>
                         <Grid Margin="0,0,0,20">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                            <Border Width="36" Height="36" CornerRadius="18" Background="{DynamicResource Selection}" VerticalAlignment="Top">
-                                <TextBlock Text="{Binding Initials}" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border Width="36" Height="36" CornerRadius="18" VerticalAlignment="Top">
+                                <Border.Background>
+                                    <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
+                                        <Binding Path="SenderColorKey"/>
+                                        <Binding Path="Theme.IsDark"/>
+                                    </MultiBinding>
+                                </Border.Background>
+                                <TextBlock Text="{Binding Initials}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock.Foreground>
+                                        <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                            <Binding Path="SenderColorKey"/>
+                                            <Binding Path="Theme.IsDark"/>
+                                        </MultiBinding>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
                             </Border>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0">
                                 <TextBlock Text="{Binding Sender}" FontWeight="SemiBold" TextWrapping="Wrap"/>
@@ -200,8 +245,21 @@
                                                     <Grid>
                                                         <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition/></Grid.ColumnDefinitions>
                                                         <Grid Width="30" Height="30">
-                                                            <Border Background="{DynamicResource Selection}" CornerRadius="4">
-                                                                <TextBlock Text="{Binding Type}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                            <Border CornerRadius="4">
+                                                                <Border.Background>
+                                                                    <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
+                                                                        <Binding Path="BadgeKey"/>
+                                                                        <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                                    </MultiBinding>
+                                                                </Border.Background>
+                                                                <TextBlock Text="{Binding Type}" FontSize="9" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                                    <TextBlock.Foreground>
+                                                                        <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                                                            <Binding Path="BadgeKey"/>
+                                                                            <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                                        </MultiBinding>
+                                                                    </TextBlock.Foreground>
+                                                                </TextBlock>
                                                             </Border>
                                                             <Ellipse Width="7" Height="7" Fill="{DynamicResource StatusGood}" Stroke="{DynamicResource Surface}" StrokeThickness="1"
                                                                      VerticalAlignment="Bottom" HorizontalAlignment="Right" Visibility="{Binding Cached, Converter={StaticResource VisibleIf}}"/>
