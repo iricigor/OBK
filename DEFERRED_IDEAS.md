@@ -52,3 +52,74 @@ Sending messages remains outside OBK's scope.
 
 - [Sending a Komens message: payload containing PreviousMessageId](https://github.com/bakalari-api/bakalari-api-v3/blob/master/moduly/komens_send.md)
 - [Komens message lists and details](https://github.com/bakalari-api/bakalari-api-v3/blob/master/moduly/komens.md)
+
+## DI-02: Apple iPhone (iOS) version
+
+**Status:** Deferred. Paid Apple Developer membership is a deal breaker for
+the proposed distribution route; the other development and testing hurdles
+also make this unsuitable for now.
+
+**Idea:** Port the Android .NET MAUI reader to iOS, retaining OBK's read-only
+behavior and encrypted offline archives. This entry concerns iPhone support,
+not a separate macOS desktop app.
+
+### What is known
+
+- The repository currently has an Android-only MAUI project targeting
+  `net10.0-android`, with shared C# core logic; there is no iOS application.
+- MAUI supports iOS, so the core and much of the mobile interface are candidates
+  for reuse. The amount of reuse is an expectation, not a verified port.
+- Android Keystore-backed data protection and Android startup code cannot be
+  used unchanged on iOS. An iOS storage-protection implementation and platform
+  configuration are needed.
+- iOS builds require Apple's macOS/Xcode toolchain. GitHub Actions offers
+  hosted macOS runners, so owning or borrowing a Mac is not essential for
+  automated builds.
+- TestFlight requires Apple Developer Program membership, normally US$99 per
+  year or a local equivalent. It allows invitation-based testing without a
+  public App Store release, but still requires uploading builds to Apple.
+
+### Why this is deferred
+
+The membership cost is the primary blocker. Additional hurdles discussed are:
+
+- No local Mac is available for development, simulator testing, or direct
+  Xcode installation; a hosted build is not equivalent to local device
+  debugging.
+- Signing certificates, provisioning profiles, Apple account setup, and
+  secure CI credentials add maintenance even with GitHub-hosted builds.
+- iPhone installation is not an Android-style unsigned APK download.
+  Free personal-team development installation has restrictions and roughly
+  seven-day provisioning expiry, making repeated installation impractical.
+  Paid ad hoc distribution requires registering devices and maintaining
+  valid signing/provisioning.
+- TestFlight builds expire after 90 days, and external testing can require
+  Apple's beta review. This is not permanent, fully offline distribution.
+- Camera/QR scanning, attachment opening and sharing, navigation, encrypted
+  storage, and real-device behavior still need iOS-specific verification.
+
+### Investigation before implementation
+
+- Revisit only if an acceptable membership cost or a suitable alternative
+  distribution route becomes available; recheck Apple's current terms.
+- Agree scope and acceptance criteria before implementation. Do not treat
+  shared MAUI code as proof that iOS support is already working.
+- Verify .NET/iOS workload and Xcode compatibility on the selected macOS
+  runner, runner costs, and the signing/upload process.
+- Design iOS Keychain-backed key management and authenticated archive
+  encryption, including key loss, reinstall, and backup behavior.
+- Plan real-iPhone testing and ongoing build renewal. Verify login, offline
+  reading, credential transfer, permissions, and attachment handling without
+  changing server-side message state.
+- A web/PWA alternative would be a separate proposal, not an approved
+  substitute; its offline storage and security limitations need investigation.
+
+### References
+
+- [Android preview and current scope](README.md#android-preview)
+- [Current Android target](src/OBK.Android/OBK.Android.csproj)
+- [Android-specific data protection](src/OBK.Android/Platforms/Android/AndroidDataProtection.cs)
+- [GitHub-hosted macOS runners](https://docs.github.com/en/actions/concepts/runners/github-hosted-runners)
+- [Apple Developer membership comparison and personal-team limits](https://developer.apple.com/support/compare-memberships/)
+- [Distribution to registered devices](https://help.apple.com/xcode/mac/current/en.lproj/dev7ccaf4d3c.html)
+- [TestFlight testing and build expiry](https://developer.apple.com/testflight/)

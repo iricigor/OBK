@@ -135,6 +135,45 @@
   <data name="ReaderAccountPickerTitle" xml:space="preserve">
     <value>Vyberte dítě nebo účet</value>
   </data>
+  <data name="ReaderNavigationMenu" xml:space="preserve">
+    <value>Otevřít navigační nabídku</value>
+  </data>
+  <data name="ReaderAccountOption" xml:space="preserve">
+    <value>{0}. {1}</value>
+  </data>
+  <data name="ReaderSelectedChild" xml:space="preserve">
+    <value>Dítě: {0}. Změnit dítě nebo účet</value>
+  </data>
+  <data name="ReaderSelectedFolder" xml:space="preserve">
+    <value>Složka: {0}. Změnit složku</value>
+  </data>
+  <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Nastavení</value>
+  </data>
+  <data name="SettingsManageAccounts" xml:space="preserve">
+    <value>Spravovat účty</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Vzhled</value>
+  </data>
+  <data name="SettingsThemeSystem" xml:space="preserve">
+    <value>Podle systému</value>
+  </data>
+  <data name="SettingsThemeLight" xml:space="preserve">
+    <value>Světlý</value>
+  </data>
+  <data name="SettingsThemeDark" xml:space="preserve">
+    <value>Tmavý</value>
+  </data>
+  <data name="SettingsThemeExplanation" xml:space="preserve">
+    <value>Volba Podle systému přebírá vzhled Androidu. Vaše volba se uloží na tomto zařízení.</value>
+  </data>
+  <data name="ReaderAccountLabel" xml:space="preserve">
+    <value>Dítě / účet</value>
+  </data>
+  <data name="ReaderFolderLabel" xml:space="preserve">
+    <value>Složka</value>
+  </data>
   <data name="ReaderAccountStatus" xml:space="preserve">
     <value>{0}: {1}</value>
     <comment>Status or failure line for one account during Refresh all. {0} = account label, {1} = progress or error text.</comment>
@@ -201,7 +240,7 @@
     <comment>Refresh button text when the encrypted archive could not be opened.</comment>
   </data>
   <data name="ReaderSearchPlaceholder" xml:space="preserve">
-    <value>Hledat předmět, odesílatele, text nebo datum</value>
+    <value>Hledat zprávy</value>
   </data>
   <data name="ReaderStatusArchiveReady" xml:space="preserve">
     <value>Offline archiv je připraven. Poslední synchronizace: {0}</value>
@@ -262,6 +301,12 @@
   <data name="SignInSchoolAddressLabel" xml:space="preserve">
     <value>HTTPS adresa školy</value>
     <comment>Field label.</comment>
+  </data>
+  <data name="SignInManualAddressButton" xml:space="preserve">
+    <value>Zadat adresu školy ručně</value>
+  </data>
+  <data name="SignInHideAddressButton" xml:space="preserve">
+    <value>Skrýt adresu školy</value>
   </data>
   <data name="SignInSchoolSearchPlaceholder" xml:space="preserve">
     <value>Hledat školu nebo obec</value>

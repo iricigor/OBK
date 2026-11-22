@@ -137,8 +137,10 @@ language; Czech is also supported. Ukrainian and German (#30) follow later.
 
 The Windows language button combines a fixed globe icon with the current EN/CS
 code and cycles languages beside the theme button, including sign-in. Android
-keeps its system-controlled theme and places EN/CS in the
-native toolbar on reader, sign-in, and message pages. The tooltip/accessibility
+places EN/CS in the reader's status footer and in the native
+toolbar on settings, sign-in, and message pages. Language changes retain the
+saved System/Light/Dark appearance choice and the open navigation stack.
+The tooltip/accessibility
 description names the next language. An explicit choice is stored in
 `language.json` beside the Windows database or in Android's app-private data
 directory. No account data or credentials are stored in this file.
@@ -224,10 +226,29 @@ toward school servers and requires device verification before merge.
 
 ### Android preview
 
+Android presentation changes use the Windows reader's hierarchy as a reference:
+message content comes first, metadata and account management are secondary,
+and colors have semantic light/dark roles. Keep Android-native navigation,
+48-dp touch targets, and system text scaling rather than copying the desktop's
+three-column layout. UI refinement does not imply adding missing desktop
+features or implementing the separately tracked language controls.
+
+The reader uses an integrated search bar above the list: the hamburger opens
+a navigation drawer with **Settings**, folder selection and the active-child
+avatar sit inside the search container, and the refresh icon refreshes all
+accounts. Icon descriptions identify the active child/folder; native choosers
+show their names. Sync status stays below the list. **Settings** offers
+**System**, **Light**, and **Dark** appearance plus the existing account actions.
+Appearance applies immediately and persists in app-private preferences; this
+non-sensitive UI preference is separate from encrypted school/account settings.
+On sign-in, school search is primary; **Enter school
+address manually** reveals the editable HTTPS address (already visible for
+an existing account). Message links and attachment actions stay explicit taps,
+with privacy notices beneath the content. Appearance follows Android by default.
+
 The launcher icon uses `Resources\AppIcon\obk.png` declared as a `MauiIcon`.
 The Android application manifest must reference MAUI's generated `@mipmap/obk`
 and `@mipmap/obk_round` resources for normal and round launcher icons.
-
 `src\OBK.Android\OBK.Android.csproj` targets `net10.0-android` with minimum API
 29. `OBK.Core` also targets portable `net10.0`, and `LocalStore` accepts an
 `ILocalDataProtection` implementation and an explicit database path. Its
@@ -245,8 +266,8 @@ Missing keys and failed authentication are explicit errors, never a reason to
 create a replacement key for an existing database or store plaintext.
 
 Device backup is disabled. Uninstalling deletes app data and its key.
-Passwords are retained only with **Remember credentials**; use **Add child /
-sign in > Forget this account's saved password** to remove a saved password
+Passwords are retained only with **Remember credentials**; use **Settings >
+Manage accounts > Forget this account's saved password** to remove a saved password
 without deleting the offline archive. API tokens stay in memory.
 
 Message HTML is parsed into native text rather than loaded into a browser.

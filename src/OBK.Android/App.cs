@@ -8,15 +8,25 @@ public sealed class App : Application
 {
     private bool switchingLanguage;
     private static string LanguagePath => Path.Combine(FileSystem.AppDataDirectory, "language.json");
+    internal const string AppearancePreference = "reader_appearance";
     public App()
     {
+        UserAppTheme = Preferences.Default.Get(AppearancePreference, nameof(AppTheme.Unspecified)) switch
+        {
+            nameof(AppTheme.Unspecified) => AppTheme.Unspecified,
+            nameof(AppTheme.Light) => AppTheme.Light,
+            nameof(AppTheme.Dark) => AppTheme.Dark,
+            _ => throw new InvalidOperationException("Unknown saved appearance preference.")
+        };
         Resources.Add(new Style(typeof(Button))
         {
             Setters =
             {
                 new Setter { Property = VisualElement.MinimumHeightRequestProperty, Value = 48d },
-                new Setter { Property = Button.BackgroundColorProperty, Value = Color.FromArgb("#0F6CBD") },
-                new Setter { Property = Button.TextColorProperty, Value = Colors.White }
+                new Setter { Property = Button.FontSizeProperty, Value = 14d },
+                new Setter { Property = Button.PaddingProperty, Value = new Thickness(12, 8) },
+                new Setter { Property = Button.CornerRadiusProperty, Value = 6 },
+                new Setter { Property = Button.BorderWidthProperty, Value = 1d },
             }
         });
         Resources.Add(new Style(typeof(Entry))
@@ -24,6 +34,10 @@ public sealed class App : Application
             Setters = { new Setter { Property = VisualElement.MinimumHeightRequestProperty, Value = 48d } }
         });
         Resources.Add(new Style(typeof(Picker))
+        {
+            Setters = { new Setter { Property = VisualElement.MinimumHeightRequestProperty, Value = 48d } }
+        });
+        Resources.Add(new Style(typeof(SearchBar))
         {
             Setters = { new Setter { Property = VisualElement.MinimumHeightRequestProperty, Value = 48d } }
         });
@@ -41,20 +55,14 @@ public sealed class App : Application
             catch (ObkException error) { failure = error.Message; }
             LanguageSettings.Apply(language);
             AppStrings.Culture = LanguageSettings.Culture;
-            var reader = new ReaderPage();
-            window.Page = Navigation(reader);
+            var surface = BuildNavigation();
+            window.Page = surface.Shell;
             if (failure is not null)
-                await reader.DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, failure, AppStrings.AlertOkButton);
+                await surface.Reader.DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, failure, AppStrings.AlertOkButton);
         };
         window.Page = new ContentPage { Content = new ActivityIndicator { IsRunning = true } };
         return window;
     }
-
-    private static NavigationPage Navigation(Page root) => new(root)
-    {
-        BarBackgroundColor = Color.FromArgb("#0F6CBD"),
-        BarTextColor = Colors.White
-    };
 
     internal async Task SwitchLanguageAsync(ContentPage source)
     {
@@ -63,7 +71,7 @@ public sealed class App : Application
         if (stack.FirstOrDefault() is not ReaderPage reader ||
             reader.Busy || stack.OfType<SignInPage>().Any(page => page.Busy) ||
             stack.OfType<MessagePage>().Any(page => page.Busy) ||
-            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage)))
+            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage)))
             throw new ObkException(SharedStrings.ErrorLanguageBusy);
         switchingLanguage = true;
         try
@@ -72,20 +80,56 @@ public sealed class App : Application
             await LanguageSettings.SaveAsync(LanguagePath, next);
             LanguageSettings.Apply(next);
             AppStrings.Culture = LanguageSettings.Culture;
-            var rebuiltReader = reader.Rebuild();
-            var navigation = Navigation(rebuiltReader);
+            var surface = BuildNavigation(reader);
             foreach (var page in stack.Skip(1))
             {
                 Page replacement = page switch
                 {
-                    SignInPage signIn => signIn.Rebuild(rebuiltReader.AccountSavedAsync),
+                    SignInPage signIn => signIn.Rebuild(surface.Reader.AccountSavedAsync),
                     MessagePage message => message.Rebuild(),
+                    SettingsPage => surface.Reader.CreateSettingsPage(),
                     _ => throw new ObkException(SharedStrings.ErrorLanguageBusy)
                 };
-                await navigation.PushAsync(replacement, animated: false);
+                await surface.Navigation.PushAsync(replacement, animated: false);
             }
-            source.Window!.Page = navigation;
+            source.Window!.Page = surface.Shell;
         }
         finally { switchingLanguage = false; }
+    }
+
+    private static (ReaderNavigation Shell, NavigationPage Navigation, ReaderPage Reader) BuildNavigation(ReaderPage? previous = null)
+    {
+        var flyout = new ReaderNavigation { FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover };
+        var reader = previous?.Rebuild(() => flyout.IsPresented = true) ?? new ReaderPage(() => flyout.IsPresented = true);
+        var navigation = new NavigationPage(reader);
+        navigation.SetAppThemeColor(NavigationPage.BarBackgroundColorProperty, Color.FromArgb("#EAEFF5"), Color.FromArgb("#1B2129"));
+        navigation.SetAppThemeColor(NavigationPage.BarTextColorProperty, Color.FromArgb("#1A1A1A"), Colors.White);
+        var settings = ReaderTheme.Subtle(new Button { Text = AppStrings.SettingsPageTitle, HorizontalOptions = LayoutOptions.Start });
+        settings.Clicked += async (_, _) =>
+        {
+            flyout.IsPresented = false;
+            await reader.OpenSettingsAsync();
+        };
+        flyout.Flyout = ReaderTheme.Apply(new ContentPage
+        {
+            Title = "OBK",
+            Content = new VerticalStackLayout
+            {
+                Padding = new Thickness(16, 24), Spacing = 24,
+                Children = { new Label { Text = "OBK", FontSize = 24, FontAttributes = FontAttributes.Bold }, settings }
+            }
+        });
+        flyout.Detail = navigation;
+        return (flyout, navigation, reader);
+    }
+
+    private sealed class ReaderNavigation : FlyoutPage
+    {
+        protected override bool OnBackButtonPressed()
+        {
+            if (!IsPresented) return base.OnBackButtonPressed();
+            IsPresented = false;
+            return true;
+        }
     }
 }

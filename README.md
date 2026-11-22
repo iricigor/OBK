@@ -74,7 +74,7 @@ OBK downloads messages for the current school year (September–August).
 
 On first launch, OBK uses your system's Czech or English language; other system
 languages default to Czech. The language button is beside the Windows theme
-button and in Android's toolbar.
+button, in Android's reader footer, and in the native toolbar on its other pages.
 
 ## Privacy
 

@@ -6,58 +6,81 @@ namespace OBK.AndroidApp;
 
 internal sealed class ReaderPage : ContentPage
 {
-    private readonly Picker accounts = new() { Title = AppStrings.ReaderAccountPickerTitle };
-    private readonly Picker folders = new() { Title = AppStrings.ReaderFolderPickerTitle };
-    private readonly SearchBar search = new() { Placeholder = AppStrings.ReaderSearchPlaceholder };
-    private readonly Label status = new() { Text = AppStrings.ReaderStatusOpening };
-    private readonly Button refresh = new() { Text = AppStrings.ReaderRefreshAll, LineBreakMode = LineBreakMode.WordWrap };
-    private readonly Button signIn = new() { Text = AppStrings.ReaderAccountsButton, LineBreakMode = LineBreakMode.WordWrap };
+    private readonly ImageButton menu = ReaderTheme.Icon("menu", AppStrings.ReaderNavigationMenu);
+    private readonly ImageButton folder = ReaderTheme.Icon("inbox", SharedStrings.FolderInbox);
+    private readonly Button child = ReaderTheme.Primary(new Button
+    {
+        WidthRequest = 48, HeightRequest = 48, Padding = 0, CornerRadius = 24,
+        FontSize = 16, FontAttributes = FontAttributes.Bold
+    });
+    private readonly SearchBar search = new() { Placeholder = AppStrings.ReaderSearchPlaceholder, BackgroundColor = Colors.Transparent };
+    private readonly Label status = ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderStatusOpening });
+    private readonly ImageButton refresh = ReaderTheme.Icon("refresh", AppStrings.ReaderRefreshAll);
+    private readonly Button language;
     private readonly ActivityIndicator progress = new() { IsVisible = false };
     private readonly CollectionView messages = new() { SelectionMode = SelectionMode.Single };
     private readonly Label empty = new();
+    private readonly Button addChild = ReaderTheme.Primary(new Button { Text = AppStrings.ReaderAccountsSheetAddChild, IsVisible = false });
     private ReaderSession? session;
     private IReadOnlyList<Login> known = [];
     private Archive? archive;
     private Login? account;
     private bool busy;
-    private bool loadingAccounts;
+    private int folderIndex;
     private bool initialized;
     internal bool Busy => busy;
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private static readonly string[] FolderKeys = ["received", "noticeboard", "sent", "excuses"];
+    private static readonly string[] FolderIcons = ["inbox", "noticeboard", "sent", "excuses"];
+    private readonly string[] folderLabels = [SharedStrings.FolderInbox, SharedStrings.FolderNoticeboard, SharedStrings.FolderSent, SharedStrings.FolderExcuses];
 
-    public ReaderPage()
+    public ReaderPage(Action openMenu)
     {
         Title = "OBK";
-        LanguageToolbar.Add(this);
-        folders.ItemsSource = new[] { SharedStrings.FolderInbox, SharedStrings.FolderNoticeboard, SharedStrings.FolderSent, SharedStrings.FolderExcuses };
-        folders.SelectedIndex = 0;
-        accounts.ItemDisplayBinding = new Binding(".", converter: new AccountLabelConverter());
-        accounts.SelectedIndexChanged += async (_, _) =>
+        language = LanguageToolbar.CreateButton(this);
+        NavigationPage.SetHasNavigationBar(this, false);
+        menu.Clicked += (_, _) => openMenu();
+        child.Clicked += async (_, _) =>
         {
-            if (!loadingAccounts && accounts.SelectedIndex >= 0)
-                await RunAsync(async () => await SelectAsync(known[accounts.SelectedIndex]));
+            var choices = known.Select((login, index) =>
+                Localized.Format(AppStrings.ReaderAccountOption, index + 1, AccountLabelConverter.Label(login))).ToArray();
+            var selected = await DisplayActionSheetAsync(AppStrings.ReaderAccountPickerTitle, AppStrings.ReaderAccountsSheetCancel, null, choices);
+            var index = Array.IndexOf(choices, selected);
+            if (index >= 0) await RunAsync(() => SelectAsync(known[index]));
         };
-        folders.SelectedIndexChanged += (_, _) => ApplySearch();
+        folder.Clicked += async (_, _) =>
+        {
+            var selected = await DisplayActionSheetAsync(AppStrings.ReaderFolderPickerTitle, AppStrings.ReaderAccountsSheetCancel, null, folderLabels);
+            var index = Array.IndexOf(folderLabels, selected);
+            if (index < 0) return;
+            folderIndex = index;
+            UpdateContext();
+            ApplySearch();
+        };
         search.TextChanged += (_, _) => ApplySearch();
+        search.HandlerChanged += (_, _) =>
+        {
+            if (search.Handler?.PlatformView is global::AndroidX.AppCompat.Widget.SearchView native)
+                native.FindViewById(Resource.Id.search_plate)?.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+        };
         refresh.Clicked += async (_, _) => await RunAsync(session is null ? InitializeAsync : RefreshAllAsync);
-        signIn.Clicked += async (_, _) => await AccountActionsAsync();
         messages.ItemTemplate = new DataTemplate(() =>
         {
-            var title = new Label { FontAttributes = FontAttributes.Bold, MaxLines = 2 };
+            var title = new Label { FontSize = 15, FontAttributes = FontAttributes.Bold, MaxLines = 2 };
             title.SetBinding(Label.TextProperty, nameof(Message.Title));
-            var sender = new Label { MaxLines = 1 };
+            var sender = ReaderTheme.Metadata(new Label { MaxLines = 1 });
             sender.SetBinding(Label.TextProperty, nameof(Message.SenderName));
-            var date = new Label();
+            var date = ReaderTheme.Metadata(new Label());
             date.SetBinding(Label.TextProperty, new Binding(nameof(Message.Date), converter: new DateConverter()));
             return ReaderTheme.Apply(new VerticalStackLayout
             {
                 Padding = new Thickness(16, 12),
                 Spacing = 4,
-                Children = { title, sender, date, new BoxView { HeightRequest = 1, Color = Colors.Gray, Opacity = 0.25 } }
+                Children = { title, sender, date, new BoxView { HeightRequest = 1 } }
             });
         });
-        messages.EmptyView = empty;
+        addChild.Clicked += async (_, _) => await OpenSignInAsync();
+        messages.EmptyView = new VerticalStackLayout { Padding = 24, Spacing = 12, Children = { empty, addChild } };
         messages.SelectionChanged += async (_, args) =>
         {
             if (args.CurrentSelection.FirstOrDefault() is Message message && session is not null && account is not null)
@@ -67,43 +90,53 @@ internal sealed class ReaderPage : ContentPage
             }
 
         };
-        var actions = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Star)], ColumnSpacing = 8 };
-        actions.Add(refresh, 0);
-        actions.Add(signIn, 1);
-        var header = new VerticalStackLayout
+        var searchContent = new Grid { ColumnDefinitions = [new(48), new(GridLength.Star), new(48)] };
+        searchContent.Add(folder, 0);
+        searchContent.Add(search, 1);
+        searchContent.Add(child, 2);
+        var searchPanel = ReaderTheme.Panel(searchContent, 0);
+        searchPanel.StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 24 };
+        var header = new Grid
         {
-            Padding = new Thickness(16, 8),
-            Spacing = 8,
-            Children = { accounts, actions, status, progress, folders, search }
+            Padding = new Thickness(8, 12), ColumnSpacing = 4,
+            ColumnDefinitions = [new(48), new(GridLength.Star), new(48)]
         };
-        var layout = new Grid { RowDefinitions = [new(GridLength.Auto), new(GridLength.Star)] };
+        header.Add(menu, 0);
+        header.Add(searchPanel, 1);
+        header.Add(refresh, 2);
+        var footer = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 8 };
+        progress.WidthRequest = progress.HeightRequest = 24;
+        footer.Add(progress, 0);
+        footer.Add(status, 1);
+        footer.Add(language, 2);
+        var layout = new Grid { RowDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)] };
         layout.Add(header);
         layout.Add(messages, 0, 1);
+        layout.Add(footer, 0, 2);
+        messages.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
         Content = layout;
         ReaderTheme.Apply(this);
         ReaderTheme.Apply(empty);
+        UpdateContext();
         SetBusy(false);
     }
 
-    internal ReaderPage Rebuild()
+    internal ReaderPage Rebuild(Action openMenu)
     {
-        var rebuilt = new ReaderPage
+        var rebuilt = new ReaderPage(openMenu)
         {
             session = session,
             known = known,
             archive = archive,
             account = account,
             initialized = initialized,
-            loadingAccounts = true
+            folderIndex = folderIndex
         };
-        rebuilt.accounts.ItemsSource = known.ToList();
-        rebuilt.accounts.SelectedIndex = accounts.SelectedIndex;
-        rebuilt.folders.SelectedIndex = folders.SelectedIndex;
         rebuilt.search.Text = search.Text;
-        rebuilt.loadingAccounts = false;
         rebuilt.status.Text = account is null ? AppStrings.ReaderStatusNoAccounts :
             archive is null ? AppStrings.ReaderStatusNoArchive : ArchiveStatus(archive);
         rebuilt.ApplySearch();
+        rebuilt.UpdateContext();
         rebuilt.SetBusy(false);
         return rebuilt;
     }
@@ -111,6 +144,24 @@ internal sealed class ReaderPage : ContentPage
     internal Task AccountSavedAsync(Login login) => RunAsync(() => ReloadAsync(login));
     private static string ArchiveStatus(Archive archive) => Localized.Format(AppStrings.ReaderStatusArchiveReady,
         DateTimeOffset.Parse(archive.SyncedAt).ToLocalTime().ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
+
+    internal SettingsPage CreateSettingsPage() => new(
+        AccountActionsAsync, () => session is not null, () => account is null ? null : AccountLabelConverter.Label(account));
+    internal Task OpenSettingsAsync() => Navigation.PushAsync(CreateSettingsPage());
+
+    private void UpdateContext()
+    {
+        ReaderTheme.SetIcon(folder, FolderIcons[folderIndex]);
+        SemanticProperties.SetDescription(folder, Localized.Format(AppStrings.ReaderSelectedFolder, folderLabels[folderIndex]));
+        var label = account is null ? null : AccountLabelConverter.Label(account);
+        child.Text = label is null ? "" : string.Concat(label.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Take(2).Select(word => System.Globalization.StringInfo.GetNextTextElement(word))).ToUpperInvariant();
+        child.ImageSource = label is null ? ImageSource.FromFile("child.png") : null;
+        child.SetAppThemeColor(BackgroundColorProperty, label is null ? Colors.Transparent : ReaderTheme.Accent,
+            label is null ? Colors.Transparent : ReaderTheme.DarkAccent);
+        SemanticProperties.SetDescription(child, label is null ? AppStrings.ReaderAccountPickerTitle :
+            Localized.Format(AppStrings.ReaderSelectedChild, label));
+    }
 
     protected override async void OnAppearing()
     {
@@ -131,13 +182,15 @@ internal sealed class ReaderPage : ContentPage
         busy = value;
         progress.IsRunning = value;
         progress.IsVisible = value;
-        accounts.IsEnabled = !value;
-        folders.IsEnabled = !value;
+        menu.IsEnabled = !value;
+        language.IsEnabled = !value;
+        child.IsEnabled = !value && known.Count > 0;
+        folder.IsEnabled = !value;
         search.IsEnabled = !value;
         messages.IsEnabled = !value;
-        refresh.Text = session is null ? AppStrings.ReaderRetryOpening : AppStrings.ReaderRefreshAll;
+        SemanticProperties.SetDescription(refresh, session is null ? AppStrings.ReaderRetryOpening : AppStrings.ReaderRefreshAll);
         refresh.IsEnabled = !value && (session is null || known.Count > 0);
-        signIn.IsEnabled = !value && session is not null;
+        addChild.IsEnabled = !value && session is not null;
     }
 
     private async Task RunAsync(Func<Task> action)
@@ -147,10 +200,7 @@ internal sealed class ReaderPage : ContentPage
         try { await action(); }
         catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
         {
-            loadingAccounts = true;
-            accounts.SelectedIndex = account is null ? -1 : known.ToList().FindIndex(item =>
-                item.Url == account.Url && item.Username == account.Username);
-            loadingAccounts = false;
+            UpdateContext();
             status.Text = error.Message;
             progress.IsRunning = false;
             progress.IsVisible = false;
@@ -168,19 +218,16 @@ internal sealed class ReaderPage : ContentPage
         if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
         var result = await Task.Run(() => (session.Store.KnownLogins(), session.Store.LastAccount()));
         known = result.Item1;
-        loadingAccounts = true;
-        accounts.ItemsSource = known.ToList();
         var selected = preferred ?? account ?? result.Item2;
         var index = selected is null ? -1 : known.ToList().FindIndex(item =>
             item.Url == selected.Url && item.Username == selected.Username);
         if (index < 0 && known.Count > 0) index = 0;
-        accounts.SelectedIndex = index;
-        loadingAccounts = false;
         if (index >= 0) await SelectAsync(known[index]);
         else
         {
             account = null;
             archive = null;
+            UpdateContext();
             status.Text = AppStrings.ReaderStatusNoAccounts;
             ApplySearch();
         }
@@ -197,6 +244,7 @@ internal sealed class ReaderPage : ContentPage
         });
         account = login;
         archive = loaded;
+        UpdateContext();
         search.Text = "";
         status.Text = loaded is null ? AppStrings.ReaderStatusNoArchive :
             ArchiveStatus(loaded);
@@ -205,7 +253,7 @@ internal sealed class ReaderPage : ContentPage
 
     private void ApplySearch()
     {
-        var key = FolderKeys[Math.Max(0, folders.SelectedIndex)];
+        var key = FolderKeys[folderIndex];
         IEnumerable<Message> items = archive is null ? [] :
             key == "excuses" ? archive.Folders["sent"].Where(MessageInsights.IsExcuse) :
             key == "sent" ? archive.Folders["sent"].Where(item => !MessageInsights.IsExcuse(item)) :
@@ -215,9 +263,9 @@ internal sealed class ReaderPage : ContentPage
             items = items.Where(item => $"{item.Title}\n{item.SenderName}\n{item.Text}\n{item.SentDate}\n{MessageInsights.DateSearchText(item.Date)}"
                 .Contains(query, StringComparison.CurrentCultureIgnoreCase));
         messages.ItemsSource = items.OrderByDescending(item => item.Date).ToList();
+        addChild.IsVisible = session is not null && known.Count == 0;
         empty.Text = query.Length > 0 ? AppStrings.ReaderEmptySearch :
             archive is null ? AppStrings.ReaderEmptyNoArchive : AppStrings.ReaderEmptyFolder;
-        empty.Margin = new Thickness(24);
     }
 
     private async Task OpenSignInAsync(Login? login = null)
@@ -247,6 +295,7 @@ internal sealed class ReaderPage : ContentPage
                 await Task.Run(() => session.Store.ForgetPassword(current.Url, current.Username));
                 await ReloadAsync();
                 status.Text = AppStrings.ReaderStatusPasswordForgotten;
+                await DisplayAlertAsync(AppStrings.ReaderAccountsSheetTitle, status.Text, AppStrings.AlertOkButton);
             });
     }
 
@@ -291,14 +340,10 @@ internal sealed class ReaderPage : ContentPage
         }
     }
 
-    private sealed class AccountLabelConverter : IValueConverter
+    private static class AccountLabelConverter
     {
-        public static string Label(Login login) => login.ChildName ??
+        public static string Label(Login login) => !string.IsNullOrWhiteSpace(login.ChildName) ? login.ChildName :
             (login.SchoolName is { } school ? Localized.Format(AppStrings.AccountSchoolAndUsername, school, login.Username) : login.Username);
-        public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
-            value is Login login ? Label(login) : "";
-        public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) =>
-            throw new NotSupportedException();
     }
 
     private sealed class DateConverter : IValueConverter
