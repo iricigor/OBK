@@ -203,11 +203,14 @@ public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool next, 
 
 public static class LinkOpener
 {
-    public static void Open(string? target)
+    public static void Open(string? target, Action<string>? reportError = null)
     {
         if (MessageRenderer.NormalizeLink(target) is not { } link) return;
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(link) { UseShellExecute = true }); }
-        catch (Exception error) when (error is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+        catch (Exception error) when (error is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            reportError?.Invoke(error.Message);
+        }
     }
 }
 

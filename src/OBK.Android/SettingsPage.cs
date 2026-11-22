@@ -41,6 +41,28 @@ internal sealed class SettingsPage : ContentPage
             Application.Current!.UserAppTheme = theme;
         };
         accounts.Clicked += async (_, _) => await accountActions();
+        var repository = ReaderTheme.Subtle(new Button
+        {
+            Text = SharedStrings.RepositoryLink,
+            LineBreakMode = LineBreakMode.WordWrap,
+            MinimumHeightRequest = 48,
+            Margin = new Thickness(0, 20, 0, 0)
+        });
+        SemanticProperties.SetHint(repository, "https://github.com/iricigor/OBK");
+        repository.Clicked += async (_, _) =>
+        {
+            repository.IsEnabled = false;
+            try
+            {
+                if (!await Launcher.TryOpenAsync("https://github.com/iricigor/OBK"))
+                    throw new ObkException(AppStrings.ErrorNoAppForLink);
+            }
+            catch (Exception error) when (error is ObkException or FeatureNotSupportedException)
+            {
+                await DisplayAlertAsync(SharedStrings.RepositoryLink, error.Message, AppStrings.AlertOkButton);
+            }
+            finally { repository.IsEnabled = true; }
+        };
         checkUpdate.Clicked += async (_, _) => await PerformUpdateAsync(async cancel =>
         {
             availableUpdate = null;
@@ -92,7 +114,8 @@ internal sealed class SettingsPage : ContentPage
                     accountName, accounts,
                     new Label { Text = AppStrings.UpdateHeading, FontSize = 18, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 20, 0, 0) },
                     ReaderTheme.Metadata(new Label { Text = Localized.Format(AppStrings.UpdateInstalledVersion, AppInfo.Current.VersionString) }),
-                    updateStatus, updateProgress, checkUpdate, installUpdate, cancelUpdate
+                    updateStatus, updateProgress, checkUpdate, installUpdate, cancelUpdate,
+                    repository
                 }
             }
         };

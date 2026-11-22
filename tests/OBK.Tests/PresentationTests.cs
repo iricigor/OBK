@@ -308,6 +308,20 @@ public sealed class PresentationTests
                         main.Show();
                         await main.InitializeAsync();
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        void AssertRepositoryLink()
+                        {
+                            main.ViewModel.OpenSettingsCommand.Execute(null);
+                            ((Expander)main.FindName("AboutSection")).IsExpanded = true;
+                            main.UpdateLayout();
+                            var link = (Hyperlink)main.FindName("RepositoryLink");
+                            Assert.Equal("https://github.com/iricigor/OBK", link.NavigateUri.AbsoluteUri);
+                            Assert.Equal(SharedStrings.RepositoryLink, new TextRange(link.ContentStart, link.ContentEnd).Text);
+                            Assert.True(link.Focus());
+                            Assert.True(link.IsKeyboardFocused);
+                            ((Expander)main.FindName("AboutSection")).IsExpanded = false;
+                            main.ViewModel.CloseSettingsCommand.Execute(null);
+                        }
+                        AssertRepositoryLink();
                         var ribbon = (Button)main.FindName("BuildRibbon");
                         var ribbonArea = (Canvas)main.FindName("BuildRibbonArea");
                         var readingPane = (Border)main.FindName("ReadingPane");
@@ -447,6 +461,7 @@ public sealed class PresentationTests
                         main = await ClickLanguageAsync(main);
                         Assert.Equal("cs", LanguageSettings.Code);
                         Assert.Equal("CS", ((TextBlock)main.FindName("LanguageCodeText")).Text);
+                        AssertRepositoryLink();
                         Assert.Equal("Odeslané", main.ViewModel.FolderTitle);
                         Assert.Equal("test", main.Account!.Username);
                         Assert.Equal("sent Sep", main.ViewModel.SearchText);
