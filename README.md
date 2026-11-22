@@ -41,7 +41,7 @@ passwords or private messages. See [Privacy](#privacy) and the
 - **Clickable links** in messages, and attachments that open with one click.
 - **Light and dark themes**, a resizable sidebar that can shrink to icons, and
   **automatic updates**.
-- **Settings** at the bottom of the sidebar – choose the theme, rename
+- **Settings** at the bottom of the sidebar – choose the theme, reading size and message list density, rename
   children, save, change, or clear saved passwords, and check for updates.
 
 OBK only reads messages. It cannot send messages, replies, excuses, or

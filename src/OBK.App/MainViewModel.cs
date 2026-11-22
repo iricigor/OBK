@@ -59,6 +59,8 @@ public sealed class MainViewModel : ObservableObject
         RefreshCommand = new AsyncCommand(_ => RefreshAllAsync(), ReportError, _ => CanChangeAccount);
         ToggleThemeCommand = new AsyncCommand(_ => Theme.ToggleAsync(), ReportError);
         SetThemeCommand = new AsyncCommand(p => Theme.SetAsync(p as string ?? ""), ReportError);
+        SetReadingSizeCommand = new AsyncCommand(p => Theme.SetReadingSizeAsync(p as string ?? ""), ReportError);
+        SetListDensityCommand = new AsyncCommand(p => Theme.SetListDensityAsync(p as string ?? ""), ReportError);
         OpenSettingsCommand = new RelayCommand(_ => SettingsOpen = true);
         CloseSettingsCommand = new RelayCommand(_ => SettingsOpen = false);
         SwitchSchoolCommand = new RelayCommand(_ => openLogin(true, null), _ => CanChangeAccount);
@@ -87,6 +89,8 @@ public sealed class MainViewModel : ObservableObject
     public ICommand RefreshCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     public ICommand SetThemeCommand { get; }
+    public ICommand SetReadingSizeCommand { get; }
+    public ICommand SetListDensityCommand { get; }
     public ICommand OpenSettingsCommand { get; }
     public ICommand CloseSettingsCommand { get; }
     public bool SettingsOpen
