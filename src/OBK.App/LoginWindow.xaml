@@ -14,8 +14,13 @@
             <Grid DockPanel.Dock="Top" Height="40">
                 <TextBlock Text="OBK" Foreground="{DynamicResource TextSecondary}" FontSize="12" VerticalAlignment="Center" Margin="24,0"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <Button x:Name="LanguageButton" Width="46" Height="40" Style="{StaticResource SubtleButton}"
-                        Click="SwitchLanguage"/>
+                <Button x:Name="LanguageButton" Width="64" Height="40" Style="{StaticResource SubtleButton}"
+                        Click="SwitchLanguage">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE774;" FontSize="12" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="LanguageCodeText" FontSize="12" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
                 <Button Width="46" Height="40" Style="{StaticResource SubtleButton}" Click="SwitchTheme">
                     <TextBlock x:Name="ThemeIcon" Style="{StaticResource Icon}" FontSize="12"/>
                 </Button>

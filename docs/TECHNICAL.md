@@ -135,8 +135,9 @@ existing frame, and login/prompt dialogs are unchanged.
 App-owned interface text lives in `.resx` resource sets. English is the neutral
 language; Czech is also supported. Ukrainian and German (#30) follow later.
 
-The EN/CS button cycles languages beside the Windows theme button, including
-sign-in. Android keeps its system-controlled theme and places EN/CS in the
+The Windows language button combines a fixed globe icon with the current EN/CS
+code and cycles languages beside the theme button, including sign-in. Android
+keeps its system-controlled theme and places EN/CS in the
 native toolbar on reader, sign-in, and message pages. The tooltip/accessibility
 description names the next language. An explicit choice is stored in
 `language.json` beside the Windows database or in Android's app-private data

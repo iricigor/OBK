@@ -20,17 +20,23 @@
         </Grid.RowDefinitions>
         <Border Background="{DynamicResource HeaderSurface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1"/>
         <Grid>
-            <StackPanel Orientation="Horizontal" Margin="20,0,240,0" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Margin="20,0,260,0" VerticalAlignment="Center">
                 <Image Source="pack://application:,,,/OBK;component/Assets/OBK.ico" Width="16" Height="16" Margin="0,0,8,0"
                        RenderOptions.BitmapScalingMode="HighQuality" AutomationProperties.Name="OBK"/>
                 <TextBlock Text="{x:Static loc:AppStrings.AppTitle}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <Button x:Name="LanguageButton" Width="46" Height="40" MinHeight="0" Style="{StaticResource SubtleButton}"
-                        Click="SwitchLanguage" Content="{Binding LanguageCode, RelativeSource={RelativeSource AncestorType=Window}}"
+                <Button x:Name="LanguageButton" Width="64" Height="40" MinHeight="0" Style="{StaticResource SubtleButton}"
+                        Click="SwitchLanguage"
                         ToolTip="{Binding LanguageTooltip, RelativeSource={RelativeSource AncestorType=Window}}"
                         AutomationProperties.Name="{Binding LanguageTooltip, RelativeSource={RelativeSource AncestorType=Window}}"
-                        IsEnabled="{Binding CanChangeAccount}"/>
+                        IsEnabled="{Binding CanChangeAccount}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE774;" FontSize="12" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="LanguageCodeText" Text="{Binding LanguageCode, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   FontSize="12" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
                 <Button Width="46" Height="40" MinHeight="0" Style="{StaticResource SubtleButton}" Command="{Binding ToggleThemeCommand}"
                         ToolTip="{Binding Theme.ToggleTooltip}" AutomationProperties.Name="{Binding Theme.ToggleTooltip}">
                     <TextBlock Style="{StaticResource Icon}" Text="{Binding Theme.ToggleIcon}" FontSize="12"/>

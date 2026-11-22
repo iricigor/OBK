@@ -409,10 +409,31 @@ public sealed class PresentationTests
                         var updates = main.Updates;
                         var appearance = main.ViewModel.Theme;
                         var wasDark = appearance.IsDark;
+                        async Task<MainWindow> ClickLanguageAsync(MainWindow current)
+                        {
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                            var button = (Button)current.FindName("LanguageButton");
+                            Assert.True(button.IsEnabled, "The language button must be enabled after loading.");
+                            var invoke = (IInvokeProvider)new ButtonAutomationPeer(button).GetPattern(PatternInterface.Invoke);
+                            invoke.Invoke();
+                            for (var attempt = 0; attempt < 200; attempt++)
+                            {
+                                if (application.MainWindow is MainWindow next && next != current)
+                                {
+                                    await next.InitializeAsync();
+                                    await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                                    Assert.True(((Button)next.FindName("LanguageButton")).IsEnabled,
+                                        "The rebuilt window must allow the next language switch.");
+                                    return next;
+                                }
+                                await Task.Delay(10);
+                            }
+                            throw new TimeoutException("The language button did not rebuild the window.");
+                        }
                         LanguageSettings.Apply("en");
-                        main = await main.ChangeLanguageAsync();
+                        main = await ClickLanguageAsync(main);
                         Assert.Equal("cs", LanguageSettings.Code);
-                        Assert.Equal("CS", ((Button)main.FindName("LanguageButton")).Content);
+                        Assert.Equal("CS", ((TextBlock)main.FindName("LanguageCodeText")).Text);
                         Assert.Equal("Odeslané", main.ViewModel.FolderTitle);
                         Assert.Equal("test", main.Account!.Username);
                         Assert.Equal("sent Sep", main.ViewModel.SearchText);
@@ -427,11 +448,15 @@ public sealed class PresentationTests
                             new DateTime(2026, 11, 20, 14, 9, 0).ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
                         Assert.Equal("1,5 MB", AttachmentRow.FormatSize(1572864));
                         Assert.Equal("listopad 2025", MessageInsights.DateGroup(new DateTimeOffset(2025, 11, 1, 12, 0, 0, TimeSpan.Zero), new DateTime(2026, 11, 22)));
-                        main = await main.ChangeLanguageAsync();
+                        main = await ClickLanguageAsync(main);
                         Assert.Equal("en", LanguageSettings.Code);
                         Assert.Equal("Sent", main.ViewModel.FolderTitle);
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Equal("1.5 MB", AttachmentRow.FormatSize(1572864));
+                        main = await ClickLanguageAsync(main);
+                        Assert.Equal("cs", LanguageSettings.Code);
+                        main = await ClickLanguageAsync(main);
+                        Assert.Equal("en", LanguageSettings.Code);
                     }
                     finally { main.Close(); }
                     completion.SetResult();

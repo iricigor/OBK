@@ -252,7 +252,11 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
-    private void UpdateActions() => CommandManager.InvalidateRequerySuggested();
+    private void UpdateActions()
+    {
+        Notify(nameof(CanChangeAccount));
+        CommandManager.InvalidateRequerySuggested();
+    }
     public void SetStatus(string text, bool ready = false) { Status = text; GoodStatus = ready; }
     public void ReportError(string text) => SetStatus(text);
     public static string OneLine(string? value) => Regex.Replace(value ?? "", @"\s+", " ").Trim();

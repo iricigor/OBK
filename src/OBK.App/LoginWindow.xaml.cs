@@ -38,7 +38,7 @@ public partial class LoginWindow : Window
         Owner = app;
         InitializeComponent();
         Language = System.Windows.Markup.XmlLanguage.GetLanguage(LanguageSettings.Culture.Name);
-        LanguageButton.Content = app.LanguageCode;
+        LanguageCodeText.Text = app.LanguageCode;
         LanguageButton.ToolTip = app.LanguageTooltip;
         System.Windows.Automation.AutomationProperties.SetName(LanguageButton, app.LanguageTooltip);
         UpdateThemeButton();
