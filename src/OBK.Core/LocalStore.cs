@@ -7,9 +7,13 @@ namespace OBK.Core;
 
 public sealed class LocalStore
 {
+    private readonly ILocalDataProtection protection;
     public string Path { get; }
-    public LocalStore(string? path = null)
+    public LocalStore(string? path = null, ILocalDataProtection? protection = null)
     {
+        if (!OperatingSystem.IsWindows() && (path is null || protection is null))
+            throw new ObkException("This platform requires an explicit database path and local data protection.");
+        this.protection = protection ?? new WindowsDataProtection();
         Path = path ?? DatabasePath();
         Access(connection =>
         {
@@ -73,6 +77,8 @@ public sealed class LocalStore
 
     public static byte[] Protect(byte[] value)
     {
+        if (!OperatingSystem.IsWindows())
+            throw new ObkException("Windows data protection is unavailable on this platform.");
         try { return ProtectedData.Protect(value, null, DataProtectionScope.CurrentUser); }
         catch (CryptographicException)
         {
@@ -82,6 +88,8 @@ public sealed class LocalStore
 
     public static byte[] Unprotect(byte[] value)
     {
+        if (!OperatingSystem.IsWindows())
+            throw new ObkException("Windows data protection is unavailable on this platform.");
         try { return ProtectedData.Unprotect(value, null, DataProtectionScope.CurrentUser); }
         catch (CryptographicException)
         {
@@ -91,10 +99,16 @@ public sealed class LocalStore
 
     public static byte[] Encode<T>(T value) => Protect(JsonSerializer.SerializeToUtf8Bytes(value));
     public static T Decode<T>(byte[] value)
+        => Deserialize<T>(Unprotect(value));
+
+    private byte[] EncodeStored<T>(T value) => protection.Protect(JsonSerializer.SerializeToUtf8Bytes(value));
+    private T DecodeStored<T>(byte[] value) => Deserialize<T>(protection.Unprotect(value));
+
+    private static T Deserialize<T>(byte[] value)
     {
         try
         {
-            return JsonSerializer.Deserialize<T>(Unprotect(value)) ??
+            return JsonSerializer.Deserialize<T>(value) ??
                 throw new ObkException("Local OBK data is damaged and could not be decoded.");
         }
         catch (JsonException) { throw new ObkException("Local OBK data is damaged and could not be decoded."); }
@@ -106,7 +120,7 @@ public sealed class LocalStore
             parameters: [("$name", name)]);
         var value = command.ExecuteScalar();
         if (value is null) return null;
-        var login = Decode<Login>((byte[])value);
+        var login = DecodeStored<Login>((byte[])value);
         if (login.Url is null || login.Username is null || (name == "remembered_login" && login.Password is null))
             throw new ObkException("The saved sign-in setting is damaged. Sign in again.");
         return login;
@@ -121,7 +135,7 @@ public sealed class LocalStore
             using var command = Command(connection,
                 "SELECT value FROM settings WHERE name = 'account_history'");
             if (command.ExecuteScalar() is not byte[] value) return (IReadOnlyList<Login>)[];
-            var profiles = Decode<List<Login>>(value);
+            var profiles = DecodeStored<List<Login>>(value);
             if (profiles.Any(profile => profile.Url is null || profile.Username is null))
                 throw new ObkException("The saved account list is damaged. Sign in again.");
             return (IReadOnlyList<Login>)profiles;
@@ -163,7 +177,7 @@ public sealed class LocalStore
             "SELECT value FROM settings WHERE name = 'remembered_logins'");
         if (command.ExecuteScalar() is byte[] value)
         {
-            var profiles = Decode<List<Login>>(value);
+            var profiles = DecodeStored<List<Login>>(value);
             if (profiles.Any(profile => profile.Url is null || profile.Username is null ||
                 profile.Password is null))
                 throw new ObkException("The saved sign-in list is damaged. Sign in again.");
@@ -194,9 +208,9 @@ public sealed class LocalStore
         if (!known.Any(profile => SameAccount(profile, url, username)))
             throw new ObkException("This account is no longer saved.");
         Login Renamed(Login profile) => SameAccount(profile, url, username) ? profile with { ChildName = childName } : profile;
-        var history = Encode(known.Select(profile => Renamed(profile) with { Password = null }).ToList());
-        var remembered = Encode(RememberedLogins().Select(Renamed).ToList());
-        var last = LastAccount() is { } account && SameAccount(account, url, username) ? Encode(Renamed(account)) : null;
+        var history = EncodeStored(known.Select(profile => Renamed(profile) with { Password = null }).ToList());
+        var remembered = EncodeStored(RememberedLogins().Select(Renamed).ToList());
+        var last = LastAccount() is { } account && SameAccount(account, url, username) ? EncodeStored(Renamed(account)) : null;
         Access(connection =>
         {
             using var transaction = connection.BeginTransaction();
@@ -236,8 +250,8 @@ public sealed class LocalStore
     {
         url = KomensClient.NormalizeUrl(url);
         var known = KnownLogins();
-        var history = Encode(known.Select(profile => profile with { Password = null }).ToList());
-        var remembered = Encode(RememberedLogins().Where(profile => !SameAccount(profile, url, username)).ToList());
+        var history = EncodeStored(known.Select(profile => profile with { Password = null }).ToList());
+        var remembered = EncodeStored(RememberedLogins().Where(profile => !SameAccount(profile, url, username)).ToList());
         Access(connection =>
         {
             using var transaction = connection.BeginTransaction();
@@ -260,8 +274,8 @@ public sealed class LocalStore
         url = KomensClient.NormalizeUrl(url);
         var login = new Login(url, username, ChildName: OptionalLabel(childName),
             SchoolName: OptionalLabel(schoolName));
-        var account = Encode(login);
-        var history = Encode(UpsertKnownHistory(KnownLogins(), login));
+        var account = EncodeStored(login);
+        var history = EncodeStored(UpsertKnownHistory(KnownLogins(), login));
         Access(connection =>
         {
             using var transaction = connection.BeginTransaction();
@@ -285,13 +299,13 @@ public sealed class LocalStore
         childName = OptionalLabel(childName);
         schoolName = OptionalLabel(schoolName);
         var login = new Login(url, username, ChildName: childName, SchoolName: schoolName);
-        var account = Encode(login);
-        var history = Encode(UpsertKnownHistory(KnownLogins(), login));
+        var account = EncodeStored(login);
+        var history = EncodeStored(UpsertKnownHistory(KnownLogins(), login));
         var remembered = RememberedLogins()
             .Where(profile => !SameAccount(profile, url, username))
             .ToList();
         if (remember) remembered.Add(new Login(url, username, password, childName, schoolName));
-        var encodedRemembered = Encode(remembered);
+        var encodedRemembered = EncodeStored(remembered);
         Access(connection =>
         {
             using var transaction = connection.BeginTransaction();
@@ -319,7 +333,7 @@ public sealed class LocalStore
         using var transaction = connection.BeginTransaction();
         using var command = Command(connection,
             "INSERT OR REPLACE INTO settings VALUES ('remembered_logins', $value)",
-            transaction, ("$value", Encode(profiles)));
+            transaction, ("$value", EncodeStored(profiles)));
         command.ExecuteNonQuery();
         using var legacy = Command(connection,
             "DELETE FROM settings WHERE name = 'remembered_login'", transaction);
@@ -347,7 +361,7 @@ public sealed class LocalStore
         Dictionary<string, List<Message>> folders)
     {
         Folders.Validate(folders);
-        var payload = Encode(folders);
+        var payload = EncodeStored(folders);
         var stamp = DateTimeOffset.UtcNow.ToString("O");
         return Access(connection =>
         {
@@ -367,7 +381,7 @@ public sealed class LocalStore
             parameters: [("$url", KomensClient.NormalizeUrl(url)), ("$user", username), ("$year", year.StartYear)]);
         using var reader = command.ExecuteReader();
         if (!reader.Read()) return null;
-        var folders = Decode<Dictionary<string, List<Message>>>((byte[])reader[1]);
+        var folders = DecodeStored<Dictionary<string, List<Message>>>((byte[])reader[1]);
         Folders.Validate(folders);
         var stamp = reader.GetString(2);
         if (!DateTimeOffset.TryParse(stamp, out _)) throw new ObkException("The offline synchronization timestamp is damaged.");
@@ -381,7 +395,7 @@ public sealed class LocalStore
             parameters: [("$url", KomensClient.NormalizeUrl(url)), ("$user", username), ("$id", id)]);
         var value = command.ExecuteScalar();
         if (value is null) return null;
-        var info = Decode<AttachmentInfo>((byte[])value);
+        var info = DecodeStored<AttachmentInfo>((byte[])value);
         if (info.Name is null || info.Name != FileNames.Sanitize(info.Name) || info.Size < 0 ||
             info.Sha256 is null || !System.Text.RegularExpressions.Regex.IsMatch(info.Sha256, "^[0-9a-f]{64}$"))
             throw new ObkException("Cached attachment metadata is damaged.");
@@ -418,12 +432,12 @@ public sealed class LocalStore
                 using var chunk = Command(connection,
                     "INSERT INTO attachment_chunks VALUES ($url, $user, $id, $index, $payload)", transaction,
                     ("$url", url), ("$user", username), ("$id", id),
-                    ("$index", index++), ("$payload", Protect(buffer[..count])));
+                    ("$index", index++), ("$payload", protection.Protect(buffer[..count])));
                 chunk.ExecuteNonQuery();
             }
             if (expectedSize is not null && size != expectedSize)
                 throw new ObkException("The attachment download was incomplete. Retry sync; no incomplete copy was saved.");
-            var metadata = Encode(new AttachmentInfo(attachment.SafeName, size,
+            var metadata = EncodeStored(new AttachmentInfo(attachment.SafeName, size,
                 Convert.ToHexString(digest.GetHashAndReset()).ToLowerInvariant(), contentType));
             using var complete = Command(connection,
                 "INSERT OR REPLACE INTO attachments VALUES ($url, $user, $id, $metadata)", transaction,
@@ -457,7 +471,7 @@ public sealed class LocalStore
                     while (reader.Read())
                     {
                         if (reader.GetInt32(0) != index++) throw new ObkException("The cached attachment is incomplete.");
-                        var chunk = Unprotect((byte[])reader[1]);
+                        var chunk = protection.Unprotect((byte[])reader[1]);
                         digest.AppendData(chunk);
                         size += chunk.Length;
                         output.Write(chunk);
@@ -467,13 +481,16 @@ public sealed class LocalStore
                     return true;
                 });
             }
-            File.WriteAllText(temporary + ":Zone.Identifier", "[ZoneTransfer]\nZoneId=3\n", Encoding.ASCII);
+            if (OperatingSystem.IsWindows())
+                File.WriteAllText(temporary + ":Zone.Identifier", "[ZoneTransfer]\nZoneId=3\n", Encoding.ASCII);
             File.Move(temporary, destination, overwrite: true);
             return destination;
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
-            throw new ObkException("Cannot write the attachment copy. Check disk access and that Windows downloaded-file protection is supported by the destination.");
+            throw new ObkException(OperatingSystem.IsWindows()
+                ? "Cannot write the attachment copy. Check disk access and that Windows downloaded-file protection is supported by the destination."
+                : "Cannot write the attachment copy. Check disk space and destination access.");
         }
         finally
         {
@@ -482,6 +499,13 @@ public sealed class LocalStore
             {
                 throw new ObkException("Could not remove a temporary decrypted attachment copy from the destination folder.");
             }
+
         }
+    }
+
+    private sealed class WindowsDataProtection : ILocalDataProtection
+    {
+        public byte[] Protect(byte[] value) => LocalStore.Protect(value);
+        public byte[] Unprotect(byte[] value) => LocalStore.Unprotect(value);
     }
 }

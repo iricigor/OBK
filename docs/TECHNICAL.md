@@ -140,6 +140,105 @@ self-contained. Users need neither Python/Tkinter nor a separately installed
 .NET runtime. WPF is Windows-only; planned macOS, Linux, Android, and iOS
 releases will need a separate presentation implementation.
 
+### Android implementation milestone
+
+The Android reader is tracked in [#25](https://github.com/iricigor/OBK/issues/25).
+The agreed target is Android 10 (API 29) or newer, using an Android-only .NET
+MAUI application with shared C# core logic. Core portability and Android
+Keystore-backed storage come first, followed by school sign-in, multiple
+accounts, manual refresh, offline message folders/search, and downloaded
+attachment viewing/export in the same milestone. Windows keeps its existing
+DPAPI protection and behavior.
+
+The first distribution target is an APK from GitHub Releases. Localization,
+Play Store publishing, background sync, notifications, and Windows archive
+import are excluded from this milestone. The implementation remains read-only
+toward school servers and requires device verification before merge.
+
+### Android preview
+
+`src\OBK.Android\OBK.Android.csproj` targets `net10.0-android` with minimum API
+29. `OBK.Core` also targets portable `net10.0`, and `LocalStore` accepts an
+`ILocalDataProtection` implementation and an explicit database path. Its
+Windows defaults and static DPAPI helpers remain compatible with existing
+archives. Non-Windows callers cannot use the Windows defaults.
+
+Android stores the database in the app-private data directory. An AES-256 key
+is generated in Android Keystore; each encrypted value uses AES-GCM with a
+fresh 12-byte nonce, an authentication tag, a version byte, and a fixed OBK
+context authenticated as associated data. Settings, message payloads, attachment
+metadata, and attachment chunks use this protection. Account identifiers and
+archive index fields retain the shared database's existing layout; the whole
+SQLite file is not encrypted. Hardware-backed key storage depends on the device.
+Missing keys and failed authentication are explicit errors, never a reason to
+create a replacement key for an existing database or store plaintext.
+
+Device backup is disabled. Uninstalling deletes app data and its key.
+Passwords are retained only with **Remember credentials**; use **Add child /
+sign in > Forget this account's saved password** to remove a saved password
+without deleting the offline archive. API tokens stay in memory.
+
+Message HTML is parsed into native text rather than loaded into a browser.
+Links open only on an explicit tap. Attachment opening/sharing creates a
+decrypted file in the app-private `attachment-view` cache; these copies are
+deleted on the next app start. Recipient apps and deliberately saved/shared
+copies are outside OBK's control. No Windows `Zone.Identifier` stream is
+created on Android; Windows exports retain that protection.
+
+Install the .NET 10 SDK, then the Android workload and its dependencies:
+
+```powershell
+dotnet workload install maui-android
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:JAVA_HOME = "$env:LOCALAPPDATA\Microsoft\jdk-21"
+dotnet build .\src\OBK.Android\OBK.Android.csproj -t:InstallAndroidDependencies `
+  "-p:AndroidSdkDirectory=$env:ANDROID_HOME" "-p:JavaSdkDirectory=$env:JAVA_HOME" `
+  -p:AcceptAndroidSdkLicenses=True
+.\packaging\build_android_preview.ps1
+```
+
+The installer target accepts Android SDK licenses; review them before running.
+The build script produces `dist\OBK-android-preview.apk` and
+`dist\ANDROID-SHA256SUMS.txt`. Assemblies are embedded in the APK, so it can be
+installed without .NET fast-deployment tooling. Trimming is disabled to preserve
+the shared core's reflection-based JSON contracts in this initial reader.
+
+For a connected device, select its serial explicitly:
+
+```powershell
+& "$env:ANDROID_HOME\platform-tools\adb.exe" devices -l
+& "$env:ANDROID_HOME\platform-tools\adb.exe" -s <serial> install -r .\dist\OBK-android-preview.apk
+```
+
+Verify school search/sign-in, multiple children, refresh, process restart and
+offline reading, folders/search, attachment opening/sharing, missing-password
+and network errors, system Back, dark theme, and enlarged system text.
+Enter real credentials only on the device, never in issue comments or chat.
+
+For developer-only visual verification, the Debug APK accepts the
+`obk_verification` Boolean launch extra. It uses a separate
+`verification.sqlite3` database with fictional accounts/messages, runs actual
+Keystore nonce/tamper and archive/attachment checks, and blocks school access.
+Resolve the activity and launch it explicitly:
+
+```powershell
+$adb = "$env:ANDROID_HOME\platform-tools\adb.exe"
+$activity = (& $adb -s <serial> shell cmd package resolve-activity --brief cz.obk.reader | Select-Object -Last 1).Trim()
+& $adb -s <serial> shell am force-stop cz.obk.reader
+& $adb -s <serial> shell am start -n $activity --ez obk_verification true
+& $adb -s <serial> logcat -d -s OBK.Verify
+```
+
+The verification fixture and launch handling are excluded from Release builds.
+Restart without the launch extra for real sign-in. Fictional data does not prove
+compatibility with a real school's deployment.
+
+The preview is development-signed and does not use the Windows update service.
+Previews signed on different machines are not interchangeable; uninstalling
+to switch keys loses local data. Per user decision, persistent production
+signing and release publication are configured after preview verification.
+No signing key or password belongs in Git.
+
 ## Data access plan
 
 ### Primary: Bakaláři API

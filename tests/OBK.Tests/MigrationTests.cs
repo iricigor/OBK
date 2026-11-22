@@ -21,6 +21,64 @@ public sealed class MigrationTests : IDisposable
         { Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json") };
     private static HttpResponseMessage Page(params Message[] messages) => Json(new { Messages = messages });
 
+    [Fact]
+    public async Task InjectedProtectionPersistsAccountsArchivesAndAttachmentChunks()
+    {
+        using var protection = new TestProtection();
+        var path = Path.Combine(directory, "portable.sqlite3");
+        var store = new LocalStore(path, protection);
+        store.SaveLogin(Url, "child", "secret", true);
+        var folders = Folders.Empty();
+        folders["received"].Add(Message("portable"));
+        store.SaveArchive(Url, "child", year, "School", folders);
+        var attachment = new Attachment { Id = "file", Name = "note.txt" };
+        var payload = Encoding.UTF8.GetBytes(new string('x', 70000));
+        await store.SaveAttachmentAsync(Url, "child", attachment, new MemoryStream(payload), payload.Length);
+
+        var reopened = new LocalStore(path, protection);
+        Assert.Equal("secret", Assert.Single(reopened.RememberedLogins()).Password);
+        Assert.Equal("portable", Assert.Single(reopened.LoadArchive(Url, "child", year)!.Folders["received"]).Id);
+        var exported = reopened.ExportAttachment(Url, "child", "file", Path.Combine(directory, "note.txt"));
+        Assert.Equal(payload, File.ReadAllBytes(exported));
+    }
+
+    [Fact]
+    public void InjectedProtectionRejectsWrongKeysWithoutReplacingStoredData()
+    {
+        using var original = new TestProtection();
+        using var wrongKey = new TestProtection();
+        var path = Path.Combine(directory, "portable.sqlite3");
+        new LocalStore(path, original).SaveLogin(Url, "child", "secret", true);
+        var unreadable = new LocalStore(path, wrongKey);
+        Assert.Throws<ObkException>(() => unreadable.RememberedLogins());
+        Assert.Throws<ObkException>(() => unreadable.SaveLogin(Url, "child", "replacement", true));
+        Assert.Equal("secret", Assert.Single(new LocalStore(path, original).RememberedLogins()).Password);
+    }
+
+    private sealed class TestProtection : ILocalDataProtection, IDisposable
+    {
+        private readonly AesGcm cipher = new(RandomNumberGenerator.GetBytes(32), 16);
+        public byte[] Protect(byte[] value)
+        {
+            var nonce = RandomNumberGenerator.GetBytes(12);
+            var payload = new byte[12 + 16 + value.Length];
+            nonce.CopyTo(payload, 0);
+            cipher.Encrypt(nonce, value, payload.AsSpan(28), payload.AsSpan(12, 16));
+            return payload;
+        }
+        public byte[] Unprotect(byte[] value)
+        {
+            var plaintext = new byte[value.Length - 28];
+            try
+            {
+                cipher.Decrypt(value.AsSpan(0, 12), value.AsSpan(28), value.AsSpan(12, 16), plaintext);
+                return plaintext;
+            }
+            catch (CryptographicException error) { throw new ObkException("Test data could not be decrypted.", error); }
+        }
+        public void Dispose() => cipher.Dispose();
+    }
+
     [Theory]
     [InlineData("2026-08-31", 2025)]
     [InlineData("2026-09-01", 2026)]
