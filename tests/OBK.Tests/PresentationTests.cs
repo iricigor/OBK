@@ -10,6 +10,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Documents;
 using System.Windows.Interop;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Xunit;
@@ -308,6 +309,22 @@ public sealed class PresentationTests
                         main.Show();
                         await main.InitializeAsync();
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        void AssertRepositoryLink()
+                        {
+                            main.ViewModel.OpenSettingsCommand.Execute(null);
+                            ((Expander)main.FindName("AboutSection")).IsExpanded = true;
+                            main.UpdateLayout();
+                            var link = (Hyperlink)main.FindName("RepositoryLink");
+                            Assert.Equal("https://github.com/iricigor/OBK", link.NavigateUri.AbsoluteUri);
+                            Assert.Equal(SharedStrings.RepositoryLink, new TextRange(link.ContentStart, link.ContentEnd).Text);
+                            Assert.True(link.Focus());
+                            Assert.True(link.IsKeyboardFocused);
+                            Keyboard.ClearFocus();
+                            FocusManager.SetFocusedElement(main, null);
+                            ((Expander)main.FindName("AboutSection")).IsExpanded = false;
+                            main.ViewModel.CloseSettingsCommand.Execute(null);
+                        }
+                        AssertRepositoryLink();
                         var ribbon = (Button)main.FindName("BuildRibbon");
                         var ribbonArea = (Canvas)main.FindName("BuildRibbonArea");
                         var readingPane = (Border)main.FindName("ReadingPane");
@@ -447,6 +464,7 @@ public sealed class PresentationTests
                         main = await ClickLanguageAsync(main);
                         Assert.Equal("cs", LanguageSettings.Code);
                         Assert.Equal("CS", ((TextBlock)main.FindName("LanguageCodeText")).Text);
+                        AssertRepositoryLink();
                         Assert.Equal("Odeslané", main.ViewModel.FolderTitle);
                         Assert.Equal("test", main.Account!.Username);
                         Assert.Equal("sent Sep", main.ViewModel.SearchText);
@@ -464,6 +482,7 @@ public sealed class PresentationTests
                         main = await ClickLanguageAsync(main);
                         Assert.Equal("uk", LanguageSettings.Code);
                         Assert.Equal("UK", ((TextBlock)main.FindName("LanguageCodeText")).Text);
+                        AssertRepositoryLink();
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Equal("20 листопада 2026 р. 14:09",
                             new DateTime(2026, 11, 20, 14, 9, 0).ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
@@ -471,12 +490,14 @@ public sealed class PresentationTests
                         main = await ClickLanguageAsync(main);
                         Assert.Equal("de", LanguageSettings.Code);
                         Assert.Equal("DE", ((TextBlock)main.FindName("LanguageCodeText")).Text);
+                        AssertRepositoryLink();
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Equal("20. November 2026 14:09",
                             new DateTime(2026, 11, 20, 14, 9, 0).ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
                         Assert.Equal("1,5 MB", AttachmentRow.FormatSize(1572864));
                         main = await ClickLanguageAsync(main);
                         Assert.Equal("en", LanguageSettings.Code);
+                        AssertRepositoryLink();
                         Assert.Equal("Sent", main.ViewModel.FolderTitle);
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Equal("1.5 MB", AttachmentRow.FormatSize(1572864));
@@ -484,7 +505,11 @@ public sealed class PresentationTests
                     finally { main.Close(); }
                     completion.SetResult();
                 }
-                catch (Exception error) { completion.SetException(error); }
+                catch (Exception error)
+                {
+                    Console.Error.WriteLine(error);
+                    completion.SetException(error);
+                }
                 finally
                 {
                     SharedStrings.Culture = null;

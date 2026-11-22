@@ -107,6 +107,9 @@ public partial class MainWindow : Window
     }
 
     public Task InitializeAsync() => initialization ??= ViewModel.InitializeAsync();
+    private void OpenRepository(object sender, RoutedEventArgs e) =>
+        LinkOpener.Open(((Hyperlink)sender).NavigateUri.AbsoluteUri, ViewModel.ReportError);
+
     private async void SwitchLanguage(object sender, RoutedEventArgs e)
     {
         if (switchingLanguage) return;

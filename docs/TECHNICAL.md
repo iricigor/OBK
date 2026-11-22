@@ -789,7 +789,12 @@ reading pane with Windows 11-style sections that start collapsed:
   changing a password signs in to the school once to verify it; nothing is
   saved if sign-in fails. Clearing keeps the account and its offline archive.
   None of these actions change the active child.
-- **About**: installed version, update status, and **Check now**.
+- **About**: installed version, update status, **Check now**, and a **GitHub
+  repository** link that opens the project in the system browser.
+
+Android **Settings** also includes the **GitHub repository** link below its
+app-update controls. Neither platform contacts GitHub for this link until it is
+activated.
 
 **Back to messages**, or choosing a folder or child, returns to the messages.
 The title bar retains native dragging, resizing, caption controls, and Windows

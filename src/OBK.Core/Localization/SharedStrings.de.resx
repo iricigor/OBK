@@ -293,4 +293,7 @@
     <value>MMMM yyyy</value>
     <comment>.NET custom date/time layout for a month/year group heading; not a composite-format string.</comment>
   </data>
+  <data name="RepositoryLink" xml:space="preserve">
+    <value>GitHub-Repository</value>
+  </data>
 </root>
