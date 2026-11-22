@@ -1,0 +1,979 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountPasswordNotSaved" xml:space="preserve">
+    <value>Пароль не збережено</value>
+    <comment>Account detail in Settings.</comment>
+  </data>
+  <data name="AccountPasswordSaved" xml:space="preserve">
+    <value>Пароль збережено</value>
+    <comment>Account detail in Settings.</comment>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>OBK - Komens офлайн</value>
+    <comment>Product title shown in the title bar and window caption.</comment>
+  </data>
+  <data name="AppTitleWithAccount" xml:space="preserve">
+    <value>OBK - Komens офлайн - {0}</value>
+    <comment>Window caption. {0} = active child name or school name.</comment>
+  </data>
+  <data name="BuildRibbonLabel" xml:space="preserve">
+    <value>ЗБІРКА ДЛЯ РОЗРОБКИ</value>
+    <comment>Diagonal corner ribbon for locally built Windows apps.</comment>
+  </data>
+  <data name="BuildRibbonDismiss" xml:space="preserve">
+    <value>Підтвердити ознайомлення зі збіркою для розробки</value>
+    <comment>Accessible name of the ribbon button.</comment>
+  </data>
+  <data name="BuildRibbonTooltip" xml:space="preserve">
+    <value>Локальна збірка для розробки, створена {0}. Натисніть її або клавіші Enter/пробіл, щоб приховати цю стрічку до закриття OBK.</value>
+    <comment>{0} = full ISO 8601 UTC build timestamp.</comment>
+  </data>
+  <data name="AttachmentAvailabilityNotDownloaded" xml:space="preserve">
+    <value>Не завантажено. Оновіть, щоб кешувати цей файл.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentAvailabilityOpenable" xml:space="preserve">
+    <value>Кешовано для автономного доступу. Відкрити розшифровану копію в типовій програмі.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentAvailabilitySaveOnly" xml:space="preserve">
+    <value>Кешовано для автономного доступу. Цей тип файлу можна зберегти, але не можна відкрити напряму.</value>
+    <comment>Attachment tooltip line below the file name.</comment>
+  </data>
+  <data name="AttachmentNotDownloaded" xml:space="preserve">
+    <value>Не завантажено</value>
+    <comment>Shown instead of the file size for attachments that are not cached.</comment>
+  </data>
+  <data name="AttachmentOpen" xml:space="preserve">
+    <value>Відкрити</value>
+    <comment>Attachment context menu item and Open button tooltip.</comment>
+  </data>
+  <data name="AttachmentOpenFolder" xml:space="preserve">
+    <value>Відкрити папку</value>
+    <comment>Attachment context menu item that shows the decrypted copy in Explorer.</comment>
+  </data>
+  <data name="AttachmentOpenName" xml:space="preserve">
+    <value>Відкрити вкладення</value>
+    <comment>Accessible name of the attachment Open button.</comment>
+  </data>
+  <data name="AttachmentSaveAll" xml:space="preserve">
+    <value>Зберегти все</value>
+  </data>
+  <data name="AttachmentSaveAllTooltip" xml:space="preserve">
+    <value>Збережіть копії всіх вкладень. Якщо вкладення не завантажено, спочатку синхронізуйте дані.</value>
+  </data>
+  <data name="AttachmentSaveAs" xml:space="preserve">
+    <value>Зберегти як...</value>
+    <comment>Attachment context menu item and Save button tooltip.</comment>
+  </data>
+  <data name="AttachmentSaveName" xml:space="preserve">
+    <value>Зберегти вкладення</value>
+    <comment>Accessible name of the attachment Save button.</comment>
+  </data>
+  <data name="AttachmentTypeFile" xml:space="preserve">
+    <value>ФАЙЛ</value>
+    <comment>Short badge for attachments without a recognized file extension; keep at most four characters.</comment>
+  </data>
+  <data name="AttachmentsMore" xml:space="preserve">
+    <value>ще {0}</value>
+    <comment>Button that shows hidden attachments. {0} = number of hidden attachments.</comment>
+  </data>
+  <data name="AttachmentsShowFewer" xml:space="preserve">
+    <value>Показати менше</value>
+    <comment>Button that collapses the attachment list.</comment>
+  </data>
+  <data name="CommonCancel" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="CommonClose" xml:space="preserve">
+    <value>Закрити</value>
+    <comment>Close button tooltip and accessible name for a window.</comment>
+  </data>
+  <data name="DialogReplaceFilesMessage" xml:space="preserve">
+    <value>Деякі файли вже існують у цій папці. Замінити їх копіями вкладень?</value>
+  </data>
+  <data name="DialogReplaceFilesTitle" xml:space="preserve">
+    <value>Замінити файли?</value>
+  </data>
+  <data name="DialogSaveAllTitle" xml:space="preserve">
+    <value>Зберегти всі розшифровані копії вкладень</value>
+    <comment>Folder picker title.</comment>
+  </data>
+  <data name="DialogSaveAttachmentTitle" xml:space="preserve">
+    <value>Зберегти розшифровану копію вкладення</value>
+    <comment>Save file dialog title.</comment>
+  </data>
+  <data name="ErrorAttachmentCannotOpen" xml:space="preserve">
+    <value>Цей тип файлу не можна відкрити напряму. Скористайтеся «Зберегти як».</value>
+  </data>
+  <data name="ErrorAttachmentFolder" xml:space="preserve">
+    <value>Не вдалося створити папку для розшифрованої копії вкладення. Перевірте доступ до диска.</value>
+  </data>
+  <data name="ErrorAttachmentNoViewer" xml:space="preserve">
+    <value>Копію створено, але Windows не вдалося її відкрити. Установіть типову програму для перегляду або скористайтеся «Зберегти як».</value>
+  </data>
+  <data name="ErrorCloseBusy" xml:space="preserve">
+    <value>Дочекайтеся завершення синхронізації або експорту вкладень, перш ніж закривати OBK.</value>
+  </data>
+  <data name="ErrorEnterPassword" xml:space="preserve">
+    <value>Введіть пароль.</value>
+  </data>
+  <data name="ErrorRoundedCorners" xml:space="preserve">
+    <value>Windows не вдалося ввімкнути заокруглені кути вікна (0x{0:X8}). Застосунок залишається придатним для роботи; перезапустіть OBK, щоб повторити спробу.</value>
+    <comment>{0} = Windows error code, shown as eight hexadecimal digits.</comment>
+  </data>
+  <data name="ErrorSaveAllPartial" xml:space="preserve">
+    <value>{0} Збережено {1} з {2} копій.</value>
+    <comment>{0} = error message; {1} = copies saved before the error; {2} = total copies.</comment>
+  </data>
+  <data name="ErrorStartupTitle" xml:space="preserve">
+    <value>OBK не вдалося запустити</value>
+    <comment>Message box caption when the app cannot open its local data.</comment>
+  </data>
+  <data name="ErrorSyncArchiveKept" xml:space="preserve">
+    <value>{0} Наявний автономний архів не замінено.</value>
+    <comment>{0} = synchronization error message.</comment>
+  </data>
+  <data name="ErrorUnexpected" xml:space="preserve">
+    <value>Неочікувана помилка застосунку ({0}). Перезапустіть OBK; не додавайте облікові дані або вміст повідомлень до звітів про помилки.</value>
+    <comment>{0} = technical .NET exception type name.</comment>
+  </data>
+  <data name="ErrorUnexpectedTitle" xml:space="preserve">
+    <value>Помилка OBK</value>
+    <comment>Message box caption for unexpected errors.</comment>
+  </data>
+  <data name="FieldChildName" xml:space="preserve">
+    <value>Ім’я дитини</value>
+    <comment>Field label for the optional child display name.</comment>
+  </data>
+  <data name="FieldPassword" xml:space="preserve">
+    <value>Пароль</value>
+    <comment>Field label for the Komens password.</comment>
+  </data>
+  <data name="FieldUsername" xml:space="preserve">
+    <value>Ім’я користувача</value>
+    <comment>Field label for the Komens username.</comment>
+  </data>
+  <data name="LoginBackToSearch" xml:space="preserve">
+    <value>Назад до пошуку школи</value>
+  </data>
+  <data name="LoginChangeSchool" xml:space="preserve">
+    <value>Змінити</value>
+    <comment>Button that changes the selected school.</comment>
+  </data>
+  <data name="LoginChildNameHint" xml:space="preserve">
+    <value>Необов’язково. Відображається в заголовку застосунку замість назви школи.</value>
+  </data>
+  <data name="LoginChildNameOptional" xml:space="preserve">
+    <value>Ім’я дитини (необов’язково)</value>
+    <comment>Accessible name of the child name field.</comment>
+  </data>
+  <data name="LoginCloseName" xml:space="preserve">
+    <value>Закрити вхід</value>
+    <comment>Accessible name of the sign-in window close button.</comment>
+  </data>
+  <data name="LoginCloseTooltip" xml:space="preserve">
+    <value>Закрити без входу</value>
+  </data>
+  <data name="LoginConnecting" xml:space="preserve">
+    <value>Під’єднання до школи...</value>
+  </data>
+  <data name="LoginEncryptionNote" xml:space="preserve">
+    <value>Облікові дані та повідомлення зашифровані для цього облікового запису Windows.</value>
+  </data>
+  <data name="LoginEnteredManually" xml:space="preserve">
+    <value>Введено вручну</value>
+    <comment>Shown instead of the school's towns when its website was typed manually.</comment>
+  </data>
+  <data name="LoginErrorChooseSchool" xml:space="preserve">
+    <value>Виберіть школу, перш ніж входити.</value>
+  </data>
+  <data name="LoginErrorChooseSchoolOffline" xml:space="preserve">
+    <value>Виберіть школу, перш ніж відкривати повідомлення офлайн.</value>
+  </data>
+  <data name="LoginErrorDirectoryUnavailable" xml:space="preserve">
+    <value>Каталог шкіл недоступний. Введіть вебсайт школи вручну.</value>
+  </data>
+  <data name="LoginErrorOfflineUsername" xml:space="preserve">
+    <value>Введіть ім’я користувача, що використовувалося для завантаження повідомлень офлайн.</value>
+  </data>
+  <data name="LoginErrorPassword" xml:space="preserve">
+    <value>Введіть пароль Komens.</value>
+  </data>
+  <data name="LoginErrorUsername" xml:space="preserve">
+    <value>Введіть ім’я користувача Komens.</value>
+  </data>
+  <data name="LoginFindAnotherSchool" xml:space="preserve">
+    <value>Або знайти іншу школу</value>
+  </data>
+  <data name="LoginHeading" xml:space="preserve">
+    <value>Увійти до Komens</value>
+  </data>
+  <data name="LoginIntro" xml:space="preserve">
+    <value>Виберіть школу, увійдіть і синхронізуйте повідомлення для читання офлайн.</value>
+  </data>
+  <data name="LoginLoadingDirectory" xml:space="preserve">
+    <value>Завантаження вбудованого каталогу шкіл...</value>
+  </data>
+  <data name="LoginManualUrlButton" xml:space="preserve">
+    <value>Не можете знайти свою школу? Введіть її вебсайт</value>
+  </data>
+  <data name="LoginMatches" xml:space="preserve">
+    <value>Кількість збігів: {0}. Скористайтеся стрілками вгору й униз, а потім натисніть Enter, щоб вибрати.</value>
+    <comment>Used when more than one school matches. {0} = number of matching schools.</comment>
+  </data>
+  <data name="LoginMatchingSchools" xml:space="preserve">
+    <value>Відповідні школи</value>
+    <comment>Accessible name of the school search results.</comment>
+  </data>
+  <data name="LoginNoSchools" xml:space="preserve">
+    <value>Шкіл не знайдено. Перевірте написання або введіть вебсайт школи.</value>
+  </data>
+  <data name="LoginOneMatch" xml:space="preserve">
+    <value>Знайдено {0} відповідну школу. Скористайтеся стрілками вгору й униз, а потім натисніть Enter, щоб вибрати.</value>
+    <comment>Used when exactly one school matches. {0} = 1.</comment>
+  </data>
+  <data name="LoginPreviousAccountSelected" xml:space="preserve">
+    <value>Вибрано попередній обліковий запис. Введіть пароль.</value>
+  </data>
+  <data name="LoginReadOffline" xml:space="preserve">
+    <value>Читати офлайн</value>
+    <comment>Button that opens the offline archive without signing in.</comment>
+  </data>
+  <data name="LoginRemember" xml:space="preserve">
+    <value>Запам’ятати облікові дані в цьому обліковому записі Windows</value>
+  </data>
+  <data name="LoginSavedAccount" xml:space="preserve">
+    <value>Збережений обліковий запис</value>
+    <comment>Fallback title or detail for a previously used account without a known school.</comment>
+  </data>
+  <data name="LoginSavedAccountReady" xml:space="preserve">
+    <value>Збережений обліковий запис готовий. Увійдіть і синхронізуйте дані або читайте офлайн.</value>
+  </data>
+  <data name="LoginSavedAccountsHint" xml:space="preserve">
+    <value>Виберіть дитину або ім’я користувача. Збережені паролі заповнюються автоматично.</value>
+  </data>
+  <data name="LoginSavedAccountsTitle" xml:space="preserve">
+    <value>Раніше використані облікові записи</value>
+  </data>
+  <data name="LoginSchoolLabel" xml:space="preserve">
+    <value>Школа</value>
+    <comment>Label and accessible name of the school search field.</comment>
+  </data>
+  <data name="LoginSchoolSearchHelp" xml:space="preserve">
+    <value>Шукайте за назвою школи, містом або вебсайтом</value>
+    <comment>Accessible help text of the school search field.</comment>
+  </data>
+  <data name="LoginSchoolSelected" xml:space="preserve">
+    <value>Школу вибрано. Введіть ім’я користувача та пароль Komens.</value>
+  </data>
+  <data name="LoginSchoolUrlHint" xml:space="preserve">
+    <value>Використовуйте HTTPS-адресу школи. Не додавайте /login.</value>
+  </data>
+  <data name="LoginSchoolUrlLabel" xml:space="preserve">
+    <value>Вебсайт школи (HTTPS)</value>
+  </data>
+  <data name="LoginSchoolWebsite" xml:space="preserve">
+    <value>Вебсайт школи</value>
+    <comment>Shown as the school name when only its website is known.</comment>
+  </data>
+  <data name="LoginSearchPrompt" xml:space="preserve">
+    <value>Шукайте за назвою школи, містом або вебсайтом.</value>
+    <comment>Status below the empty school search field.</comment>
+  </data>
+  <data name="LoginSelectedSchool" xml:space="preserve">
+    <value>ВИБРАНА ШКОЛА</value>
+    <comment>Small uppercase caption above the selected school.</comment>
+  </data>
+  <data name="LoginSignIn" xml:space="preserve">
+    <value>Увійти й синхронізувати</value>
+  </data>
+  <data name="LoginSyncFailed" xml:space="preserve">
+    <value>{0} Наявні повідомлення офлайн залишаються доступними.</value>
+    <comment>{0} = sign-in or synchronization error message.</comment>
+  </data>
+  <data name="LoginTitle" xml:space="preserve">
+    <value>Увійти до своєї школи</value>
+    <comment>Sign-in window title.</comment>
+  </data>
+  <data name="LoginTooManyMatches" xml:space="preserve">
+    <value>Збігів: {0:N0}. Введіть ще кілька символів, щоб звузити список.</value>
+    <comment>{0} = number of matching schools.</comment>
+  </data>
+  <data name="LoginUseWebsite" xml:space="preserve">
+    <value>Використати цей вебсайт</value>
+  </data>
+  <data name="MainClearSearch" xml:space="preserve">
+    <value>Очистити пошук</value>
+    <comment>Tooltip and accessible name of the clear-search button.</comment>
+  </data>
+  <data name="MainDefaultSchool" xml:space="preserve">
+    <value>Ваша школа</value>
+    <comment>Placeholder account label before any school is known.</comment>
+  </data>
+  <data name="MainEmptyFolderExcuses" xml:space="preserve">
+    <value>У папці «Пояснювальні» немає кешованих повідомлень.
+Оновіть, щоб перевірити свою школу.</value>
+    <comment>Empty state of the Excuses folder.</comment>
+  </data>
+  <data name="MainEmptyFolderInbox" xml:space="preserve">
+    <value>У папці «Вхідні» немає кешованих повідомлень.
+Оновіть, щоб перевірити свою школу.</value>
+    <comment>Empty state of the Inbox folder.</comment>
+  </data>
+  <data name="MainEmptyFolderNoticeboard" xml:space="preserve">
+    <value>На дошці оголошень немає кешованих повідомлень.
+Оновіть, щоб перевірити свою школу.</value>
+    <comment>Empty state of the Noticeboard folder.</comment>
+  </data>
+  <data name="MainEmptyFolderSent" xml:space="preserve">
+    <value>У папці «Надіслані» немає кешованих повідомлень.
+Оновіть, щоб перевірити свою школу.</value>
+    <comment>Empty state of the Sent folder.</comment>
+  </data>
+  <data name="MainEmptySearchExcuses" xml:space="preserve">
+    <value>У папці «Пояснювальні» немає повідомлень, що відповідають запиту «{0}».</value>
+    <comment>Search found nothing in the Excuses folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchInbox" xml:space="preserve">
+    <value>У папці «Вхідні» немає повідомлень, що відповідають запиту «{0}».</value>
+    <comment>Search found nothing in the Inbox folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchNoticeboard" xml:space="preserve">
+    <value>На дошці оголошень немає повідомлень, що відповідають запиту «{0}».</value>
+    <comment>Search found nothing in the Noticeboard folder. {0} = search text.</comment>
+  </data>
+  <data name="MainEmptySearchSent" xml:space="preserve">
+    <value>У папці «Надіслані» немає повідомлень, що відповідають запиту «{0}».</value>
+    <comment>Search found nothing in the Sent folder. {0} = search text.</comment>
+  </data>
+  <data name="MainFolderCount" xml:space="preserve">
+    <value>Повідомлень: {0}</value>
+    <comment>{0} = number of messages in the selected folder.</comment>
+  </data>
+  <data name="MainFolderSearchCount" xml:space="preserve">
+    <value>Пошуку відповідають: {0} з {1} повідомлень</value>
+    <comment>Folder caption while searching. {0} = matching messages; {1} = all messages in the folder.</comment>
+  </data>
+  <data name="MainGroupHeaderTooltip" xml:space="preserve">
+    <value>Згорнути або розгорнути цю групу</value>
+  </data>
+  <data name="MainGroupLabel" xml:space="preserve">
+    <value>Група</value>
+    <comment>Label before the message grouping drop-down.</comment>
+  </data>
+  <data name="MainGroupName" xml:space="preserve">
+    <value>Групувати повідомлення за</value>
+    <comment>Accessible name of the grouping drop-down.</comment>
+  </data>
+  <data name="MainGroupOptionDate" xml:space="preserve">
+    <value>Датою</value>
+    <comment>Grouping option: group messages by date.</comment>
+  </data>
+  <data name="MainGroupOptionNone" xml:space="preserve">
+    <value>Без групування</value>
+    <comment>Grouping option: no grouping.</comment>
+  </data>
+  <data name="MainGroupOptionSender" xml:space="preserve">
+    <value>Відправником</value>
+    <comment>Grouping option: group messages by sender.</comment>
+  </data>
+  <data name="MainGroupOptionTitle" xml:space="preserve">
+    <value>Темою</value>
+    <comment>Grouping option: group messages by subject.</comment>
+  </data>
+  <data name="MainMessagesName" xml:space="preserve">
+    <value>Повідомлення</value>
+    <comment>Accessible name of the message list.</comment>
+  </data>
+  <data name="MainRefresh" xml:space="preserve">
+    <value>Оновити</value>
+    <comment>Button that downloads new messages.</comment>
+  </data>
+  <data name="MainRefreshTooltip" xml:space="preserve">
+    <value>Завантажити нові повідомлення для кожної збереженої дитини</value>
+  </data>
+  <data name="MainRefreshing" xml:space="preserve">
+    <value>Оновлення...</value>
+    <comment>Refresh button text while synchronizing.</comment>
+  </data>
+  <data name="MainResizeMessageList" xml:space="preserve">
+    <value>Змінити розмір списку повідомлень</value>
+    <comment>Tooltip and accessible name of the message list splitter.</comment>
+  </data>
+  <data name="MainSearchMessages" xml:space="preserve">
+    <value>Пошук повідомлень</value>
+    <comment>Search box placeholder and accessible name.</comment>
+  </data>
+  <data name="MainSearchTooltip" xml:space="preserve">
+    <value>Шукати за темою, вмістом, відправником і датою</value>
+  </data>
+  <data name="MainSortLabel" xml:space="preserve">
+    <value>Сортувати</value>
+    <comment>Label before the message sort drop-down.</comment>
+  </data>
+  <data name="MainSortName" xml:space="preserve">
+    <value>Сортувати повідомлення за</value>
+    <comment>Accessible name of the sort drop-down.</comment>
+  </data>
+  <data name="MainSortOptionDate" xml:space="preserve">
+    <value>Датою</value>
+    <comment>Sort option: sort messages by date.</comment>
+  </data>
+  <data name="MainSortOptionSender" xml:space="preserve">
+    <value>Відправником</value>
+    <comment>Sort option: sort messages by sender.</comment>
+  </data>
+  <data name="MainSortOptionTitle" xml:space="preserve">
+    <value>Темою</value>
+    <comment>Sort option: sort messages by subject.</comment>
+  </data>
+  <data name="MessageExcuseBadge" xml:space="preserve">
+    <value>Пояснювальна</value>
+    <comment>Short badge on excuse notes in the message list.</comment>
+  </data>
+  <data name="MessageExcuseLabel" xml:space="preserve">
+    <value>Пояснювальна</value>
+    <comment>Excuse badge in the reader and its tooltip in the list; 'omluvenka' is the Czech Komens term.</comment>
+  </data>
+  <data name="MessageHasAttachments" xml:space="preserve">
+    <value>Має вкладення</value>
+    <comment>Accessible name of the attachment icon in the message list.</comment>
+  </data>
+  <data name="PromptPasswordAction" xml:space="preserve">
+    <value>Перевірити та зберегти</value>
+    <comment>Submit button of the password dialog.</comment>
+  </data>
+  <data name="PromptPasswordDescription" xml:space="preserve">
+    <value>OBK входить до {0} як {1}, щоб перевірити пароль. Його буде збережено лише після успішного входу та зашифровано для вашого облікового запису Windows.</value>
+    <comment>{0} = school name or website; {1} = Komens username.</comment>
+  </data>
+  <data name="PromptRenameAction" xml:space="preserve">
+    <value>Перейменувати</value>
+    <comment>Submit button of the rename dialog.</comment>
+  </data>
+  <data name="PromptRenameDescription" xml:space="preserve">
+    <value>Це ім’я відображатиметься на бічній панелі замість назви школи. Залиште поле порожнім, щоб показувати «{0}».</value>
+    <comment>{0} = school name or username shown when no child name is set.</comment>
+  </data>
+  <data name="PromptRenameTitle" xml:space="preserve">
+    <value>Перейменувати дитину</value>
+    <comment>Rename dialog heading.</comment>
+  </data>
+  <data name="PromptVerifyingPassword" xml:space="preserve">
+    <value>Вхід для перевірки пароля...</value>
+  </data>
+  <data name="ReaderConfirmationRequested" xml:space="preserve">
+    <value>Запитано підтвердження. OBK не надсилає підтверджень.</value>
+  </data>
+  <data name="ReaderContentName" xml:space="preserve">
+    <value>Вміст повідомлення</value>
+    <comment>Accessible name of the message body.</comment>
+  </data>
+  <data name="ReaderMetadata" xml:space="preserve">
+    <value>Надіслано: {0} — Папка: {1}</value>
+    <comment>{0} = date and time the message was sent; {1} = folder name.</comment>
+  </data>
+  <data name="ReaderNoContent" xml:space="preserve">
+    <value>(Вміст повідомлення відсутній)</value>
+  </data>
+  <data name="ReaderNoSelection" xml:space="preserve">
+    <value>Виберіть повідомлення</value>
+    <comment>Reader heading when no message is selected.</comment>
+  </data>
+  <data name="ReaderNoSelectionDetail" xml:space="preserve">
+    <value>Перегляд кешованих повідомлень не створює запитів до сервера.</value>
+  </data>
+  <data name="ReaderNoSelectionSender" xml:space="preserve">
+    <value>Ваш робочий простір офлайн</value>
+    <comment>Reader sender line when no message is selected.</comment>
+  </data>
+  <data name="ReaderNotSupplied" xml:space="preserve">
+    <value>(Не вказано)</value>
+    <comment>Shown when a message has no sender or recipient name.</comment>
+  </data>
+  <data name="ReaderRecipient" xml:space="preserve">
+    <value>Кому: {0}</value>
+    <comment>{0} = recipient name of a sent message.</comment>
+  </data>
+  <data name="ReaderRelatedHelpName" xml:space="preserve">
+    <value>Про можливо пов’язані повідомлення</value>
+    <comment>Accessible name of the help icon.</comment>
+  </data>
+  <data name="ReaderRelatedHelpTooltip" xml:space="preserve">
+    <value>Визначено за схожою темою й тією самою особою. Komens не повідомляє про фактичні зв’язки відповідей, тому повідомлення можуть бути пов’язані неправильно або неповністю.</value>
+  </data>
+  <data name="ReaderRelatedTitle" xml:space="preserve">
+    <value>Можливо пов’язані</value>
+  </data>
+  <data name="RefreshSummaryFailed" xml:space="preserve">
+    <value>Помилка: {0} Наявні автономні архіви залишено без змін.</value>
+    <comment>{0} = semicolon-separated list of 'account: error' entries.</comment>
+  </data>
+  <data name="RefreshSummaryMany" xml:space="preserve">
+    <value>Оновлено {0} із {1} збережених облікових записів.</value>
+    <comment>Used when {1} is not 1. {0} = refreshed accounts; {1} = accounts with a saved password.</comment>
+  </data>
+  <data name="RefreshSummaryOne" xml:space="preserve">
+    <value>Оновлено {0} із {1} збереженого облікового запису.</value>
+    <comment>Used when {1} is 1. {0} = refreshed accounts; {1} = accounts with a saved password.</comment>
+  </data>
+  <data name="RefreshSummarySignInNeeded" xml:space="preserve">
+    <value>Потрібен вхід (немає збереженого пароля): {0}.</value>
+    <comment>{0} = comma-separated account names.</comment>
+  </data>
+  <data name="RelatedFromYou" xml:space="preserve">
+    <value>ви</value>
+    <comment>Sender of a related message that you sent; inserted into RelatedLabel.</comment>
+  </data>
+  <data name="RelatedLabel" xml:space="preserve">
+    <value>{0} — Від: {1}</value>
+    <comment>Related message link. {0} = short date and time; {1} = sender name or 'you'.</comment>
+  </data>
+  <data name="RelatedNext" xml:space="preserve">
+    <value>Наступне</value>
+    <comment>Direction of a later related message.</comment>
+  </data>
+  <data name="RelatedNextNumbered" xml:space="preserve">
+    <value>Наступне ({0})</value>
+    <comment>Direction of a later related message. {0} = position counted from the current message.</comment>
+  </data>
+  <data name="RelatedPrevious" xml:space="preserve">
+    <value>Попереднє</value>
+    <comment>Direction of an earlier related message.</comment>
+  </data>
+  <data name="RelatedPreviousNumbered" xml:space="preserve">
+    <value>Попереднє ({0})</value>
+    <comment>Direction of an earlier related message. {0} = position counted from the current message.</comment>
+  </data>
+  <data name="SettingsAbout" xml:space="preserve">
+    <value>Про програму</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAboutDescription" xml:space="preserve">
+    <value>Версія {0} й оновлення</value>
+    <comment>About section subtitle. {0} = installed app version.</comment>
+  </data>
+  <data name="SettingsAccounts" xml:space="preserve">
+    <value>Облікові записи</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAccountsDescription" xml:space="preserve">
+    <value>Збережені паролі та імена дітей</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Вигляд</value>
+    <comment>Settings section title.</comment>
+  </data>
+  <data name="SettingsAppearanceDescription" xml:space="preserve">
+    <value>Тема й розмір тексту для читання</value>
+  </data>
+  <data name="SettingsBack" xml:space="preserve">
+    <value>Назад до повідомлень</value>
+    <comment>Button that closes Settings.</comment>
+  </data>
+  <data name="SettingsBackTooltip" xml:space="preserve">
+    <value>Повернутися до повідомлень</value>
+  </data>
+  <data name="SettingsChangePassword" xml:space="preserve">
+    <value>Змінити пароль</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsChangePasswordFor" xml:space="preserve">
+    <value>Змінити пароль для {0}</value>
+    <comment>Dialog heading and accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsChangePasswordTooltip" xml:space="preserve">
+    <value>Перевірити новий пароль у школі, а потім зберегти його</value>
+  </data>
+  <data name="SettingsCheckNow" xml:space="preserve">
+    <value>Перевірити зараз</value>
+    <comment>Button that checks for app updates.</comment>
+  </data>
+  <data name="SettingsCheckNowTooltip" xml:space="preserve">
+    <value>Перевірити на GitHub наявність новішої версії OBK</value>
+  </data>
+  <data name="SettingsClearPassword" xml:space="preserve">
+    <value>Видалити пароль</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsClearPasswordFor" xml:space="preserve">
+    <value>Видалити збережений пароль для {0}</value>
+    <comment>Accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsClearPasswordTooltip" xml:space="preserve">
+    <value>Забути збережений пароль; повідомлення офлайн залишаться</value>
+  </data>
+  <data name="SettingsInstalledVersion" xml:space="preserve">
+    <value>Установлена версія</value>
+  </data>
+  <data name="SettingsListDensity" xml:space="preserve">
+    <value>Щільність списку повідомлень</value>
+  </data>
+  <data name="SettingsListDensityCompact" xml:space="preserve">
+    <value>Компактна</value>
+    <comment>Message list density option.</comment>
+  </data>
+  <data name="SettingsListDensityDescription" xml:space="preserve">
+    <value>Відстань між повідомленнями в списку</value>
+  </data>
+  <data name="SettingsListDensityName" xml:space="preserve">
+    <value>Щільність списку повідомлень</value>
+    <comment>Accessible name of the message list density options.</comment>
+  </data>
+  <data name="SettingsListDensityRelaxed" xml:space="preserve">
+    <value>Вільна</value>
+    <comment>Message list density option.</comment>
+  </data>
+  <data name="SettingsNoAccounts" xml:space="preserve">
+    <value>Облікових записів ще немає. Натисніть «Додати дитину» на бічній панелі, щоб увійти.</value>
+    <comment>'Add child' refers to the SidebarAddChild button.</comment>
+  </data>
+  <data name="SettingsReadingSize" xml:space="preserve">
+    <value>Розмір тексту</value>
+  </data>
+  <data name="SettingsReadingSizeDescription" xml:space="preserve">
+    <value>Розмір тексту списку повідомлень і засобу читання</value>
+  </data>
+  <data name="SettingsReadingSizeLarge" xml:space="preserve">
+    <value>Великий</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsReadingSizeMedium" xml:space="preserve">
+    <value>Середній</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsReadingSizeName" xml:space="preserve">
+    <value>Розмір тексту</value>
+    <comment>Accessible name of the reading size options.</comment>
+  </data>
+  <data name="SettingsReadingSizeSmall" xml:space="preserve">
+    <value>Малий</value>
+    <comment>Reading size option.</comment>
+  </data>
+  <data name="SettingsRename" xml:space="preserve">
+    <value>Перейменувати</value>
+    <comment>Button in the account row that renames the child.</comment>
+  </data>
+  <data name="SettingsRenameName" xml:space="preserve">
+    <value>Перейменувати {0}</value>
+    <comment>Accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsRenameTooltip" xml:space="preserve">
+    <value>Змінити ім’я дитини на бічній панелі</value>
+  </data>
+  <data name="SettingsSavePassword" xml:space="preserve">
+    <value>Зберегти пароль</value>
+    <comment>Button in the account row.</comment>
+  </data>
+  <data name="SettingsSavePasswordFor" xml:space="preserve">
+    <value>Зберегти пароль для {0}</value>
+    <comment>Dialog heading and accessible button name. {0} = child or account name.</comment>
+  </data>
+  <data name="SettingsSavePasswordTooltip" xml:space="preserve">
+    <value>Перевірити пароль у школі та зберегти, щоб команда «Оновити» могла оновлювати дані цієї дитини</value>
+  </data>
+  <data name="SettingsSavedAccountsName" xml:space="preserve">
+    <value>Збережені облікові записи</value>
+    <comment>Accessible name of the account list in Settings.</comment>
+  </data>
+  <data name="SettingsTheme" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="SettingsThemeDark" xml:space="preserve">
+    <value>Темна</value>
+    <comment>Theme option.</comment>
+  </data>
+  <data name="SettingsThemeDarkName" xml:space="preserve">
+    <value>Темна тема</value>
+    <comment>Accessible name of the Dark theme option.</comment>
+  </data>
+  <data name="SettingsThemeDescription" xml:space="preserve">
+    <value>Виберіть вигляд OBK</value>
+  </data>
+  <data name="SettingsThemeLight" xml:space="preserve">
+    <value>Світла</value>
+    <comment>Theme option.</comment>
+  </data>
+  <data name="SettingsThemeLightName" xml:space="preserve">
+    <value>Світла тема</value>
+    <comment>Accessible name of the Light theme option.</comment>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Налаштування</value>
+    <comment>Settings page title, sidebar button and accessible name.</comment>
+  </data>
+  <data name="SettingsUpdates" xml:space="preserve">
+    <value>Оновлення</value>
+    <comment>Settings row title.</comment>
+  </data>
+  <data name="SidebarAddChild" xml:space="preserve">
+    <value>Додати дитину</value>
+    <comment>Sidebar button that opens sign-in for another child or school.</comment>
+  </data>
+  <data name="SidebarAddChildTooltip" xml:space="preserve">
+    <value>Увійти для іншої дитини чи школи</value>
+  </data>
+  <data name="SidebarChildrenName" xml:space="preserve">
+    <value>Діти</value>
+    <comment>Accessible name of the sidebar list of signed-in children.</comment>
+  </data>
+  <data name="SidebarCollapseTooltip" xml:space="preserve">
+    <value>Показувати лише значки</value>
+    <comment>Tooltip of the button that collapses the sidebar to icons.</comment>
+  </data>
+  <data name="SidebarExpandTooltip" xml:space="preserve">
+    <value>Розгорнути бічну панель</value>
+  </data>
+  <data name="SidebarFoldersName" xml:space="preserve">
+    <value>Папки</value>
+    <comment>Accessible name of the folder list.</comment>
+  </data>
+  <data name="SidebarResizeName" xml:space="preserve">
+    <value>Змінити розмір бічної панелі</value>
+    <comment>Accessible name of the sidebar splitter.</comment>
+  </data>
+  <data name="SidebarResizeTooltip" xml:space="preserve">
+    <value>Змінюйте розмір бічної панелі; звузьте її, щоб показувати лише значки</value>
+  </data>
+  <data name="SizeBytes" xml:space="preserve">
+    <value>{0:N0} Б</value>
+    <comment>File size. {0} = size in bytes.</comment>
+  </data>
+  <data name="SizeGigabytes" xml:space="preserve">
+    <value>{0:0.#} ГБ</value>
+    <comment>File size. {0} = size in gigabytes.</comment>
+  </data>
+  <data name="SizeKilobytes" xml:space="preserve">
+    <value>{0:N0} КБ</value>
+    <comment>File size. {0} = size in kilobytes.</comment>
+  </data>
+  <data name="SizeMegabytes" xml:space="preserve">
+    <value>{0:0.#} МБ</value>
+    <comment>File size. {0} = size in megabytes.</comment>
+  </data>
+  <data name="StatusAccountProgress" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Refresh progress for one account. {0} = account name; {1} = progress text.</comment>
+  </data>
+  <data name="StatusAccountProgressNumbered" xml:space="preserve">
+    <value>{0} ({1}/{2}): {3}</value>
+    <comment>Refresh progress. {0} = account name; {1} = account position; {2} = account count; {3} = progress text.</comment>
+  </data>
+  <data name="StatusArchiveReady" xml:space="preserve">
+    <value>Автономний архів готовий — синхронізовано (повідомлень: {0}, вкладень: {1}) — остання синхронізація: {2}</value>
+    <comment>{0} = message count; {1} = cached attachment count; {2} = last synchronization date and time.</comment>
+  </data>
+  <data name="StatusAttachmentOpened" xml:space="preserve">
+    <value>Відкрито розшифровану копію: {0}. Вона залишається в локальній папці відкритих файлів.</value>
+    <comment>{0} = attachment file name.</comment>
+  </data>
+  <data name="StatusAttachmentSaved" xml:space="preserve">
+    <value>Збережено копію вкладення: {0}</value>
+    <comment>{0} = attachment file name.</comment>
+  </data>
+  <data name="StatusAttachmentsSaved" xml:space="preserve">
+    <value>Збережено розшифрованих копій вкладень: {0}. Видаліть копії, коли вони більше не потрібні.</value>
+    <comment>{0} = number of saved copies.</comment>
+  </data>
+  <data name="StatusChildNameRemoved" xml:space="preserve">
+    <value>Ім’я дитини для {0} видалено.</value>
+    <comment>{0} = school name or username.</comment>
+  </data>
+  <data name="StatusDragFinished" xml:space="preserve">
+    <value>Перетягування вкладення завершено. Розшифрована копія джерела залишається в локальній папці відкритих файлів.</value>
+  </data>
+  <data name="StatusDragTooEarly" xml:space="preserve">
+    <value>Перетягування завершилося до готовності копії. Перетягніть вкладення ще раз.</value>
+  </data>
+  <data name="StatusLoadingArchive" xml:space="preserve">
+    <value>Завантаження архіву...</value>
+  </data>
+  <data name="StatusNoArchive" xml:space="preserve">
+    <value>Автономного архіву ще немає. Оновіть, щоб завантажити повідомлення.</value>
+  </data>
+  <data name="StatusOffline" xml:space="preserve">
+    <value>{0} — офлайн</value>
+    <comment>{0} = archive status (StatusArchiveReady).</comment>
+  </data>
+  <data name="StatusPasswordCleared" xml:space="preserve">
+    <value>Збережений пароль для {0} видалено. Під час наступного оновлення його буде запитано.</value>
+    <comment>{0} = child or account name.</comment>
+  </data>
+  <data name="StatusPasswordSaved" xml:space="preserve">
+    <value>Пароль для {0} перевірено та збережено.</value>
+    <comment>{0} = child or account name.</comment>
+  </data>
+  <data name="StatusPreparingAttachment" xml:space="preserve">
+    <value>Підготовка копії вкладення...</value>
+  </data>
+  <data name="StatusPreparingDrag" xml:space="preserve">
+    <value>Підготовка вкладення для перетягування в Windows...</value>
+  </data>
+  <data name="StatusRenamed" xml:space="preserve">
+    <value>Перейменовано на {0}.</value>
+    <comment>{0} = new child name.</comment>
+  </data>
+  <data name="StatusSavingAttachment" xml:space="preserve">
+    <value>Збереження вкладення {0} з {1}...</value>
+    <comment>{0} = current attachment number; {1} = attachment count.</comment>
+  </data>
+  <data name="StatusSigningIn" xml:space="preserve">
+    <value>Вхід...</value>
+  </data>
+  <data name="StatusWaitForArchive" xml:space="preserve">
+    <value>Дочекайтеся завершення поточної операції з архівом.</value>
+  </data>
+  <data name="StatusWaitForOperation" xml:space="preserve">
+    <value>Дочекайтеся завершення поточної операції.</value>
+  </data>
+  <data name="StatusWelcome" xml:space="preserve">
+    <value>Увійдіть, щоб завантажити повідомлення, або читайте архів офлайн.</value>
+  </data>
+  <data name="ThemeErrorChoose" xml:space="preserve">
+    <value>Виберіть світлу або темну тему.</value>
+  </data>
+  <data name="ThemeErrorCleanup" xml:space="preserve">
+    <value>Не вдалося видалити тимчасовий файл налаштування теми. Перевірте доступ до диска.</value>
+  </data>
+  <data name="ThemeErrorInvalid" xml:space="preserve">
+    <value>Налаштування теми некоректне. Виберіть світлу або темну тему, щоб замінити його.</value>
+  </data>
+  <data name="ThemeErrorRead" xml:space="preserve">
+    <value>Не вдалося прочитати налаштування теми. Виберіть тему, щоб зберегти його знову.</value>
+  </data>
+  <data name="ThemeErrorSave" xml:space="preserve">
+    <value>Тему змінено, але не вдалося її зберегти. Перевірте доступ до диска.</value>
+  </data>
+  <data name="ThemeSwitchToDarkTooltip" xml:space="preserve">
+    <value>Перемкнути на темну тему</value>
+    <comment>Title bar theme button tooltip while the Light theme is active.</comment>
+  </data>
+  <data name="ThemeSwitchToLightTooltip" xml:space="preserve">
+    <value>Перемкнути на світлу тему</value>
+    <comment>Title bar theme button tooltip while the Dark theme is active.</comment>
+  </data>
+  <data name="UpdateCheckTooltip" xml:space="preserve">
+    <value>Натисніть, щоб перевірити наявність оновлень зараз</value>
+  </data>
+  <data name="UpdateChecking" xml:space="preserve">
+    <value>Перевірка оновлень...</value>
+  </data>
+  <data name="UpdateCurrent" xml:space="preserve">
+    <value>У вас найновіша версія {0}</value>
+    <comment>{0} = installed app version.</comment>
+  </data>
+  <data name="UpdateDownloading" xml:space="preserve">
+    <value>Завантаження {0}...</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateErrorBusy" xml:space="preserve">
+    <value>Дочекайтеся завершення синхронізації або експорту вкладень, перш ніж оновлювати застосунок.</value>
+  </data>
+  <data name="UpdateIgnore" xml:space="preserve">
+    <value>Ігнорувати в цьому сеансі</value>
+    <comment>Update menu option.</comment>
+  </data>
+  <data name="UpdateIgnored" xml:space="preserve">
+    <value>Оновлення {0} ігноровано в цьому сеансі</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateInstallOnExit" xml:space="preserve">
+    <value>Установити після виходу</value>
+    <comment>Update menu option.</comment>
+  </data>
+  <data name="UpdateMoreOptions" xml:space="preserve">
+    <value>Інші параметри оновлення</value>
+    <comment>Tooltip and accessible name of the update menu button.</comment>
+  </data>
+  <data name="UpdateReady" xml:space="preserve">
+    <value>{0} готове до встановлення</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateRestart" xml:space="preserve">
+    <value>Оновити й перезапустити</value>
+    <comment>Button that installs the downloaded update.</comment>
+  </data>
+  <data name="UpdateScheduled" xml:space="preserve">
+    <value>{0} буде встановлено після виходу</value>
+    <comment>{0} = new app version.</comment>
+  </data>
+  <data name="UpdateStatusName" xml:space="preserve">
+    <value>Стан оновлення</value>
+    <comment>Accessible name of the update status text.</comment>
+  </data>
+  <data name="WindowMaximizeName" xml:space="preserve">
+    <value>Розгорнути або відновити</value>
+    <comment>Accessible name of the maximize/restore caption button.</comment>
+  </data>
+  <data name="WindowMaximizeTooltip" xml:space="preserve">
+    <value>Розгорнути / Відновити</value>
+    <comment>Tooltip of the maximize/restore caption button.</comment>
+  </data>
+  <data name="WindowMinimize" xml:space="preserve">
+    <value>Згорнути</value>
+    <comment>Minimize caption button tooltip and accessible name.</comment>
+  </data>
+  <data name="SettingsTransfer" xml:space="preserve">
+    <value>Перенести в Android</value>
+    <comment>Button on an account row in Settings.</comment>
+  </data>
+  <data name="SettingsTransferFor" xml:space="preserve">
+    <value>Перенести {0} в Android</value>
+    <comment>{0} = account label. Accessible name of the button.</comment>
+  </data>
+  <data name="SettingsTransferTooltip" xml:space="preserve">
+    <value>Показати зашифрований QR-код і три слова, щоб додати цей обліковий запис в OBK на Android. Потрібен збережений пароль.</value>
+  </data>
+  <data name="TransferCountdown" xml:space="preserve">
+    <value>QR-код розмиється через {0} с</value>
+    <comment>{0} = seconds remaining.</comment>
+  </data>
+  <data name="TransferDescription" xml:space="preserve">
+    <value>Відкрийте OBK на телефоні, виберіть «Сканувати з ПК», відскануйте цей код і введіть три слова.</value>
+  </data>
+  <data name="TransferHidden" xml:space="preserve">
+    <value>QR-код розмито для конфіденційності. Слова залишатимуться доступними, доки ви не закриєте це вікно; покажіть новий код, щоб повторити сканування.</value>
+  </data>
+  <data name="TransferPreparing" xml:space="preserve">
+    <value>Шифрування...</value>
+  </data>
+  <data name="TransferQrName" xml:space="preserve">
+    <value>Зашифрований QR-код облікового запису</value>
+    <comment>Accessible name of the QR image.</comment>
+  </data>
+  <data name="TransferScope" xml:space="preserve">
+    <value>Переносяться лише адреса школи, ім’я користувача, пароль та ім’я дитини. Повідомлення залишаються на цьому ПК.</value>
+  </data>
+  <data name="TransferShowNew" xml:space="preserve">
+    <value>Показати новий код</value>
+  </data>
+  <data name="TransferStepScan" xml:space="preserve">
+    <value>Відскануйте в OBK на Android</value>
+  </data>
+  <data name="TransferStepWords" xml:space="preserve">
+    <value>Потім введіть ці слова</value>
+  </data>
+  <data name="TransferTitle" xml:space="preserve">
+    <value>Перенести в Android</value>
+  </data>
+  <data name="TransferWarning" xml:space="preserve">
+    <value>Тримайте код і слова в таємниці. Будь-хто, хто має і те, й інше, може відновити пароль цього облікового запису. Розмиття коду не робить недійсною вже зроблену фотографію.</value>
+  </data>
+  <data name="TransferWordsName" xml:space="preserve">
+    <value>Слова для перенесення</value>
+    <comment>Accessible name of the words text.</comment>
+  </data>
+</root>

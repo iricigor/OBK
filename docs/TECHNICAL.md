@@ -150,11 +150,12 @@ existing frame, and login/prompt dialogs are unchanged.
 ## Interface text and localization
 
 App-owned interface text lives in `.resx` resource sets. English is the neutral
-language; Czech is also supported. Ukrainian and German (#30) follow later.
+language; Czech, Ukrainian, and German are also supported.
 
-The Windows language button combines a fixed globe icon with the current EN/CS
-code and cycles languages beside the theme button, including sign-in. Android
-places EN/CS in the reader's status footer and in the native
+The Windows language button combines a fixed globe icon with the current
+EN/CS/UK/DE code and cycles English → Czech → Ukrainian → German → English beside
+the theme button, including sign-in. Android places EN/CS/UK/DE in the reader's
+status footer and in the native
 toolbar on settings, sign-in, and message pages. Language changes retain the
 saved System/Light/Dark appearance choice and the open navigation stack.
 The tooltip/accessibility
@@ -163,10 +164,10 @@ description names the next language. An explicit choice is stored in
 directory. No account data or credentials are stored in this file.
 
 Without a saved choice, the Windows display language or Android locale selects
-English or Czech; any other language selects Czech. Missing settings use OS
-detection; unreadable or invalid settings report an error rather than silently
-ignoring corruption. A failed save reports an error and keeps the current
-language so the selection can be retried.
+English, Czech, Ukrainian, or German; any other language selects Czech. Missing
+settings use OS detection; unreadable or invalid settings report an error rather
+than silently ignoring corruption. A failed save reports an error and keeps the
+current language so the selection can be retried.
 
 Switching rebuilds the Windows window or Android navigation stack immediately,
 without restarting or downloading school data. The account, folder, selected
@@ -180,8 +181,9 @@ operations. Display dates use shared translatable layouts; month group names
 and numbers use the selected culture. API/storage formats and school content
 remain unchanged. Resource lookup and formatting use the selected culture
 explicitly, including asynchronous work started before a switch.
-Date searches include both supported languages' layouts so switching does not
-invalidate a query containing an English month abbreviation.
+Date searches include all supported languages' layouts so switching does not
+invalidate a query containing a month name or abbreviation from another
+supported language.
 
 | Resource set | Used by | Generated class |
 | --- | --- | --- |
@@ -207,12 +209,15 @@ Conventions:
 - API requests and stored data stay culture-independent.
 
 To add a language, add `<Name>.<culture>.resx` (for example
-`AppStrings.cs.resx`) next to each neutral file, translating every key. Runtime
+`AppStrings.uk.resx`) next to each neutral file, translating every key. Runtime
 falls back to English for missing keys, so completeness is enforced by a
 separate check instead. The **Localization resource completeness** job in
-**🧪 Validation** discovers every resource set and language and fails on
-invalid XML, a language missing from any resource set, missing or extra keys, duplicate keys, empty values, or
-placeholders that differ from English. Run it locally with:
+**🧪 Validation** requires Czech, Ukrainian, and German, discovers any
+additional languages and resource sets, and fails on invalid XML, a language
+missing from any resource set, missing or extra keys, duplicate keys, empty
+values, or placeholders that differ from English. This required list also
+catches removing every resource file for one supported language. Run it locally
+with:
 
 ```powershell
 python -m unittest discover -s .\tools -p "test_check_localization.py"
@@ -1002,10 +1007,11 @@ exclusive; neither mode is needed for a normal unsigned local build.
 
 The app's `--smoke-test` mode creates and destroys the offline window, checks
 SQLite initialization, Windows DPAPI, and synthetic message rendering, then exits.
-It uses a temporary database and never opens the real archive or contacts a school.
-`--smoke-result` optionally writes a machine-readable result plus PNG snapshots
-of the reader at normal/minimum sizes and a synthetic login window, for verification
-of the installed executable. Errors fail the process rather than
+It uses a temporary database and never opens the real archive or contacts a
+school. `--smoke-result` optionally writes a machine-readable result plus PNG
+snapshots of the reader in each supported translated language at every reading
+size, the corresponding sign-in window, and minimum-size/theme states, for
+verification of the installed executable. Errors fail the process rather than
 reporting success. Installer verification uses a unique directory and uninstall
 registration, without creating shortcuts or changing an existing OBK install.
 

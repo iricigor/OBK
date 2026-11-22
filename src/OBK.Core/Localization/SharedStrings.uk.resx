@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ErrorAccountNotSaved" xml:space="preserve">
+    <value>Цей обліковий запис більше не збережено.</value>
+  </data>
+  <data name="ErrorApiAccessRejected" xml:space="preserve">
+    <value>Доступ до API відхилено (HTTP {0}). Обліковий запис або токен може не мати доступу до Komens.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorApiRequestFailed" xml:space="preserve">
+    <value>Не вдалося виконати запит до API (HTTP {0}). Перевірте доступність школи та сумісність API.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorArchiveDamaged" xml:space="preserve">
+    <value>Автономний архів повідомлень пошкоджено.</value>
+  </data>
+  <data name="ErrorAttachmentCacheFailed" xml:space="preserve">
+    <value>Не вдалося зберегти вкладення в кеші. Перевірте вільне місце та доступ до диска.</value>
+  </data>
+  <data name="ErrorAttachmentCacheIncomplete" xml:space="preserve">
+    <value>Кешоване вкладення неповне.</value>
+  </data>
+  <data name="ErrorAttachmentCopy" xml:space="preserve">
+    <value>Не вдалося записати копію вкладення. Перевірте вільне місце та доступ до місця призначення.</value>
+  </data>
+  <data name="ErrorAttachmentCopyCleanup" xml:space="preserve">
+    <value>Не вдалося видалити тимчасову розшифровану копію вкладення з папки призначення.</value>
+  </data>
+  <data name="ErrorAttachmentCopyProtected" xml:space="preserve">
+    <value>Не вдалося записати копію вкладення. Перевірте доступ до диска та підтримку захисту завантажених у Windows файлів у місці призначення.</value>
+  </data>
+  <data name="ErrorAttachmentDownloadIncomplete" xml:space="preserve">
+    <value>Вкладення не було завантажено повністю. Повторіть синхронізацію; неповну копію не збережено.</value>
+  </data>
+  <data name="ErrorAttachmentIntegrity" xml:space="preserve">
+    <value>Кешоване вкладення не пройшло перевірку цілісності.</value>
+  </data>
+  <data name="ErrorAttachmentInvalidSize" xml:space="preserve">
+    <value>Вкладення має неприпустимий розмір завантаження.</value>
+  </data>
+  <data name="ErrorAttachmentMetadataDamaged" xml:space="preserve">
+    <value>Кешовані метадані вкладення пошкоджено.</value>
+  </data>
+  <data name="ErrorAttachmentNoId" xml:space="preserve">
+    <value>Вкладення не має дійсного ID; його неможливо завантажити.</value>
+  </data>
+  <data name="ErrorAttachmentNotDownloaded" xml:space="preserve">
+    <value>Це вкладення не завантажено. Спочатку увійдіть і синхронізуйте дані.</value>
+  </data>
+  <data name="ErrorConnectionFailed" xml:space="preserve">
+    <value>Не вдалося під’єднатися навіть після повторної спроби. Перевірте доступ до інтернету та HTTPS-сертифікат школи. Перевірки сертифікатів не обходилися.</value>
+  </data>
+  <data name="ErrorDataProtectionUnavailable" xml:space="preserve">
+    <value>Захист даних Windows недоступний на цій платформі.</value>
+  </data>
+  <data name="ErrorDatabaseAccess" xml:space="preserve">
+    <value>Не вдалося отримати доступ до локальної бази даних OBK. Перевірте вільне місце та доступ до диска.</value>
+  </data>
+  <data name="ErrorDecryptFailed" xml:space="preserve">
+    <value>Windows не вдалося розшифрувати локальні дані. Використайте обліковий запис Windows, який їх створив; відкриті дані як резервний варіант не використовуються.</value>
+  </data>
+  <data name="ErrorDirectoryDamaged" xml:space="preserve">
+    <value>Вбудований каталог шкіл пошкоджено. Введіть адресу школи вручну.</value>
+  </data>
+  <data name="ErrorDirectoryEmpty" xml:space="preserve">
+    <value>Вбудований каталог шкіл порожній.</value>
+  </data>
+  <data name="ErrorDirectoryFormat" xml:space="preserve">
+    <value>Формат вбудованого каталогу шкіл не підтримується.</value>
+  </data>
+  <data name="ErrorDirectoryNoSchools" xml:space="preserve">
+    <value>У вбудованому каталозі немає придатних шкіл з HTTPS.</value>
+  </data>
+  <data name="ErrorEncryptFailed" xml:space="preserve">
+    <value>Windows не вдалося зашифрувати локальні дані. Відкриті дані як резервний варіант не використовуються.</value>
+  </data>
+  <data name="ErrorInAttachment" xml:space="preserve">
+    <value>Вкладення {0} з {1}: {2}</value>
+    <comment>{0} = attachment number; {1} = total attachments; {2} = error message.</comment>
+  </data>
+  <data name="ErrorInContext" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0} = folder name; {1} = error message.</comment>
+  </data>
+  <data name="ErrorIncompleteFolderSet" xml:space="preserve">
+    <value>Неповний набір папок не може замінити автономний архів.</value>
+  </data>
+  <data name="ErrorInvalidJson" xml:space="preserve">
+    <value>Школа повернула некоректну відповідь JSON. Перевірте сумісність API.</value>
+  </data>
+  <data name="ErrorInvalidSentDate" xml:space="preserve">
+    <value>Повідомлення має некоректну дату надсилання; синхронізацію зупинено.</value>
+  </data>
+  <data name="ErrorLocalAppDataUnavailable" xml:space="preserve">
+    <value>LOCALAPPDATA Windows недоступний; локальну базу даних не відкрито.</value>
+  </data>
+  <data name="ErrorLocalDataDamaged" xml:space="preserve">
+    <value>Локальні дані OBK пошкоджено, і їх не вдалося розпакувати.</value>
+  </data>
+  <data name="ErrorMissingCredentials" xml:space="preserve">
+    <value>Введіть ім’я користувача та пароль.</value>
+  </data>
+  <data name="ErrorNoAccessToken" xml:space="preserve">
+    <value>Під час входу не отримано придатний токен доступу.</value>
+  </data>
+  <data name="ErrorNoSchoolName" xml:space="preserve">
+    <value>Профіль школи не повернув її назву.</value>
+  </data>
+  <data name="ErrorPaginationLimit" xml:space="preserve">
+    <value>Школа не завершила розбиття на сторінки після 10 000 сторінок. Неповний архів не збережено.</value>
+  </data>
+  <data name="ErrorPlatformStorageRequired" xml:space="preserve">
+    <value>Ця платформа потребує явного шляху до бази даних і локального захисту даних.</value>
+  </data>
+  <data name="ErrorRedirectBlocked" xml:space="preserve">
+    <value>Школа перенаправила запит. Перевірте базову URL-адресу; перенаправлення заблоковано для захисту облікових даних.</value>
+  </data>
+  <data name="ErrorRepeatedPage" xml:space="preserve">
+    <value>Школа повторила сторінку без нових повідомлень. Синхронізацію зупинено, щоб не зберегти неповний архів.</value>
+  </data>
+  <data name="ErrorResponseTooLarge" xml:space="preserve">
+    <value>Відповідь API перевищує ліміт 2 МБ.</value>
+  </data>
+  <data name="ErrorSavedAccountsDamaged" xml:space="preserve">
+    <value>Список збережених облікових записів пошкоджено. Увійдіть знову.</value>
+  </data>
+  <data name="ErrorSavedSignInDamaged" xml:space="preserve">
+    <value>Збережене налаштування входу пошкоджено. Увійдіть знову.</value>
+  </data>
+  <data name="ErrorSavedSignInsDamaged" xml:space="preserve">
+    <value>Список збережених входів пошкоджено. Увійдіть знову.</value>
+  </data>
+  <data name="ErrorSignInRejected" xml:space="preserve">
+    <value>Вхід відхилено (HTTP {0}). Перевірте облікові дані. Документований мобільний вхід також може бути вимкнено або несумісний.</value>
+    <comment>{0} = HTTP status code.</comment>
+  </data>
+  <data name="ErrorSyncTimestampDamaged" xml:space="preserve">
+    <value>Позначку часу автономної синхронізації пошкоджено.</value>
+  </data>
+  <data name="ErrorTimeout" xml:space="preserve">
+    <value>Школа не відповіла протягом {0:0} секунд навіть після повторної спроби. Перевірте доступ до інтернету або спробуйте пізніше.</value>
+    <comment>{0} = timeout in seconds.</comment>
+  </data>
+  <data name="ErrorUnknownFolder" xml:space="preserve">
+    <value>Невідома папка Komens.</value>
+  </data>
+  <data name="ErrorUnrecognizedMessage" xml:space="preserve">
+    <value>Komens повернув нерозпізнаний формат повідомлення.</value>
+  </data>
+  <data name="ErrorUnrecognizedMessageList" xml:space="preserve">
+    <value>Komens повернув нерозпізнаний формат списку повідомлень.</value>
+  </data>
+  <data name="ErrorUpdateCheckFailed" xml:space="preserve">
+    <value>Не вдалося перевірити наявність оновлень. OBK спробує пізніше.</value>
+  </data>
+  <data name="ErrorUpdateDownloadFailed" xml:space="preserve">
+    <value>Не вдалося завантажити оновлення. OBK спробує пізніше.</value>
+  </data>
+  <data name="ErrorUpdateNoChecksum" xml:space="preserve">
+    <value>Для інсталятора цього випуску немає контрольної суми.</value>
+  </data>
+  <data name="ErrorUpdateTooLarge" xml:space="preserve">
+    <value>Інсталятор оновлення має несподівано великий розмір.</value>
+  </data>
+  <data name="ErrorUpdateVerificationFailed" xml:space="preserve">
+    <value>Завантажене оновлення не пройшло перевірку та було видалено.</value>
+  </data>
+  <data name="ErrorUrlIsLoginPage" xml:space="preserve">
+    <value>Введіть базову URL-адресу школи, а не сторінку /login.</value>
+  </data>
+  <data name="ErrorUrlNotHttps" xml:space="preserve">
+    <value>Використовуйте HTTPS-адресу школи без облікових даних, параметрів запиту чи фрагмента.</value>
+  </data>
+  <data name="FolderExcuses" xml:space="preserve">
+    <value>Пояснювальні</value>
+    <comment>Folder name for sent absence excuse notes (omluvenky).</comment>
+  </data>
+  <data name="FolderInbox" xml:space="preserve">
+    <value>Вхідні</value>
+  </data>
+  <data name="FolderNoticeboard" xml:space="preserve">
+    <value>Дошка оголошень</value>
+  </data>
+  <data name="FolderSent" xml:space="preserve">
+    <value>Надіслані</value>
+  </data>
+  <data name="GroupThisMonth" xml:space="preserve">
+    <value>Цього місяця</value>
+  </data>
+  <data name="GroupThisWeek" xml:space="preserve">
+    <value>Цього тижня</value>
+  </data>
+  <data name="GroupToday" xml:space="preserve">
+    <value>Сьогодні</value>
+  </data>
+  <data name="GroupYesterday" xml:space="preserve">
+    <value>Учора</value>
+  </data>
+  <data name="ImageNotLoaded" xml:space="preserve">
+    <value>[Зображення не завантажено]</value>
+  </data>
+  <data name="ImageWithDescription" xml:space="preserve">
+    <value>[Зображення: {0}]</value>
+    <comment>Placeholder for an image in a message body. {0} = image description from the message.</comment>
+  </data>
+  <data name="NoSubject" xml:space="preserve">
+    <value>(Без теми)</value>
+    <comment>Shown instead of an empty message subject.</comment>
+  </data>
+  <data name="ProgressAttachment" xml:space="preserve">
+    <value>Вкладення {0} з {1}: {2}...</value>
+    <comment>{0} = attachment number; {1} = total attachments; {2} = file name.</comment>
+  </data>
+  <data name="ProgressFolderPage" xml:space="preserve">
+    <value>{0}: сторінка {1}, повідомлень: {2}...</value>
+    <comment>{0} = folder name; {1} = page number; {2} = messages downloaded so far.</comment>
+  </data>
+  <data name="ErrorTransferDamaged" xml:space="preserve">
+    <value>QR-код пошкоджено або він неповний. Покажіть новий код на ПК і відскануйте його ще раз.</value>
+  </data>
+  <data name="ErrorTransferNeedsPassword" xml:space="preserve">
+    <value>Збережіть пароль цього облікового запису перед перенесенням.</value>
+  </data>
+  <data name="ErrorTransferNotObkCode" xml:space="preserve">
+    <value>Це не код перенесення облікового запису OBK. На ПК відкрийте «Налаштування», «Облікові записи», «Перенести в Android».</value>
+  </data>
+  <data name="ErrorTransferUnknownWord" xml:space="preserve">
+    <value>«{0}» не входить до слів перенесення. Перевірте написання на ПК.</value>
+    <comment>{0} = the word the user typed.</comment>
+  </data>
+  <data name="ErrorTransferUnsupported" xml:space="preserve">
+    <value>Зашифроване перенесення облікового запису недоступне на цьому пристрої.</value>
+  </data>
+  <data name="ErrorTransferWordCount" xml:space="preserve">
+    <value>Введіть {0} слів, показаних на ПК.</value>
+    <comment>{0} = number of words.</comment>
+  </data>
+  <data name="ErrorTransferWrongWords" xml:space="preserve">
+    <value>Ці слова не розблоковують QR-код. Перевірте їх на ПК або покажіть там новий код і відскануйте його знову.</value>
+  </data>
+  <data name="LanguageSwitchTooltip" xml:space="preserve">
+    <value>Перемкнути на {0}</value>
+    <comment>{0} = next language's native name.</comment>
+  </data>
+  <data name="ErrorLanguageInvalid" xml:space="preserve">
+    <value>Збережене налаштування мови некоректне. Виберіть мову, щоб замінити його.</value>
+  </data>
+  <data name="ErrorLanguageRead" xml:space="preserve">
+    <value>Не вдалося прочитати налаштування мови. Виберіть мову, щоб зберегти його знову.</value>
+  </data>
+  <data name="ErrorLanguageSave" xml:space="preserve">
+    <value>Не вдалося зберегти вибрану мову. Перевірте доступ до сховища та спробуйте ще раз.</value>
+  </data>
+  <data name="ErrorLanguageCleanup" xml:space="preserve">
+    <value>Не вдалося видалити тимчасовий файл налаштування мови. Перевірте доступ до сховища.</value>
+  </data>
+  <data name="ErrorLanguageBusy" xml:space="preserve">
+    <value>Дочекайтеся завершення поточної операції, перш ніж перемикати мову.</value>
+  </data>
+  <data name="DateLongFormat" xml:space="preserve">
+    <value>d MMMM yyyy 'р.' HH:mm</value>
+    <comment>.NET custom date/time layout for a full message timestamp; not a composite-format string.</comment>
+  </data>
+  <data name="DateShortFormat" xml:space="preserve">
+    <value>d MMM</value>
+    <comment>.NET custom date/time layout for a short message date without a year; not a composite-format string.</comment>
+  </data>
+  <data name="DateShortYearFormat" xml:space="preserve">
+    <value>d MMM yyyy 'р.'</value>
+    <comment>.NET custom date/time layout for a short message date with a year; not a composite-format string.</comment>
+  </data>
+  <data name="DateTimeFormat" xml:space="preserve">
+    <value>HH:mm</value>
+    <comment>.NET custom date/time layout for a message time in 24-hour notation; not a composite-format string.</comment>
+  </data>
+  <data name="DateRelatedFormat" xml:space="preserve">
+    <value>d MMM HH:mm</value>
+    <comment>.NET custom date/time layout for a related-message date and time; not a composite-format string.</comment>
+  </data>
+  <data name="DateGroupMonthFormat" xml:space="preserve">
+    <value>MMMM yyyy</value>
+    <comment>.NET custom date/time layout for a month/year group heading; not a composite-format string.</comment>
+  </data>
+</root>

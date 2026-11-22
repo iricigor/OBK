@@ -25,6 +25,8 @@ public sealed class MessageInsightsTests
         Assert.True(MessageInsights.Matches(text, "sraz osm"));
         Assert.True(MessageInsights.Matches(text, "novakova"));
         Assert.True(MessageInsights.Matches(text, "3.11.2026"));
+        Assert.True(MessageInsights.Matches(text, "november 2026"));
+        Assert.True(MessageInsights.Matches(text, "листопада 2026"));
         Assert.True(MessageInsights.Matches(text, "2026-11-03"));
         Assert.True(MessageInsights.Matches(text, "  "));
         Assert.False(MessageInsights.Matches(text, "vylet plavani"));
