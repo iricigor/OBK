@@ -117,11 +117,18 @@ executable, windows, and installer. Regenerate it with Pillow after editing
 
 ## Main-window frame
 
-Planned in #32: retain the custom WPF title bar and opt the main window into
-native Windows 11 rounded corners with `DWMWA_WINDOW_CORNER_PREFERENCE`.
-Windows should control rounding in restored, maximized, and snapped states.
-Older Windows versions and the login/prompt dialogs remain unchanged; no
-transparent-window or manual window-region workaround is in scope.
+The main window retains its custom WPF title bar. On Windows 11 (build 22000
+or later), it requests `DWMWCP_ROUND` through `DWMWA_WINDOW_CORNER_PREFERENCE`
+once its native handle exists. A one-DIP `WindowChrome.GlassFrameThickness`
+keeps WPF from installing a window region, which would block native rounding.
+The existing opaque content stays in place; no per-pixel transparency or
+manual window-region clipping is used.
+
+Windows controls the final appearance: restored windows can be rounded,
+while maximized/snapped windows and some virtualized or remote environments
+remain square. Native API failures are reported in the status bar after
+initialization, without preventing offline use. Windows 10 retains the
+existing frame, and login/prompt dialogs are unchanged.
 
 ## Purpose and scope
 

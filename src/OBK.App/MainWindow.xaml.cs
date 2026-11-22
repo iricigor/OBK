@@ -3,11 +3,13 @@ using OBK.Core;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Shell;
 using System.Windows.Threading;
 
 namespace OBK.App;
@@ -30,6 +32,7 @@ public partial class MainWindow : Window
     private Point dragOrigin;
     private bool compact;
     private bool openingLogin;
+    private int? cornerPreferenceError;
 
     public UpdateManager Updates { get; }
     public MainWindow(LocalStore store, bool showLogin = true, bool enableUpdates = true)
@@ -54,6 +57,11 @@ public partial class MainWindow : Window
         Updates = new UpdateManager(new UpdateService(Path.Combine(Path.GetDirectoryName(store.Path)!, "updates")),
             UpdateService.InstalledVersion, () => !Busy && !ViewModel.IsExporting, Close);
         InitializeComponent();
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+        {
+            // Zero glass makes WPF install a window region, which prevents native DWM rounding.
+            WindowChrome.GetWindowChrome(this).GlassFrameThickness = new Thickness(1);
+        }
         DataContext = ViewModel;
         UpdateText.DataContext = UpdateActions.DataContext = Updates;
         Closed += (_, _) => Updates.OnExit();
@@ -78,6 +86,9 @@ public partial class MainWindow : Window
     private async void WindowLoaded(object sender, RoutedEventArgs e)
     {
         await InitializeAsync();
+        if (cornerPreferenceError is { } error)
+            ViewModel.ReportError($"Windows could not enable rounded window corners (0x{error:X8}). " +
+                "The app remains usable; restart OBK to try again.");
         if (showLogin && ViewModel.Accounts.Count == 0) OpenLoginDialog(true);
     }
 
@@ -332,8 +343,19 @@ public partial class MainWindow : Window
 
     private void WindowSourceInitialized(object? sender, EventArgs e)
     {
-        HwndSource.FromHwnd(new WindowInteropHelper(this).Handle)?.AddHook(ChromeHook);
+        var handle = new WindowInteropHelper(this).Handle;
+        HwndSource.FromHwnd(handle)?.AddHook(ChromeHook);
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+        {
+            const int windowCornerPreference = 33;
+            var round = 2;
+            var result = DwmSetWindowAttribute(handle, windowCornerPreference, ref round, sizeof(int));
+            if (result < 0) cornerPreferenceError = result;
+        }
     }
+
+    [DllImport("dwmapi.dll", ExactSpelling = true)]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
     private IntPtr ChromeHook(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
     {

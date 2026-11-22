@@ -1,9 +1,11 @@
 using OBK.App;
 using OBK.Core;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Xunit;
@@ -246,6 +248,52 @@ public sealed class PresentationTests
                     await File.WriteAllTextAsync(Path.Combine(directory, "appearance.json"), "{\"Theme\":\"invalid\"}");
                     await Assert.ThrowsAsync<ObkException>(() => theme.InitializeAsync());
                     window.Close();
+
+                    application.Resources.MergedDictionaries.Add(new ResourceDictionary
+                    {
+                        Source = new Uri("/OBK;component/Themes/Controls.xaml", UriKind.Relative)
+                    });
+                    application.Resources["VisibleIf"] = new BooleanVisibilityConverter();
+                    application.Resources["AnyTrue"] = new AnyTrueConverter();
+                    application.Resources["ThemeBrush"] = new ThemeBrushConverter();
+                    var main = new MainWindow(store, showLogin: false, enableUpdates: false);
+                    try
+                    {
+                        main.Show();
+                        await main.InitializeAsync();
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        var handle = new WindowInteropHelper(main).Handle;
+                        void AssertNativeRounding()
+                        {
+                            if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000)) return;
+                            Assert.Equal(0, DwmGetWindowAttribute(handle, 33, out var preference, sizeof(int)));
+                            Assert.Equal(2, preference);
+                            var region = CreateRectRgn(0, 0, 0, 0);
+                            Assert.NotEqual(IntPtr.Zero, region);
+                            try
+                            {
+                                // Even a rectangular WPF window region blocks compositor rounding.
+                                Assert.Equal(0, GetWindowRgn(handle, region));
+                            }
+                            finally { Assert.True(DeleteObject(region)); }
+                        }
+                        AssertNativeRounding();
+                        main.Width = 1000;
+                        main.Height = 700;
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        AssertNativeRounding();
+                        main.MaximizeCommand.Execute(null);
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        Assert.Equal(WindowState.Maximized, main.WindowState);
+                        main.MaximizeCommand.Execute(null);
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        Assert.Equal(WindowState.Normal, main.WindowState);
+                        AssertNativeRounding();
+                        await main.ViewModel.Theme.ToggleAsync();
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        AssertNativeRounding();
+                    }
+                    finally { main.Close(); }
                     completion.SetResult();
                 }
                 catch (Exception error) { completion.SetException(error); }
@@ -262,4 +310,17 @@ public sealed class PresentationTests
         await completion.Task.WaitAsync(TimeSpan.FromSeconds(30));
         thread.Join();
     }
+
+    [DllImport("dwmapi.dll", ExactSpelling = true)]
+    private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out int value, int size);
+
+    [DllImport("gdi32.dll", ExactSpelling = true)]
+    private static extern IntPtr CreateRectRgn(int left, int top, int right, int bottom);
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    private static extern int GetWindowRgn(IntPtr hwnd, IntPtr region);
+
+    [DllImport("gdi32.dll", ExactSpelling = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DeleteObject(IntPtr handle);
 }
