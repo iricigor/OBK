@@ -149,6 +149,10 @@ public partial class App : Application
                         if (login.Username.Text != "installation-check" ||
                             login.ChildName.Text != "Installation check pupil" || login.Remember.IsChecked != true)
                             throw new ObkException("Selecting a remembered account did not restore its profile.");
+                        login.Remember.IsChecked = false;
+                        for (var wait = 0; wait < 100 && !login.Remember.IsEnabled; wait++) await Task.Delay(50);
+                        if (store.RememberedLogins().Any(profile => profile.Username == "installation-check"))
+                            throw new ObkException("Unchecking Remember did not forget the saved password.");
                         login.Close();
                         if (store.LastAccount()!.Username != "installation-check")
                             throw new ObkException("Closing the sign-in window changed the active offline account.");

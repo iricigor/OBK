@@ -13,6 +13,7 @@ public partial class LoginWindow : Window
     private readonly bool showSavedAccounts;
     private bool completed;
     private bool ready;
+    private bool suppressRememberChange;
     private bool busy;
     private bool updatingSearch;
     private bool updatingUrl;
@@ -56,24 +57,31 @@ public partial class LoginWindow : Window
 
     private async void RememberUnchecked(object sender, RoutedEventArgs e)
     {
-        if (!ready) return;
+        if (!ready || suppressRememberChange || !schoolConfirmed) return;
+        var username = Username.Text.Trim();
+        if (username.Length == 0) return;
         SetBusy(true);
         try
         {
-            var username = Username.Text.Trim();
-            if (username.Length > 0)
-                await Task.Run(() => app.Store.ForgetLogin(SchoolUrl.Text, username));
-            var currentUrl = KomensClient.NormalizeUrl(SchoolUrl.Text);
+            var url = KomensClient.NormalizeUrl(SchoolUrl.Text);
+            await Task.Run(() => app.Store.ForgetLogin(url, username));
             rememberedProfiles = rememberedProfiles
-                .Select(profile => string.Equals(profile.Login.Url, currentUrl, StringComparison.Ordinal) &&
+                .Select(profile => string.Equals(profile.Login.Url, url, StringComparison.Ordinal) &&
                     string.Equals(profile.Login.Username, username, StringComparison.Ordinal)
                     ? new SavedLoginRow(profile.Login with { Password = null }, profile.DirectorySchool)
                     : profile)
                 .ToArray();
             ShowRememberedProfiles();
         }
-        catch (ObkException error) { Status.Text = error.Message; Remember.IsChecked = true; }
+        catch (ObkException error) { Status.Text = error.Message; SetRemember(true); }
         finally { SetBusy(false); }
+    }
+
+    private void SetRemember(bool value)
+    {
+        suppressRememberChange = true;
+        Remember.IsChecked = value;
+        suppressRememberChange = false;
     }
 
     public void SetBusy(bool busy)
@@ -341,7 +349,7 @@ public partial class LoginWindow : Window
         Username.Text = profile.Username;
         Password.Password = profile.Password ?? "";
         ChildName.Text = profile.ChildName ?? "";
-        Remember.IsChecked = profile.Password is not null;
+        SetRemember(profile.Password is not null);
         Status.Text = profile.Password is null ?
             $"Previous account selected for {SelectedSchoolName.Text}. Enter the password." :
             $"Saved account ready for {SelectedSchoolName.Text}.";
@@ -468,7 +476,7 @@ public partial class LoginWindow : Window
         Username.Text = "";
         Password.Clear();
         ChildName.Text = "";
-        Remember.IsChecked = false;
+        SetRemember(false);
     }
 
     private static string? OptionalLabel(string value) => value.Trim() is { Length: > 0 } label ? label : null;
