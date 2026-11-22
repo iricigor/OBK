@@ -113,6 +113,44 @@ public sealed class LocalStore
     });
     public Login? RememberedLogin() => RememberedLogins().LastOrDefault();
     public Login? LastAccount() => Setting("last_account");
+    public IReadOnlyList<Login> KnownLogins()
+    {
+        var remembered = RememberedLogins();
+        var history = Access(connection =>
+        {
+            using var command = Command(connection,
+                "SELECT value FROM settings WHERE name = 'account_history'");
+            if (command.ExecuteScalar() is not byte[] value) return (IReadOnlyList<Login>)[];
+            var profiles = Decode<List<Login>>(value);
+            if (profiles.Any(profile => profile.Url is null || profile.Username is null))
+                throw new ObkException("The saved account list is damaged. Sign in again.");
+            return (IReadOnlyList<Login>)profiles;
+        });
+        var archived = Access(connection =>
+        {
+            using var command = Command(connection,
+                """
+                SELECT url, username, school_name
+                FROM archives
+                GROUP BY url, username
+                ORDER BY MAX(synced_at)
+                """);
+            using var reader = command.ExecuteReader();
+            var profiles = new List<Login>();
+            while (reader.Read())
+                profiles.Add(new Login(reader.GetString(0), reader.GetString(1),
+                    SchoolName: reader.GetString(2)));
+            return (IReadOnlyList<Login>)profiles;
+        });
+        var known = LastAccount() is { } last ? history.Concat(archived).Append(last) :
+            history.Concat(archived);
+        return known
+            .Concat(remembered)
+            .GroupBy(profile => (profile.Url, profile.Username))
+            .Select(group => remembered.FirstOrDefault(profile =>
+                    group.Key == (profile.Url, profile.Username)) ?? group.Last())
+            .ToArray();
+    }
 
     public IReadOnlyList<Login> RememberedLogins() => Access(connection =>
     {
@@ -151,14 +189,24 @@ public sealed class LocalStore
 
     public void SaveAccount(string url, string username, string? childName = null, string? schoolName = null)
     {
-        var account = Encode(new Login(KomensClient.NormalizeUrl(url), username,
-            ChildName: OptionalLabel(childName), SchoolName: OptionalLabel(schoolName)));
+        url = KomensClient.NormalizeUrl(url);
+        var login = new Login(url, username, ChildName: OptionalLabel(childName),
+            SchoolName: OptionalLabel(schoolName));
+        var account = Encode(login);
+        var history = Encode(UpsertKnownHistory(KnownLogins(), login));
         Access(connection =>
         {
+            using var transaction = connection.BeginTransaction();
             using var command = Command(connection,
                 "INSERT OR REPLACE INTO settings VALUES ('last_account', $value)",
-                parameters: [("$value", account)]);
-            return command.ExecuteNonQuery();
+                transaction, ("$value", account));
+            command.ExecuteNonQuery();
+            using var saved = Command(connection,
+                "INSERT OR REPLACE INTO settings VALUES ('account_history', $value)",
+                transaction, ("$value", history));
+            saved.ExecuteNonQuery();
+            transaction.Commit();
+            return true;
         });
     }
 
@@ -168,7 +216,9 @@ public sealed class LocalStore
         url = KomensClient.NormalizeUrl(url);
         childName = OptionalLabel(childName);
         schoolName = OptionalLabel(schoolName);
-        var account = Encode(new Login(url, username, ChildName: childName, SchoolName: schoolName));
+        var login = new Login(url, username, ChildName: childName, SchoolName: schoolName);
+        var account = Encode(login);
+        var history = Encode(UpsertKnownHistory(KnownLogins(), login));
         var remembered = RememberedLogins()
             .Where(profile => !SameAccount(profile, url, username))
             .ToList();
@@ -184,6 +234,10 @@ public sealed class LocalStore
                 "INSERT OR REPLACE INTO settings VALUES ('remembered_logins', $value)", transaction,
                 ("$value", encodedRemembered));
             saved.ExecuteNonQuery();
+            using var savedHistory = Command(connection,
+                "INSERT OR REPLACE INTO settings VALUES ('account_history', $value)", transaction,
+                ("$value", history));
+            savedHistory.ExecuteNonQuery();
             using var legacy = Command(connection,
                 "DELETE FROM settings WHERE name = 'remembered_login'", transaction);
             legacy.ExecuteNonQuery();
@@ -209,6 +263,14 @@ public sealed class LocalStore
     private static bool SameAccount(Login profile, string url, string username) =>
         string.Equals(profile.Url, url, StringComparison.Ordinal) &&
         string.Equals(profile.Username, username, StringComparison.Ordinal);
+
+    private static List<Login> UpsertKnownHistory(IEnumerable<Login> profiles, Login profile)
+    {
+        var result = profiles.Where(item => !SameAccount(item, profile.Url, profile.Username))
+            .Select(item => item with { Password = null }).ToList();
+        result.Add(profile with { Password = null });
+        return result;
+    }
 
     private static string? OptionalLabel(string? value) =>
         value?.Trim() is { Length: > 0 } label ? label : null;

@@ -217,11 +217,14 @@ public sealed class MigrationTests : IDisposable
         var store = Store;
         store.SaveLogin(Url, "u", "private-password", false, "Anežka", "School A");
         Assert.Null(store.RememberedLogin());
+        Assert.Equal("Anežka", Assert.Single(store.KnownLogins()).ChildName);
+        Assert.Null(Assert.Single(store.KnownLogins()).Password);
         store.SaveLogin(Url, "u", "private-password", true, "Anežka", "School A");
         Assert.Equal("Anežka", store.RememberedLogin()!.ChildName);
         Assert.Equal("School A", store.LastAccount()!.SchoolName);
         store.SaveLogin("https://other-school.example", "second", "other-password", true, "Jan", "School B");
         Assert.Equal(2, store.RememberedLogins().Count);
+        Assert.Equal(2, store.KnownLogins().Count);
         store.SaveLogin(Url, "u", "private-password", false);
         Assert.Single(store.RememberedLogins());
         Assert.Equal("second", store.RememberedLogin()!.Username);
@@ -241,6 +244,7 @@ public sealed class MigrationTests : IDisposable
         store.ForgetCredentials();
         Assert.Null(store.RememberedLogin());
         Assert.NotNull(store.LoadArchive(Url, "u", year));
+        Assert.Contains(store.KnownLogins(), profile => profile.Url == Url && profile.Username == "u");
         Assert.Throws<ObkException>(() => LocalStore.Decode<Login>(Encoding.UTF8.GetBytes("""{"password":"plaintext"}""")));
     }
 

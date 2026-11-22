@@ -61,10 +61,12 @@ public partial class LoginWindow : Window
             var username = Username.Text.Trim();
             if (username.Length > 0)
                 await Task.Run(() => app.Store.ForgetLogin(SchoolUrl.Text, username));
+            var currentUrl = KomensClient.NormalizeUrl(SchoolUrl.Text);
             rememberedProfiles = rememberedProfiles
-                .Where(profile => !string.Equals(profile.Login.Url,
-                        KomensClient.NormalizeUrl(SchoolUrl.Text), StringComparison.Ordinal) ||
-                    !string.Equals(profile.Login.Username, username, StringComparison.Ordinal))
+                .Select(profile => string.Equals(profile.Login.Url, currentUrl, StringComparison.Ordinal) &&
+                    string.Equals(profile.Login.Username, username, StringComparison.Ordinal)
+                    ? new SavedLoginRow(profile.Login with { Password = null }, profile.DirectorySchool)
+                    : profile)
                 .ToArray();
             ShowRememberedProfiles();
         }
@@ -166,7 +168,7 @@ public partial class LoginWindow : Window
             schoolDirectory = loaded;
             try
             {
-                rememberedProfiles = await Task.Run(() => app.Store.RememberedLogins()
+                rememberedProfiles = await Task.Run(() => app.Store.KnownLogins()
                     .Select(profile => new SavedLoginRow(profile, loaded.FindByUrl(profile.Url))).ToArray());
             }
             catch (ObkException error) { Status.Text = error.Message; }
@@ -336,8 +338,10 @@ public partial class LoginWindow : Window
         Username.Text = profile.Username;
         Password.Password = profile.Password ?? "";
         ChildName.Text = profile.ChildName ?? "";
-        Remember.IsChecked = true;
-        Status.Text = $"Saved account ready for {SelectedSchoolName.Text}.";
+        Remember.IsChecked = profile.Password is not null;
+        Status.Text = profile.Password is null ?
+            $"Previous account selected for {SelectedSchoolName.Text}. Enter the password." :
+            $"Saved account ready for {SelectedSchoolName.Text}.";
         if (moveFocus) Password.Focus();
     }
 

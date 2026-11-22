@@ -229,10 +229,13 @@ child name is shown near the OBK title instead of the school name when supplied.
 Changing the selected school clears the account-specific credential and child
 fields so they cannot be reused unintentionally.
 **Remember credentials on this Windows account** is off by default. Each
-remembered school and username is saved as its own encrypted profile. The
-initial login and **Switch school / Log out** flow list all remembered profiles;
-choosing one restores its username, password, and optional child name, while
-choosing or searching for a different school starts with blank account fields.
+remembered school and username is saved as its own encrypted profile. Accounts
+used without remembering the password are also retained in encrypted account
+history, so they can be recognized and selected later. The
+initial login and **Switch school / Log out** flow list previously used accounts;
+choosing one restores its username and optional child name; passwords are filled
+only for explicitly remembered profiles. Choosing or searching for a different
+school starts with blank account fields.
 Nothing signs in silently.
 The action footer stays visible while the form scrolls, with **Read offline**
 separate from **Sign in and sync**.
@@ -258,9 +261,10 @@ startup. It contains only the theme, not credentials or archive data.
 The title bar retains native dragging, resizing, caption controls, and Windows
 11 maximize-button snap layouts. The active child or school is shown beside the
 OBK title. **Switch school / Log out** requires confirmation, clears the active
-account, and opens the remembered-account picker. Saved credential
-profiles remain available; no offline archive is removed. Sync progress and
-errors appear in the header/footer without blocking offline reading.
+account, and opens the previously used account picker. Saved credential
+profiles and account history remain available; no offline archive is removed.
+Sync progress and errors appear in the header/footer without blocking offline
+reading.
 
 The first synchronization fetches every page in all three folders for the
 current school year: September 1 through August 31, based on the device's current

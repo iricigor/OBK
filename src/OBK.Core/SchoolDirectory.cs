@@ -25,6 +25,7 @@ public sealed class SchoolDirectoryEntry
     public List<string> MunicipalityMatches { get; init; } = [];
 
     public string Towns => string.Join(", ", MunicipalityMatches);
+    [JsonIgnore] public string SearchDetail => string.IsNullOrEmpty(Towns) ? SchoolUrl : $"{Towns} \u2022 {SchoolUrl}";
 }
 
 public sealed record SchoolSearchResult(int Total, IReadOnlyList<SchoolDirectoryEntry> Visible);

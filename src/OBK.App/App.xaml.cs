@@ -59,6 +59,10 @@ public partial class App : Application
             });
             store.SaveLogin("https://school.example", "installation-check", "", true,
                 "Installation check pupil", "Installation check school");
+            store.SaveLogin("https://school-previous.example", "previous-account", "unused", false,
+                "Previous pupil", "Previous school");
+            store.SaveLogin("https://school.example", "installation-check", "", true,
+                "Installation check pupil", "Installation check school");
             store.SaveArchive("https://school.example", "installation-check", year, "Installation check school", folders);
             await Task.Run(async () =>
             {
@@ -102,8 +106,10 @@ public partial class App : Application
                         await login.DirectoryReady;
                         if (login.AvailableSchoolCount < 1000)
                             throw new ObkException("The bundled school directory was not loaded by the sign-in window.");
-                        if (login.RememberedProfileCount != 1 || login.SavedAccountsPanel.Visibility != Visibility.Visible)
-                            throw new ObkException("Remembered accounts were not offered during initial sign-in.");
+                        if (login.RememberedProfileCount != 2 || login.SavedAccountsPanel.Visibility != Visibility.Visible)
+                            throw new ObkException("Previously used accounts were not offered during initial sign-in.");
+                        login.UpdateLayout();
+                        Capture(login, Path.ChangeExtension(resultPath, ".login-accounts.png"));
                         login.SchoolSearch.Text = "zssteken";
                         await Dispatcher.Yield(DispatcherPriority.Input);
                         if (login.SchoolMatches.Visibility != Visibility.Visible ||
@@ -129,7 +135,7 @@ public partial class App : Application
                         if (login.Username.Text.Length != 0 || login.Password.Password.Length != 0 ||
                             login.ChildName.Text.Length != 0 || login.Remember.IsChecked == true)
                             throw new ObkException("Changing schools did not clear the previous account fields.");
-                        login.UseRememberedProfile(0);
+                        login.UseRememberedProfile(1);
                         if (login.Username.Text != "installation-check" ||
                             login.ChildName.Text != "Installation check pupil" || login.Remember.IsChecked != true)
                             throw new ObkException("Selecting a remembered account did not restore its profile.");

@@ -31,8 +31,9 @@
 
                         <StackPanel x:Name="SchoolChooserPanel">
                             <StackPanel x:Name="SavedAccountsPanel" Visibility="Collapsed" Margin="0,0,0,18">
-                                <TextBlock Text="Remembered accounts" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                <TextBlock Text="Choose a saved child or username." Foreground="{DynamicResource TextSecondary}"
+                                <TextBlock Text="Previously used accounts" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <TextBlock Text="Choose a child or username. Saved passwords are filled in automatically."
+                                           Foreground="{DynamicResource TextSecondary}"
                                            FontSize="12" Margin="0,0,0,8"/>
                                 <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
                                     <ItemsControl x:Name="SavedAccounts">
@@ -64,19 +65,19 @@
                             <TextBlock x:Name="SchoolSearchStatus" Text="Loading the bundled school directory..."
                                        TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"
                                        AutomationProperties.LiveSetting="Polite"/>
-                            <ListBox x:Name="SchoolMatches" MaxHeight="210" Margin="0,0,0,8" Visibility="Collapsed"
+                            <ListBox x:Name="SchoolMatches" Margin="0,0,0,8" Visibility="Collapsed"
+                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                      AutomationProperties.Name="Matching schools" PreviewKeyDown="SchoolMatchesKeyDown"
                                      PreviewMouseLeftButtonUp="SchoolMatchesMouseUp"
                                      ItemContainerStyle="{StaticResource SelectableRow}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="10,8">
+                                        <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="10,7">
                                             <StackPanel>
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                <TextBlock Text="{Binding Towns}" FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding SearchDetail}" FontSize="11"
+                                                           Foreground="{DynamicResource TextSecondary}"
                                                            TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
-                                                <TextBlock Text="{Binding SchoolUrl}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
-                                                           TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
