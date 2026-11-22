@@ -334,7 +334,7 @@
     <comment>Empty state of the Inbox folder.</comment>
   </data>
   <data name="MainEmptyFolderNoticeboard" xml:space="preserve">
-    <value>На дошці оголошень немає кешованих повідомлень.
+    <value>У папці «Оголошення» немає кешованих повідомлень.
 Оновіть, щоб перевірити свою школу.</value>
     <comment>Empty state of the Noticeboard folder.</comment>
   </data>
@@ -352,7 +352,7 @@
     <comment>Search found nothing in the Inbox folder. {0} = search text.</comment>
   </data>
   <data name="MainEmptySearchNoticeboard" xml:space="preserve">
-    <value>На дошці оголошень немає повідомлень, що відповідають запиту «{0}».</value>
+    <value>У папці «Оголошення» немає повідомлень, що відповідають запиту «{0}».</value>
     <comment>Search found nothing in the Noticeboard folder. {0} = search text.</comment>
   </data>
   <data name="MainEmptySearchSent" xml:space="preserve">
@@ -712,7 +712,7 @@
     <comment>Accessible name of the Light theme option.</comment>
   </data>
   <data name="SettingsTitle" xml:space="preserve">
-    <value>Налаштування</value>
+    <value>Параметри</value>
     <comment>Settings page title, sidebar button and accessible name.</comment>
   </data>
   <data name="SettingsUpdates" xml:space="preserve">

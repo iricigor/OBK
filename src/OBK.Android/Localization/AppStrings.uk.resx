@@ -151,7 +151,7 @@
     <comment>Accessibility description of the active-folder icon. {0} = folder name.</comment>
   </data>
   <data name="SettingsPageTitle" xml:space="preserve">
-    <value>Налаштування</value>
+    <value>Параметри</value>
   </data>
   <data name="SettingsManageAccounts" xml:space="preserve">
     <value>Керування обліковими записами</value>
@@ -342,7 +342,7 @@
     <comment>Progress status while signing in.</comment>
   </data>
   <data name="ScanCameraDenied" xml:space="preserve">
-    <value>OBK використовує камеру лише для сканування коду перенесення. Дозвольте доступ до камери в налаштуваннях Android або увійдіть вручну.</value>
+    <value>OBK використовує камеру лише для сканування коду перенесення. Дозвольте доступ до камери в параметрах Android або увійдіть вручну.</value>
   </data>
   <data name="ScanCameraDeniedTitle" xml:space="preserve">
     <value>Потрібен доступ до камери</value>
@@ -360,7 +360,7 @@
     <value>Сканувати з ПК</value>
   </data>
   <data name="SignInScanHint" xml:space="preserve">
-    <value>Уже використовуєте OBK на Windows? Там відкрийте «Налаштування», «Облікові записи», «Перенести в Android».</value>
+    <value>Уже використовуєте OBK на Windows? Там відкрийте «Параметри», «Облікові записи», «Перенести в Android».</value>
   </data>
   <data name="UnlockButton" xml:space="preserve">
     <value>Розблокувати</value>
@@ -402,7 +402,7 @@
   <data name="UpdateIncompatibleSigner" xml:space="preserve"><value>Цей APK підписано іншим ключем, тому ним неможливо оновити це встановлення. Не видаляйте OBK: це призведе до втрати локальних даних. Використовуйте APK, підписаний тим самим ключем; попередні збірки не можна оновити до стабільних збірок без перевстановлення.</value></data>
   <data name="UpdateInstallerUnavailable" xml:space="preserve"><value>Android не вдалося відкрити встановлення оновлення. Перевірте обмеження встановлення на цьому пристрої та спробуйте ще раз.</value></data>
   <data name="UpdatePermissionTitle" xml:space="preserve"><value>Дозволити оновлення з OBK</value></data>
-  <data name="UpdatePermissionExplanation" xml:space="preserve"><value>У налаштуваннях Android дозвольте встановлення з OBK, а потім поверніться сюди. Android попросить підтвердити це оновлення. OBK не може встановлювати його непомітно.</value></data>
-  <data name="UpdateOpenSettings" xml:space="preserve"><value>Відкрити налаштування Android</value></data>
-  <data name="UpdatePermissionDenied" xml:space="preserve"><value>Встановлення з OBK не дозволено. Натисніть «Установити оновлення», щоб повторити спробу, і дозвольте це джерело в налаштуваннях Android.</value></data>
+  <data name="UpdatePermissionExplanation" xml:space="preserve"><value>У параметрах Android дозвольте встановлення з OBK, а потім поверніться сюди. Android попросить підтвердити це оновлення. OBK не може встановлювати його непомітно.</value></data>
+  <data name="UpdateOpenSettings" xml:space="preserve"><value>Відкрити параметри Android</value></data>
+  <data name="UpdatePermissionDenied" xml:space="preserve"><value>Встановлення з OBK не дозволено. Натисніть «Установити оновлення», щоб повторити спробу, і дозвольте це джерело в параметрах Android.</value></data>
 </root>

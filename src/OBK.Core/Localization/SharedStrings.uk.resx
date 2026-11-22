@@ -191,7 +191,7 @@
     <value>Вхідні</value>
   </data>
   <data name="FolderNoticeboard" xml:space="preserve">
-    <value>Дошка оголошень</value>
+    <value>Оголошення</value>
   </data>
   <data name="FolderSent" xml:space="preserve">
     <value>Надіслані</value>
@@ -234,7 +234,7 @@
     <value>Збережіть пароль цього облікового запису перед перенесенням.</value>
   </data>
   <data name="ErrorTransferNotObkCode" xml:space="preserve">
-    <value>Це не код перенесення облікового запису OBK. На ПК відкрийте «Налаштування», «Облікові записи», «Перенести в Android».</value>
+    <value>Це не код перенесення облікового запису OBK. На ПК відкрийте «Параметри», «Облікові записи», «Перенести в Android».</value>
   </data>
   <data name="ErrorTransferUnknownWord" xml:space="preserve">
     <value>«{0}» не входить до слів перенесення. Перевірте написання на ПК.</value>
