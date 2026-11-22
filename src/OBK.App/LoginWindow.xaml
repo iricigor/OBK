@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Style="{StaticResource {x:Type Window}}"
-        Title="Sign in to your school" Width="560" MaxHeight="780" SizeToContent="Height"
+        Title="Sign in to your school" Width="560" SizeToContent="Height"
         ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner" Closing="WindowClosing">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="40" ResizeBorderThickness="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
@@ -23,7 +23,7 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
+                <ScrollViewer x:Name="ContentScroll" VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="24,8,24,20">
                         <TextBlock Text="Sign in to Komens" FontSize="24" FontWeight="Bold" Margin="0,0,0,8"/>
                         <TextBlock Text="Choose your school, sign in, and sync messages for offline reading."
@@ -35,26 +35,21 @@
                                 <TextBlock Text="Choose a child or username. Saved passwords are filled in automatically."
                                            Foreground="{DynamicResource TextSecondary}"
                                            FontSize="12" Margin="0,0,0,8"/>
-                                <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
-                                    <ItemsControl x:Name="SavedAccounts">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Button Click="SavedAccountSelected" Tag="{Binding}" HorizontalContentAlignment="Stretch"
-                                                        Padding="12,10" Margin="0,0,0,6">
-                                                    <StackPanel>
-                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                        <TextBlock Text="{Binding Detail}" FontSize="12"
-                                                                   Foreground="{DynamicResource TextSecondary}"
-                                                                   TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
-                                                        <TextBlock Text="{Binding Website}" FontSize="11"
-                                                                   Foreground="{DynamicResource TextSecondary}"
-                                                                   TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
-                                                    </StackPanel>
-                                                </Button>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
+                                <ItemsControl x:Name="SavedAccounts">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Click="SavedAccountSelected" Tag="{Binding}" HorizontalContentAlignment="Stretch"
+                                                    Padding="12,7" Margin="0,0,0,6" AutomationProperties.Name="{Binding Title}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding Detail}" FontSize="11"
+                                                               Foreground="{DynamicResource TextSecondary}"
+                                                               TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </StackPanel>
                             <TextBlock x:Name="SavedAccountsDivider" Text="Or find another school"
                                        Visibility="Collapsed" FontWeight="SemiBold" Margin="0,0,0,10"/>

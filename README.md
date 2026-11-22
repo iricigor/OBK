@@ -233,7 +233,8 @@ remembered school and username is saved as its own encrypted profile. Accounts
 used without remembering the password are also retained in encrypted account
 history, so they can be recognized and selected later. The
 initial login and **Switch school / Log out** flow list previously used accounts;
-choosing one restores its username and optional child name; passwords are filled
+the list collapses while a school search is active, so up to six matches fit
+without scrolling. Choosing one restores its username and optional child name; passwords are filled
 only for explicitly remembered profiles. Choosing or searching for a different
 school starts with blank account fields.
 Nothing signs in silently.

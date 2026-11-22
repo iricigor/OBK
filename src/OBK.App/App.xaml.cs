@@ -110,6 +110,16 @@ public partial class App : Application
                             throw new ObkException("Previously used accounts were not offered during initial sign-in.");
                         login.UpdateLayout();
                         Capture(login, Path.ChangeExtension(resultPath, ".login-accounts.png"));
+                        login.SchoolSearch.Text = "bit";
+                        await Dispatcher.Yield(DispatcherPriority.Input);
+                        login.UpdateLayout();
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        if (login.SchoolMatches.Items.Count != 6 || login.SavedAccountsPanel.Visibility == Visibility.Visible)
+                            throw new ObkException("Searching did not show six compact matches in place of saved accounts.");
+                        if (SystemParameters.WorkArea.Height >= 760 &&
+                            login.ContentScroll.ComputedVerticalScrollBarVisibility == Visibility.Visible)
+                            throw new ObkException("Six school matches required a scrollbar in the sign-in window.");
+                        Capture(login, Path.ChangeExtension(resultPath, ".login-six.png"));
                         login.SchoolSearch.Text = "zssteken";
                         await Dispatcher.Yield(DispatcherPriority.Input);
                         if (login.SchoolMatches.Visibility != Visibility.Visible ||

@@ -31,6 +31,8 @@ public partial class LoginWindow : Window
         this.showSavedAccounts = showSavedAccounts;
         Owner = app;
         InitializeComponent();
+        MaxHeight = SystemParameters.WorkArea.Height;
+        SizeChanged += (_, _) => KeepOnScreen();
         SchoolUrl.Text = initial?.Url ?? "";
         Username.Text = initial?.Username ?? "";
         ChildName.Text = initial?.ChildName ?? "";
@@ -274,12 +276,13 @@ public partial class LoginWindow : Window
     private void UpdateSchoolSearch()
     {
         if (schoolDirectory is null) return;
+        ShowRememberedProfiles();
         var query = SchoolSearch.Text.Trim();
         if (query.Length == 0)
         {
             SchoolMatches.ItemsSource = null;
             SchoolMatches.Visibility = Visibility.Collapsed;
-            SchoolSearchStatus.Text = $"Search {schoolDirectory.Count:N0} bundled schools by name, town, or website.";
+            SchoolSearchStatus.Text = "Search by school name, town, or website.";
             return;
         }
         var result = schoolDirectory.Search(query);
@@ -333,7 +336,7 @@ public partial class LoginWindow : Window
     private void ConfirmRememberedProfile(SavedLoginRow row, bool moveFocus)
     {
         var profile = row.Login;
-        ShowConfirmedSchool(profile.SchoolName ?? row.DirectorySchool?.Name, row.DirectorySchool?.Towns ?? "Saved account",
+        ShowConfirmedSchool(row.SchoolLabel, row.DirectorySchool?.Towns ?? "Saved account",
             KomensClient.NormalizeUrl(profile.Url), moveFocus: false);
         Username.Text = profile.Username;
         Password.Password = profile.Password ?? "";
@@ -442,8 +445,16 @@ public partial class LoginWindow : Window
     private void ShowRememberedProfiles()
     {
         SavedAccounts.ItemsSource = rememberedProfiles;
-        SavedAccountsPanel.Visibility = rememberedProfiles.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        SavedAccountsDivider.Visibility = rememberedProfiles.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        var visible = rememberedProfiles.Count > 0 && SchoolSearch.Text.Trim().Length == 0
+            ? Visibility.Visible : Visibility.Collapsed;
+        SavedAccountsPanel.Visibility = SavedAccountsDivider.Visibility = visible;
+    }
+
+    private void KeepOnScreen()
+    {
+        var area = SystemParameters.WorkArea;
+        if (Left < area.Left || Left >= area.Right || Top < area.Top || Top >= area.Bottom) return;
+        if (Top + ActualHeight > area.Bottom) Top = Math.Max(area.Top, area.Bottom - ActualHeight);
     }
 
     private void UpdateActionButtons()
@@ -467,10 +478,12 @@ public sealed class SavedLoginRow(Login login, SchoolDirectoryEntry? directorySc
 {
     public Login Login { get; } = login;
     public SchoolDirectoryEntry? DirectorySchool { get; } = directorySchool;
-    public string Title => Login.ChildName is { Length: > 0 } child ? child :
-        Login.SchoolName ?? DirectorySchool?.Name ?? "Saved account";
-    public string Detail => Login.ChildName is { Length: > 0 }
-        ? $"{Login.SchoolName ?? DirectorySchool?.Name ?? "School"} \u2022 {Login.Username}"
-        : Login.Username;
-    public string Website => Login.Url;
+    public string? SchoolLabel => DirectorySchool?.Name ?? Login.SchoolName;
+    public string Title => Login.ChildName is { Length: > 0 } child ? child : SchoolLabel ?? "Saved account";
+    public string Detail => string.Join(" \u2022 ", new[]
+    {
+        Login.ChildName is { Length: > 0 } ? SchoolLabel : null,
+        Login.Username,
+        Uri.TryCreate(Login.Url, UriKind.Absolute, out var uri) ? uri.Host : Login.Url
+    }.Where(part => !string.IsNullOrEmpty(part)));
 }

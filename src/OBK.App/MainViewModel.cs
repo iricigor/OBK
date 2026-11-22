@@ -195,7 +195,7 @@ public sealed class MainViewModel : ObservableObject
             year = nextYear;
             folders = result.items;
             attachmentInfo = result.info;
-            School = result.archive?.SchoolName ?? Account.SchoolName ?? "Your school";
+            School = Account.SchoolName ?? result.archive?.SchoolName ?? "Your school";
             syncedAt = result.archive?.SyncedAt;
             Notify(nameof(YearLabel));
             RebuildNavigation();
@@ -373,8 +373,9 @@ public sealed class MainViewModel : ObservableObject
                 var stamp = store.SaveArchive(url, username, syncYear, schoolName, fetched);
                 return (schoolName, fetched, stamp, info);
             });
-            Account = Account! with { SchoolName = result.schoolName };
-            School = result.schoolName;
+            var schoolLabel = Account?.SchoolName ?? result.schoolName;
+            Account = Account! with { SchoolName = schoolLabel };
+            School = schoolLabel;
             folders = result.fetched;
             attachmentInfo = result.info;
             syncedAt = result.stamp;
