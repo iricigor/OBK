@@ -115,6 +115,21 @@ disable checks yet; only HTTPS assets from this repository's releases are used.
 executable, windows, and installer. Regenerate it with Pillow after editing
 `tools\make_app_icon.py`: `python .\tools\make_app_icon.py`.
 
+## Main-window frame
+
+The main window retains its custom WPF title bar. On Windows 11 (build 22000
+or later), it requests `DWMWCP_ROUND` through `DWMWA_WINDOW_CORNER_PREFERENCE`
+once its native handle exists. A one-DIP `WindowChrome.GlassFrameThickness`
+keeps WPF from installing a window region, which would block native rounding.
+The existing opaque content stays in place; no per-pixel transparency or
+manual window-region clipping is used.
+
+Windows controls the final appearance: restored windows can be rounded,
+while maximized/snapped windows and some virtualized or remote environments
+remain square. Native API failures are reported in the status bar after
+initialization, without preventing offline use. Windows 10 retains the
+existing frame, and login/prompt dialogs are unchanged.
+
 ## Purpose and scope
 
 OBK is a read-only Bakaláři Komens client that downloads messages for offline
