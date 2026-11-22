@@ -168,7 +168,7 @@ public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool next, 
     public string Subject => MainViewModel.OneLine(Item.Message.Title) is { Length: > 0 } title ? title : "(No subject)";
     public string From => Item.Folder == "sent" ? "you" :
         MainViewModel.OneLine(Item.Message.SenderName) is { Length: > 0 } name ? name : "(Not supplied)";
-    public string Label => $"{Item.Message.Date.ToString("dd.MMM", System.Globalization.CultureInfo.CurrentCulture)} \u2022 From: {From}";
+    public string Label => $"{Item.Message.Date.ToString("dd.MMM HH:mm", System.Globalization.CultureInfo.CurrentCulture)} \u2022 From: {From}";
 
     /// <summary>Chronological rows; numbers count outward from the current message when a side has several.</summary>
     public static IReadOnlyList<RelatedRow> Build(MainViewModel owner, RelatedMessages related)

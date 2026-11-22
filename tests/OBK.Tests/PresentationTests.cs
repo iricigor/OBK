@@ -40,7 +40,7 @@ public sealed class PresentationTests
         Assert.Equal(["p2", "p1", "n1"], rows.Select(r => r.Item.Message.Id));
         Assert.Equal(["Previous (2)", "Previous (1)", "Next"], rows.Select(r => r.Direction));
         Assert.Equal("you", rows[0].From);
-        Assert.Equal($"{new DateTime(2026, 9, 20):dd.MMM} \u2022 From: Jan Novák", rows[1].Label);
+        Assert.Equal($"{new DateTime(2026, 9, 20, 10, 0, 0):dd.MMM HH:mm} \u2022 From: Jan Novák", rows[1].Label);
     }
 
     [Fact]
