@@ -125,6 +125,21 @@ self-contained. Users need neither Python/Tkinter nor a separately installed
 .NET runtime. WPF is Windows-only; planned macOS, Linux, Android, and iOS
 releases will need a separate presentation implementation.
 
+### Android implementation milestone
+
+The Android reader is tracked in [#25](https://github.com/iricigor/OBK/issues/25).
+The agreed target is Android 10 (API 29) or newer, using an Android-only .NET
+MAUI application with shared C# core logic. Core portability and Android
+Keystore-backed storage come first, followed by school sign-in, multiple
+accounts, manual refresh, offline message folders/search, and downloaded
+attachment viewing/export in the same milestone. Windows keeps its existing
+DPAPI protection and behavior.
+
+The first distribution target is an APK from GitHub Releases. Localization,
+Play Store publishing, background sync, notifications, and Windows archive
+import are excluded from this milestone. The implementation remains read-only
+toward school servers and requires device verification before merge.
+
 ## Data access plan
 
 ### Primary: Bakaláři API
