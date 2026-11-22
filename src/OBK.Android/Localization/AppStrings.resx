@@ -383,4 +383,26 @@
   <data name="UnlockWorking" xml:space="preserve">
     <value>Unlocking…</value>
   </data>
+  <data name="UpdateHeading" xml:space="preserve"><value>App updates</value></data>
+  <data name="UpdateInstalledVersion" xml:space="preserve"><value>Installed version: {0}</value></data>
+  <data name="UpdateManualNotice" xml:space="preserve"><value>Checks GitHub only when you tap Check for updates. Downloads and installation need your confirmation.</value></data>
+  <data name="UpdateCheck" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Checking GitHub Releases...</value></data>
+  <data name="UpdateCurrent" xml:space="preserve"><value>No newer stable Android release is available.</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>{0} is available. Download it to update without uninstalling OBK.</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Download update</value></data>
+  <data name="UpdateDownloading" xml:space="preserve"><value>Downloading and verifying the update...</value></data>
+  <data name="UpdateReady" xml:space="preserve"><value>Update verified. Confirm installation in Android.</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Install update</value></data>
+  <data name="UpdateNotInstalled" xml:space="preserve"><value>The update was not installed. Tap Install update to try again; your offline data is unchanged.</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>Update cancelled. You can try again.</value></data>
+  <data name="UpdateFailedTitle" xml:space="preserve"><value>Could not update OBK</value></data>
+  <data name="UpdateInvalidInstalledVersion" xml:space="preserve"><value>The installed app version is invalid. Get help before updating.</value></data>
+  <data name="UpdateInvalidPackage" xml:space="preserve"><value>The APK is not the expected newer OBK package. It was not sent to the installer.</value></data>
+  <data name="UpdateIncompatibleSigner" xml:space="preserve"><value>This APK is signed with a different key and cannot update this installation. Do not uninstall OBK: that would delete local data. Use an APK signed with the same key; preview builds cannot update to release builds in place.</value></data>
+  <data name="UpdateInstallerUnavailable" xml:space="preserve"><value>Android could not open update installation. Check this device's installation restrictions and try again.</value></data>
+  <data name="UpdatePermissionTitle" xml:space="preserve"><value>Allow updates from OBK</value></data>
+  <data name="UpdatePermissionExplanation" xml:space="preserve"><value>In Android settings, allow installation from OBK, then return here. Android will ask you to confirm this update. OBK cannot install silently.</value></data>
+  <data name="UpdateOpenSettings" xml:space="preserve"><value>Open Android settings</value></data>
+  <data name="UpdatePermissionDenied" xml:space="preserve"><value>Installation from OBK is not allowed. Tap Install update to try again and allow this source in Android settings.</value></data>
 </root>

@@ -137,10 +137,15 @@ Older releases may contain only the Windows installer.
 Install a newer release APK over the existing release app to keep accounts and
 offline archives. **Switching from a development-signed preview requires
 uninstalling it first, which deletes all local data and its encryption key.**
-Do not uninstall a release app just to update it. Android does not yet check for
-or download updates in-app; get updates manually from Releases. Play Store
-publishing and the in-app updater are out of scope here; additional interface
-languages are tracked separately.
+Do not uninstall a release app just to update it. In Android, open **Settings >
+App updates > Check for updates** to check GitHub Releases manually. If a newer
+stable Android release is available, tap **Download update**. OBK verifies the
+APK's checksum, package/version and signing compatibility before opening
+Android's installer. Allow installation from OBK if prompted, then confirm the
+update. If you cancel, tap **Install update** to try again.
+There are no startup/background checks or automatic downloads. Downloading
+manually from Releases remains available. Play Store publishing and additional
+interface languages are separate work.
 
 See the [Android build and verification instructions](docs/TECHNICAL.md#android-preview).
 Maintainers: see [release signing setup](docs/TECHNICAL.md#android-release-signing).

@@ -380,4 +380,26 @@
   <data name="UnlockWorking" xml:space="preserve">
     <value>Odemykání…</value>
   </data>
+  <data name="UpdateHeading" xml:space="preserve"><value>Aktualizace aplikace</value></data>
+  <data name="UpdateInstalledVersion" xml:space="preserve"><value>Nainstalovaná verze: {0}</value></data>
+  <data name="UpdateManualNotice" xml:space="preserve"><value>GitHub se kontroluje jen po klepnutí na Zkontrolovat aktualizace. Stažení a instalaci musíte potvrdit.</value></data>
+  <data name="UpdateCheck" xml:space="preserve"><value>Zkontrolovat aktualizace</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Kontroluji vydání na GitHubu...</value></data>
+  <data name="UpdateCurrent" xml:space="preserve"><value>Novější stabilní vydání pro Android není dostupné.</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Je dostupná verze {0}. Stáhněte ji pro aktualizaci bez odinstalování OBK.</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Stáhnout aktualizaci</value></data>
+  <data name="UpdateDownloading" xml:space="preserve"><value>Stahuji a ověřuji aktualizaci...</value></data>
+  <data name="UpdateReady" xml:space="preserve"><value>Aktualizace ověřena. Potvrďte instalaci v Androidu.</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Nainstalovat aktualizaci</value></data>
+  <data name="UpdateNotInstalled" xml:space="preserve"><value>Aktualizace nebyla nainstalována. Zkuste znovu Nainstalovat aktualizaci; vaše offline data se nezměnila.</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>Aktualizace zrušena. Můžete to zkusit znovu.</value></data>
+  <data name="UpdateFailedTitle" xml:space="preserve"><value>OBK se nepodařilo aktualizovat</value></data>
+  <data name="UpdateInvalidInstalledVersion" xml:space="preserve"><value>Verze nainstalované aplikace je neplatná. Před aktualizací vyhledejte pomoc.</value></data>
+  <data name="UpdateInvalidPackage" xml:space="preserve"><value>APK není očekávaný novější balíček OBK. Nebyl předán instalátoru.</value></data>
+  <data name="UpdateIncompatibleSigner" xml:space="preserve"><value>Toto APK je podepsáno jiným klíčem a nemůže aktualizovat tuto instalaci. Neodinstalovávejte OBK: smazali byste místní data. Použijte APK podepsané stejným klíčem; testovací sestavení nelze přímo aktualizovat na produkční vydání.</value></data>
+  <data name="UpdateInstallerUnavailable" xml:space="preserve"><value>Android nemohl otevřít instalaci aktualizace. Zkontrolujte omezení instalace na tomto zařízení a zkuste to znovu.</value></data>
+  <data name="UpdatePermissionTitle" xml:space="preserve"><value>Povolit aktualizace z OBK</value></data>
+  <data name="UpdatePermissionExplanation" xml:space="preserve"><value>V nastavení Androidu povolte instalaci z OBK a vraťte se sem. Android vás požádá o potvrzení aktualizace. OBK nemůže instalovat bez potvrzení.</value></data>
+  <data name="UpdateOpenSettings" xml:space="preserve"><value>Otevřít nastavení Androidu</value></data>
+  <data name="UpdatePermissionDenied" xml:space="preserve"><value>Instalace z OBK není povolena. Klepněte na Nainstalovat aktualizaci a povolte tento zdroj v nastavení Androidu.</value></data>
 </root>

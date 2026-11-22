@@ -88,14 +88,51 @@ public sealed class UpdateService : IDisposable
         return null;
     }
 
-    public async Task<AvailableUpdate?> CheckAsync(Version installed, CancellationToken cancel = default)
+    public static AvailableUpdate? SelectAndroidUpdate(string json, Version installed)
     {
         try
         {
-            using var response = await http.GetAsync(LatestReleaseUrl, cancel);
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            if (root.GetProperty("draft").GetBoolean() || root.GetProperty("prerelease").GetBoolean()) return null;
+            var tag = root.GetProperty("tag_name").GetString();
+            if (!Regex.IsMatch(tag ?? "", @"^v1\.0\.(0|[1-9]\d*)$") ||
+                !TryParseVersion(tag, out var version) || version.Build >= 2100000000)
+                throw new ObkException(SharedStrings.ErrorUpdateCheckFailed);
+            if (version <= installed) return null;
+            var name = $"OBK-1.0.{version.Build}-android.apk";
+            var assets = root.GetProperty("assets").EnumerateArray().ToArray();
+            Uri Asset(string assetName)
+            {
+                var matches = assets.Where(asset => asset.GetProperty("name").GetString() == assetName).ToArray();
+                var expected = $"{DownloadPrefix}{tag}/{assetName}";
+                if (matches.Length != 1 || matches[0].GetProperty("browser_download_url").GetString() != expected)
+                    throw new ObkException(SharedStrings.ErrorUpdateCheckFailed);
+                return new Uri(expected);
+            }
+            return new AvailableUpdate(version, Asset(name), Asset("ANDROID-SHA256SUMS.txt"), name);
+        }
+        catch (Exception error) when (error is JsonException or KeyNotFoundException or InvalidOperationException)
+        {
+            throw new ObkException(SharedStrings.ErrorUpdateCheckFailed, error);
+        }
+    }
+
+    public async Task<AvailableUpdate?> CheckAsync(Version installed, CancellationToken cancel = default)
+        => await CheckReleaseAsync(installed, android: false, cancel).ConfigureAwait(false);
+
+    public async Task<AvailableUpdate?> CheckAndroidAsync(Version installed, CancellationToken cancel = default)
+        => await CheckReleaseAsync(installed, android: true, cancel).ConfigureAwait(false);
+
+    private async Task<AvailableUpdate?> CheckReleaseAsync(Version installed, bool android, CancellationToken cancel)
+    {
+        try
+        {
+            using var response = await http.GetAsync(LatestReleaseUrl, cancel).ConfigureAwait(false);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
             response.EnsureSuccessStatusCode();
-            return SelectUpdate(await response.Content.ReadAsStringAsync(cancel), installed);
+            var json = await response.Content.ReadAsStringAsync(cancel).ConfigureAwait(false);
+            return android ? SelectAndroidUpdate(json, installed) : SelectUpdate(json, installed);
         }
         catch (Exception error) when (error is HttpRequestException or TaskCanceledException && !cancel.IsCancellationRequested)
         {
@@ -106,25 +143,33 @@ public sealed class UpdateService : IDisposable
     /// <summary>Downloads and verifies the installer, returning its path. An already verified download is reused.</summary>
     public async Task<string> DownloadAsync(AvailableUpdate update, CancellationToken cancel = default)
     {
+        var partial = Path.Combine(directory, update.InstallerName) + ".download";
         try
         {
             Directory.CreateDirectory(directory);
-            var sums = await http.GetStringAsync(update.ChecksumsUrl, cancel);
+            var sums = await http.GetStringAsync(update.ChecksumsUrl, cancel).ConfigureAwait(false);
             var expected = FindChecksum(sums, update.InstallerName) ??
                 throw new ObkException(SharedStrings.ErrorUpdateNoChecksum);
             var path = Path.Combine(directory, update.InstallerName);
-            if (File.Exists(path) && await HashAsync(path, cancel) == expected) return path;
-            var partial = path + ".download";
-            using (var response = await http.GetAsync(update.InstallerUrl, HttpCompletionOption.ResponseHeadersRead, cancel))
+            if (File.Exists(path) && await HashAsync(path, cancel).ConfigureAwait(false) == expected) return path;
+            using (var response = await http.GetAsync(update.InstallerUrl, HttpCompletionOption.ResponseHeadersRead, cancel).ConfigureAwait(false))
             {
                 response.EnsureSuccessStatusCode();
                 if (response.Content.Headers.ContentLength > MaxInstallerBytes)
                     throw new ObkException(SharedStrings.ErrorUpdateTooLarge);
-                await using var source = await response.Content.ReadAsStreamAsync(cancel);
-                await using var target = File.Create(partial);
-                await source.CopyToAsync(target, cancel);
+                using var source = await response.Content.ReadAsStreamAsync(cancel).ConfigureAwait(false);
+                using var target = File.Create(partial);
+                var buffer = new byte[81920];
+                long total = 0;
+                int count;
+                while ((count = await source.ReadAsync(buffer, cancel).ConfigureAwait(false)) != 0)
+                {
+                    total += count;
+                    if (total > MaxInstallerBytes) throw new ObkException(SharedStrings.ErrorUpdateTooLarge);
+                    await target.WriteAsync(buffer.AsMemory(0, count), cancel).ConfigureAwait(false);
+                }
             }
-            if (await HashAsync(partial, cancel) != expected)
+            if (await HashAsync(partial, cancel).ConfigureAwait(false) != expected)
             {
                 File.Delete(partial);
                 throw new ObkException(SharedStrings.ErrorUpdateVerificationFailed);
@@ -136,12 +181,16 @@ public sealed class UpdateService : IDisposable
         {
             throw new ObkException(SharedStrings.ErrorUpdateDownloadFailed, error);
         }
+        finally
+        {
+            if (File.Exists(partial)) File.Delete(partial);
+        }
     }
 
     private static async Task<string> HashAsync(string path, CancellationToken cancel)
     {
-        await using var file = File.OpenRead(path);
-        return Convert.ToHexString(await SHA256.HashDataAsync(file, cancel)).ToLowerInvariant();
+        using var file = File.OpenRead(path);
+        return Convert.ToHexString(await SHA256.HashDataAsync(file, cancel).ConfigureAwait(false)).ToLowerInvariant();
     }
 
     public static void StartInstaller(string installer, bool relaunch)

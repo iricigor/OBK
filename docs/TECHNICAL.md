@@ -100,7 +100,7 @@ public sources or elsewhere on a website.
 
 ## Automatic updates
 
-OBK checks the latest stable [GitHub release](https://github.com/iricigor/OBK/releases)
+On Windows, OBK checks the latest stable [GitHub release](https://github.com/iricigor/OBK/releases)
 one minute after an account is opened, then every five minutes. The status bar shows
 the installed version when current. A newer installer is downloaded in the
 background and verified against the release's `SHA256SUMS.txt`; a failed
@@ -479,9 +479,49 @@ Keep the PR draft until setup and verification are complete.
 Switching from a differently signed preview requires uninstalling, destroying
 local data and its Android Keystore key. Ordinary release updates preserve
 them; do not uninstall to update. Android installation is user-confirmed and
-requires allowing installation from the download source. There is no in-app
-Android updater in this change; see deferred idea DI-03. Windows SignPath
+requires allowing installation from the download source. The manual in-app
+Android updater is described below. Windows SignPath
 activation (#38) is independent and retains its existing behavior.
+
+### Manual Android updates
+
+Android Settings exposes the installed display version and **Check for updates**.
+Opening Settings or starting the app never checks for releases; a check contacts
+GitHub only after the user taps the button. The latest stable release must contain
+exactly one `OBK-1.0.<build ID>-android.apk` and `ANDROID-SHA256SUMS.txt`, with
+canonical HTTPS download URLs for that release in `iricigor/OBK`. A newer release
+with missing or invalid Android assets is reported as a check failure, not as
+an up-to-date installation. Older/equal, draft and prerelease versions are not offered.
+
+**Download update** downloads to the app-private `cache/updates` directory using
+the shared updater's SHA-256 verification and 500 MiB limit, including streamed
+responses without a content length. Partial files are removed after failures or
+cancellation. A verified cached APK can be reused, but its checksum is checked
+again when retrying. The Android package manager must parse the expected package
+identity, display version, increasing version code (`build ID + 1`) and the same
+current APK signing certificate(s) as the installed application. Signing-key
+rotation is not supported by this updater; a differently signed preview/release
+is rejected without suggesting data-destructive uninstallation.
+
+The app declares `REQUEST_INSTALL_PACKAGES`. Before installer handoff, it explains
+the per-source permission, opens Android's source settings only with consent,
+and rechecks permission on return. A non-exported FileProvider grants read-only
+access to the APK in `cache/updates`; it does not expose account data. Android's
+installer requires the user's confirmation and enforces APK signature verification.
+OBK does not report success merely because the installer opened: cancellation or
+an unchanged installed version leaves **Install update** available. Updating
+normally replaces the running process; the next launch shows the installed version.
+Checks/downloads can be cancelled, navigating away cancels network work, and
+language switching is blocked during an update action.
+
+Before merge, verify on Android 10+ in both themes and languages: manual check,
+offline/error recovery, cancelled download, incompatible-preview rejection,
+installation-source permission denial, installer cancellation and successful
+compatible update with accounts/offline data preserved. The live latest-release
+endpoint cannot see unpublished draft assets. Pre-merge production-key verification
+must therefore include manual installation of staged signed APKs; full in-app
+update verification between published compatible versions follows publication.
+Do not publish an unreviewed branch or replace the production signing key for testing.
 
 ### Transferring an account from Windows to Android
 
