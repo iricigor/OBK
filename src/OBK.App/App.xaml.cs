@@ -110,6 +110,20 @@ public partial class App : Application
                         window.UpdateLayout();
                         if (window.NavigationColumn.ActualWidth < 140)
                             throw new ObkException("Expanding the sidebar did not restore its width.");
+                        window.ViewModel.Grouping = MessageGrouping.Date;
+                        await window.ViewModel.FolderReady;
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        window.UpdateLayout();
+                        var groupHeader = Descendants(window.Messages).OfType<System.Windows.Controls.Primitives.ToggleButton>()
+                            .FirstOrDefault(t => t.Name == "GroupHeader") ?? throw new ObkException("Grouped messages have no group header.");
+                        groupHeader.IsChecked = false;
+                        window.UpdateLayout();
+                        if (Descendants(window.Messages).OfType<System.Windows.Controls.ListBoxItem>().Any(i => i.IsVisible))
+                            throw new ObkException("Collapsing a message group did not hide its messages.");
+                        Capture(window, Path.ChangeExtension(resultPath, ".grouped.png"));
+                        groupHeader.IsChecked = true;
+                        window.ViewModel.Grouping = MessageGrouping.None;
+                        await window.ViewModel.FolderReady;
                         string? switchUsername = null;
                         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
                         {
@@ -196,6 +210,16 @@ public partial class App : Application
             if (resultPath is not null) File.WriteAllText(resultPath, JsonSerializer.Serialize(new { ok = false, error = error.Message }));
             if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
             Shutdown(1);
+        }
+    }
+
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var nested in Descendants(child)) yield return nested;
         }
     }
 

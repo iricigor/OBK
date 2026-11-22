@@ -249,15 +249,45 @@
                                  ItemContainerStyle="{StaticResource SelectableRow}" AutomationProperties.Name="Messages">
                             <ListBox.GroupStyle>
                                 <GroupStyle>
-                                    <GroupStyle.HeaderTemplate>
-                                        <DataTemplate>
-                                            <Grid Margin="12,10,12,4">
-                                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Grid.Column="1" Text="{Binding ItemCount}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,0"/>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </GroupStyle.HeaderTemplate>
+                                    <GroupStyle.ContainerStyle>
+                                        <Style TargetType="GroupItem">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="GroupItem">
+                                                        <StackPanel>
+                                                            <ToggleButton x:Name="GroupHeader" IsChecked="True" Cursor="Hand" Focusable="True"
+                                                                          AutomationProperties.Name="{Binding Name}" ToolTip="Collapse or expand this group">
+                                                                <ToggleButton.Template>
+                                                                    <ControlTemplate TargetType="ToggleButton">
+                                                                        <Border x:Name="Chrome" Background="Transparent" CornerRadius="4" Padding="12,8,12,4">
+                                                                            <Grid>
+                                                                                <Grid.ColumnDefinitions><ColumnDefinition Width="18"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                                                <TextBlock x:Name="Chevron" Style="{StaticResource Icon}" Text="&#xE70D;" FontSize="9" VerticalAlignment="Center"
+                                                                                           Foreground="{DynamicResource Accent}"/>
+                                                                                <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource Accent}"
+                                                                                           TextTrimming="CharacterEllipsis"/>
+                                                                                <TextBlock Grid.Column="2" Text="{Binding ItemCount}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="8,0,0,0"/>
+                                                                            </Grid>
+                                                                        </Border>
+                                                                        <ControlTemplate.Triggers>
+                                                                            <Trigger Property="IsChecked" Value="False"><Setter TargetName="Chevron" Property="Text" Value="&#xE76C;"/></Trigger>
+                                                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
+                                                                        </ControlTemplate.Triggers>
+                                                                    </ControlTemplate>
+                                                                </ToggleButton.Template>
+                                                            </ToggleButton>
+                                                            <ItemsPresenter x:Name="GroupItems"/>
+                                                        </StackPanel>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger SourceName="GroupHeader" Property="IsChecked" Value="False">
+                                                                <Setter TargetName="GroupItems" Property="Visibility" Value="Collapsed"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </GroupStyle.ContainerStyle>
                                 </GroupStyle>
                             </ListBox.GroupStyle>
                             <ListBox.ItemTemplate>

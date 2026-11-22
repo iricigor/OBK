@@ -296,7 +296,8 @@ live by subject, contents, sender/recipient, and sent date (for example
 `3.11.2026` or `2026-11-03`), ignoring case and diacritics; every word must
 match. **Sort** orders by date (newest first), sender, or subject; **Group**
 groups by date (Today, Yesterday, This week, This month, then months), sender,
-or subject, ignoring Re:/Odp:/Fwd: prefixes.
+or subject, ignoring Re:/Odp:/Fwd: prefixes. Click a group header to collapse or expand it;
+groups expand again when the list is re-sorted, searched, or reopened.
 
 Above the message body, **Possibly related** links possible previous and next
 messages across Inbox and Sent, oldest first, each showing its date (for example
