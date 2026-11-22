@@ -382,8 +382,11 @@ or skip signing after an environment-password change. It derives the
 expected certificate SHA-256 from the keystore, verifies access to the private
 key before compiling, and uses `apksigner` to verify
 the APK signature and signer, then `aapt2` to check package ID, version name,
-version code, minimum API 29, and absence of the debuggable flag. Only then does
-it produce `dist\OBK-<version>-android.apk` and
+version code, minimum API 29, and absence of the debuggable flag. The signer
+parser accepts the certificate digest reported by older numbered-signer output or
+build-tools 37's per-signature-scheme output; all reported schemes/signers must
+use the same expected certificate. Unknown digest formats are errors.
+Only after all checks pass does it produce `dist\OBK-<version>-android.apk` and
 `dist\ANDROID-SHA256SUMS.txt`. Its temporary publish directory is removed.
 Existing Debug-only fictional verification data and launch handling are
 excluded by compilation; signing tests inspect the compiled Release assembly.
