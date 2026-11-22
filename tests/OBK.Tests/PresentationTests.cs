@@ -10,6 +10,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Documents;
 using System.Windows.Interop;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Xunit;
@@ -310,7 +311,6 @@ public sealed class PresentationTests
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         void AssertRepositoryLink()
                         {
-                            Console.Error.WriteLine($"Verifying repository link in {LanguageSettings.Code}.");
                             main.ViewModel.OpenSettingsCommand.Execute(null);
                             ((Expander)main.FindName("AboutSection")).IsExpanded = true;
                             main.UpdateLayout();
@@ -319,7 +319,8 @@ public sealed class PresentationTests
                             Assert.Equal(SharedStrings.RepositoryLink, new TextRange(link.ContentStart, link.ContentEnd).Text);
                             Assert.True(link.Focus());
                             Assert.True(link.IsKeyboardFocused);
-                            Console.Error.WriteLine($"Repository link verified in {LanguageSettings.Code}.");
+                            Keyboard.ClearFocus();
+                            FocusManager.SetFocusedElement(main, null);
                             ((Expander)main.FindName("AboutSection")).IsExpanded = false;
                             main.ViewModel.CloseSettingsCommand.Execute(null);
                         }
