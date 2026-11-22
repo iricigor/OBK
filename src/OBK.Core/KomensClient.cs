@@ -9,16 +9,20 @@ namespace OBK.Core;
 public sealed class KomensClient : IDisposable
 {
     public const string DefaultUrl = "https://zsbitovska.bakalari.cz/";
+    public static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromSeconds(10);
+    private const int MaxAttempts = 2;
     private const int MaxResponseBytes = 2 * 1024 * 1024;
     private readonly HttpClient http;
+    private readonly TimeSpan requestTimeout;
     public string BaseUrl { get; }
 
-    public KomensClient(string url, HttpMessageHandler? handler = null)
+    public KomensClient(string url, HttpMessageHandler? handler = null, TimeSpan? requestTimeout = null)
     {
         BaseUrl = NormalizeUrl(url);
+        this.requestTimeout = requestTimeout ?? DefaultRequestTimeout;
         http = new HttpClient(handler ?? new HttpClientHandler { AllowAutoRedirect = false })
         {
-            Timeout = TimeSpan.FromSeconds(20)
+            Timeout = Timeout.InfiniteTimeSpan
         };
     }
 
@@ -43,15 +47,7 @@ public sealed class KomensClient : IDisposable
         request.Content = content;
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(content is null && path.Contains("/attachment/") ? "*/*" : "application/json"));
         if (token is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        HttpResponseMessage response;
-        try
-        {
-            response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation);
-        }
-        catch (Exception error) when (error is HttpRequestException or TaskCanceledException)
-        {
-            throw new ObkException("Connection failed. Check internet access and the school's HTTPS certificate. No certificate checks were bypassed.");
-        }
+        var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation);
         if (response.IsSuccessStatusCode) return response;
         var status = (int)response.StatusCode;
         response.Dispose();
@@ -64,39 +60,49 @@ public sealed class KomensClient : IDisposable
         throw new ObkException($"API request failed (HTTP {status}). Check school availability and API compatibility.");
     }
 
-    private async Task<JsonDocument> JsonAsync(string path, string? token = null, HttpContent? body = null)
+    // Network failures and timeouts get one fresh attempt; HTTP errors and invalid data fail immediately.
+    private async Task<T> RetryAsync<T>(Func<CancellationToken, Task<T>> attempt)
     {
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-        using var response = await OpenAsync(path, token, body, timeout.Token);
-        try
+        for (var tries = 1; ; tries++)
         {
-            await using var source = await response.Content.ReadAsStreamAsync(timeout.Token);
+            using var timeout = new CancellationTokenSource(requestTimeout);
+            try { return await attempt(timeout.Token); }
+            catch (Exception error) when (error is HttpRequestException or IOException or OperationCanceledException)
+            {
+                if (tries < MaxAttempts) continue;
+                throw new ObkException(error is OperationCanceledException
+                    ? $"The school did not respond within {requestTimeout.TotalSeconds:0} seconds, even after a retry. Check internet access or try again later."
+                    : "Connection failed, even after a retry. Check internet access and the school's HTTPS certificate. No certificate checks were bypassed.");
+            }
+        }
+    }
+
+    private Task<JsonDocument> JsonAsync(string path, string? token = null, Func<HttpContent>? body = null) =>
+        RetryAsync(async cancellation =>
+        {
+            using var response = await OpenAsync(path, token, body?.Invoke(), cancellation);
+            await using var source = await response.Content.ReadAsStreamAsync(cancellation);
             using var output = new MemoryStream();
             var buffer = new byte[65536];
             int count;
-            while ((count = await source.ReadAsync(buffer, timeout.Token)) != 0)
+            while ((count = await source.ReadAsync(buffer, cancellation)) != 0)
             {
                 if (output.Length + count > MaxResponseBytes)
                     throw new ObkException("The API response exceeded the 2 MB limit.");
                 output.Write(buffer, 0, count);
             }
-            return JsonDocument.Parse(output.ToArray());
-        }
-        catch (JsonException)
-        {
-            throw new ObkException("The school returned an invalid JSON response. Check API compatibility.");
-        }
-        catch (Exception error) when (error is HttpRequestException or IOException or OperationCanceledException)
-        {
-            throw new ObkException("The API response was interrupted. Check the connection and retry.");
-        }
-    }
+            try { return JsonDocument.Parse(output.ToArray()); }
+            catch (JsonException)
+            {
+                throw new ObkException("The school returned an invalid JSON response. Check API compatibility.");
+            }
+        });
 
     public async Task<string> SignInAsync(string username, string password)
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
             throw new ObkException("Enter both a username and password.");
-        using var result = await JsonAsync("/api/login", body: new FormUrlEncodedContent(
+        using var result = await JsonAsync("/api/login", body: () => new FormUrlEncodedContent(
             new Dictionary<string, string>
             {
                 ["client_id"] = "ANDR", ["grant_type"] = "password",
@@ -136,7 +142,7 @@ public sealed class KomensClient : IDisposable
         for (var page = 1; page <= 10000; page++)
         {
             using var result = await JsonAsync($"/api/3/komens/messages/{folder}", token,
-                new StringContent(JsonSerializer.Serialize(new
+                () => new StringContent(JsonSerializer.Serialize(new
                 {
                     DateFrom = since.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture),
                     DateTo = year.End.AddMilliseconds(-1).ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture),
@@ -196,18 +202,17 @@ public sealed class KomensClient : IDisposable
             try
             {
                 if (store.AttachmentInfo(BaseUrl, username, attachment.Identifier) is not null) continue;
-                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                using var response = await OpenAsync("/api/3/komens/attachment/" +
-                    Uri.EscapeDataString(attachment.Identifier), token, cancellation: timeout.Token);
-                await using var stream = await response.Content.ReadAsStreamAsync();
-                await store.SaveAttachmentAsync(BaseUrl, username, attachment, stream,
-                    response.Content.Headers.ContentLength, response.Content.Headers.ContentType?.ToString() ?? "");
+                await RetryAsync(async cancellation =>
+                {
+                    using var response = await OpenAsync("/api/3/komens/attachment/" +
+                        Uri.EscapeDataString(attachment.Identifier), token, cancellation: cancellation);
+                    await using var stream = await response.Content.ReadAsStreamAsync();
+                    return await store.SaveAttachmentAsync(BaseUrl, username, attachment, stream,
+                        response.Content.Headers.ContentLength, response.Content.Headers.ContentType?.ToString() ?? "",
+                        idleTimeout: requestTimeout);
+                });
             }
             catch (ObkException error) { throw new ObkException($"Attachment {index} of {attachments.Count}: {error.Message}"); }
-            catch (Exception error) when (error is HttpRequestException or IOException or OperationCanceledException)
-            {
-                throw new ObkException($"Attachment {index} of {attachments.Count}: download interrupted. Retry sync; completed downloads will be reused.");
-            }
         }
         return attachments.Count;
     }

@@ -72,6 +72,26 @@ public sealed class MigrationTests : IDisposable
         Assert.Null(handler.Requests[0].Authorization);
     }
 
+    [Fact]
+    public async Task TransientNetworkFailuresAreRetriedOnceWithTheSameRequest()
+    {
+        var handler = new FlakyHandler(1, () => Json(new { access_token = "test-token" }));
+        using (var client = new KomensClient(Url, handler))
+            Assert.Equal("test-token", await client.SignInAsync("user", "p&ss"));
+        Assert.Equal(2, handler.Bodies.Count);
+        Assert.All(handler.Bodies, body => Assert.Contains("password=p%26ss", body));
+
+        var offline = new FlakyHandler(2, () => Json(new { access_token = "unused" }));
+        using (var client = new KomensClient(Url, offline))
+            Assert.Contains("Connection failed", (await Assert.ThrowsAsync<ObkException>(() => client.SignInAsync("user", "pass"))).Message);
+        Assert.Equal(2, offline.Bodies.Count);
+
+        var slow = new FlakyHandler(0, () => Json(new { }), hang: true);
+        using (var client = new KomensClient(Url, slow, TimeSpan.FromMilliseconds(100)))
+            Assert.Contains("did not respond", (await Assert.ThrowsAsync<ObkException>(() => client.SchoolNameAsync("token"))).Message);
+        Assert.Equal(2, slow.Bodies.Count);
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.Found)]
     [InlineData(HttpStatusCode.Unauthorized)]
@@ -340,6 +360,18 @@ internal sealed class FakeHandler(params HttpResponseMessage[] responses) : Http
             request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken),
             request.Headers.Authorization?.ToString()));
         return pending.Dequeue();
+    }
+}
+
+internal sealed class FlakyHandler(int failures, Func<HttpResponseMessage> success, bool hang = false) : HttpMessageHandler
+{
+    public List<string> Bodies { get; } = [];
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Bodies.Add(request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken));
+        if (hang) await Task.Delay(Timeout.Infinite, cancellationToken);
+        if (Bodies.Count <= failures) throw new HttpRequestException("offline");
+        return success();
     }
 }
 

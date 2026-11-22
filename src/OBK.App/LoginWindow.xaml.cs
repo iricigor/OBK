@@ -84,6 +84,11 @@ public partial class LoginWindow : Window
         suppressRememberChange = false;
     }
 
+    private void PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (ready && !busy && Password.Password.Length > 0) Status.Text = "";
+    }
+
     public void SetBusy(bool busy)
     {
         this.busy = busy;
@@ -110,7 +115,7 @@ public partial class LoginWindow : Window
             var remember = Remember.IsChecked == true;
             var childName = OptionalLabel(ChildName.Text);
             SetBusy(true);
-            Status.Text = $"Connecting to {SelectedSchoolName.Text}...";
+            Status.Text = "Connecting to the school...";
             await app.SynchronizeAsync(this, url, username, password, remember, false, childName,
                 selectedSchoolName);
         }
@@ -351,8 +356,8 @@ public partial class LoginWindow : Window
         ChildName.Text = profile.ChildName ?? "";
         SetRemember(profile.Password is not null);
         Status.Text = profile.Password is null ?
-            $"Previous account selected for {SelectedSchoolName.Text}. Enter the password." :
-            $"Saved account ready for {SelectedSchoolName.Text}.";
+            "Previous account selected. Enter the password." :
+            "Saved account ready. Sign in and sync, or read offline.";
         if (moveFocus) Password.Focus();
     }
 

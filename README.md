@@ -275,13 +275,14 @@ messages and query each folder from its newest cached sent timestamp, inclusivel
 This small overlap catches messages sharing the same timestamp and merges them
 by ID rather than duplicating them. Empty folders still query the whole year.
 
-**Full school-year refresh** in the login popup fetches the complete year again.
-Use it to discover backdated messages, older edits, changes to read/hidden
-status, and messages removed from the server: there is no documented change-feed
-API, so incremental date filtering cannot discover all such changes. Both modes
-filter returned messages to the current school year and paginate to an empty
-page even if the server caps page size. Hidden messages are excluded. Repeated
-pages and failed requests are reported, not treated as complete synchronization.
+Incremental sync cannot discover backdated messages, older edits, changes to
+read/hidden status, or messages removed from the server: there is no documented
+change-feed API. Sync filters returned messages to the current school year and
+paginates to an empty page even if the server caps page size. Hidden messages
+are excluded. Repeated pages and failed requests are reported, not treated as
+complete synchronization. Each network request that receives no response within
+10 seconds, or fails to connect, is retried once; HTTP errors such as a rejected
+sign-in are reported immediately without a retry.
 
 Complete synchronizations are cached in `%LOCALAPPDATA%\OBK\obk.sqlite3`,
 separately for each school URL, username, and school year. An interrupted or

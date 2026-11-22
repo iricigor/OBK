@@ -128,20 +128,36 @@
                             </Border>
                         </StackPanel>
 
-                        <StackPanel x:Name="CredentialsPanel" Visibility="Collapsed">
-                            <Label Content="Username" Target="{Binding ElementName=Username}" Padding="0"/>
-                            <TextBox x:Name="Username" Margin="0,4,0,12" AutomationProperties.Name="Username"/>
-                            <Label Content="Password" Target="{Binding ElementName=Password}" Padding="0"/>
-                            <PasswordBox x:Name="Password" Margin="0,4,0,12" AutomationProperties.Name="Password"/>
-                            <Label Content="Child name (optional)" Target="{Binding ElementName=ChildName}" Padding="0"/>
-                            <TextBox x:Name="ChildName" Margin="0,4,0,4" AutomationProperties.Name="Child name (optional)"/>
-                            <TextBlock Text="Shown in the app title instead of the school name."
-                                       Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,0,0,12"/>
-                            <CheckBox x:Name="Remember" Content="Remember credentials on this Windows account"
-                                      Unchecked="RememberUnchecked" Margin="0,0,0,8"/>
-                            <TextBlock Text="Credentials and messages are encrypted for this Windows account."
-                                       Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap"/>
-                        </StackPanel>
+                        <Grid x:Name="CredentialsPanel" Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="108"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Label Content="Username" Target="{Binding ElementName=Username}" Padding="0"
+                                   VerticalAlignment="Center" Margin="0,0,0,10"/>
+                            <TextBox x:Name="Username" Grid.Column="1" Margin="0,0,0,10" AutomationProperties.Name="Username"/>
+                            <Label Grid.Row="1" Content="Password" Target="{Binding ElementName=Password}" Padding="0"
+                                   VerticalAlignment="Center" Margin="0,0,0,10"/>
+                            <PasswordBox x:Name="Password" Grid.Row="1" Grid.Column="1" Margin="0,0,0,10"
+                                         AutomationProperties.Name="Password" PasswordChanged="PasswordChanged"/>
+                            <Label Grid.Row="2" Content="Child name" Target="{Binding ElementName=ChildName}" Padding="0"
+                                   VerticalAlignment="Center"/>
+                            <TextBox x:Name="ChildName" Grid.Row="2" Grid.Column="1" AutomationProperties.Name="Child name (optional)"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="Optional. Shown in the app title instead of the school name."
+                                       Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,14"/>
+                            <CheckBox x:Name="Remember" Grid.Row="4" Grid.Column="1" Content="Remember credentials on this Windows account"
+                                      Unchecked="RememberUnchecked" Margin="0,0,0,6"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="Credentials and messages are encrypted for this Windows account."
+                                       Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="28,0,0,0"/>
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
 

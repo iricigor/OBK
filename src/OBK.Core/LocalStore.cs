@@ -314,7 +314,8 @@ public sealed class LocalStore
     });
 
     public async Task<long> SaveAttachmentAsync(string url, string username, Attachment attachment, Stream source,
-        long? expectedSize = null, string contentType = "", CancellationToken cancellation = default)
+        long? expectedSize = null, string contentType = "", CancellationToken cancellation = default,
+        TimeSpan? idleTimeout = null)
     {
         url = KomensClient.NormalizeUrl(url);
         var id = attachment.Identifier;
@@ -334,7 +335,7 @@ public sealed class LocalStore
             while (true)
             {
                 using var readTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
-                readTimeout.CancelAfter(TimeSpan.FromSeconds(20));
+                readTimeout.CancelAfter(idleTimeout ?? KomensClient.DefaultRequestTimeout);
                 var count = await source.ReadAsync(buffer, readTimeout.Token);
                 if (count == 0) break;
                 size += count;
