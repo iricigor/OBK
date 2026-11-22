@@ -10,6 +10,7 @@
             </ResourceDictionary.MergedDictionaries>
             <local:BooleanVisibilityConverter x:Key="VisibleIf"/>
             <local:AnyTrueConverter x:Key="AnyTrue"/>
+            <local:ThemeBrushConverter x:Key="ThemeBrush"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
