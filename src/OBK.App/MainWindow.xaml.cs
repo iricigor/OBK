@@ -60,7 +60,7 @@ public partial class MainWindow : Window
     private async void WindowLoaded(object sender, RoutedEventArgs e)
     {
         await InitializeAsync();
-        if (showLogin) OpenLoginDialog();
+        if (showLogin) OpenLoginDialog(true);
     }
 
     private void WindowClosing(object? sender, CancelEventArgs e)
@@ -90,7 +90,7 @@ public partial class MainWindow : Window
         WindowRoot.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
     }
 
-    private async void OpenLoginDialog()
+    private async void OpenLoginDialog(bool showSavedAccounts = false)
     {
         if (openingLogin || !ViewModel.CanChangeAccount) return;
         openingLogin = true;
@@ -101,12 +101,18 @@ public partial class MainWindow : Window
             var error = "";
             try
             {
-                var saved = await Task.Run(Store.RememberedLogin);
-                if (saved is not null) { initial = saved; remembered = true; }
+                if (!showSavedAccounts)
+                {
+                    var saved = initial is null ? null : await Task.Run(() =>
+                        Store.RememberedLogins().LastOrDefault(profile =>
+                            profile.Url == initial.Url && profile.Username == initial.Username));
+                    if (saved is not null) { initial = saved; remembered = true; }
+                    else initial ??= await Task.Run(Store.LastAccount);
+                }
                 else initial ??= await Task.Run(Store.LastAccount);
             }
             catch (ObkException problem) { error = problem.Message; }
-            new LoginWindow(this, initial, remembered, error).ShowDialog();
+            new LoginWindow(this, initial, remembered, error, showSavedAccounts).ShowDialog();
         }
         finally { openingLogin = false; }
     }

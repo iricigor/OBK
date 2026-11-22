@@ -35,12 +35,12 @@ public sealed class MainViewModel : ObservableObject
     private int folderVersion;
     private int messageVersion;
 
-    public MainViewModel(LocalStore store, ThemeManager theme, Action openLogin,
+    public MainViewModel(LocalStore store, ThemeManager theme, Action<bool> openLogin,
         Func<AttachmentRow, string, Task> export, Func<IReadOnlyList<AttachmentRow>, Task> saveAll)
     {
         this.store = store;
         Theme = theme;
-        SignInCommand = new RelayCommand(_ => openLogin(), _ => CanChangeAccount);
+        SignInCommand = new RelayCommand(_ => openLogin(false), _ => CanChangeAccount);
         ToggleThemeCommand = new AsyncCommand(_ => Theme.ToggleAsync(), ReportError);
         RequestSwitchCommand = new RelayCommand(_ => ConfirmSwitch = true, _ => CanChangeAccount);
         CancelSwitchCommand = new RelayCommand(_ => ConfirmSwitch = false);
@@ -49,8 +49,8 @@ public sealed class MainViewModel : ObservableObject
             await Task.Run(store.LogOut);
             ClearAccount();
             ConfirmSwitch = false;
-            SetStatus("Signed out. Offline messages are unchanged.", true);
-            openLogin();
+            SetStatus("Active account cleared. Remembered accounts and offline messages are unchanged.", true);
+            openLogin(true);
         }, ReportError, _ => CanChangeAccount);
         OpenAttachmentCommand = ExportCommand("open", export);
         SaveAttachmentCommand = ExportCommand("save", export);

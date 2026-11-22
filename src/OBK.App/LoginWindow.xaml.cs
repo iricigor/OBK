@@ -10,6 +10,7 @@ public partial class LoginWindow : Window
 {
     private readonly MainWindow app;
     private readonly Login? initial;
+    private readonly bool showSavedAccounts;
     private bool completed;
     private bool ready;
     private bool busy;
@@ -17,15 +18,17 @@ public partial class LoginWindow : Window
     private bool updatingUrl;
     private bool schoolConfirmed;
     private SchoolDirectory? schoolDirectory;
+    private IReadOnlyList<SavedLoginRow> rememberedProfiles = [];
     private string? selectedSchoolName;
     public string StatusText { set => Status.Text = value; }
     internal Task DirectoryReady { get; }
     internal int AvailableSchoolCount => schoolDirectory?.Count ?? 0;
 
-    public LoginWindow(MainWindow app, Login? initial, bool remembered, string error)
+    public LoginWindow(MainWindow app, Login? initial, bool remembered, string error, bool showSavedAccounts = false)
     {
         this.app = app;
         this.initial = initial;
+        this.showSavedAccounts = showSavedAccounts;
         Owner = app;
         InitializeComponent();
         SchoolUrl.Text = initial?.Url ?? "";
@@ -53,7 +56,18 @@ public partial class LoginWindow : Window
     {
         if (!ready) return;
         SetBusy(true);
-        try { await Task.Run(app.Store.ForgetCredentials); }
+        try
+        {
+            var username = Username.Text.Trim();
+            if (username.Length > 0)
+                await Task.Run(() => app.Store.ForgetLogin(SchoolUrl.Text, username));
+            rememberedProfiles = rememberedProfiles
+                .Where(profile => !string.Equals(profile.Login.Url,
+                        KomensClient.NormalizeUrl(SchoolUrl.Text), StringComparison.Ordinal) ||
+                    !string.Equals(profile.Login.Username, username, StringComparison.Ordinal))
+                .ToArray();
+            ShowRememberedProfiles();
+        }
         catch (ObkException error) { Status.Text = error.Message; Remember.IsChecked = true; }
         finally { SetBusy(false); }
     }
@@ -84,7 +98,6 @@ public partial class LoginWindow : Window
             var remember = Remember.IsChecked == true;
             var childName = OptionalLabel(ChildName.Text);
             SetBusy(true);
-            if (!remember) await Task.Run(app.Store.ForgetCredentials);
             Status.Text = $"Connecting to {SelectedSchoolName.Text}...";
             await app.SynchronizeAsync(this, url, username, password, remember, false, childName,
                 selectedSchoolName);
@@ -151,8 +164,17 @@ public partial class LoginWindow : Window
                 return SchoolDirectory.Load(stream);
             });
             schoolDirectory = loaded;
+            try
+            {
+                rememberedProfiles = await Task.Run(() => app.Store.RememberedLogins()
+                    .Select(profile => new SavedLoginRow(profile, loaded.FindByUrl(profile.Url))).ToArray());
+            }
+            catch (ObkException error) { Status.Text = error.Message; }
+            ShowRememberedProfiles();
             var match = initial?.Url is { Length: > 0 } url ? loaded.FindByUrl(url) : null;
-            if (match is not null)
+            if (showSavedAccounts)
+                UpdateSchoolSearch();
+            else if (match is not null)
                 ConfirmSchool(match, moveFocus: false);
             else if (initial?.Url is { Length: > 0 })
                 ConfirmManualSchool(initial.Url, initial.SchoolName, moveFocus: false);
@@ -182,7 +204,11 @@ public partial class LoginWindow : Window
 
     private void SchoolUrlChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
-        if (!updatingUrl) schoolConfirmed = false;
+        if (!updatingUrl)
+        {
+            schoolConfirmed = false;
+            selectedSchoolName = null;
+        }
         UpdateActionButtons();
     }
 
@@ -287,6 +313,34 @@ public partial class LoginWindow : Window
         SchoolUrl.Focus();
     }
 
+    private void SavedAccountSelected(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { Tag: SavedLoginRow row })
+            ConfirmRememberedProfile(row, moveFocus: true);
+    }
+
+    internal void UseRememberedProfile(int index)
+    {
+        if (index < 0 || index >= rememberedProfiles.Count)
+            throw new ArgumentOutOfRangeException(nameof(index));
+        ConfirmRememberedProfile(rememberedProfiles[index], moveFocus: false);
+    }
+
+    internal int RememberedProfileCount => rememberedProfiles.Count;
+
+    private void ConfirmRememberedProfile(SavedLoginRow row, bool moveFocus)
+    {
+        var profile = row.Login;
+        ShowConfirmedSchool(profile.SchoolName ?? row.DirectorySchool?.Name, row.DirectorySchool?.Towns ?? "Saved account",
+            KomensClient.NormalizeUrl(profile.Url), moveFocus: false);
+        Username.Text = profile.Username;
+        Password.Password = profile.Password ?? "";
+        ChildName.Text = profile.ChildName ?? "";
+        Remember.IsChecked = true;
+        Status.Text = $"Saved account ready for {SelectedSchoolName.Text}.";
+        if (moveFocus) Password.Focus();
+    }
+
     private void BackToSchoolSearch(object sender, RoutedEventArgs e)
     {
         ClearAccountFields();
@@ -314,7 +368,7 @@ public partial class LoginWindow : Window
     {
         try
         {
-            ConfirmManualSchool(SchoolUrl.Text, initial?.SchoolName);
+            ConfirmManualSchool(SchoolUrl.Text, selectedSchoolName);
         }
         catch (ObkException error)
         {
@@ -381,6 +435,13 @@ public partial class LoginWindow : Window
         UpdateActionButtons();
     }
 
+    private void ShowRememberedProfiles()
+    {
+        SavedAccounts.ItemsSource = rememberedProfiles;
+        SavedAccountsPanel.Visibility = rememberedProfiles.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        SavedAccountsDivider.Visibility = rememberedProfiles.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     private void UpdateActionButtons()
     {
         if (SignInButton is null) return;
@@ -396,4 +457,16 @@ public partial class LoginWindow : Window
     }
 
     private static string? OptionalLabel(string value) => value.Trim() is { Length: > 0 } label ? label : null;
+}
+
+public sealed class SavedLoginRow(Login login, SchoolDirectoryEntry? directorySchool)
+{
+    public Login Login { get; } = login;
+    public SchoolDirectoryEntry? DirectorySchool { get; } = directorySchool;
+    public string Title => Login.ChildName is { Length: > 0 } child ? child :
+        Login.SchoolName ?? DirectorySchool?.Name ?? "Saved account";
+    public string Detail => Login.ChildName is { Length: > 0 }
+        ? $"{Login.SchoolName ?? DirectorySchool?.Name ?? "School"} \u2022 {Login.Username}"
+        : Login.Username;
+    public string Website => Login.Url;
 }

@@ -60,7 +60,7 @@ public sealed class PresentationTests
                     });
                     var theme = new ThemeManager(Path.Combine(directory, "appearance.json"));
                     string? exported = null;
-                    var vm = new MainViewModel(store, theme, () => { },
+                    var vm = new MainViewModel(store, theme, _ => { },
                         (row, action) => { exported = row.Attachment.Identifier + ":" + action; return Task.CompletedTask; },
                         _ => Task.CompletedTask);
                     async Task WaitForFolderAsync()

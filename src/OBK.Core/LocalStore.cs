@@ -111,19 +111,41 @@ public sealed class LocalStore
             throw new ObkException("The saved sign-in setting is damaged. Sign in again.");
         return login;
     });
-    public Login? RememberedLogin() => Setting("remembered_login");
+    public Login? RememberedLogin() => RememberedLogins().LastOrDefault();
     public Login? LastAccount() => Setting("last_account");
+
+    public IReadOnlyList<Login> RememberedLogins() => Access(connection =>
+    {
+        using var command = Command(connection,
+            "SELECT value FROM settings WHERE name = 'remembered_logins'");
+        if (command.ExecuteScalar() is byte[] value)
+        {
+            var profiles = Decode<List<Login>>(value);
+            if (profiles.Any(profile => profile.Url is null || profile.Username is null ||
+                profile.Password is null))
+                throw new ObkException("The saved sign-in list is damaged. Sign in again.");
+            return (IReadOnlyList<Login>)profiles;
+        }
+        var legacy = Setting("remembered_login");
+        return legacy is null ? [] : [legacy];
+    });
 
     public void ForgetCredentials() => Access(connection =>
     {
-        using var command = Command(connection, "DELETE FROM settings WHERE name = 'remembered_login'");
+        using var command = Command(connection,
+            "DELETE FROM settings WHERE name IN ('remembered_login', 'remembered_logins')");
         return command.ExecuteNonQuery();
     });
+
+    public void ForgetLogin(string url, string username) =>
+        SaveRememberedLogins(RememberedLogins()
+            .Where(profile => !SameAccount(profile, KomensClient.NormalizeUrl(url), username))
+            .ToArray());
 
     public void LogOut() => Access(connection =>
     {
         using var command = Command(connection,
-            "DELETE FROM settings WHERE name IN ('remembered_login', 'last_account')");
+            "DELETE FROM settings WHERE name = 'last_account'");
         return command.ExecuteNonQuery();
     });
 
@@ -147,22 +169,46 @@ public sealed class LocalStore
         childName = OptionalLabel(childName);
         schoolName = OptionalLabel(schoolName);
         var account = Encode(new Login(url, username, ChildName: childName, SchoolName: schoolName));
-        var credentials = remember ? Encode(new Login(url, username, password, childName, schoolName)) : null;
+        var remembered = RememberedLogins()
+            .Where(profile => !SameAccount(profile, url, username))
+            .ToList();
+        if (remember) remembered.Add(new Login(url, username, password, childName, schoolName));
+        var encodedRemembered = Encode(remembered);
         Access(connection =>
         {
             using var transaction = connection.BeginTransaction();
             using var command = Command(connection, "INSERT OR REPLACE INTO settings VALUES ('last_account', $value)",
                 transaction, ("$value", account));
             command.ExecuteNonQuery();
-            using var saved = Command(connection, credentials is null ?
-                "DELETE FROM settings WHERE name = 'remembered_login'" :
-                "INSERT OR REPLACE INTO settings VALUES ('remembered_login', $value)", transaction);
-            if (credentials is not null) saved.Parameters.AddWithValue("$value", credentials);
+            using var saved = Command(connection,
+                "INSERT OR REPLACE INTO settings VALUES ('remembered_logins', $value)", transaction,
+                ("$value", encodedRemembered));
             saved.ExecuteNonQuery();
+            using var legacy = Command(connection,
+                "DELETE FROM settings WHERE name = 'remembered_login'", transaction);
+            legacy.ExecuteNonQuery();
             transaction.Commit();
             return true;
         });
     }
+
+    private void SaveRememberedLogins(IReadOnlyList<Login> profiles) => Access(connection =>
+    {
+        using var transaction = connection.BeginTransaction();
+        using var command = Command(connection,
+            "INSERT OR REPLACE INTO settings VALUES ('remembered_logins', $value)",
+            transaction, ("$value", Encode(profiles)));
+        command.ExecuteNonQuery();
+        using var legacy = Command(connection,
+            "DELETE FROM settings WHERE name = 'remembered_login'", transaction);
+        legacy.ExecuteNonQuery();
+        transaction.Commit();
+        return true;
+    });
+
+    private static bool SameAccount(Login profile, string url, string username) =>
+        string.Equals(profile.Url, url, StringComparison.Ordinal) &&
+        string.Equals(profile.Username, username, StringComparison.Ordinal);
 
     private static string? OptionalLabel(string? value) =>
         value?.Trim() is { Length: > 0 } label ? label : null;

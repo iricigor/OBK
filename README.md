@@ -228,8 +228,12 @@ The popup then asks for username, password, and an optional child name. The
 child name is shown near the OBK title instead of the school name when supplied.
 Changing the selected school clears the account-specific credential and child
 fields so they cannot be reused unintentionally.
-**Remember credentials on this Windows account** is off by default. When
-enabled, the next login popup is prefilled; it does not sign in silently.
+**Remember credentials on this Windows account** is off by default. Each
+remembered school and username is saved as its own encrypted profile. The
+initial login and **Switch school / Log out** flow list all remembered profiles;
+choosing one restores its username, password, and optional child name, while
+choosing or searching for a different school starts with blank account fields.
+Nothing signs in silently.
 The action footer stays visible while the form scrolls, with **Read offline**
 separate from **Sign in and sync**.
 
@@ -253,10 +257,10 @@ per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
 startup. It contains only the theme, not credentials or archive data.
 The title bar retains native dragging, resizing, caption controls, and Windows
 11 maximize-button snap layouts. The active child or school is shown beside the
-OBK title. **Switch school / Log out** requires confirmation, clears saved
-credentials and the active account, and opens a blank school picker. It does
-not remove any offline archive. Sync progress and errors appear in the
-header/footer without blocking offline reading.
+OBK title. **Switch school / Log out** requires confirmation, clears the active
+account, and opens the remembered-account picker. Saved credential
+profiles remain available; no offline archive is removed. Sync progress and
+errors appear in the header/footer without blocking offline reading.
 
 The first synchronization fetches every page in all three folders for the
 current school year: September 1 through August 31, based on the device's current

@@ -220,6 +220,12 @@ public sealed class MigrationTests : IDisposable
         store.SaveLogin(Url, "u", "private-password", true, "Anežka", "School A");
         Assert.Equal("Anežka", store.RememberedLogin()!.ChildName);
         Assert.Equal("School A", store.LastAccount()!.SchoolName);
+        store.SaveLogin("https://other-school.example", "second", "other-password", true, "Jan", "School B");
+        Assert.Equal(2, store.RememberedLogins().Count);
+        store.SaveLogin(Url, "u", "private-password", false);
+        Assert.Single(store.RememberedLogins());
+        Assert.Equal("second", store.RememberedLogin()!.Username);
+        store.SaveLogin(Url, "u", "private-password", true, "Anežka", "School A");
         var folders = Folders.Empty();
         folders["received"].Add(Message("private"));
         store.SaveArchive(Url, "u", year, "School", folders);
@@ -228,12 +234,12 @@ public sealed class MigrationTests : IDisposable
         Assert.Null(store.LoadArchive(Url, "other-user", year));
         Assert.Null(store.LoadArchive("https://other.example", "u", year));
         Assert.Null(store.LoadArchive(Url, "u", new(2025)));
+        store.LogOut();
+        Assert.Null(store.LastAccount());
+        Assert.Equal(2, store.RememberedLogins().Count);
+        Assert.NotNull(store.LoadArchive(Url, "u", year));
         store.ForgetCredentials();
         Assert.Null(store.RememberedLogin());
-        Assert.NotNull(store.LoadArchive(Url, "u", year));
-        store.LogOut();
-        Assert.Null(store.RememberedLogin());
-        Assert.Null(store.LastAccount());
         Assert.NotNull(store.LoadArchive(Url, "u", year));
         Assert.Throws<ObkException>(() => LocalStore.Decode<Login>(Encoding.UTF8.GetBytes("""{"password":"plaintext"}""")));
     }

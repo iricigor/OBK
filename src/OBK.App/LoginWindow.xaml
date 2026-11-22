@@ -30,6 +30,33 @@
                                    TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,22"/>
 
                         <StackPanel x:Name="SchoolChooserPanel">
+                            <StackPanel x:Name="SavedAccountsPanel" Visibility="Collapsed" Margin="0,0,0,18">
+                                <TextBlock Text="Remembered accounts" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <TextBlock Text="Choose a saved child or username." Foreground="{DynamicResource TextSecondary}"
+                                           FontSize="12" Margin="0,0,0,8"/>
+                                <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl x:Name="SavedAccounts">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Click="SavedAccountSelected" Tag="{Binding}" HorizontalContentAlignment="Stretch"
+                                                        Padding="12,10" Margin="0,0,0,6">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding Detail}" FontSize="12"
+                                                                   Foreground="{DynamicResource TextSecondary}"
+                                                                   TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+                                                        <TextBlock Text="{Binding Website}" FontSize="11"
+                                                                   Foreground="{DynamicResource TextSecondary}"
+                                                                   TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                            <TextBlock x:Name="SavedAccountsDivider" Text="Or find another school"
+                                       Visibility="Collapsed" FontWeight="SemiBold" Margin="0,0,0,10"/>
                             <Label Content="School" Target="{Binding ElementName=SchoolSearch}" Padding="0"/>
                             <TextBox x:Name="SchoolSearch" Margin="0,4,0,6" AutomationProperties.Name="School"
                                      AutomationProperties.HelpText="Search by school name, town, or website"
