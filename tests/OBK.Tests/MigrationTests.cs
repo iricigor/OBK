@@ -267,6 +267,32 @@ public sealed class MigrationTests : IDisposable
     }
 
     [Fact]
+    public void SettingsAccountActionsKeepOtherAccountsAndActiveAccount()
+    {
+        var store = Store;
+        store.SaveLogin("https://other-school.example", "second", "other-password", true, "Jan", "School B");
+        store.SaveLogin(Url, "u", "unused", false, "Anežka", "School A");
+
+        store.RenameAccount("https://other-school.example", "second", "  Honza ");
+        Assert.Equal("Honza", store.KnownLogins().Single(profile => profile.Username == "second").ChildName);
+        Assert.Equal("Honza", store.RememberedLogins().Single().ChildName);
+        Assert.Equal("u", store.LastAccount()!.Username);
+
+        store.RenameAccount(Url, "u", "");
+        Assert.Null(store.KnownLogins().Single(profile => profile.Username == "u").ChildName);
+        Assert.Null(store.LastAccount()!.ChildName);
+
+        store.RememberPassword(Url, "u", "new-password");
+        Assert.Equal("new-password", store.RememberedLogins().Single(profile => profile.Username == "u").Password);
+        Assert.Equal("u", store.LastAccount()!.Username);
+
+        store.ForgetPassword("https://other-school.example", "second");
+        Assert.Equal("u", Assert.Single(store.RememberedLogins()).Username);
+        Assert.Equal("Honza", store.KnownLogins().Single(profile => profile.Username == "second").ChildName);
+        Assert.Throws<ObkException>(() => store.RememberPassword("https://unknown.example", "x", "p"));
+    }
+
+    [Fact]
     public async Task EncryptedAttachmentsAreDeduplicatedReusedAndMarkedOnExport()
     {
         var store = Store;

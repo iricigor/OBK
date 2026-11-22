@@ -128,7 +128,36 @@
                         </TextBlock.Style>
                     </TextBlock>
                 </Button>
+                <Button x:Name="SettingsButton" DockPanel.Dock="Bottom" Command="{Binding OpenSettingsCommand}" Height="36" Padding="0" Margin="0,0,0,4"
+                        HorizontalContentAlignment="Stretch" ToolTip="Settings" AutomationProperties.Name="Settings">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource SubtleButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SettingsOpen}" Value="True"><Setter Property="Background" Value="{DynamicResource Selection}"/></DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Grid>
+                        <Border Width="3" Height="20" HorizontalAlignment="Left" Background="{DynamicResource Accent}" CornerRadius="1.5"
+                                Visibility="{Binding SettingsOpen, Converter={StaticResource VisibleIf}}"/>
+                        <Grid Margin="12,0,10,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE713;" FontSize="16" HorizontalAlignment="Left"/>
+                            <TextBlock Grid.Column="1" Text="Settings" VerticalAlignment="Center" Margin="8,0" FontSize="13.5"
+                                       Visibility="{Binding NavigationExpanded, Converter={StaticResource VisibleIf}}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Normal"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding SettingsOpen}" Value="True"><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Grid>
+                </Button>
+                <Border DockPanel.Dock="Bottom" Height="1" Background="{DynamicResource Stroke}" Margin="8,0,8,8"/>
                 <ListBox x:Name="FolderList" ItemsSource="{Binding Navigation}" SelectedItem="{Binding SelectedFolder}"
+                         PreviewMouseLeftButtonUp="FolderListClick"
                          AutomationProperties.Name="Folders">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem" BasedOn="{StaticResource SelectableRow}">
@@ -169,7 +198,8 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
             </DockPanel>
-            <Border Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
+            <Border Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8"
+                    Visibility="{Binding ShowMessages, Converter={StaticResource VisibleIf}}">
                 <DockPanel Margin="8">
                     <StackPanel DockPanel.Dock="Top" Margin="12,12,12,10">
                         <Grid>
@@ -328,8 +358,10 @@
                 </DockPanel>
             </Border>
             <GridSplitter Grid.Column="3" Width="6" HorizontalAlignment="Center" Background="Transparent" ResizeDirection="Columns"
-                          ResizeBehavior="PreviousAndNext" ShowsPreview="True" ToolTip="Resize message list" AutomationProperties.Name="Resize message list"/>
-            <Border Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
+                          ResizeBehavior="PreviousAndNext" ShowsPreview="True" ToolTip="Resize message list" AutomationProperties.Name="Resize message list"
+                          Visibility="{Binding ShowMessages, Converter={StaticResource VisibleIf}}"/>
+            <Border Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8"
+                    Visibility="{Binding ShowMessages, Converter={StaticResource VisibleIf}}">
                 <ScrollViewer x:Name="ReadingScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="24">
                     <StackPanel>
                         <TextBlock x:Name="Subject" Text="{Binding Subject}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
@@ -483,6 +515,180 @@
                     </StackPanel>
                 </ScrollViewer>
             </Border>
+            <ScrollViewer x:Name="SettingsPage" Grid.Column="2" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                          Visibility="{Binding SettingsOpen, Converter={StaticResource VisibleIf}}" AutomationProperties.Name="Settings">
+                <StackPanel Margin="20,4,20,24" MaxWidth="1000">
+                    <Button Style="{StaticResource SubtleButton}" Command="{Binding CloseSettingsCommand}" HorizontalAlignment="Left" Padding="6,4"
+                            ToolTip="Return to your messages" AutomationProperties.Name="Back to messages">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE72B;" FontSize="12" Foreground="{DynamicResource Accent}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Back to messages" FontSize="12.5" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold" Margin="6,6,0,18"/>
+
+                    <Expander x:Name="AppearanceSection" Style="{StaticResource SettingsExpander}" AutomationProperties.Name="Appearance">
+                        <Expander.Header>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE790;" FontSize="20" HorizontalAlignment="Left"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Appearance" FontSize="14"/>
+                                    <TextBlock Text="Theme and reading size" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Expander.Header>
+                        <StackPanel>
+                            <Grid Margin="72,14,20,14">
+                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Theme" FontSize="13.5"/>
+                                    <TextBlock Text="Choose how OBK looks" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button x:Name="LightThemeButton" Style="{StaticResource SegmentButton}" Command="{Binding SetThemeCommand}" CommandParameter="Light"
+                                            Tag="{Binding Theme.IsLight}" AutomationProperties.Name="Light theme">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Style="{StaticResource Icon}" Text="&#xE706;" FontSize="14" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Light" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="DarkThemeButton" Style="{StaticResource SegmentButton}" Command="{Binding SetThemeCommand}" CommandParameter="Dark"
+                                            Tag="{Binding Theme.IsDark}" AutomationProperties.Name="Dark theme">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Style="{StaticResource Icon}" Text="&#xE708;" FontSize="14" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Dark" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                            <Border Height="1" Background="{DynamicResource Stroke}" Margin="20,0"/>
+                            <Grid Margin="72,14,20,14" ToolTip="Reading size will be available in a later version." ToolTipService.ShowOnDisabled="True">
+                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Reading size" FontSize="13.5"/>
+                                    <TextBlock Text="Coming later" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" IsEnabled="False"
+                                            AutomationProperties.Name="Reading size, coming later">
+                                    <Button Style="{StaticResource SegmentButton}" Content="Small"/>
+                                    <Button Style="{StaticResource SegmentButton}" Content="Medium" Tag="True"/>
+                                    <Button Style="{StaticResource SegmentButton}" Content="Large"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander x:Name="AccountsSection" Style="{StaticResource SettingsExpander}" AutomationProperties.Name="Accounts">
+                        <Expander.Header>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE77B;" FontSize="20" HorizontalAlignment="Left"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Accounts" FontSize="14"/>
+                                    <TextBlock Text="Saved passwords and child names" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Expander.Header>
+                        <StackPanel>
+                            <TextBlock Text="No accounts yet. Use Add child in the sidebar to sign in." Margin="72,14,20,14" FontSize="12.5"
+                                       Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding Accounts.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <ItemsControl x:Name="SettingsAccounts" ItemsSource="{Binding Accounts}" AutomationProperties.Name="Saved accounts">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border x:Name="Row" BorderBrush="{DynamicResource Stroke}" BorderThickness="0,1,0,0" Margin="20,0" Padding="0,12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="52"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                <Border Width="32" Height="32" CornerRadius="16" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                    <Border.Background>
+                                                        <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
+                                                            <Binding Path="ColorKey"/>
+                                                            <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                        </MultiBinding>
+                                                    </Border.Background>
+                                                    <TextBlock Text="{Binding Initials}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <TextBlock.Foreground>
+                                                            <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                                                <Binding Path="ColorKey"/>
+                                                                <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Foreground>
+                                                    </TextBlock>
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                    <TextBlock Text="{Binding Label}" FontSize="13.5" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding SettingsDetail}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"
+                                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding SettingsDetail}"/>
+                                                </StackPanel>
+                                                <WrapPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                    <Button Content="Rename" Margin="6,2,0,2" MinWidth="88"
+                                                            Command="{Binding RenameAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                                            ToolTip="Change the child name shown in the sidebar" AutomationProperties.Name="{Binding Label, StringFormat=Rename {0}}"/>
+                                                    <Button Content="Change password" Margin="6,2,0,2" Visibility="{Binding PasswordSaved, Converter={StaticResource VisibleIf}}"
+                                                            Command="{Binding SetPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                                            ToolTip="Verify a new password with the school, then save it" AutomationProperties.Name="{Binding Label, StringFormat=Change password for {0}}"/>
+                                                    <Button Content="Clear password" Margin="6,2,0,2" Visibility="{Binding PasswordSaved, Converter={StaticResource VisibleIf}}"
+                                                            Command="{Binding ClearPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                                            ToolTip="Forget the saved password; offline messages are kept" AutomationProperties.Name="{Binding Label, StringFormat=Clear saved password for {0}}"/>
+                                                    <Button Content="Save password" Margin="6,2,0,2" Visibility="{Binding PasswordMissing, Converter={StaticResource VisibleIf}}"
+                                                            Command="{Binding SetPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                                            ToolTip="Verify the password with the school, then save it so Refresh can update this child" AutomationProperties.Name="{Binding Label, StringFormat=Save password for {0}}"/>
+                                                </WrapPanel>
+                                            </Grid>
+                                        </Border>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+                                                <Setter TargetName="Row" Property="BorderThickness" Value="0"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander x:Name="AboutSection" Style="{StaticResource SettingsExpander}" AutomationProperties.Name="About">
+                        <Expander.Header>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="20" HorizontalAlignment="Left"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="About" FontSize="14"/>
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"
+                                               Text="{Binding VersionText, RelativeSource={RelativeSource AncestorType=Window}, StringFormat=Version {0} and updates}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Expander.Header>
+                        <StackPanel>
+                            <Grid Margin="72,14,20,14">
+                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="Installed version" FontSize="13.5" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding VersionText, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="13.5"
+                                           Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                            </Grid>
+                            <Border Height="1" Background="{DynamicResource Stroke}" Margin="20,0"/>
+                            <Grid Margin="72,14,20,14">
+                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="Updates" FontSize="13.5"/>
+                                    <TextBlock x:Name="SettingsUpdateText" Text="{Binding Updates.Text, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="Check now" MinWidth="104" VerticalAlignment="Center"
+                                        Command="{Binding Updates.CheckNowCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        ToolTip="Check GitHub for a newer OBK version" ToolTipService.ShowOnDisabled="True"/>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
         <Border Grid.Row="3" BorderBrush="{DynamicResource Stroke}" BorderThickness="0,1,0,0" Padding="20,0">
             <Grid>

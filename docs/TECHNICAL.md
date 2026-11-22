@@ -105,7 +105,8 @@ background and verified against the release's `SHA256SUMS.txt`; a failed
 check or download shows a message and is retried at the next interval. Once ready,
 **Update and restart** installs it silently and reopens OBK. Its dropdown offers
 **Ignore during this session** and **Install when I exit**. Clicking **You're on the
-latest version** (or a check error) checks again immediately. There is no setting to
+latest version** (or a check error), or **Settings > About > Check now**, checks again
+immediately. There is no setting to
 disable checks yet; only HTTPS assets from this repository's releases are used.
 
 ## Application icon
@@ -336,9 +337,25 @@ The Sent folder is for reading previously sent messages, not composing or
 sending new ones.
 
 The sun/moon button switches **Light** and **Dark** immediately, including
-message text, login controls, menus, and window chrome. The choice is saved
+message text, login controls, menus, and window chrome. **Settings > Appearance**
+offers the same choice; both stay in sync. The choice is saved
 per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
 startup. It contains only the theme, not credentials or archive data.
+
+**Settings**, at the bottom of the sidebar, replaces the message list and
+reading pane with Windows 11-style sections that start collapsed:
+
+- **Appearance**: Light or Dark theme. **Reading size** is shown but disabled
+  until a later version.
+- **Accounts**: each known child or school, with **Rename** for the optional
+  child name (empty shows the school name), and **Save password**, or
+  **Change password** and **Clear password** when one is saved. Saving or
+  changing a password signs in to the school once to verify it; nothing is
+  saved if sign-in fails. Clearing keeps the account and its offline archive.
+  None of these actions change the active child.
+- **About**: installed version, update status, and **Check now**.
+
+**Back to messages**, or choosing a folder or child, returns to the messages.
 The title bar retains native dragging, resizing, caption controls, and Windows
 11 maximize-button snap layouts. The active child is highlighted in the left column. **Add child** opens the previously used account picker directly.
 Closing the picker returns to the current school unchanged; the active account

@@ -28,6 +28,8 @@ your Windows PC so you can read, search, and organize them offline.
 - **Clickable links** in messages, and attachments that open with one click.
 - **Light and dark themes**, a resizable sidebar that can shrink to icons, and
   **automatic updates**.
+- **Settings** at the bottom of the sidebar – choose the theme, rename
+  children, save, change, or clear saved passwords, and check for updates.
 
 OBK only reads messages. It cannot send messages, replies, excuses, or
 confirmations, and it never marks messages as read on the server.
@@ -55,7 +57,8 @@ OBK downloads messages for the current school year (September–August).
 
 ## Privacy
 
-- Your password is stored only if you choose **Remember credentials**, and is
+- Your password is stored only if you choose **Remember credentials** (or
+  **Save password** in Settings, after OBK verifies it with your school), and is
   encrypted with Windows for your user account, like your messages.
 - OBK talks only to your school's Bakaláři server and to GitHub for updates;
   there is no OBK cloud service.

@@ -129,6 +129,44 @@ public partial class App : Application
                         groupHeader.IsChecked = true;
                         window.ViewModel.Grouping = MessageGrouping.None;
                         await window.ViewModel.FolderReady;
+                        window.Width = 1280;
+                        window.Height = 760;
+                        window.ViewModel.OpenSettingsCommand.Execute(null);
+                        window.UpdateLayout();
+                        if (window.SettingsPage.Visibility != Visibility.Visible || window.Messages.IsVisible ||
+                            window.AppearanceSection.IsExpanded || window.AccountsSection.IsExpanded || window.AboutSection.IsExpanded)
+                            throw new ObkException("Settings did not open as a page with every section collapsed.");
+                        Capture(window, Path.ChangeExtension(resultPath, ".settings.png"));
+                        window.AppearanceSection.IsExpanded = true;
+                        window.ViewModel.SetThemeCommand.Execute("Light");
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        if (window.ViewModel.Theme.IsDark || window.LightThemeButton.Tag is not true)
+                            throw new ObkException("Choosing Light in Settings did not change the theme.");
+                        window.UpdateLayout();
+                        Capture(window, Path.ChangeExtension(resultPath, ".settings-appearance.png"));
+                        var settingsRow = window.ViewModel.Accounts.Single(a => a.Login.Username == "installation-check");
+                        if (!settingsRow.PasswordSaved || window.ViewModel.Accounts.Single(a => a.Login.Username == "previous-account").PasswordSaved)
+                            throw new ObkException("Settings did not report which accounts have saved passwords.");
+                        await window.ViewModel.RenameAccountAsync(settingsRow, "Renamed pupil");
+                        if (window.ViewModel.AccountLabel != "Renamed pupil" || store.LastAccount()!.ChildName != "Renamed pupil")
+                            throw new ObkException("Renaming the active child in Settings did not update and persist its name.");
+                        await window.ViewModel.RenameAccountAsync(
+                            window.ViewModel.Accounts.Single(a => a.Login.Username == "installation-check"), "Installation check pupil");
+                        window.AppearanceSection.IsExpanded = false;
+                        window.AccountsSection.IsExpanded = true;
+                        window.UpdateLayout();
+                        Capture(window, Path.ChangeExtension(resultPath, ".settings-accounts.png"));
+                        window.AccountsSection.IsExpanded = false;
+                        window.AboutSection.IsExpanded = true;
+                        window.UpdateLayout();
+                        Capture(window, Path.ChangeExtension(resultPath, ".settings-about.png"));
+                        window.ViewModel.CloseSettingsCommand.Execute(null);
+                        window.UpdateLayout();
+                        if (window.SettingsPage.IsVisible || !window.Messages.IsVisible)
+                            throw new ObkException("Back to messages did not restore the message workspace.");
+                        window.Width = 880;
+                        window.Height = 620;
+                        window.UpdateLayout();
                         string? switchUsername = null;
                         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
                         {
