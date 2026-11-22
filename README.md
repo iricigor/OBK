@@ -263,7 +263,7 @@ town, or school-specific URL text. Once fewer than seven schools match, selectin
 one confirms the school in a summary card. Users can also enter the school's
 website manually. Credentials remain hidden until the school is confirmed.
 The popup then asks for username, password, and an optional child name. The
-child name is shown in the header instead of the school name when supplied.
+child name is shown in the left column instead of the school name when supplied.
 Changing the selected school clears the account-specific credential and child
 fields so they cannot be reused unintentionally.
 **Remember credentials on this Windows account** is off by default. Each
@@ -319,8 +319,7 @@ message text, login controls, menus, and window chrome. The choice is saved
 per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
 startup. It contains only the theme, not credentials or archive data.
 The title bar retains native dragging, resizing, caption controls, and Windows
-11 maximize-button snap layouts. The active child or school is shown in the
-header. **Add child** opens the previously used account picker directly.
+11 maximize-button snap layouts. The active child is highlighted in the left column. **Add child** opens the previously used account picker directly.
 Closing the picker returns to the current school unchanged; the active account
 changes only after **Sign in and sync** or **Read offline**.
 
