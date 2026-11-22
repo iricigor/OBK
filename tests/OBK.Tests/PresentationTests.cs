@@ -180,6 +180,15 @@ public sealed class PresentationTests
                     await WaitForFolderAsync();
                     Assert.Equal("second", vm.SelectedMessage?.Message.Id);
 
+                    await Task.Run(() => store.SaveAccount("https://school.example", "other"));
+                    await vm.ActivateAccountAsync("https://school.example", "other");
+                    var accountOrder = vm.Accounts.Select(a => a.Login.Username).ToArray();
+                    await Task.Run(() => store.SaveAccount("https://school.example", "test"));
+                    await vm.ActivateAccountAsync("https://school.example", "test");
+                    await WaitForFolderAsync();
+                    Assert.Equal(accountOrder, vm.Accounts.Select(a => a.Login.Username));
+                    Assert.Equal("test", vm.Accounts.Single(a => a.IsCurrent).Login.Username);
+
                     var surface = new Border();
                     var text = new TextBlock();
                     surface.SetResourceReference(Border.BackgroundProperty, "Surface");

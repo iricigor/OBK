@@ -265,8 +265,11 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             var known = await Task.Run(store.KnownLogins);
+            var comparer = StringComparer.Create(System.Globalization.CultureInfo.CurrentCulture, true);
             Accounts = known.Select(login => new AccountRow(login with { Password = null },
-                Account is { } current && current.Url == login.Url && current.Username == login.Username)).ToArray();
+                    Account is { } current && current.Url == login.Url && current.Username == login.Username))
+                .OrderBy(row => row.Label, comparer).ThenBy(row => row.Login.Url, StringComparer.Ordinal)
+                .ThenBy(row => row.Login.Username, StringComparer.Ordinal).ToArray();
         }
         catch (ObkException error) { ReportError(error.Message); }
     }
