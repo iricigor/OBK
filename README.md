@@ -13,9 +13,11 @@ your Windows PC so you can read, search, and organize them offline.
 
 <sub>Screenshot uses fictional sample data.</sub>
 
-**Privacy and security:** OBK downloads messages directly from your school's
-Bakaláři server over HTTPS; there is no OBK cloud service, and GitHub is contacted
-for app updates. Cached messages, attachments, and optionally saved passwords
+**Privacy and security:** Your Bakaláři login details, messages, and attachments
+travel **only between your PC and your school's Bakaláři server**, over HTTPS.
+OBK does not send this data to its developer or GitHub, and there is no OBK
+cloud service. Separate connections to GitHub are used for app updates, not
+for your school data. Cached messages, attachments, and optionally saved passwords
 are encrypted for your Windows account. Some database metadata, including your
 school address and username, is not encrypted, and this protection does not
 stop software running under your Windows account. Opening or exporting an
