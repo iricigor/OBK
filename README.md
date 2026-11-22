@@ -7,9 +7,12 @@ Potential future work and its prerequisites are recorded in
 ## School directory maintenance
 
 `data\schools.json.gz` is a gzip-compressed UTF-8 JSON snapshot of the public
-[Bakaláři directory](https://sluzby.bakalari.cz/api/v1/municipality). It is
-intentionally unused by the application and is not included in the installer.
-There are no user-facing controls, startup downloads, or scheduled refreshes.
+[Bakaláři directory](https://sluzby.bakalari.cz/api/v1/municipality). The Windows
+application embeds the snapshot and uses it for offline school search in the
+sign-in window; choosing a result populates the HTTPS base URL. Search matches
+school names, town associations, and school-specific URL text. Results appear
+only when fewer than seven schools match, and manual URL entry remains
+available. There are no startup downloads or scheduled refreshes.
 
 The decoded format contains `formatVersion` (currently 1), `source`, `fetchedAt`
 (UTC), `municipalityCount`, `expectedSchoolCount` (named groups only),
@@ -220,11 +223,26 @@ dotnet run --project .\src\OBK.App\OBK.App.csproj
 ```
 
 The installed application does not require any development tools.
-At startup, a login popup asks for the school HTTPS base URL, username, and
-password. **Remember credentials on this Windows account** is off by default.
-When enabled, the next login popup is prefilled; it does not sign in silently.
-Turning the option off or selecting **Forget credentials** removes the saved
-credentials without deleting offline messages.
+At startup, a login popup searches the bundled school directory by school name,
+town, or school-specific URL text. Once fewer than seven schools match, selecting
+one confirms the school in a summary card. Users can also enter the school's
+website manually. Credentials remain hidden until the school is confirmed.
+The popup then asks for username, password, and an optional child name. The
+child name is shown near the OBK title instead of the school name when supplied.
+Changing the selected school clears the account-specific credential and child
+fields so they cannot be reused unintentionally.
+**Remember credentials on this Windows account** is off by default. Each
+remembered school and username is saved as its own encrypted profile. Accounts
+used without remembering the password are also retained in encrypted account
+history, so they can be recognized and selected later. The
+initial login and **Switch school** flow list previously used accounts;
+the list collapses while a school search is active, so up to six matches fit
+without scrolling. Choosing one restores its username and optional child name;
+passwords are filled only for explicitly remembered profiles. Choosing or
+searching for a different school starts with blank account fields.
+Nothing signs in silently.
+The action footer stays visible while the form scrolls, with **Read offline**
+separate from **Sign in and sync**.
 
 The Fluent workspace has three columns: school/folder navigation, a virtualized
 message list, and a reading pane. **Inbox**, **Sent**, and **Noticeboard** show
@@ -245,9 +263,13 @@ message text, login controls, menus, and window chrome. The choice is saved
 per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
 startup. It contains only the theme, not credentials or archive data.
 The title bar retains native dragging, resizing, caption controls, and Windows
-11 maximize-button snap layouts. **Forget credentials** requires confirmation;
-it does not remove the offline archive. Sync progress and errors appear in the
-header/footer without blocking offline reading.
+11 maximize-button snap layouts. The active child or school is shown beside the
+OBK title. **Switch school** opens the previously used account picker directly.
+Closing the picker returns to the current school unchanged; the active account
+changes only after **Sign in and sync** or **Read offline**. Saved credential
+profiles and account history remain available; no offline archive is removed.
+Sync progress and errors appear in the header/footer without blocking offline
+reading.
 
 The first synchronization fetches every page in all three folders for the
 current school year: September 1 through August 31, based on the device's current
@@ -256,13 +278,14 @@ messages and query each folder from its newest cached sent timestamp, inclusivel
 This small overlap catches messages sharing the same timestamp and merges them
 by ID rather than duplicating them. Empty folders still query the whole year.
 
-**Full school-year refresh** in the login popup fetches the complete year again.
-Use it to discover backdated messages, older edits, changes to read/hidden
-status, and messages removed from the server: there is no documented change-feed
-API, so incremental date filtering cannot discover all such changes. Both modes
-filter returned messages to the current school year and paginate to an empty
-page even if the server caps page size. Hidden messages are excluded. Repeated
-pages and failed requests are reported, not treated as complete synchronization.
+Incremental sync cannot discover backdated messages, older edits, changes to
+read/hidden status, or messages removed from the server: there is no documented
+change-feed API. Sync filters returned messages to the current school year and
+paginates to an empty page even if the server caps page size. Hidden messages
+are excluded. Repeated pages and failed requests are reported, not treated as
+complete synchronization. Each network request that receives no response within
+10 seconds, or fails to connect, is retried once; HTTP errors such as a rejected
+sign-in are reported immediately without a retry.
 
 Complete synchronizations are cached in `%LOCALAPPDATA%\OBK\obk.sqlite3`,
 separately for each school URL, username, and school year. An interrupted or

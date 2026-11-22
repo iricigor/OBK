@@ -60,7 +60,7 @@ public partial class MainWindow : Window
     private async void WindowLoaded(object sender, RoutedEventArgs e)
     {
         await InitializeAsync();
-        if (showLogin) OpenLoginDialog();
+        if (showLogin) OpenLoginDialog(true);
     }
 
     private void WindowClosing(object? sender, CancelEventArgs e)
@@ -90,34 +90,41 @@ public partial class MainWindow : Window
         WindowRoot.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
     }
 
-    private async void OpenLoginDialog()
+    private async void OpenLoginDialog(bool showSavedAccounts = false)
     {
         if (openingLogin || !ViewModel.CanChangeAccount) return;
         openingLogin = true;
         try
         {
-            Login? initial = Account;
+            Login? initial = showSavedAccounts ? null : Account;
             var remembered = false;
             var error = "";
             try
             {
-                var saved = await Task.Run(Store.RememberedLogin);
-                if (saved is not null) { initial = saved; remembered = true; }
-                else initial ??= await Task.Run(Store.LastAccount);
+                if (!showSavedAccounts)
+                {
+                    var saved = initial is null ? null : await Task.Run(() =>
+                        Store.RememberedLogins().LastOrDefault(profile =>
+                            profile.Url == initial.Url && profile.Username == initial.Username));
+                    if (saved is not null) { initial = saved; remembered = true; }
+                    else initial ??= await Task.Run(Store.LastAccount);
+                }
             }
             catch (ObkException problem) { error = problem.Message; }
-            new LoginWindow(this, initial, remembered, error).ShowDialog();
+            new LoginWindow(this, initial, remembered, error, showSavedAccounts).ShowDialog();
         }
         finally { openingLogin = false; }
     }
 
-    public Task ActivateAccountAsync(string url, string username) => ViewModel.ActivateAccountAsync(url, username);
+    public Task ActivateAccountAsync(string url, string username, string? childName = null, string? schoolName = null) =>
+        ViewModel.ActivateAccountAsync(url, username, childName: childName, schoolName: schoolName);
     public void OfflineStatus() => ViewModel.OfflineStatus();
-    public async Task SynchronizeAsync(LoginWindow login, string url, string username, string password, bool remember, bool fullRefresh)
+    public async Task SynchronizeAsync(LoginWindow login, string url, string username, string password, bool remember,
+        bool fullRefresh, string? childName, string? schoolName)
     {
         try
         {
-            await ViewModel.SynchronizeAsync(url, username, password, remember, fullRefresh,
+            await ViewModel.SynchronizeAsync(url, username, password, remember, fullRefresh, childName, schoolName,
                 new Progress<string>(text => login.StatusText = text));
             login.Complete();
         }

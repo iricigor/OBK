@@ -27,6 +27,28 @@ public sealed class MigrationTests : IDisposable
     [InlineData("2027-01-01", 2026)]
     public void SchoolYearBoundary(string today, int expected) => Assert.Equal(expected, SchoolYear.Current(DateTime.Parse(today)).StartYear);
 
+    [Fact]
+    public void SchoolDirectorySearchMatchesNamesTownsAndDistinctUrlParts()
+    {
+        var schools = Enumerable.Range(1, 8).Select(index => new SchoolDirectoryEntry
+        {
+            Id = $"S{index}",
+            Name = $"Základní škola {index} Bystřice",
+            SchoolUrl = $"https://zs{index}-bystřice.bakalari.cz",
+            UrlValid = true,
+            MunicipalityMatches = [index == 1 ? "Malá Bystřice" : $"Town {index}"]
+        });
+        var directory = new SchoolDirectory(schools);
+
+        var byName = directory.Search("bystrice");
+        Assert.Equal(8, byName.Total);
+        Assert.Equal(6, byName.Visible.Count);
+        Assert.Single(directory.Search("malabyst").Visible);
+        Assert.Single(directory.Search("zs7-bystřice").Visible);
+        Assert.Equal(0, directory.Search("https://www.bakalari.cz").Total);
+        Assert.Equal("S7", directory.FindByUrl("https://zs7-bystřice.bakalari.cz/")?.Id);
+    }
+
     [Theory]
     [InlineData("http://school.example")]
     [InlineData("https://user:pass@school.example")]
@@ -48,6 +70,26 @@ public sealed class MigrationTests : IDisposable
         Assert.Contains("client_id=ANDR", handler.Requests[0].Body);
         Assert.Contains("password=p%26ss", handler.Requests[0].Body);
         Assert.Null(handler.Requests[0].Authorization);
+    }
+
+    [Fact]
+    public async Task TransientNetworkFailuresAreRetriedOnceWithTheSameRequest()
+    {
+        var handler = new FlakyHandler(1, () => Json(new { access_token = "test-token" }));
+        using (var client = new KomensClient(Url, handler))
+            Assert.Equal("test-token", await client.SignInAsync("user", "p&ss"));
+        Assert.Equal(2, handler.Bodies.Count);
+        Assert.All(handler.Bodies, body => Assert.Contains("password=p%26ss", body));
+
+        var offline = new FlakyHandler(2, () => Json(new { access_token = "unused" }));
+        using (var client = new KomensClient(Url, offline))
+            Assert.Contains("Connection failed", (await Assert.ThrowsAsync<ObkException>(() => client.SignInAsync("user", "pass"))).Message);
+        Assert.Equal(2, offline.Bodies.Count);
+
+        var slow = new FlakyHandler(0, () => Json(new { }), hang: true);
+        using (var client = new KomensClient(Url, slow, TimeSpan.FromMilliseconds(100)))
+            Assert.Contains("did not respond", (await Assert.ThrowsAsync<ObkException>(() => client.SchoolNameAsync("token"))).Message);
+        Assert.Equal(2, slow.Bodies.Count);
     }
 
     [Theory]
@@ -193,9 +235,20 @@ public sealed class MigrationTests : IDisposable
     public void CredentialOptInAccountIsolationAndNoPlaintextFallback()
     {
         var store = Store;
-        store.SaveLogin(Url, "u", "private-password", false);
+        store.SaveLogin(Url, "u", "private-password", false, "Anežka", "School A");
         Assert.Null(store.RememberedLogin());
-        store.SaveLogin(Url, "u", "private-password", true);
+        Assert.Equal("Anežka", Assert.Single(store.KnownLogins()).ChildName);
+        Assert.Null(Assert.Single(store.KnownLogins()).Password);
+        store.SaveLogin(Url, "u", "private-password", true, "Anežka", "School A");
+        Assert.Equal("Anežka", store.RememberedLogin()!.ChildName);
+        Assert.Equal("School A", store.LastAccount()!.SchoolName);
+        store.SaveLogin("https://other-school.example", "second", "other-password", true, "Jan", "School B");
+        Assert.Equal(2, store.RememberedLogins().Count);
+        Assert.Equal(2, store.KnownLogins().Count);
+        store.SaveLogin(Url, "u", "private-password", false);
+        Assert.Single(store.RememberedLogins());
+        Assert.Equal("second", store.RememberedLogin()!.Username);
+        store.SaveLogin(Url, "u", "private-password", true, "Anežka", "School A");
         var folders = Folders.Empty();
         folders["received"].Add(Message("private"));
         store.SaveArchive(Url, "u", year, "School", folders);
@@ -207,6 +260,7 @@ public sealed class MigrationTests : IDisposable
         store.ForgetCredentials();
         Assert.Null(store.RememberedLogin());
         Assert.NotNull(store.LoadArchive(Url, "u", year));
+        Assert.Contains(store.KnownLogins(), profile => profile.Url == Url && profile.Username == "u");
         Assert.Throws<ObkException>(() => LocalStore.Decode<Login>(Encoding.UTF8.GetBytes("""{"password":"plaintext"}""")));
     }
 
@@ -306,6 +360,18 @@ internal sealed class FakeHandler(params HttpResponseMessage[] responses) : Http
             request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken),
             request.Headers.Authorization?.ToString()));
         return pending.Dequeue();
+    }
+}
+
+internal sealed class FlakyHandler(int failures, Func<HttpResponseMessage> success, bool hang = false) : HttpMessageHandler
+{
+    public List<string> Bodies { get; } = [];
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Bodies.Add(request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken));
+        if (hang) await Task.Delay(Timeout.Infinite, cancellationToken);
+        if (Bodies.Count <= failures) throw new HttpRequestException("offline");
+        return success();
     }
 }
 

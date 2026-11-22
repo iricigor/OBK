@@ -57,7 +57,12 @@ public partial class App : Application
                 SentDate = year.Start.AddDays(1).ToString("O"), Read = true,
                 Sender = JsonSerializer.SerializeToElement(new { Name = "Test School Office" }), Attachments = []
             });
-            store.SaveLogin("https://school.example", "installation-check", "", false);
+            store.SaveLogin("https://school.example", "installation-check", "", true,
+                "Installation check pupil", "Installation check school");
+            store.SaveLogin("https://school-previous.example", "previous-account", "unused", false,
+                "Previous pupil", "Previous school");
+            store.SaveLogin("https://school.example", "installation-check", "", true,
+                "Installation check pupil", "Installation check school");
             store.SaveArchive("https://school.example", "installation-check", year, "Installation check school", folders);
             await Task.Run(async () =>
             {
@@ -77,6 +82,8 @@ public partial class App : Application
                 {
                     if (!window.IsVisible || window.ActualWidth <= 0) throw new ObkException("The offline window did not start.");
                     await window.InitializeAsync();
+                    if (window.ViewModel.AccountLabel != "Installation check pupil")
+                        throw new ObkException("The optional child name was not restored for the active account.");
                     await window.VerifyOfflineReaderAsync();
                     window.UpdateLayout();
                     if (resultPath is not null)
@@ -94,11 +101,71 @@ public partial class App : Application
                         window.Height = 620;
                         window.UpdateLayout();
                         Capture(window, Path.ChangeExtension(resultPath, ".small.png"));
-                        var login = new LoginWindow(window, window.Account, false, "");
+                        string? switchUsername = null;
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                        {
+                            var picker = window.OwnedWindows.OfType<LoginWindow>().Single();
+                            switchUsername = picker.Username.Text;
+                            picker.Close();
+                        }));
+                        window.ViewModel.SwitchSchoolCommand.Execute(null);
+                        if (switchUsername != "" || window.Account?.Username != "installation-check")
+                            throw new ObkException("Cancelling Switch school did not return to the unchanged current account.");
+                        var login = new LoginWindow(window, null, false, "", showSavedAccounts: true);
                         login.Show();
+                        await login.DirectoryReady;
+                        if (login.AvailableSchoolCount < 1000)
+                            throw new ObkException("The bundled school directory was not loaded by the sign-in window.");
+                        if (login.RememberedProfileCount != 2 || login.SavedAccountsPanel.Visibility != Visibility.Visible)
+                            throw new ObkException("Previously used accounts were not offered during initial sign-in.");
+                        login.UpdateLayout();
+                        Capture(login, Path.ChangeExtension(resultPath, ".login-accounts.png"));
+                        login.SchoolSearch.Text = "bit";
+                        await Dispatcher.Yield(DispatcherPriority.Input);
+                        login.UpdateLayout();
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        if (login.SchoolMatches.Items.Count != 6 || login.SavedAccountsPanel.Visibility == Visibility.Visible)
+                            throw new ObkException("Searching did not show six compact matches in place of saved accounts.");
+                        if (SystemParameters.WorkArea.Height >= 760 &&
+                            login.ContentScroll.ComputedVerticalScrollBarVisibility == Visibility.Visible)
+                            throw new ObkException("Six school matches required a scrollbar in the sign-in window.");
+                        Capture(login, Path.ChangeExtension(resultPath, ".login-six.png"));
+                        login.SchoolSearch.Text = "zssteken";
+                        await Dispatcher.Yield(DispatcherPriority.Input);
+                        if (login.SchoolMatches.Visibility != Visibility.Visible ||
+                            login.SchoolMatches.Items.Count != 1)
+                            throw new ObkException("School search did not narrow the visible list to the matching school.");
+                        login.UpdateLayout();
+                        Capture(login, Path.ChangeExtension(resultPath, ".login-search.png"));
+                        login.SchoolMatches.SelectedIndex = 0;
+                        login.CommitSchoolSelection();
+                        if (login.SelectedSchoolPanel.Visibility != Visibility.Visible ||
+                            login.CredentialsPanel.Visibility != Visibility.Visible ||
+                            !login.SchoolUrl.Text.Contains("zssteken", StringComparison.OrdinalIgnoreCase))
+                            throw new ObkException("Selecting a school search result did not populate its URL.");
+                        login.Username.Text = "school-account";
+                        login.Password.Password = "secret";
+                        login.ChildName.Text = "Child";
+                        login.Remember.IsChecked = true;
                         login.UpdateLayout();
                         Capture(login, Path.ChangeExtension(resultPath, ".login.png"));
-                        login.Complete();
+                        login.ChangeSchoolButton.RaiseEvent(
+                            new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                        await Dispatcher.Yield(DispatcherPriority.Input);
+                        if (login.Username.Text.Length != 0 || login.Password.Password.Length != 0 ||
+                            login.ChildName.Text.Length != 0 || login.Remember.IsChecked == true)
+                            throw new ObkException("Changing schools did not clear the previous account fields.");
+                        login.UseRememberedProfile(1);
+                        if (login.Username.Text != "installation-check" ||
+                            login.ChildName.Text != "Installation check pupil" || login.Remember.IsChecked != true)
+                            throw new ObkException("Selecting a remembered account did not restore its profile.");
+                        login.Remember.IsChecked = false;
+                        for (var wait = 0; wait < 100 && !login.Remember.IsEnabled; wait++) await Task.Delay(50);
+                        if (store.RememberedLogins().Any(profile => profile.Username == "installation-check"))
+                            throw new ObkException("Unchecking Remember did not forget the saved password.");
+                        login.Close();
+                        if (store.LastAccount()!.Username != "installation-check")
+                            throw new ObkException("Closing the sign-in window changed the active offline account.");
                     }
                     if (resultPath is not null) File.WriteAllText(resultPath, "{\"ok\":true}");
                 }

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace OBK.Core;
 
-public sealed class ObkException(string message) : Exception(message);
+public sealed class ObkException(string message, Exception? innerException = null) : Exception(message, innerException);
 
 public readonly record struct SchoolYear(int StartYear)
 {
@@ -98,7 +98,9 @@ public static class FileNames
 public sealed record Login(
     [property: JsonPropertyName("url")] string Url,
     [property: JsonPropertyName("username")] string Username,
-    [property: JsonPropertyName("password")] string? Password = null);
+    [property: JsonPropertyName("password")] string? Password = null,
+    [property: JsonPropertyName("childName")] string? ChildName = null,
+    [property: JsonPropertyName("schoolName")] string? SchoolName = null);
 
 public sealed record AttachmentInfo(
     [property: JsonPropertyName("name"), JsonRequired] string Name,

@@ -60,7 +60,7 @@ public sealed class PresentationTests
                     });
                     var theme = new ThemeManager(Path.Combine(directory, "appearance.json"));
                     string? exported = null;
-                    var vm = new MainViewModel(store, theme, () => { },
+                    var vm = new MainViewModel(store, theme, _ => { },
                         (row, action) => { exported = row.Attachment.Identifier + ":" + action; return Task.CompletedTask; },
                         _ => Task.CompletedTask);
                     async Task WaitForFolderAsync()
@@ -73,6 +73,14 @@ public sealed class PresentationTests
                     await WaitForFolderAsync();
                     Assert.Equal(2, vm.Messages.Count);
                     Assert.Equal("second", vm.SelectedMessage?.Message.Id);
+                    await vm.ActivateAccountAsync("https://school.example", "test",
+                        childName: "Anežka", schoolName: "Selected school");
+                    await WaitForFolderAsync();
+                    Assert.Equal("Anežka", vm.AccountLabel);
+                    Assert.Contains("Anežka", vm.WindowTitle);
+                    await vm.ActivateAccountAsync("https://school.example", "test");
+                    await WaitForFolderAsync();
+                    Assert.Equal("Test school", vm.AccountLabel);
                     vm.SelectedMessage = vm.Messages[0];
                     await vm.MessageReady;
                     Assert.Equal(3, vm.VisibleAttachments.Count);
