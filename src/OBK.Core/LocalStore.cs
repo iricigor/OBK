@@ -185,6 +185,76 @@ public sealed class LocalStore
             .Where(profile => !SameAccount(profile, KomensClient.NormalizeUrl(url), username))
             .ToArray());
 
+    /// <summary>Changes the optional child name everywhere this account's label is stored.</summary>
+    public void RenameAccount(string url, string username, string? childName)
+    {
+        url = KomensClient.NormalizeUrl(url);
+        childName = OptionalLabel(childName);
+        var known = KnownLogins();
+        if (!known.Any(profile => SameAccount(profile, url, username)))
+            throw new ObkException("This account is no longer saved.");
+        Login Renamed(Login profile) => SameAccount(profile, url, username) ? profile with { ChildName = childName } : profile;
+        var history = Encode(known.Select(profile => Renamed(profile) with { Password = null }).ToList());
+        var remembered = Encode(RememberedLogins().Select(Renamed).ToList());
+        var last = LastAccount() is { } account && SameAccount(account, url, username) ? Encode(Renamed(account)) : null;
+        Access(connection =>
+        {
+            using var transaction = connection.BeginTransaction();
+            using var savedHistory = Command(connection,
+                "INSERT OR REPLACE INTO settings VALUES ('account_history', $value)", transaction, ("$value", history));
+            savedHistory.ExecuteNonQuery();
+            using var saved = Command(connection,
+                "INSERT OR REPLACE INTO settings VALUES ('remembered_logins', $value)", transaction, ("$value", remembered));
+            saved.ExecuteNonQuery();
+            using var legacy = Command(connection,
+                "DELETE FROM settings WHERE name = 'remembered_login'", transaction);
+            legacy.ExecuteNonQuery();
+            if (last is not null)
+            {
+                using var current = Command(connection,
+                    "INSERT OR REPLACE INTO settings VALUES ('last_account', $value)", transaction, ("$value", last));
+                current.ExecuteNonQuery();
+            }
+            transaction.Commit();
+            return true;
+        });
+    }
+
+    /// <summary>Remembers a password for a known account without changing the active account.</summary>
+    public void RememberPassword(string url, string username, string password)
+    {
+        url = KomensClient.NormalizeUrl(url);
+        var known = KnownLogins().FirstOrDefault(profile => SameAccount(profile, url, username)) ??
+            throw new ObkException("This account is no longer saved.");
+        var remembered = RememberedLogins().Where(profile => !SameAccount(profile, url, username)).ToList();
+        remembered.Add(known with { Password = password });
+        SaveRememberedLogins(remembered);
+    }
+
+    /// <summary>Forgets one saved password while keeping the account, its names, and its archive.</summary>
+    public void ForgetPassword(string url, string username)
+    {
+        url = KomensClient.NormalizeUrl(url);
+        var known = KnownLogins();
+        var history = Encode(known.Select(profile => profile with { Password = null }).ToList());
+        var remembered = Encode(RememberedLogins().Where(profile => !SameAccount(profile, url, username)).ToList());
+        Access(connection =>
+        {
+            using var transaction = connection.BeginTransaction();
+            using var savedHistory = Command(connection,
+                "INSERT OR REPLACE INTO settings VALUES ('account_history', $value)", transaction, ("$value", history));
+            savedHistory.ExecuteNonQuery();
+            using var saved = Command(connection,
+                "INSERT OR REPLACE INTO settings VALUES ('remembered_logins', $value)", transaction, ("$value", remembered));
+            saved.ExecuteNonQuery();
+            using var legacy = Command(connection,
+                "DELETE FROM settings WHERE name = 'remembered_login'", transaction);
+            legacy.ExecuteNonQuery();
+            transaction.Commit();
+            return true;
+        });
+    }
+
     public void SaveAccount(string url, string username, string? childName = null, string? schoolName = null)
     {
         url = KomensClient.NormalizeUrl(url);

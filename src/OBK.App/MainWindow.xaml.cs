@@ -21,6 +21,10 @@ public partial class MainWindow : Window
     public ICommand MinimizeCommand { get; }
     public ICommand MaximizeCommand { get; }
     public ICommand CloseCommand { get; }
+    public ICommand RenameAccountCommand { get; }
+    public ICommand SetPasswordCommand { get; }
+    public ICommand ClearPasswordCommand { get; }
+    public string VersionText { get; } = UpdateService.Display(UpdateService.InstalledVersion);
     private readonly bool showLogin;
     private Task? initialization;
     private Point dragOrigin;
@@ -41,6 +45,12 @@ public partial class MainWindow : Window
         CloseCommand = new RelayCommand(_ => Close());
         var theme = new ThemeManager(Path.Combine(Path.GetDirectoryName(store.Path)!, "appearance.json"));
         ViewModel = new MainViewModel(store, theme, OpenLoginDialog, ExportAsync, SaveAllAsync);
+        RenameAccountCommand = new RelayCommand(p => { if (p is AccountRow row) RenameAccount(row); },
+            p => p is AccountRow && ViewModel.CanChangeAccount);
+        SetPasswordCommand = new RelayCommand(p => { if (p is AccountRow row) SetPassword(row); },
+            p => p is AccountRow && ViewModel.CanChangeAccount);
+        ClearPasswordCommand = new AsyncCommand(p => p is AccountRow row ? ViewModel.ForgetPasswordAsync(row) : Task.CompletedTask,
+            message => ViewModel.ReportError(message), p => p is AccountRow && ViewModel.CanChangeAccount);
         Updates = new UpdateManager(new UpdateService(Path.Combine(Path.GetDirectoryName(store.Path)!, "updates")),
             UpdateService.InstalledVersion, () => !Busy && !ViewModel.IsExporting, Close);
         InitializeComponent();
@@ -72,6 +82,30 @@ public partial class MainWindow : Window
     }
 
     private void UpdateMenuClick(object sender, RoutedEventArgs e) => Updates.MenuOpen = !Updates.MenuOpen;
+
+    // Clicking the already-selected folder does not change selection, so close Settings on any folder click.
+    private void FolderListClick(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is DependencyObject source && ItemsControl.ContainerFromElement(FolderList, source) is ListBoxItem)
+            ViewModel.SettingsOpen = false;
+    }
+
+    private void RenameAccount(AccountRow row)
+    {
+        var school = row.Login.SchoolName ?? row.Login.Username;
+        new PromptWindow(this, "Rename child",
+            $"This name is shown in the sidebar instead of the school name. Leave it empty to show \u201c{school}\u201d.",
+            "Child name", "Rename", value => ViewModel.RenameAccountAsync(row, value), initial: row.Login.ChildName ?? "").ShowDialog();
+    }
+
+    private void SetPassword(AccountRow row)
+    {
+        var school = row.Login.SchoolName ?? row.Login.Url;
+        new PromptWindow(this, row.PasswordSaved ? $"Change password for {row.Label}" : $"Save password for {row.Label}",
+            $"OBK signs in to {school} as {row.Login.Username} to check the password. It is saved only if sign-in succeeds, " +
+            "encrypted for your Windows account.",
+            "Password", "Verify and save", password => ViewModel.VerifyAndRememberPasswordAsync(row, password), password: true).ShowDialog();
+    }
 
     private const double IconNavigationWidth = 64;
     private const double IconSnapWidth = 140;

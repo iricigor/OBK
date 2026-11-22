@@ -42,6 +42,7 @@ public sealed class MainViewModel : ObservableObject
     private MessageGrouping grouping = MessageGrouping.None;
     private bool selectedIsExcuse;
     private bool navigationExpanded = true;
+    private bool settingsOpen;
     private bool expanded;
     private int folderVersion;
     private int listVersion;
@@ -55,9 +56,15 @@ public sealed class MainViewModel : ObservableObject
         Theme = theme;
         RefreshCommand = new AsyncCommand(_ => RefreshAllAsync(), ReportError, _ => CanChangeAccount);
         ToggleThemeCommand = new AsyncCommand(_ => Theme.ToggleAsync(), ReportError);
+        SetThemeCommand = new AsyncCommand(p => Theme.SetAsync(p as string ?? ""), ReportError);
+        OpenSettingsCommand = new RelayCommand(_ => SettingsOpen = true);
+        CloseSettingsCommand = new RelayCommand(_ => SettingsOpen = false);
         SwitchSchoolCommand = new RelayCommand(_ => openLogin(true, null), _ => CanChangeAccount);
-        SelectAccountCommand = new AsyncCommand(p => p is AccountRow { IsCurrent: false } row ? SelectAccountAsync(row) : Task.CompletedTask,
-            ReportError, p => CanChangeAccount && p is AccountRow);
+        SelectAccountCommand = new AsyncCommand(p =>
+            {
+                SettingsOpen = false;
+                return p is AccountRow { IsCurrent: false } row ? SelectAccountAsync(row) : Task.CompletedTask;
+            }, ReportError, p => CanChangeAccount && p is AccountRow);
         OpenRelatedCommand = new RelayCommand(p => { if (p is RelatedRow row) OpenRelated(row.Item); });
         ClearSearchCommand = new RelayCommand(_ => SearchText = "");
         ToggleNavigationCommand = new RelayCommand(_ => NavigationExpanded = !NavigationExpanded);
@@ -77,6 +84,15 @@ public sealed class MainViewModel : ObservableObject
     public ThemeManager Theme { get; }
     public ICommand RefreshCommand { get; }
     public ICommand ToggleThemeCommand { get; }
+    public ICommand SetThemeCommand { get; }
+    public ICommand OpenSettingsCommand { get; }
+    public ICommand CloseSettingsCommand { get; }
+    public bool SettingsOpen
+    {
+        get => settingsOpen;
+        set { if (Set(ref settingsOpen, value)) Notify(nameof(ShowMessages)); }
+    }
+    public bool ShowMessages => !settingsOpen;
     public ICommand SwitchSchoolCommand { get; }
     public ICommand SelectAccountCommand { get; }
     public ICommand OpenRelatedCommand { get; }
@@ -185,6 +201,7 @@ public sealed class MainViewModel : ObservableObject
         set
         {
             if (!Set(ref selectedFolder, value) || value is null) return;
+            SettingsOpen = false;
             RefreshFolder();
         }
     }
@@ -265,7 +282,8 @@ public sealed class MainViewModel : ObservableObject
             var known = await Task.Run(store.KnownLogins);
             var comparer = StringComparer.Create(System.Globalization.CultureInfo.CurrentCulture, true);
             Accounts = known.Select(login => new AccountRow(login with { Password = null },
-                    Account is { } current && current.Url == login.Url && current.Username == login.Username))
+                    Account is { } current && current.Url == login.Url && current.Username == login.Username,
+                    login.Password is not null))
                 .OrderBy(row => row.Label, comparer).ThenBy(row => row.Login.Url, StringComparer.Ordinal)
                 .ThenBy(row => row.Login.Username, StringComparer.Ordinal).ToArray();
         }
@@ -277,6 +295,42 @@ public sealed class MainViewModel : ObservableObject
         var login = row.Login;
         await Task.Run(() => store.SaveAccount(login.Url, login.Username, login.ChildName, login.SchoolName));
         await ActivateAccountAsync(login.Url, login.Username, SchoolYear.Current(), login.ChildName, login.SchoolName);
+    }
+
+    public async Task RenameAccountAsync(AccountRow row, string? childName)
+    {
+        if (!CanChangeAccount) throw new ObkException("Wait for the current operation to finish.");
+        var login = row.Login;
+        var label = childName?.Trim() is { Length: > 0 } name ? name : null;
+        await Task.Run(() => store.RenameAccount(login.Url, login.Username, label));
+        if (Account is { } current && current.Url == login.Url && current.Username == login.Username)
+            Account = current with { ChildName = label };
+        await ReloadAccountsAsync();
+        SetStatus(label is null ? $"Removed the child name for {login.SchoolName ?? login.Username}." : $"Renamed to {label}.", true);
+    }
+
+    /// <summary>Signs in once to verify the password, then remembers it; nothing is saved when sign-in fails.</summary>
+    public async Task VerifyAndRememberPasswordAsync(AccountRow row, string password)
+    {
+        if (!CanChangeAccount) throw new ObkException("Wait for the current operation to finish.");
+        if (password.Length == 0) throw new ObkException("Enter the password.");
+        var login = row.Login;
+        await Task.Run(async () =>
+        {
+            using var client = new KomensClient(login.Url);
+            await client.SignInAsync(login.Username, password);
+            store.RememberPassword(login.Url, login.Username, password);
+        });
+        await ReloadAccountsAsync();
+        SetStatus($"Password verified and saved for {row.Label}.", true);
+    }
+
+    public async Task ForgetPasswordAsync(AccountRow row)
+    {
+        if (!CanChangeAccount) throw new ObkException("Wait for the current operation to finish.");
+        await Task.Run(() => store.ForgetPassword(row.Login.Url, row.Login.Username));
+        await ReloadAccountsAsync();
+        SetStatus($"Saved password cleared for {row.Label}. Refresh will ask for it next time.", true);
     }
 
     private Dictionary<string, AttachmentInfo?> ReadAttachmentInfo(string url, string username, Dictionary<string, List<Message>> items) =>

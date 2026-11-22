@@ -11,6 +11,7 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
     private string theme = "Light";
     public string Theme => theme;
     public bool IsDark => theme == "Dark";
+    public bool IsLight => !IsDark;
     public string ToggleTooltip => $"Switch to {(IsDark ? "Light" : "Dark")} theme";
     public string ToggleIcon => IsDark ? "\uE706" : "\uE708";
 
@@ -33,10 +34,12 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
         Apply(selected);
     }
 
-    public async Task ToggleAsync()
+    public async Task ToggleAsync() => await SetAsync(IsDark ? "Light" : "Dark");
+
+    public async Task SetAsync(string selected)
     {
-        Apply(IsDark ? "Light" : "Dark");
-        var selected = theme;
+        if (selected == theme) return;
+        Apply(selected);
         await Task.Run(() =>
         {
             var temporary = settingsPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -72,6 +75,7 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
         theme = selected;
         Notify(nameof(Theme));
         Notify(nameof(IsDark));
+        Notify(nameof(IsLight));
         Notify(nameof(ToggleTooltip));
         Notify(nameof(ToggleIcon));
     }

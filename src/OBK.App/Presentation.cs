@@ -140,11 +140,19 @@ public sealed class MessageRow(Message message, string folder)
     public string SearchText => searchText ??= MessageInsights.SearchText(Message, Folder);
 }
 
-public sealed class AccountRow(Login login, bool current)
+public sealed class AccountRow(Login login, bool current, bool passwordSaved = false)
 {
     public Login Login { get; } = login;
     public bool IsCurrent { get; } = current;
+    public bool PasswordSaved { get; } = passwordSaved;
+    public bool PasswordMissing => !PasswordSaved;
     public string Label { get; } = login.ChildName ?? login.SchoolName ?? login.Username;
+    public string SettingsDetail => string.Join(" \u2022 ", new[]
+        {
+            Login.ChildName is null ? null : Login.SchoolName,
+            Login.Username,
+            PasswordSaved ? "Password saved" : "Password not saved"
+        }.Where(v => !string.IsNullOrEmpty(v)));
     public string Detail => string.Join("\n", new[] { Label, Login.SchoolName, Login.Username }
         .Where(v => !string.IsNullOrEmpty(v)).Distinct());
     public string ColorKey => Palette.PairKey(Login.Url + "|" + Login.Username);
