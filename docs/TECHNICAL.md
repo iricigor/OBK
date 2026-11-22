@@ -199,6 +199,13 @@ toward school servers and requires device verification before merge.
 
 ### Android preview
 
+Android presentation changes use the Windows reader's hierarchy as a reference:
+message content comes first, metadata and account management are secondary,
+and colors have semantic light/dark roles. Keep Android-native navigation,
+48-dp touch targets, and system text scaling rather than copying the desktop's
+three-column layout. UI refinement does not imply adding missing desktop
+features or implementing the separately tracked language controls.
+
 `src\OBK.Android\OBK.Android.csproj` targets `net10.0-android` with minimum API
 29. `OBK.Core` also targets portable `net10.0`, and `LocalStore` accepts an
 `ILocalDataProtection` implementation and an explicit database path. Its
