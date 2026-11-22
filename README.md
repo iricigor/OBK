@@ -257,7 +257,8 @@ dotnet run --project .\src\OBK.App\OBK.App.csproj
 ```
 
 The installed application does not require any development tools.
-At startup, a login popup searches the bundled school directory by school name,
+On first start (when no account is known), a login popup searches the bundled
+school directory by school name,
 town, or school-specific URL text. Once fewer than seven schools match, selecting
 one confirms the school in a summary card. Users can also enter the school's
 website manually. Credentials remain hidden until the school is confirmed.
@@ -274,7 +275,9 @@ the list collapses while a school search is active, so up to six matches fit
 without scrolling. Choosing one restores its username and optional child name;
 passwords are filled only for explicitly remembered profiles. Choosing or
 searching for a different school starts with blank account fields.
-Nothing signs in silently.
+Later starts open the last used child's offline archive without signing in; the
+popup appears only from **Add child**, or from **Refresh** when a password is
+needed. Signing in happens only when **Refresh** or **Sign in and sync** is used.
 The action footer stays visible while the form scrolls, with **Read offline**
 separate from **Sign in and sync**.
 

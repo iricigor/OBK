@@ -66,7 +66,7 @@ public partial class MainWindow : Window
     private async void WindowLoaded(object sender, RoutedEventArgs e)
     {
         await InitializeAsync();
-        if (showLogin) OpenLoginDialog(true);
+        if (showLogin && ViewModel.Accounts.Count == 0) OpenLoginDialog(true);
     }
 
     private void UpdateMenuClick(object sender, RoutedEventArgs e) => Updates.MenuOpen = !Updates.MenuOpen;
