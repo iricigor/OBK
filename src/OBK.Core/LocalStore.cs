@@ -148,7 +148,12 @@ public sealed class LocalStore
             .Concat(remembered)
             .GroupBy(profile => (profile.Url, profile.Username))
             .Select(group => remembered.FirstOrDefault(profile =>
-                    group.Key == (profile.Url, profile.Username)) ?? group.Last())
+                    group.Key == (profile.Url, profile.Username)) ??
+                group.Last() with
+                {
+                    ChildName = group.LastOrDefault(profile => profile.ChildName is not null)?.ChildName,
+                    SchoolName = group.Last().SchoolName ?? group.LastOrDefault(profile => profile.SchoolName is not null)?.SchoolName
+                })
             .ToArray();
     }
 

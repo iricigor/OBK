@@ -261,6 +261,8 @@ public sealed class MigrationTests : IDisposable
         Assert.Null(store.RememberedLogin());
         Assert.NotNull(store.LoadArchive(Url, "u", year));
         Assert.Contains(store.KnownLogins(), profile => profile.Url == Url && profile.Username == "u");
+        store.SaveAccount("https://other-school.example", "second", "Jan", "School B");
+        Assert.Equal("Anežka", store.KnownLogins().Single(profile => profile.Username == "u").ChildName);
         Assert.Throws<ObkException>(() => LocalStore.Decode<Login>(Encoding.UTF8.GetBytes("""{"password":"plaintext"}""")));
     }
 
