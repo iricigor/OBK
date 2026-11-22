@@ -155,6 +155,9 @@ Switching rebuilds the Windows window or Android navigation stack immediately,
 without restarting or downloading school data. The account, folder, selected
 message, search, and existing sort/group state are preserved, as are sign-in
 form fields. Windows retains its update controller and appearance settings.
+Rebuilt Windows windows stay DWM-cloaked until their first frame renders, and
+the previous window closes only then, so switching does not flash a blank white
+window.
 Switching is unavailable during synchronization, archive loading, or attachment
 operations. Display dates use shared translatable layouts; month group names
 and numbers use the selected culture. API/storage formats and school content

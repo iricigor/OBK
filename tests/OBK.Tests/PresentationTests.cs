@@ -416,7 +416,7 @@ public sealed class PresentationTests
                             Assert.True(button.IsEnabled, "The language button must be enabled after loading.");
                             var invoke = (IInvokeProvider)new ButtonAutomationPeer(button).GetPattern(PatternInterface.Invoke);
                             invoke.Invoke();
-                            for (var attempt = 0; attempt < 200; attempt++)
+                            for (var attempt = 0; attempt < 500; attempt++)
                             {
                                 if (application.MainWindow is MainWindow next && next != current)
                                 {
@@ -424,6 +424,9 @@ public sealed class PresentationTests
                                     await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                                     Assert.True(((Button)next.FindName("LanguageButton")).IsEnabled,
                                         "The rebuilt window must allow the next language switch.");
+                                    Assert.Equal(0, DwmGetWindowAttribute(new WindowInteropHelper(next).Handle, 14, out var cloaked, sizeof(int)));
+                                    Assert.True(cloaked == 0, "The rebuilt window must be revealed after rendering.");
+                                    Assert.False(current.IsVisible, "The previous window must close only after the replacement is revealed.");
                                     return next;
                                 }
                                 await Task.Delay(10);

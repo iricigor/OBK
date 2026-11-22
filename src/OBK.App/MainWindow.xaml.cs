@@ -144,6 +144,7 @@ public partial class MainWindow : Window
             replacement.Width = bounds.Width;
             replacement.Height = bounds.Height;
             replacement.WindowState = WindowState;
+            var revealed = FlashFreeReveal.Prepare(replacement);
             replacement.Show();
             replacement.NavigationColumn.Width = new GridLength(state.NavigationExpanded ? expandedNavigationWidth : IconNavigationWidth);
             replacement.MessageColumn.Width = MessageColumn.Width;
@@ -151,6 +152,7 @@ public partial class MainWindow : Window
             replacement.AccountsSection.IsExpanded = AccountsSection.IsExpanded;
             replacement.AboutSection.IsExpanded = AboutSection.IsExpanded;
             Updates.SetHost(() => !replacement.Busy && !replacement.ViewModel.IsExporting && !replacement.switchingLanguage, replacement.Close);
+            await revealed;
             Application.Current.MainWindow = replacement;
             replacing = true;
             Close();
@@ -288,7 +290,11 @@ public partial class MainWindow : Window
             while (true)
             {
                 var dialog = new LoginWindow(host, initial, remembered, error, showSavedAccounts);
-                if (form is not null) await dialog.RestoreFormAsync(form);
+                if (form is not null)
+                {
+                    await dialog.RestoreFormAsync(form);
+                    _ = FlashFreeReveal.Prepare(dialog);
+                }
                 if (error.Length > 0) dialog.StatusText = error;
                 host.openingLogin = true;
                 dialog.ShowDialog();
