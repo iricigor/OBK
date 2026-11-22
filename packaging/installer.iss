@@ -16,7 +16,11 @@ ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 OutputDir=..\dist
 OutputBaseFilename=OBK-{#AppVersion}-windows-x64-setup
+#ifdef FastCompression
+Compression=lzma2/fast
+#else
 Compression=lzma2
+#endif
 SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayIcon={app}\OBK.exe

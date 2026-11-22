@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory)]
     [ValidatePattern('^0\.1\.(0|[1-9][0-9]*)$')]
     [string]$Version,
-    [string]$Iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+    [string]$Iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe',
+    [switch]$FastCompression
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,9 +15,12 @@ $stage = Join-Path $root 'dist\stage'
 if (Test-Path -LiteralPath $stage) {
     Remove-Item -LiteralPath $stage -Recurse -Force
 }
+$timer = [Diagnostics.Stopwatch]::StartNew()
 dotnet publish (Join-Path $root 'src\OBK.App\OBK.App.csproj') -c Release -r win-x64 --self-contained true `
     -p:Version=$Version -o $stage --nologo --verbosity quiet
 if ($LASTEXITCODE -ne 0) { throw 'Self-contained application publish failed.' }
+$timer.Stop()
+Write-Host ('Application publish: {0:F1} seconds' -f $timer.Elapsed.TotalSeconds)
 Copy-Item (Join-Path $root 'README.md') $stage
 Copy-Item (Join-Path $PSScriptRoot 'THIRD-PARTY-NOTICES.txt') $stage
 $licenses = Join-Path $stage 'licenses'
@@ -42,8 +46,15 @@ if ($process.ExitCode -ne 0 -or -not (Test-Path $result) -or -not (Get-Content $
     throw 'Published application smoke test failed.'
 }
 Remove-Item -LiteralPath $result
-& $Iscc '/Q' "/DAppVersion=$Version" (Join-Path $PSScriptRoot 'installer.iss')
+$compilerArguments = @('/Q', "/DAppVersion=$Version")
+if ($FastCompression) {
+    $compilerArguments += '/DFastCompression'
+}
+$timer.Restart()
+& $Iscc @compilerArguments (Join-Path $PSScriptRoot 'installer.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
+$timer.Stop()
+Write-Host ('Installer compilation: {0:F1} seconds' -f $timer.Elapsed.TotalSeconds)
 $installer = Join-Path $root "dist\OBK-$Version-windows-x64-setup.exe"
 if (-not (Test-Path -LiteralPath $installer)) { throw "Compiler did not produce $installer" }
 Write-Host $installer

@@ -215,11 +215,19 @@ python -m unittest discover -s .\tools -p "test_api_probe.py"
 
 ### Validation optimization
 
-Planned in #20: run .NET tests and installer verification in parallel, cache
-NuGet packages, and use faster compression only for validation installers.
-Release and local installer compression will remain unchanged. Measure publish
-and installer compilation separately and compare cold- and warm-cache CI runs
-before user verification.
+Validation runs .NET tests and installer verification in parallel Windows jobs.
+Both cache NuGet packages using the SDK configuration and project manifests as
+the cache key inputs; builds still restore dependencies on cache misses.
+Release publication waits for both jobs to succeed.
+
+Validation installers use `lzma2/fast` compression, retaining all published-app,
+install/start/uninstall, and legacy-directory cleanup checks. Release and local
+builds retain the default `lzma2` solid compression. Validation installers may
+be larger; they are verification artifacts, not release assets.
+
+The installer build logs application publish and installer compilation times
+separately. Compare job timings on cold- and warm-cache CI runs to measure gains;
+parallel jobs duplicate some build work and may use more runner minutes.
 
 Run the three-pane application from source with the .NET 10 SDK:
 
