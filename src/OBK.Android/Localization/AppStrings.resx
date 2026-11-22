@@ -321,7 +321,7 @@
     <value>Could not unlock</value>
   </data>
   <data name="UnlockHint" xml:space="preserve">
-    <value>If the words were hidden before you finished, show a new code on your PC and scan again.</value>
+    <value>The words stay on your PC until you close the transfer window there.</value>
   </data>
   <data name="UnlockInstructions" xml:space="preserve">
     <value>QR code scanned. Enter the three words shown on your PC.</value>

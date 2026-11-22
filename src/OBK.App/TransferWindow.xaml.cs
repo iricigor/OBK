@@ -4,11 +4,13 @@ using OBK.Core.Localization;
 using QRCoder;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace OBK.App;
 
-/// <summary>Shows one account's encrypted QR code and unlock words briefly, then hides both.</summary>
+/// <summary>Shows one account's encrypted QR code briefly, then blurs it; the unlock words stay until the window closes.</summary>
 public partial class TransferWindow : Window
 {
     public static readonly TimeSpan VisibleFor = TimeSpan.FromSeconds(15);
@@ -50,6 +52,8 @@ public partial class TransferWindow : Window
                 return (created, RenderQr(created.Code));
             });
             if (!IsLoaded) return;
+            QrImage.Effect = null;
+            RenderOptions.SetBitmapScalingMode(QrImage, BitmapScalingMode.NearestNeighbor);
             QrImage.Source = image;
             WordsText.Text = transfer.Passphrase;
             CodePanel.Visibility = Visibility.Visible;
@@ -69,14 +73,34 @@ public partial class TransferWindow : Window
     private void Tick()
     {
         var left = (int)Math.Ceiling((hideAt - DateTime.UtcNow).TotalSeconds);
-        if (left <= 0) ClearCode(AppStrings.TransferHidden);
+        if (left <= 0) ObscureQr();
         else CountdownText.Text = Localized.Format(AppStrings.TransferCountdown, left);
+    }
+
+    // The words stay readable; the QR code is replaced by a tiny downscaled copy, so its data is gone, not just hidden.
+    private void ObscureQr()
+    {
+        timer.Stop();
+        if (QrImage.Source is { } source)
+        {
+            const int pixels = 12;
+            var visual = new DrawingVisual();
+            using (var context = visual.RenderOpen()) context.DrawImage(source, new Rect(0, 0, pixels, pixels));
+            var bitmap = new RenderTargetBitmap(pixels, pixels, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(visual);
+            bitmap.Freeze();
+            RenderOptions.SetBitmapScalingMode(QrImage, BitmapScalingMode.HighQuality);
+            QrImage.Source = bitmap;
+            QrImage.Effect = new BlurEffect { Radius = 16 };
+        }
+        CountdownText.Text = AppStrings.TransferHidden;
     }
 
     private void ClearCode(string? message)
     {
         timer.Stop();
         QrImage.Source = null;
+        QrImage.Effect = null;
         WordsText.Text = "";
         CountdownText.Text = "";
         CodePanel.Visibility = Visibility.Collapsed;

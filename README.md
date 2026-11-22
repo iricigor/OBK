@@ -112,8 +112,9 @@ servers.
 To avoid typing credentials on the phone, open **Settings > Accounts >
 Transfer to Android** in OBK on Windows, then tap **Scan from PC** on Android's
 sign-in page and enter the three words shown. The QR code is encrypted and the
-transfer works offline; the code and words hide after 15 seconds. Anyone who
-has both the QR code and the words can recover that account's password, so do
+transfer works offline; the QR code blurs after 15 seconds, while the words stay
+until you close the window. Anyone who has both the QR code and the words can
+recover that account's password, so do
 not photograph or share them. Android asks for camera access only when you tap
 **Scan from PC**.
 

@@ -926,14 +926,14 @@ Refresh to check your school.</value>
     <value>Show an encrypted QR code and three words to add this account in OBK on Android. Requires a saved password.</value>
   </data>
   <data name="TransferCountdown" xml:space="preserve">
-    <value>Hides in {0} s</value>
+    <value>QR code blurs in {0} s</value>
     <comment>{0} = seconds remaining.</comment>
   </data>
   <data name="TransferDescription" xml:space="preserve">
     <value>On your phone, open OBK, tap Scan from PC, scan this code, then enter the three words.</value>
   </data>
   <data name="TransferHidden" xml:space="preserve">
-    <value>Hidden for privacy. Show a new code to continue.</value>
+    <value>QR code blurred for privacy. The words stay until you close this window; show a new code to scan again.</value>
   </data>
   <data name="TransferPreparing" xml:space="preserve">
     <value>Encrypting…</value>
@@ -958,7 +958,7 @@ Refresh to check your school.</value>
     <value>Transfer to Android</value>
   </data>
   <data name="TransferWarning" xml:space="preserve">
-    <value>Keep the code and words private. Anyone who has both can recover this account's password. Hiding them does not invalidate a photo already taken.</value>
+    <value>Keep the code and words private. Anyone who has both can recover this account's password. Blurring the code does not invalidate a photo already taken.</value>
   </data>
   <data name="TransferWordsName" xml:space="preserve">
     <value>Transfer words</value>

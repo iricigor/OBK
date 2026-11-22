@@ -301,9 +301,12 @@ taps **Sign in and download**.
   [EFF large word list](https://www.eff.org/dice) (7,776 words, CC BY 3.0 US),
   embedded unchanged in `src\OBK.Core\Data\eff_large_wordlist.txt`. Three words
   give about 39 bits. Every displayed code uses new words, salt, and nonce.
-- The Windows dialog hides the QR code and words after 15 seconds. Hiding limits
-  screen exposure only: a photographed code remains decryptable by anyone who
-  also has the words, and offline guessing is limited only by PBKDF2's cost.
+- The Windows dialog blurs the QR code after 15 seconds by replacing it with a
+  12×12-pixel downscaled, blurred copy, so the code data no longer exists in the
+  window. The words stay visible until the dialog closes; **Show new code**
+  creates a new code and words. Blurring limits screen exposure only: a
+  photographed code remains decryptable by anyone who also has the words, and
+  offline guessing is limited only by PBKDF2's cost.
   Words not in the list are rejected before the slow key derivation.
 - Android declares the `CAMERA` permission (camera hardware optional) but
   requests it only when the user taps **Scan from PC**; denial leaves manual
