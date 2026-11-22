@@ -1,5 +1,7 @@
 using Microsoft.Win32;
+using OBK.App.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -87,8 +89,7 @@ public partial class MainWindow : Window
     {
         await InitializeAsync();
         if (cornerPreferenceError is { } error)
-            ViewModel.ReportError($"Windows could not enable rounded window corners (0x{error:X8}). " +
-                "The app remains usable; restart OBK to try again.");
+            ViewModel.ReportError(Localized.Format(AppStrings.ErrorRoundedCorners, error));
         if (showLogin && ViewModel.Accounts.Count == 0) OpenLoginDialog(true);
     }
 
@@ -104,18 +105,18 @@ public partial class MainWindow : Window
     private void RenameAccount(AccountRow row)
     {
         var school = row.Login.SchoolName ?? row.Login.Username;
-        new PromptWindow(this, "Rename child",
-            $"This name is shown in the sidebar instead of the school name. Leave it empty to show \u201c{school}\u201d.",
-            "Child name", "Rename", value => ViewModel.RenameAccountAsync(row, value), initial: row.Login.ChildName ?? "").ShowDialog();
+        new PromptWindow(this, AppStrings.PromptRenameTitle,
+            Localized.Format(AppStrings.PromptRenameDescription, school),
+            AppStrings.FieldChildName, AppStrings.PromptRenameAction, value => ViewModel.RenameAccountAsync(row, value), initial: row.Login.ChildName ?? "").ShowDialog();
     }
 
     private void SetPassword(AccountRow row)
     {
         var school = row.Login.SchoolName ?? row.Login.Url;
-        new PromptWindow(this, row.PasswordSaved ? $"Change password for {row.Label}" : $"Save password for {row.Label}",
-            $"OBK signs in to {school} as {row.Login.Username} to check the password. It is saved only if sign-in succeeds, " +
-            "encrypted for your Windows account.",
-            "Password", "Verify and save", password => ViewModel.VerifyAndRememberPasswordAsync(row, password), password: true).ShowDialog();
+        new PromptWindow(this,
+            Localized.Format(row.PasswordSaved ? AppStrings.SettingsChangePasswordFor : AppStrings.SettingsSavePasswordFor, row.Label),
+            Localized.Format(AppStrings.PromptPasswordDescription, school, row.Login.Username),
+            AppStrings.FieldPassword, AppStrings.PromptPasswordAction, password => ViewModel.VerifyAndRememberPasswordAsync(row, password), password: true).ShowDialog();
     }
 
     private const double IconNavigationWidth = 64;
@@ -146,7 +147,7 @@ public partial class MainWindow : Window
         {
             e.Cancel = true;
             Updates.CancelRestart();
-            ViewModel.ReportError("Wait for synchronization or attachment export to finish before closing OBK.");
+            ViewModel.ReportError(AppStrings.ErrorCloseBusy);
         }
     }
 
@@ -205,7 +206,7 @@ public partial class MainWindow : Window
                 new Progress<string>(text => login.StatusText = text));
             login.Complete();
         }
-        catch (ObkException error) { login.StatusText = error.Message + " Existing offline messages remain available."; }
+        catch (ObkException error) { login.StatusText = Localized.Format(AppStrings.LoginSyncFailed, error.Message); }
         finally { login.SetBusy(false); }
     }
 
@@ -219,7 +220,7 @@ public partial class MainWindow : Window
                 try { Directory.CreateDirectory(directory); }
                 catch (Exception error) when (error is IOException or UnauthorizedAccessException)
                 {
-                    throw new ObkException("Cannot create a decrypted attachment copy folder. Check disk access.");
+                    throw new ObkException(AppStrings.ErrorAttachmentFolder);
                 }
                 destination = Path.Combine(directory, row.Name);
             }
@@ -231,16 +232,16 @@ public partial class MainWindow : Window
     {
         if (!ViewModel.CanChangeAccount || Account is not { } account) return;
         if (action == "open" && !row.CanOpen)
-            throw new ObkException("This file type cannot be opened directly. Use Save as.");
+            throw new ObkException(AppStrings.ErrorAttachmentCannotOpen);
         string? destination = null;
         if (action == "save")
         {
-            var dialog = new SaveFileDialog { Title = "Save a decrypted attachment copy", FileName = row.Name, DefaultExt = Path.GetExtension(row.Name) };
+            var dialog = new SaveFileDialog { Title = AppStrings.DialogSaveAttachmentTitle, FileName = row.Name, DefaultExt = Path.GetExtension(row.Name) };
             if (dialog.ShowDialog(this) != true) return;
             destination = dialog.FileName;
         }
         ViewModel.IsExporting = true;
-        ViewModel.SetStatus("Preparing attachment copy...");
+        ViewModel.SetStatus(AppStrings.StatusPreparingAttachment);
         try
         {
             var path = await ExportCopyAsync(account, row, destination);
@@ -264,11 +265,11 @@ public partial class MainWindow : Window
                 }
                 catch (Win32Exception)
                 {
-                    throw new ObkException("The copy was created, but Windows could not open it. Install a default viewer or use Save as.");
+                    throw new ObkException(AppStrings.ErrorAttachmentNoViewer);
                 }
             }
-            ViewModel.SetStatus(action == "save" ? $"Saved attachment copy: {row.Name}" :
-                $"Opened decrypted copy: {row.Name}. It remains in the local opened folder.", true);
+            ViewModel.SetStatus(Localized.Format(
+                action == "save" ? AppStrings.StatusAttachmentSaved : AppStrings.StatusAttachmentOpened, row.Name), true);
         }
         finally { ViewModel.IsExporting = false; }
     }
@@ -276,7 +277,7 @@ public partial class MainWindow : Window
     private async Task SaveAllAsync(IReadOnlyList<AttachmentRow> rows)
     {
         if (!ViewModel.CanChangeAccount || Account is not { } account) return;
-        var dialog = new OpenFolderDialog { Title = "Save all decrypted attachment copies" };
+        var dialog = new OpenFolderDialog { Title = AppStrings.DialogSaveAllTitle };
         if (dialog.ShowDialog(this) != true) return;
         var destinations = new List<string>();
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -289,20 +290,20 @@ public partial class MainWindow : Window
             destinations.Add(Path.Combine(dialog.FolderName, name));
         }
         if (await Task.Run(() => destinations.Any(File.Exists)) && MessageBox.Show(this,
-            "Some files already exist in this folder. Replace those files with the attachment copies?",
-            "Replace files?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
+            AppStrings.DialogReplaceFilesMessage,
+            AppStrings.DialogReplaceFilesTitle, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
         ViewModel.IsExporting = true;
         var saved = 0;
         try
         {
             for (; saved < rows.Count; saved++)
             {
-                ViewModel.SetStatus($"Saving attachment {saved + 1} of {rows.Count}...");
+                ViewModel.SetStatus(Localized.Format(AppStrings.StatusSavingAttachment, saved + 1, rows.Count));
                 await ExportCopyAsync(account, rows[saved], destinations[saved]);
             }
-            ViewModel.SetStatus($"Saved {saved} decrypted attachment copies. Delete copies when no longer needed.", true);
+            ViewModel.SetStatus(Localized.Format(AppStrings.StatusAttachmentsSaved, saved), true);
         }
-        catch (ObkException error) { throw new ObkException($"{error.Message} Saved {saved} of {rows.Count} copies."); }
+        catch (ObkException error) { throw new ObkException(Localized.Format(AppStrings.ErrorSaveAllPartial, error.Message, saved, rows.Count)); }
         finally { ViewModel.IsExporting = false; }
     }
 
@@ -327,15 +328,15 @@ public partial class MainWindow : Window
         ViewModel.IsExporting = true;
         try
         {
-            ViewModel.SetStatus("Preparing attachment for Windows drag-and-drop...");
+            ViewModel.SetStatus(AppStrings.StatusPreparingDrag);
             var path = await ExportCopyAsync(account, row);
             if (Mouse.LeftButton == MouseButtonState.Pressed)
             {
                 var data = new DataObject(DataFormats.FileDrop, new[] { path });
                 DragDrop.DoDragDrop(this, data, DragDropEffects.Copy);
-                ViewModel.SetStatus("Attachment drag finished. The decrypted source copy remains in the local opened folder.", true);
+                ViewModel.SetStatus(AppStrings.StatusDragFinished, true);
             }
-            else ViewModel.SetStatus("Drag ended before the copy was ready. Drag the attachment again.", true);
+            else ViewModel.SetStatus(AppStrings.StatusDragTooEarly, true);
         }
         catch (ObkException error) { ViewModel.ReportError(error.Message); }
         finally { ViewModel.IsExporting = false; }

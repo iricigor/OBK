@@ -1,4 +1,6 @@
+using OBK.AndroidApp.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 
 namespace OBK.AndroidApp;
 
@@ -7,15 +9,15 @@ internal sealed class SignInPage : ContentPage
     private readonly ReaderSession session;
     private readonly Func<Login, Task> saved;
     private readonly Entry url = new() { Placeholder = "https://your-school.bakalari.cz", Keyboard = Keyboard.Url };
-    private readonly Entry username = new() { Placeholder = "Komens username", IsTextPredictionEnabled = false };
-    private readonly Entry password = new() { Placeholder = "Password", IsPassword = true, IsTextPredictionEnabled = false };
-    private readonly Entry child = new() { Placeholder = "Child's name (optional)" };
+    private readonly Entry username = new() { Placeholder = AppStrings.SignInUsernamePlaceholder, IsTextPredictionEnabled = false };
+    private readonly Entry password = new() { Placeholder = AppStrings.SignInPasswordPlaceholder, IsPassword = true, IsTextPredictionEnabled = false };
+    private readonly Entry child = new() { Placeholder = AppStrings.SignInChildPlaceholder };
     private readonly CheckBox remember = new() { MinimumHeightRequest = 48, MinimumWidthRequest = 48 };
-    private readonly SearchBar schoolSearch = new() { Placeholder = "Search school or town" };
+    private readonly SearchBar schoolSearch = new() { Placeholder = AppStrings.SignInSchoolSearchPlaceholder };
     private readonly VerticalStackLayout schoolResults = new() { Spacing = 8 };
     private readonly Label schoolStatus = new();
-    private readonly Label status = new() { Text = "Your password is saved only if you choose Remember credentials." };
-    private readonly Button submit = new() { Text = "Sign in and download" };
+    private readonly Label status = new() { Text = AppStrings.SignInPasswordNotice };
+    private readonly Button submit = new() { Text = AppStrings.SignInSubmitButton };
     private readonly ActivityIndicator progress = new();
     private bool busy;
 
@@ -23,7 +25,7 @@ internal sealed class SignInPage : ContentPage
     {
         this.session = session;
         this.saved = saved;
-        Title = login is null ? "Add child" : "Sign in";
+        Title = login is null ? AppStrings.SignInTitleAddChild : AppStrings.SignInTitleSignIn;
         if (login is not null)
         {
             url.Text = login.Url;
@@ -37,9 +39,9 @@ internal sealed class SignInPage : ContentPage
             schoolResults.Children.Clear();
             var found = session.Schools.Search(schoolSearch.Text ?? "");
             schoolStatus.Text = string.IsNullOrWhiteSpace(schoolSearch.Text) ? "" :
-                found.Total == 0 ? "No matching school. You can enter its HTTPS address below." :
-                found.Total > 6 ? $"{found.Total} schools match. Type more to narrow the results." :
-                $"{found.Total} matching schools";
+                found.Total == 0 ? AppStrings.SignInNoSchoolMatch :
+                found.Total > 6 ? Localized.Format(AppStrings.SignInTooManySchools, found.Total) :
+                Localized.Format(AppStrings.SignInMatchingSchools, found.Total);
             if (found.Total > 6) return;
             foreach (var school in found.Visible)
             {
@@ -57,7 +59,7 @@ internal sealed class SignInPage : ContentPage
         var remembered = new HorizontalStackLayout
         {
             Spacing = 8,
-            Children = { remember, new Label { Text = "Remember credentials", VerticalOptions = LayoutOptions.Center } }
+            Children = { remember, new Label { Text = AppStrings.SignInRememberCredentials, VerticalOptions = LayoutOptions.Center } }
         };
         Content = new ScrollView
         {
@@ -67,13 +69,13 @@ internal sealed class SignInPage : ContentPage
                 Spacing = 12,
                 Children =
                 {
-                    new Label { Text = "Download once. Read offline.", FontSize = 24, FontAttributes = FontAttributes.Bold },
-                    new Label { Text = "OBK only reads messages. It never sends replies, confirmations or read receipts." },
+                    new Label { Text = AppStrings.SignInHeading, FontSize = 24, FontAttributes = FontAttributes.Bold },
+                    new Label { Text = AppStrings.SignInReadOnlyNotice },
                     schoolSearch, schoolStatus, schoolResults,
-                    new Label { Text = "School HTTPS address" }, url,
-                    new Label { Text = "Username" }, username,
-                    new Label { Text = "Password" }, password,
-                    new Label { Text = "Child's name" }, child,
+                    new Label { Text = AppStrings.SignInSchoolAddressLabel }, url,
+                    new Label { Text = AppStrings.SignInUsernameLabel }, username,
+                    new Label { Text = AppStrings.SignInPasswordLabel }, password,
+                    new Label { Text = AppStrings.SignInChildLabel }, child,
                     remembered, submit, progress, status
                 }
             }
@@ -94,10 +96,10 @@ internal sealed class SignInPage : ContentPage
             var user = username.Text?.Trim() ?? "";
             var secret = password.Text ?? "";
             if (user.Length == 0 || secret.Length == 0)
-                throw new ObkException("Enter your school username and password.");
+                throw new ObkException(AppStrings.ErrorEnterUsernameAndPassword);
             var address = KomensClient.NormalizeUrl(url.Text ?? "");
             var login = new Login(address, user, ChildName: string.IsNullOrWhiteSpace(child.Text) ? null : child.Text.Trim());
-            status.Text = "Signing in...";
+            status.Text = AppStrings.StatusSigningIn;
             await session.SynchronizeAsync(login, secret, remember.IsChecked,
                 new Progress<string>(text => status.Text = text));
             password.Text = "";
@@ -108,7 +110,7 @@ internal sealed class SignInPage : ContentPage
         catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
         {
             status.Text = error.Message;
-            await DisplayAlertAsync("Sign-in or download failed", error.Message, "OK");
+            await DisplayAlertAsync(AppStrings.SignInFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
         finally
         {

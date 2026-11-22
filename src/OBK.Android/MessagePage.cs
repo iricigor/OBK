@@ -1,3 +1,4 @@
+using OBK.AndroidApp.Localization;
 using OBK.Core;
 
 namespace OBK.AndroidApp;
@@ -18,10 +19,10 @@ internal sealed class MessagePage : ContentPage
         this.session = session;
         this.account = account;
         this.message = message;
-        Title = "Message";
+        Title = AppStrings.MessagePageTitle;
         content.Add(new Label { Text = message.Title, FontSize = 24, FontAttributes = FontAttributes.Bold });
         content.Add(new Label { Text = $"{message.SenderName}\n{message.Date:g}" });
-        content.Add(new Label { Text = "Offline copy. Opening this message does not contact your school." });
+        content.Add(new Label { Text = AppStrings.MessageOfflineNotice });
         content.Add(status);
         Content = new ScrollView { Content = content };
         ReaderTheme.Apply(this);
@@ -49,43 +50,43 @@ internal sealed class MessagePage : ContentPage
             }
             content.Add(new Label { FormattedText = text, FontSize = 16 });
             var links = parts.Where(part => part.Link is not null).Select(part => part.Link!).Distinct().ToList();
-            if (links.Count > 0) content.Add(new Label { Text = "Links", FontAttributes = FontAttributes.Bold });
+            if (links.Count > 0) content.Add(new Label { Text = AppStrings.MessageLinksHeader, FontAttributes = FontAttributes.Bold });
             foreach (var link in links)
             {
                 var button = new Button { Text = link, LineBreakMode = LineBreakMode.WordWrap };
                 button.Clicked += async (_, _) => await PerformAsync(async () =>
                 {
                     if (!await Launcher.TryOpenAsync(link))
-                        throw new ObkException("No installed app can open this link.");
+                        throw new ObkException(AppStrings.ErrorNoAppForLink);
                 });
                 actions.Add(button);
                 content.Add(button);
             }
             if (message.Attachments.Count > 0)
-                content.Add(new Label { Text = "Attachments", FontAttributes = FontAttributes.Bold });
+                content.Add(new Label { Text = AppStrings.MessageAttachmentsHeader, FontAttributes = FontAttributes.Bold });
             foreach (var attachment in message.Attachments)
             {
                 var info = await Task.Run(() => session.Store.AttachmentInfo(account.Url, account.Username, attachment.Identifier));
                 content.Add(new Label { Text = attachment.SafeName });
                 if (info is null)
                 {
-                    content.Add(new Label { Text = "Not downloaded. Refresh this account to cache the attachment." });
+                    content.Add(new Label { Text = AppStrings.MessageAttachmentNotDownloaded });
                     continue;
                 }
-                var open = new Button { Text = "Open attachment", IsVisible = FileNames.CanOpen(attachment.SafeName) };
-                var share = new Button { Text = "Share / save a copy" };
+                var open = new Button { Text = AppStrings.MessageOpenAttachment, IsVisible = FileNames.CanOpen(attachment.SafeName) };
+                var share = new Button { Text = AppStrings.MessageShareAttachment };
                 open.Clicked += async (_, _) => await PerformAsync(async () =>
                 {
                     var path = await session.ExportAsync(account, attachment);
                     var file = AttachmentFile(path, info.ContentType);
-                    if (!await Launcher.OpenAsync(new OpenFileRequest("Open attachment", file)))
-                        throw new ObkException("No installed app can open this attachment. Use Share / save a copy instead.");
+                    if (!await Launcher.OpenAsync(new OpenFileRequest(AppStrings.MessageOpenAttachmentChooserTitle, file)))
+                        throw new ObkException(AppStrings.ErrorNoAppForAttachment);
                 });
                 share.Clicked += async (_, _) => await PerformAsync(async () =>
                 {
                     var path = await session.ExportAsync(account, attachment);
                     var file = AttachmentFile(path, info.ContentType);
-                    await Share.RequestAsync(new ShareFileRequest("Share attachment", new ShareFile(file)));
+                    await Share.RequestAsync(new ShareFileRequest(AppStrings.MessageShareAttachmentChooserTitle, new ShareFile(file)));
                 });
                 actions.Add(open);
                 actions.Add(share);
@@ -93,13 +94,13 @@ internal sealed class MessagePage : ContentPage
                 content.Add(share);
             }
             if (message.Attachments.Count > 0)
-                content.Add(new Label { Text = "Opening or sharing creates a decrypted copy in OBK's private cache. It is cleared on the next app start; copies saved in another app are outside OBK's control." });
+                content.Add(new Label { Text = AppStrings.MessageDecryptedCopyNotice });
             ReaderTheme.Apply(content);
         }
         catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
         {
             status.Text = error.Message;
-            await DisplayAlertAsync("Cannot read this message", error.Message, "OK");
+            await DisplayAlertAsync(AppStrings.MessageReadFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
     }
 
@@ -108,7 +109,7 @@ internal sealed class MessagePage : ContentPage
         if (string.IsNullOrWhiteSpace(contentType)) return new ReadOnlyFile(path);
         if (!System.Net.Http.Headers.MediaTypeHeaderValue.TryParse(contentType, out var parsed) ||
             parsed.MediaType is not { } mime)
-            throw new ObkException("The attachment has an invalid content type.");
+            throw new ObkException(AppStrings.ErrorInvalidAttachmentContentType);
         return new ReadOnlyFile(path, mime);
     }
 
@@ -121,7 +122,7 @@ internal sealed class MessagePage : ContentPage
         catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException or FeatureNotSupportedException)
         {
             status.Text = error.Message;
-            await DisplayAlertAsync("Cannot open or share", error.Message, "OK");
+            await DisplayAlertAsync(AppStrings.MessageActionFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
         finally
         {

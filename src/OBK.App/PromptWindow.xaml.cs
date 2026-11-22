@@ -1,3 +1,4 @@
+using OBK.App.Localization;
 using OBK.Core;
 using System.ComponentModel;
 using System.Windows;
@@ -63,7 +64,7 @@ public partial class PromptWindow : Window
         ValueText.IsEnabled = PasswordInput.IsEnabled = SubmitButton.IsEnabled = CancelButton.IsEnabled = CloseButton.IsEnabled = !value;
         if (value && password)
         {
-            StatusText.Text = "Signing in to verify the password...";
+            StatusText.Text = AppStrings.PromptVerifyingPassword;
             StatusText.Visibility = Visibility.Visible;
         }
     }

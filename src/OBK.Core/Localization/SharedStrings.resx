@@ -183,6 +183,10 @@
   <data name="ErrorUrlNotHttps" xml:space="preserve">
     <value>Use an HTTPS school URL without credentials, query, or fragment.</value>
   </data>
+  <data name="FolderExcuses" xml:space="preserve">
+    <value>Excuses</value>
+    <comment>Folder name for sent absence excuse notes (omluvenky).</comment>
+  </data>
   <data name="FolderInbox" xml:space="preserve">
     <value>Inbox</value>
   </data>
