@@ -56,6 +56,8 @@ internal sealed class SignInPage : ContentPage
             }
         };
         submit.Clicked += async (_, _) => await SignInAsync();
+        var scan = new Button { Text = AppStrings.SignInScanFromPc };
+        scan.Clicked += async (_, _) => { if (!busy) await TransferScanPage.OpenAsync(this, Import); };
         var remembered = new HorizontalStackLayout
         {
             Spacing = 8,
@@ -71,6 +73,7 @@ internal sealed class SignInPage : ContentPage
                 {
                     new Label { Text = AppStrings.SignInHeading, FontSize = 24, FontAttributes = FontAttributes.Bold },
                     new Label { Text = AppStrings.SignInReadOnlyNotice },
+                    scan, new Label { Text = AppStrings.SignInScanHint, FontSize = 13 },
                     schoolSearch, schoolStatus, schoolResults,
                     new Label { Text = AppStrings.SignInSchoolAddressLabel }, url,
                     new Label { Text = AppStrings.SignInUsernameLabel }, username,
@@ -81,6 +84,19 @@ internal sealed class SignInPage : ContentPage
             }
         };
         ReaderTheme.Apply(this);
+    }
+
+    // Fills the form from a PC transfer; the user still reviews it and decides whether to remember the password.
+    private void Import(Login login)
+    {
+        url.Text = login.Url;
+        username.Text = login.Username;
+        password.Text = login.Password;
+        child.Text = login.ChildName;
+        remember.IsChecked = false;
+        schoolResults.Children.Clear();
+        schoolStatus.Text = login.SchoolName ?? "";
+        status.Text = AppStrings.SignInImported;
     }
 
     private async Task SignInAsync()
