@@ -111,6 +111,11 @@ disable checks yet; only HTTPS assets from this repository's releases are used.
 
 ## Application icon
 
+The approved replacement in #53 is **Bold box**: a flat blue tile, solid white
+archive box, separated lid, and a large envelope emblem. The implementation will
+generate matching Windows and Android assets with the existing Pillow tool,
+preserving executable/window/installer and launcher/splash references.
+
 `src\OBK.App\Assets\OBK.ico` (a graduation cap over an envelope) is used for the
 executable, windows, and installer. Regenerate it with Pillow after editing
 `tools\make_app_icon.py`: `python .\tools\make_app_icon.py`.
