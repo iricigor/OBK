@@ -683,10 +683,12 @@ the publication job uses it to create releases and upload assets.
 
 Local Windows builds (Debug or Release, including local installers) show an
 orange diagonal **DEV BUILD** ribbon in the top-right corner below the window
-controls, with the UTC build time. Click it, or focus it with Tab and press Enter/Space, to hide
+controls, with the UTC build time. It overlays the reader and Settings on a
+higher z-order without moving or resizing their content. Only the diagonal
+strip intercepts clicks; the rest of its transparent corner area remains
+click-through. Click it, or focus it with Tab and press Enter/Space, to hide
 it until the process exits. It returns after relaunch and uses system colors
-in high contrast. The reader and Settings reserve space beneath the ribbon
-while it is visible, and reclaim it after dismissal. Window controls are unchanged.
+in high contrast. Window controls are unchanged.
 
 The desktop project stamps `LocalBuild=true` and the actual UTC `BuildTimestamp`
 as assembly metadata, independently of compiler configuration or signing.

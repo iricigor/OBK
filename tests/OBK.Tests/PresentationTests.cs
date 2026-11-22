@@ -315,12 +315,31 @@ public sealed class PresentationTests
                             var bounds = ribbonArea.TransformToAncestor(main).TransformBounds(new Rect(ribbonArea.RenderSize));
                             var maximize = (Button)main.FindName("MaximizeButton");
                             var captionBounds = maximize.TransformToAncestor(main).TransformBounds(new Rect(maximize.RenderSize));
-                            var readerBounds = readingPane.TransformToAncestor(main).TransformBounds(new Rect(readingPane.RenderSize));
                             Assert.True(bounds.Top >= captionBounds.Bottom);
-                            Assert.True(readerBounds.Top >= bounds.Bottom);
                             var timestampBounds = timestamp.TransformToAncestor(ribbonArea).TransformBounds(new Rect(timestamp.RenderSize));
                             Assert.True(new Rect(ribbonArea.RenderSize).Contains(timestampBounds));
                             Assert.True(timestamp.DesiredSize.Width <= ribbon.ActualWidth - ribbon.Padding.Left - ribbon.Padding.Right);
+                            var labelHit = Assert.IsAssignableFrom<DependencyObject>(main.InputHitTest(
+                                timestamp.TranslatePoint(new Point(timestamp.ActualWidth / 2, timestamp.ActualHeight / 2), main)));
+                            Assert.True(ribbon.IsAncestorOf(labelHit));
+                            var transparentHit = Assert.IsAssignableFrom<DependencyObject>(main.InputHitTest(
+                                ribbonArea.TranslatePoint(new Point(8, 120), main)));
+                            Assert.False(ribbon.IsAncestorOf(transparentHit));
+                            void AssertOverlayDoesNotShift(FrameworkElement content)
+                            {
+                                var before = content.TransformToAncestor(main).TransformBounds(new Rect(content.RenderSize));
+                                ribbonArea.Visibility = Visibility.Collapsed;
+                                main.UpdateLayout();
+                                Assert.Equal(before, content.TransformToAncestor(main).TransformBounds(new Rect(content.RenderSize)));
+                                ribbonArea.Visibility = Visibility.Visible;
+                                main.UpdateLayout();
+                            }
+                            AssertOverlayDoesNotShift(readingPane);
+                            main.ViewModel.OpenSettingsCommand.Execute(null);
+                            main.UpdateLayout();
+                            AssertOverlayDoesNotShift((ScrollViewer)main.FindName("SettingsPage"));
+                            main.ViewModel.CloseSettingsCommand.Execute(null);
+                            main.UpdateLayout();
                             Assert.True(ribbon.Focus());
                             Assert.True(ribbon.IsKeyboardFocused);
                         }
@@ -346,12 +365,12 @@ public sealed class PresentationTests
                         AssertNativeRounding();
                         if (BuildIdentity.Current.IsLocal)
                         {
+                            var beforeDismissal = readingPane.TransformToAncestor(main).TransformBounds(new Rect(readingPane.RenderSize));
                             var invoke = (IInvokeProvider)new ButtonAutomationPeer(ribbon).GetPattern(PatternInterface.Invoke);
                             invoke.Invoke();
                             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                             Assert.Equal(Visibility.Collapsed, ribbonArea.Visibility);
-                            Assert.Equal(new Thickness(0), readingPane.Margin);
-                            Assert.Equal(new Thickness(0), ((ScrollViewer)main.FindName("SettingsPage")).Margin);
+                            Assert.Equal(beforeDismissal, readingPane.TransformToAncestor(main).TransformBounds(new Rect(readingPane.RenderSize)));
                             var reopened = new MainWindow(store, showLogin: false, enableUpdates: false);
                             try
                             {
