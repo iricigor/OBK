@@ -135,6 +135,9 @@
   <data name="ReaderAccountPickerTitle" xml:space="preserve">
     <value>Виберіть дитину або обліковий запис</value>
   </data>
+  <data name="ReaderDrawerChildren" xml:space="preserve">
+    <value>Діти</value>
+  </data>
   <data name="ReaderNavigationMenu" xml:space="preserve">
     <value>Відкрити меню навігації</value>
   </data>

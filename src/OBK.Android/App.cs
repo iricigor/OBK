@@ -74,7 +74,8 @@ public sealed class App : Application
             stack.OfType<MessagePage>().Any(page => page.Busy) ||
             stack.OfType<SettingsPage>().Any(page => page.Busy) ||
             stack.OfType<AccountsPage>().Any(page => page.Busy) ||
-            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage or AccountsPage)))
+            stack.OfType<AccountPickerPage>().Any(page => page.Busy) ||
+            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage or AccountsPage or AccountPickerPage)))
             throw new ObkException(SharedStrings.ErrorLanguageBusy);
         switchingLanguage = true;
         try
@@ -92,6 +93,7 @@ public sealed class App : Application
                     MessagePage message => message.Rebuild(),
                     SettingsPage => surface.Reader.CreateSettingsPage(),
                     AccountsPage => surface.Reader.CreateAccountsPage(),
+                    AccountPickerPage => surface.Reader.CreateAccountPickerPage(),
                     _ => throw new ObkException(SharedStrings.ErrorLanguageBusy)
                 };
                 await surface.Navigation.PushAsync(replacement, animated: false);
@@ -120,7 +122,14 @@ public sealed class App : Application
             flyout.IsPresented = false;
             await reader.AccountActionsAsync();
         };
-        var folders = new VerticalStackLayout { Spacing = 8 };
+        var children = new VerticalStackLayout { Spacing = 4 };
+        var addChild = ReaderTheme.StartAlignedButton(new Button { Text = AppStrings.ReaderAccountsSheetAddChild });
+        addChild.Clicked += async (_, _) =>
+        {
+            flyout.IsPresented = false;
+            await reader.AddAccountAsync();
+        };
+        var folders = new VerticalStackLayout { Spacing = 4 };
         var folderButtons = new List<Button>();
         foreach (var index in Enumerable.Range(0, reader.FolderLabels.Count))
         {
@@ -142,7 +151,17 @@ public sealed class App : Application
         }
         flyout.IsPresentedChanged += (_, _) =>
         {
+            if (!flyout.IsPresented) return;
             accounts.IsEnabled = reader.AccountsAvailable;
+            addChild.IsEnabled = reader.AccountsAvailable;
+            children.Children.Clear();
+            foreach (var login in reader.KnownAccounts)
+                children.Add(ReaderTheme.AccountChoice(login, reader.KnownAccounts, reader.ActiveAccount, async (_, _) =>
+                {
+                    flyout.IsPresented = false;
+                    await reader.SelectAccountAsync(login);
+                }, compact: true));
+            children.IsEnabled = reader.AccountsAvailable;
             for (var index = 0; index < folderButtons.Count; index++)
             {
                 var button = folderButtons[index];
@@ -162,7 +181,7 @@ public sealed class App : Application
             {
                 Content = new VerticalStackLayout
                 {
-                    Padding = new Thickness(16, 24), Spacing = 24,
+                    Padding = new Thickness(16, 20), Spacing = 12,
                     Children =
                     {
                         new VerticalStackLayout
@@ -174,6 +193,8 @@ public sealed class App : Application
                                 ReaderTheme.Metadata(new Label { Text = "Offline Bakalari Komens" })
                             }
                         },
+                        ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderDrawerChildren, FontAttributes = FontAttributes.Bold }),
+                        children, addChild, new BoxView { HeightRequest = 1 },
                         folders, new BoxView { HeightRequest = 1 }, accounts, settings
                     }
                 }

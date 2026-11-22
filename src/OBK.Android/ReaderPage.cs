@@ -9,7 +9,7 @@ internal sealed class ReaderPage : ContentPage
     private readonly ImageButton menu = ReaderTheme.Icon("menu", AppStrings.ReaderNavigationMenu);
     private readonly Button child = ReaderTheme.Primary(new Button
     {
-        WidthRequest = 48, HeightRequest = 48, Padding = 0, CornerRadius = 24,
+        WidthRequest = 56, HeightRequest = 56, Padding = 0, CornerRadius = 28,
         FontSize = 16, FontAttributes = FontAttributes.Bold
     });
     private readonly SearchBar search = new() { Placeholder = AppStrings.ReaderSearchPlaceholder, BackgroundColor = Colors.Transparent };
@@ -35,6 +35,10 @@ internal sealed class ReaderPage : ContentPage
     internal bool AccountsAvailable => session is not null && !busy;
     internal int FolderIndex => folderIndex;
     internal IReadOnlyList<string> FolderLabels => folderLabels;
+    internal IReadOnlyList<Login> KnownAccounts => known;
+    internal Login? ActiveAccount => account;
+    private readonly RefreshStatusTimeout refreshStatusTimeout = new(TimeProvider.System);
+    private readonly IDispatcherTimer refreshStatusTimer;
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private static readonly string[] FolderKeys = ["received", "noticeboard", "sent", "excuses"];
     internal static readonly string[] FolderIcons = ["inbox", "noticeboard", "sent", "excuses"];
@@ -47,19 +51,24 @@ internal sealed class ReaderPage : ContentPage
         language = LanguageToolbar.CreateButton(this);
         NavigationPage.SetHasNavigationBar(this, false);
         menu.Clicked += (_, _) => openMenu();
-        child.Clicked += async (_, _) =>
+        child.Clicked += async (_, _) => await Navigation.PushAsync(CreateAccountPickerPage());
+        refreshStatusTimer = Dispatcher.CreateTimer();
+        refreshStatusTimer.Interval = TimeSpan.FromSeconds(1);
+        refreshStatusTimer.Tick += (_, _) =>
         {
-            var choices = known.Select((login, index) =>
-                Localized.Format(AppStrings.ReaderAccountOption, index + 1, AccountLabelConverter.Label(login))).ToArray();
-            var selected = await DisplayActionSheetAsync(AppStrings.ReaderAccountPickerTitle, AppStrings.ReaderAccountsSheetCancel, null, choices);
-            var index = Array.IndexOf(choices, selected);
-            if (index >= 0) await RunAsync(() => SelectAsync(known[index]));
+            if (busy || !refreshStatusTimeout.TryExpire()) return;
+            refreshStatusTimer.Stop();
+            RestoreArchiveStatus();
         };
         search.TextChanged += (_, _) => ApplySearch();
         search.HandlerChanged += (_, _) =>
         {
             if (search.Handler?.PlatformView is global::AndroidX.AppCompat.Widget.SearchView native)
+            {
                 native.FindViewById(Resource.Id.search_plate)?.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+                if (native.FindViewById(Resource.Id.search_mag_icon) is { } magnifier)
+                    magnifier.Visibility = global::Android.Views.ViewStates.Gone;
+            }
         };
         refresh.Clicked += async (_, _) => await RunAsync(session is null ? InitializeAsync : RefreshAllAsync);
         messages.ItemTemplate = new DataTemplate(() =>
@@ -107,18 +116,27 @@ internal sealed class ReaderPage : ContentPage
             }
 
         };
-        var searchContent = new Grid { ColumnDefinitions = [new(GridLength.Star), new(48)] };
-        searchContent.Add(search);
-        searchContent.Add(child, 1);
+        var searchIcon = ReaderTheme.Icon("search", AppStrings.ReaderSearchPlaceholder);
+        searchIcon.Clicked += (_, _) => search.Focus();
+        var searchContent = new Grid { ColumnDefinitions = [new(56), new(GridLength.Star), new(48)] };
+        searchContent.Add(search, 1);
+        searchContent.Add(searchIcon, 2);
         var searchPanel = ReaderTheme.Panel(searchContent, 0);
         searchPanel.StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 24 };
+        searchPanel.HeightRequest = 48;
+        searchPanel.VerticalOptions = LayoutOptions.Center;
+        var searchContainer = new Grid { MinimumHeightRequest = 56, IsClippedToBounds = false };
+        searchContainer.Add(searchPanel);
+        child.HorizontalOptions = LayoutOptions.Start;
+        child.VerticalOptions = LayoutOptions.Center;
+        searchContainer.Add(child);
         var header = new Grid
         {
             Padding = new Thickness(8, 12), ColumnSpacing = 4,
             ColumnDefinitions = [new(48), new(GridLength.Star), new(48)]
         };
         header.Add(menu, 0);
-        header.Add(searchPanel, 1);
+        header.Add(searchContainer, 1);
         header.Add(refresh, 2);
         var footer = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 8 };
         progress.WidthRequest = progress.HeightRequest = 24;
@@ -149,8 +167,7 @@ internal sealed class ReaderPage : ContentPage
             folderIndex = folderIndex
         };
         rebuilt.search.Text = search.Text;
-        rebuilt.status.Text = account is null ? AppStrings.ReaderStatusNoAccounts :
-            archive is null ? AppStrings.ReaderStatusNoArchive : ArchiveStatus(archive);
+        rebuilt.RestoreArchiveStatus();
         rebuilt.ApplySearch();
         rebuilt.UpdateContext();
         rebuilt.SetBusy(false);
@@ -158,6 +175,22 @@ internal sealed class ReaderPage : ContentPage
     }
 
     internal Task AccountSavedAsync(Login login) => RunAsync(() => ReloadAsync(login));
+    internal Task SelectAccountAsync(Login login) => RunAsync(() => SelectAsync(login));
+    internal Task AddAccountAsync() => OpenSignInAsync();
+    internal AccountPickerPage CreateAccountPickerPage() => new(known, account, login => RunAsync(async () =>
+    {
+        await SelectAsync(login);
+        await Navigation.PopAsync();
+    }));
+
+    private void RestoreArchiveStatus() => status.Text = account is null ? AppStrings.ReaderStatusNoAccounts :
+        archive is null ? AppStrings.ReaderStatusNoArchive : ArchiveStatus(archive);
+
+    private void CancelRefreshStatus()
+    {
+        refreshStatusTimer.Stop();
+        refreshStatusTimeout.Cancel();
+    }
     private static string ArchiveStatus(Archive archive)
     {
         var synced = DateTimeOffset.Parse(archive.SyncedAt).ToLocalTime();
@@ -205,6 +238,13 @@ internal sealed class ReaderPage : ContentPage
         await RunAsync(InitializeAsync);
     }
 
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (refreshStatusTimeout.Pending) RestoreArchiveStatus();
+        CancelRefreshStatus();
+    }
+
     private async Task InitializeAsync()
     {
         session = await ReaderSession.OpenAsync();
@@ -214,6 +254,7 @@ internal sealed class ReaderPage : ContentPage
 
     private void SetBusy(bool value)
     {
+        if (value) CancelRefreshStatus();
         busy = value;
         progress.IsRunning = value;
         progress.IsVisible = value;
@@ -354,6 +395,8 @@ internal sealed class ReaderPage : ContentPage
         if (failures.Count > 0)
             summary.Add(Localized.Format(AppStrings.ReaderRefreshFailed, string.Join("; ", failures)));
         status.Text = string.Join(" ", summary);
+        refreshStatusTimeout.Start();
+        refreshStatusTimer.Start();
         if (failures.Count > 0 || missing.Count > 0)
             await DisplayAlertAsync(AppStrings.ReaderRefreshAlertTitle, status.Text, AppStrings.AlertOkButton);
         if (missing.Count > 0)
