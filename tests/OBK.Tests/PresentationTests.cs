@@ -434,6 +434,16 @@ public sealed class PresentationTests
                             throw new TimeoutException("The language button did not rebuild the window.");
                         }
                         LanguageSettings.Apply("en");
+                        foreach (var name in new[] { "Messages", "FolderList" })
+                        {
+                            var list = (ListBox)main.FindName(name);
+                            list.IsEnabled = false;
+                            list.UpdateLayout();
+                            var chrome = (Border)VisualTreeHelper.GetChild(list, 0);
+                            Assert.True(chrome.Background is SolidColorBrush { Color.A: 0 },
+                                $"{name} must keep its themed surface while disabled during a language switch.");
+                            list.IsEnabled = true;
+                        }
                         main = await ClickLanguageAsync(main);
                         Assert.Equal("cs", LanguageSettings.Code);
                         Assert.Equal("CS", ((TextBlock)main.FindName("LanguageCodeText")).Text);
