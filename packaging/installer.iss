@@ -38,3 +38,11 @@ Name: "{group}\Uninstall OBK"; Filename: "{uninstallexe}"
 
 [Run]
 Filename: "{app}\OBK.exe"; Description: "Launch OBK"; Flags: nowait postinstall skipifsilent
+; Automatic updates pass /Relaunch=1 so the updated app starts again after a silent install.
+Filename: "{app}\OBK.exe"; Flags: nowait; Check: ShouldRelaunch
+
+[Code]
+function ShouldRelaunch: Boolean;
+begin
+  Result := ExpandConstant('{param:Relaunch|0}') = '1';
+end;

@@ -276,8 +276,33 @@
                 </Ellipse>
                 <TextBlock x:Name="Status" Grid.Column="1" Text="{Binding Status}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
                            VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Status}" AutomationProperties.LiveSetting="Polite"/>
-                <TextBlock Grid.Column="2" Text="Loading archive..." FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"
-                           Margin="12,0,0,0" Visibility="{Binding Loading, Converter={StaticResource VisibleIf}}"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Loading archive..." FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"
+                               Margin="12,0,0,0" Visibility="{Binding Loading, Converter={StaticResource VisibleIf}}"/>
+                    <TextBlock x:Name="UpdateText" Text="{Binding Text}" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                               VerticalAlignment="Center" Margin="16,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="360" ToolTip="{Binding Text}"
+                               AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="Update status"/>
+                    <StackPanel x:Name="UpdateActions" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center"
+                                Visibility="{Binding IsReady, Converter={StaticResource VisibleIf}}">
+                        <Button Style="{StaticResource PrimaryButton}" Content="Update and restart" Command="{Binding InstallCommand}"
+                                FontSize="11" MinHeight="0" Height="22" Padding="10,0"/>
+                        <Button x:Name="UpdateMenuButton" Style="{StaticResource PrimaryButton}" Margin="1,0,0,0" FontSize="11" MinHeight="0" Height="22" Width="24" Padding="0"
+                                Click="UpdateMenuClick" ToolTip="More update options" AutomationProperties.Name="More update options">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE70D;" FontSize="9" Foreground="{DynamicResource AccentText}"/>
+                        </Button>
+                        <Popup PlacementTarget="{Binding ElementName=UpdateMenuButton}" Placement="Top" HorizontalOffset="-150"
+                               IsOpen="{Binding MenuOpen, Mode=TwoWay}" StaysOpen="False" AllowsTransparency="True">
+                            <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8" Padding="6" Width="200">
+                                <StackPanel>
+                                    <Button Style="{StaticResource SubtleButton}" Content="Ignore during this session" HorizontalContentAlignment="Left"
+                                            Command="{Binding IgnoreCommand}" FontSize="12"/>
+                                    <Button Style="{StaticResource SubtleButton}" Content="Install when I exit" HorizontalContentAlignment="Left"
+                                            Command="{Binding InstallOnExitCommand}" FontSize="12"/>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </StackPanel>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>
