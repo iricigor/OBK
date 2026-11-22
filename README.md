@@ -72,3 +72,21 @@ OBK downloads messages for the current school year (September–August).
 - [Deferred ideas](DEFERRED_IDEAS.md) – possible future work.
 - [Report a problem](https://github.com/iricigor/OBK/issues) – please do not
   include passwords or private message content.
+
+## Android preview
+
+An Android 10+ .NET MAUI reader is being developed in
+[#25](https://github.com/iricigor/OBK/issues/25). It is not a published Android
+release yet. The preview supports school sign-in, multiple children, manual
+refresh, offline folders/search, and opening or sharing downloaded attachments.
+It uses Android Keystore-backed encryption and remains read-only toward school
+servers.
+
+Development-signed APKs are available as artifacts of **🔨 Android preview**
+workflow runs. They are for device verification, not production distribution;
+installing previews from different build machines may require uninstalling the
+previous preview, which deletes its local archives and encryption key.
+Production signing and GitHub release APKs follow preview verification.
+Play Store publishing and localization come later.
+
+See the [Android build and verification instructions](docs/TECHNICAL.md#android-preview).
