@@ -7,9 +7,11 @@ future work and its prerequisites are recorded in [Deferred ideas](../DEFERRED_I
 ## Documentation screenshot
 
 `docs\images\obk-main.png` is rendered from fictional sample data, without
-contacting any school. Regenerate it after a Release build:
+contacting any school. Regenerate it with a release-style build so the local
+development banner is not included:
 
 ```powershell
+dotnet build .\src\OBK.App\OBK.App.csproj -c Release -p:LocalBuild=false
 .\src\OBK.App\bin\Release\net10.0-windows\OBK.exe --screenshot "$PWD\docs\images\obk-main.png"
 ```
 
@@ -111,9 +113,24 @@ disable checks yet; only HTTPS assets from this repository's releases are used.
 
 ## Application icon
 
-`src\OBK.App\Assets\OBK.ico` (a graduation cap over an envelope) is used for the
-executable, windows, and installer. Regenerate it with Pillow after editing
-`tools\make_app_icon.py`: `python .\tools\make_app_icon.py`.
+The **Bold box** icon represents messages kept locally: a flat blue tile, solid
+white archive box, separated lid, and a large envelope emblem.
+`tools\make_app_icon.py` generates both `src\OBK.App\Assets\OBK.ico` for the Windows
+executable, windows, and installer, and
+`src\OBK.Android\Resources\AppIcon\obk.png` for the Android launcher and splash.
+Both platforms use the same geometry and the interface's blue accent (`#0F6CBD`).
+Windows includes 16, 20, 24, 32, 40, 48, 64, 128, and 256 px frames; frames up to
+32 px use pixel-aligned shapes and a single blue V on the white box, omitting the
+inset envelope panel to keep the title-bar and taskbar icon clear. Larger frames
+retain the detailed emblem. The 512 px Android image leaves
+space around the box so circular launcher masks do not clip the white artwork.
+
+Regenerate and check both assets with Pillow installed:
+
+```powershell
+python .\tools\make_app_icon.py
+python -m unittest discover -s .\tools -p "test_make_app_icon.py"
+```
 
 ## Main-window frame
 
