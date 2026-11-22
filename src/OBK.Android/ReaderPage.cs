@@ -9,12 +9,13 @@ internal sealed class ReaderPage : ContentPage
     private readonly Picker accounts = new() { Title = AppStrings.ReaderAccountPickerTitle };
     private readonly Picker folders = new() { Title = AppStrings.ReaderFolderPickerTitle };
     private readonly SearchBar search = new() { Placeholder = AppStrings.ReaderSearchPlaceholder };
-    private readonly Label status = new() { Text = AppStrings.ReaderStatusOpening };
-    private readonly Button refresh = new() { Text = AppStrings.ReaderRefreshAll };
-    private readonly Button signIn = new() { Text = AppStrings.ReaderAccountsButton };
+    private readonly Label status = ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderStatusOpening });
+    private readonly ToolbarItem refresh = new() { Text = AppStrings.ReaderRefreshAll };
+    private readonly ToolbarItem signIn = new() { Text = AppStrings.ReaderAccountsSheetTitle, Order = ToolbarItemOrder.Secondary };
     private readonly ActivityIndicator progress = new() { IsVisible = false };
     private readonly CollectionView messages = new() { SelectionMode = SelectionMode.Single };
     private readonly Label empty = new();
+    private readonly Button addChild = new() { Text = AppStrings.ReaderAccountsSheetAddChild, IsVisible = false };
     private ReaderSession? session;
     private IReadOnlyList<Login> known = [];
     private Archive? archive;
@@ -28,6 +29,8 @@ internal sealed class ReaderPage : ContentPage
     public ReaderPage()
     {
         Title = "OBK";
+        ToolbarItems.Add(refresh);
+        ToolbarItems.Add(signIn);
         folders.ItemsSource = new[] { SharedStrings.FolderInbox, SharedStrings.FolderNoticeboard, SharedStrings.FolderSent, SharedStrings.FolderExcuses };
         folders.SelectedIndex = 0;
         accounts.ItemDisplayBinding = new Binding(".", converter: new AccountLabelConverter());
@@ -42,20 +45,21 @@ internal sealed class ReaderPage : ContentPage
         signIn.Clicked += async (_, _) => await AccountActionsAsync();
         messages.ItemTemplate = new DataTemplate(() =>
         {
-            var title = new Label { FontAttributes = FontAttributes.Bold, MaxLines = 2 };
+            var title = new Label { FontSize = 15, FontAttributes = FontAttributes.Bold, MaxLines = 2 };
             title.SetBinding(Label.TextProperty, nameof(Message.Title));
-            var sender = new Label { MaxLines = 1 };
+            var sender = ReaderTheme.Metadata(new Label { MaxLines = 1 });
             sender.SetBinding(Label.TextProperty, nameof(Message.SenderName));
-            var date = new Label();
+            var date = ReaderTheme.Metadata(new Label());
             date.SetBinding(Label.TextProperty, new Binding(nameof(Message.Date), stringFormat: "{0:g}"));
             return ReaderTheme.Apply(new VerticalStackLayout
             {
                 Padding = new Thickness(16, 12),
                 Spacing = 4,
-                Children = { title, sender, date, new BoxView { HeightRequest = 1, Color = Colors.Gray, Opacity = 0.25 } }
+                Children = { title, sender, date, new BoxView { HeightRequest = 1 } }
             });
         });
-        messages.EmptyView = empty;
+        addChild.Clicked += async (_, _) => await OpenSignInAsync();
+        messages.EmptyView = new VerticalStackLayout { Padding = 24, Spacing = 12, Children = { empty, addChild } };
         messages.SelectionChanged += async (_, args) =>
         {
             if (args.CurrentSelection.FirstOrDefault() is Message message && session is not null && account is not null)
@@ -64,18 +68,32 @@ internal sealed class ReaderPage : ContentPage
                 await RunAsync(() => Navigation.PushAsync(new MessagePage(session, account, message)));
             }
         };
-        var actions = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Star)], ColumnSpacing = 8 };
-        actions.Add(refresh, 0);
-        actions.Add(signIn, 1);
+        var selectors = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Star)], ColumnSpacing = 8 };
+        selectors.Add(ReaderTheme.Panel(new VerticalStackLayout
+        {
+            Spacing = 0,
+            Children = { ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderAccountLabel, FontSize = 11 }), accounts }
+        }, new Thickness(8, 2)), 0);
+        selectors.Add(ReaderTheme.Panel(new VerticalStackLayout
+        {
+            Spacing = 0,
+            Children = { ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderFolderLabel, FontSize = 11 }), folders }
+        }, new Thickness(8, 2)), 1);
         var header = new VerticalStackLayout
         {
             Padding = new Thickness(16, 8),
-            Spacing = 8,
-            Children = { accounts, actions, status, progress, folders, search }
+            Spacing = 4,
+            Children = { selectors, search }
         };
-        var layout = new Grid { RowDefinitions = [new(GridLength.Auto), new(GridLength.Star)] };
+        var footer = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)], ColumnSpacing = 8 };
+        progress.WidthRequest = progress.HeightRequest = 24;
+        footer.Add(progress, 0);
+        footer.Add(status, 1);
+        var layout = new Grid { RowDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)] };
         layout.Add(header);
         layout.Add(messages, 0, 1);
+        layout.Add(footer, 0, 2);
+        messages.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
         Content = layout;
         ReaderTheme.Apply(this);
         ReaderTheme.Apply(empty);
@@ -108,6 +126,7 @@ internal sealed class ReaderPage : ContentPage
         refresh.Text = session is null ? AppStrings.ReaderRetryOpening : AppStrings.ReaderRefreshAll;
         refresh.IsEnabled = !value && (session is null || known.Count > 0);
         signIn.IsEnabled = !value && session is not null;
+        addChild.IsEnabled = signIn.IsEnabled;
     }
 
     private async Task RunAsync(Func<Task> action)
@@ -185,9 +204,9 @@ internal sealed class ReaderPage : ContentPage
             items = items.Where(item => $"{item.Title}\n{item.SenderName}\n{item.Text}\n{item.SentDate}\n{item.Date:g}"
                 .Contains(query, StringComparison.CurrentCultureIgnoreCase));
         messages.ItemsSource = items.OrderByDescending(item => item.Date).ToList();
+        addChild.IsVisible = session is not null && known.Count == 0;
         empty.Text = query.Length > 0 ? AppStrings.ReaderEmptySearch :
             archive is null ? AppStrings.ReaderEmptyNoArchive : AppStrings.ReaderEmptyFolder;
-        empty.Margin = new Thickness(24);
     }
 
     private async Task OpenSignInAsync(Login? login = null)

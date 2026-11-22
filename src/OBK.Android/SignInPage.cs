@@ -15,10 +15,11 @@ internal sealed class SignInPage : ContentPage
     private readonly CheckBox remember = new() { MinimumHeightRequest = 48, MinimumWidthRequest = 48 };
     private readonly SearchBar schoolSearch = new() { Placeholder = AppStrings.SignInSchoolSearchPlaceholder };
     private readonly VerticalStackLayout schoolResults = new() { Spacing = 8 };
-    private readonly Label schoolStatus = new();
-    private readonly Label status = new() { Text = AppStrings.SignInPasswordNotice };
-    private readonly Button submit = new() { Text = AppStrings.SignInSubmitButton };
-    private readonly ActivityIndicator progress = new();
+    private readonly Label schoolStatus = ReaderTheme.Metadata(new Label { IsVisible = false });
+    private readonly Label status = ReaderTheme.Metadata(new Label { Text = AppStrings.SignInPasswordNotice });
+    private readonly Button submit = ReaderTheme.Primary(new Button { Text = AppStrings.SignInSubmitButton });
+    private readonly Button manualAddress = ReaderTheme.Subtle(new Button { Text = AppStrings.SignInManualAddressButton });
+    private readonly ActivityIndicator progress = new() { IsVisible = false };
     private bool busy;
 
     public SignInPage(ReaderSession session, Login? login, Func<Login, Task> saved)
@@ -26,6 +27,15 @@ internal sealed class SignInPage : ContentPage
         this.session = session;
         this.saved = saved;
         Title = login is null ? AppStrings.SignInTitleAddChild : AppStrings.SignInTitleSignIn;
+        var addressFields = Field(AppStrings.SignInSchoolAddressLabel, url);
+        addressFields.IsVisible = login is not null;
+        manualAddress.Text = addressFields.IsVisible ? AppStrings.SignInHideAddressButton : AppStrings.SignInManualAddressButton;
+        manualAddress.Clicked += (_, _) =>
+        {
+            addressFields.IsVisible = !addressFields.IsVisible;
+            manualAddress.Text = addressFields.IsVisible ? AppStrings.SignInHideAddressButton : AppStrings.SignInManualAddressButton;
+            if (addressFields.IsVisible) url.Focus();
+        };
         if (login is not null)
         {
             url.Text = login.Url;
@@ -42,6 +52,7 @@ internal sealed class SignInPage : ContentPage
                 found.Total == 0 ? AppStrings.SignInNoSchoolMatch :
                 found.Total > 6 ? Localized.Format(AppStrings.SignInTooManySchools, found.Total) :
                 Localized.Format(AppStrings.SignInMatchingSchools, found.Total);
+            schoolStatus.IsVisible = schoolStatus.Text.Length > 0;
             if (found.Total > 6) return;
             foreach (var school in found.Visible)
             {
@@ -51,37 +62,47 @@ internal sealed class SignInPage : ContentPage
                     url.Text = school.SchoolUrl;
                     schoolResults.Children.Clear();
                     schoolStatus.Text = school.Name;
+                    schoolStatus.IsVisible = true;
                 };
                 schoolResults.Add(choose);
             }
+            ReaderTheme.Apply(schoolResults);
         };
         submit.Clicked += async (_, _) => await SignInAsync();
-        var remembered = new HorizontalStackLayout
+        var remembered = new Grid
         {
-            Spacing = 8,
-            Children = { remember, new Label { Text = AppStrings.SignInRememberCredentials, VerticalOptions = LayoutOptions.Center } }
+            ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)],
+            ColumnSpacing = 8
         };
+        remembered.Add(remember, 0);
+        remembered.Add(new Label { Text = AppStrings.SignInRememberCredentials, FontSize = 14, VerticalOptions = LayoutOptions.Center }, 1);
         Content = new ScrollView
         {
             Content = new VerticalStackLayout
             {
-                Padding = 24,
+                Padding = 20,
                 Spacing = 12,
                 Children =
                 {
-                    new Label { Text = AppStrings.SignInHeading, FontSize = 24, FontAttributes = FontAttributes.Bold },
-                    new Label { Text = AppStrings.SignInReadOnlyNotice },
+                    new Label { Text = AppStrings.SignInHeading, FontSize = 20, FontAttributes = FontAttributes.Bold },
                     schoolSearch, schoolStatus, schoolResults,
-                    new Label { Text = AppStrings.SignInSchoolAddressLabel }, url,
-                    new Label { Text = AppStrings.SignInUsernameLabel }, username,
-                    new Label { Text = AppStrings.SignInPasswordLabel }, password,
-                    new Label { Text = AppStrings.SignInChildLabel }, child,
-                    remembered, submit, progress, status
+                    manualAddress, addressFields,
+                    Field(AppStrings.SignInUsernameLabel, username),
+                    Field(AppStrings.SignInPasswordLabel, password),
+                    Field(AppStrings.SignInChildLabel, child),
+                    remembered, submit, progress, status,
+                    ReaderTheme.Metadata(new Label { Text = AppStrings.SignInReadOnlyNotice })
                 }
             }
         };
         ReaderTheme.Apply(this);
     }
+
+    private static VerticalStackLayout Field(string label, View input) => new()
+    {
+        Spacing = 4,
+        Children = { ReaderTheme.Metadata(new Label { Text = label }), ReaderTheme.Panel(input, new Thickness(8, 0)) }
+    };
 
     private async Task SignInAsync()
     {
@@ -89,6 +110,8 @@ internal sealed class SignInPage : ContentPage
         busy = true;
         submit.IsEnabled = false;
         progress.IsRunning = true;
+        progress.IsVisible = true;
+        manualAddress.IsEnabled = false;
         schoolSearch.IsEnabled = url.IsEnabled = username.IsEnabled = password.IsEnabled = child.IsEnabled = remember.IsEnabled = false;
         schoolResults.IsEnabled = false;
         try
@@ -117,6 +140,8 @@ internal sealed class SignInPage : ContentPage
             busy = false;
             submit.IsEnabled = true;
             progress.IsRunning = false;
+            progress.IsVisible = false;
+            manualAddress.IsEnabled = true;
             schoolSearch.IsEnabled = url.IsEnabled = username.IsEnabled = password.IsEnabled = child.IsEnabled = remember.IsEnabled = true;
             schoolResults.IsEnabled = true;
         }

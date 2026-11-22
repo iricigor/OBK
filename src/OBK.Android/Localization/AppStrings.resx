@@ -135,6 +135,12 @@
   <data name="ReaderAccountPickerTitle" xml:space="preserve">
     <value>Choose a child or account</value>
   </data>
+  <data name="ReaderAccountLabel" xml:space="preserve">
+    <value>Child / account</value>
+  </data>
+  <data name="ReaderFolderLabel" xml:space="preserve">
+    <value>Folder</value>
+  </data>
   <data name="ReaderAccountStatus" xml:space="preserve">
     <value>{0}: {1}</value>
     <comment>Status or failure line for one account during Refresh all. {0} = account label, {1} = progress or error text.</comment>
@@ -201,7 +207,7 @@
     <comment>Refresh button text when the encrypted archive could not be opened.</comment>
   </data>
   <data name="ReaderSearchPlaceholder" xml:space="preserve">
-    <value>Search subject, sender, text or date</value>
+    <value>Search messages</value>
   </data>
   <data name="ReaderStatusArchiveReady" xml:space="preserve">
     <value>Offline archive ready. Last sync: {0:g}</value>
@@ -262,6 +268,12 @@
   <data name="SignInSchoolAddressLabel" xml:space="preserve">
     <value>School HTTPS address</value>
     <comment>Field label.</comment>
+  </data>
+  <data name="SignInManualAddressButton" xml:space="preserve">
+    <value>Enter school address manually</value>
+  </data>
+  <data name="SignInHideAddressButton" xml:space="preserve">
+    <value>Hide school address</value>
   </data>
   <data name="SignInSchoolSearchPlaceholder" xml:space="preserve">
     <value>Search school or town</value>
