@@ -101,6 +101,15 @@ public partial class App : Application
                         window.Height = 620;
                         window.UpdateLayout();
                         Capture(window, Path.ChangeExtension(resultPath, ".small.png"));
+                        window.ViewModel.ToggleNavigationCommand.Execute(null);
+                        window.UpdateLayout();
+                        if (Math.Abs(window.NavigationColumn.ActualWidth - 64) > 0.5)
+                            throw new ObkException("Collapsing the sidebar did not switch to icon-only width.");
+                        Capture(window, Path.ChangeExtension(resultPath, ".icons.png"));
+                        window.ViewModel.ToggleNavigationCommand.Execute(null);
+                        window.UpdateLayout();
+                        if (window.NavigationColumn.ActualWidth < 140)
+                            throw new ObkException("Expanding the sidebar did not restore its width.");
                         string? switchUsername = null;
                         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
                         {

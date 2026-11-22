@@ -41,6 +41,7 @@ public sealed class MainViewModel : ObservableObject
     private MessageSort sort = MessageSort.Date;
     private MessageGrouping grouping = MessageGrouping.None;
     private bool selectedIsExcuse;
+    private bool navigationExpanded = true;
     private bool expanded;
     private int folderVersion;
     private int listVersion;
@@ -59,6 +60,7 @@ public sealed class MainViewModel : ObservableObject
             ReportError, p => CanChangeAccount && p is AccountRow);
         OpenRelatedCommand = new RelayCommand(p => { if (p is RelatedRow row) OpenRelated(row.Item); });
         ClearSearchCommand = new RelayCommand(_ => SearchText = "");
+        ToggleNavigationCommand = new RelayCommand(_ => NavigationExpanded = !NavigationExpanded);
         OpenAttachmentCommand = ExportCommand("open", export);
         SaveAttachmentCommand = ExportCommand("save", export);
         OpenFolderCommand = ExportCommand("folder", export);
@@ -79,6 +81,8 @@ public sealed class MainViewModel : ObservableObject
     public ICommand SelectAccountCommand { get; }
     public ICommand OpenRelatedCommand { get; }
     public ICommand ClearSearchCommand { get; }
+    public ICommand ToggleNavigationCommand { get; }
+    public bool NavigationExpanded { get => navigationExpanded; set => Set(ref navigationExpanded, value); }
     public ICommand OpenAttachmentCommand { get; }
     public ICommand SaveAttachmentCommand { get; }
     public ICommand OpenFolderCommand { get; }

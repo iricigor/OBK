@@ -309,7 +309,9 @@ current app session. On a first visit, or if that message is no longer present,
 the newest message by sent date is selected and scrolled into view. Empty
 folders remain unselected. Selection memory resets when changing accounts or
 school years; it is not saved when the app closes.
-Drag the divider between the list and reading pane to resize them. The layout
+Drag the dividers to resize the sidebar, list, and reading pane. Dragging the
+sidebar narrower than about 140 pixels, or using the arrow button at its bottom,
+switches it to icons only (names in tooltips); the arrow expands it again. The layout
 adapts down to an 880-pixel-wide window while retaining all three columns.
 The Sent folder is for reading previously sent messages, not composing or
 sending new ones.

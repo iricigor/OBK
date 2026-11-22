@@ -47,12 +47,15 @@
         </Grid>
         <Grid Grid.Row="2" Margin="12,0,12,12">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="NavigationColumn" Width="210" MinWidth="140"/>
+                <ColumnDefinition x:Name="NavigationColumn" Width="210" MinWidth="64" MaxWidth="400"/>
                 <ColumnDefinition Width="12"/>
                 <ColumnDefinition x:Name="MessageColumn" Width="360" MinWidth="240"/>
                 <ColumnDefinition Width="12"/>
                 <ColumnDefinition Width="*" MinWidth="300"/>
             </Grid.ColumnDefinitions>
+            <GridSplitter x:Name="NavigationSplitter" Grid.Column="1" Width="6" HorizontalAlignment="Center" Background="Transparent" ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext" ShowsPreview="False" DragCompleted="NavigationSplitterDragCompleted"
+                          ToolTip="Resize sidebar; drag narrow for icons only" AutomationProperties.Name="Resize sidebar"/>
             <DockPanel Margin="4,8,4,0">
                 <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                     <ItemsControl x:Name="AccountList" ItemsSource="{Binding Accounts}" AutomationProperties.Name="Children">
@@ -82,6 +85,7 @@
                                             </TextBlock>
                                         </Border>
                                         <TextBlock Grid.Column="2" Text="{Binding Label}" VerticalAlignment="Center" Margin="10,0,0,0"
+                                                   Visibility="{Binding DataContext.NavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource VisibleIf}}"
                                                    TextTrimming="CharacterEllipsis" FontSize="13.5">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -100,11 +104,30 @@
                             AutomationProperties.Name="Add child">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,10,0"/>
-                            <TextBlock Text="Add child" FontSize="12.5" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Text="Add child" FontSize="12.5" Foreground="{DynamicResource TextSecondary}"
+                                       Visibility="{Binding NavigationExpanded, Converter={StaticResource VisibleIf}}"/>
                         </StackPanel>
                     </Button>
                     <Border Height="1" Background="{DynamicResource Stroke}" Margin="8,10,8,0"/>
                 </StackPanel>
+                <Button x:Name="NavigationToggle" DockPanel.Dock="Bottom" Style="{StaticResource SubtleButton}" Command="{Binding ToggleNavigationCommand}"
+                        HorizontalAlignment="Left" Height="34" Padding="18,0" Margin="0,0,0,8">
+                    <TextBlock FontSize="12">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Icon}">
+                                <Setter Property="Text" Value="&#xE76B;"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                                <Setter Property="ToolTip" Value="Show icons only"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding NavigationExpanded}" Value="False">
+                                        <Setter Property="Text" Value="&#xE76C;"/>
+                                        <Setter Property="ToolTip" Value="Expand sidebar"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button>
                 <ListBox x:Name="FolderList" ItemsSource="{Binding Navigation}" SelectedItem="{Binding SelectedFolder}"
                          AutomationProperties.Name="Folders">
                     <ListBox.ItemContainerStyle>
@@ -114,7 +137,7 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="12,0,10,0">
+                            <Grid Margin="12,0,10,0" ToolTip="{Binding Title}">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="24"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Icon}" Style="{StaticResource Icon}" FontSize="16" HorizontalAlignment="Left">
                                     <TextBlock.Foreground>
@@ -124,7 +147,8 @@
                                         </MultiBinding>
                                     </TextBlock.Foreground>
                                 </TextBlock>
-                                <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="8,0" TextTrimming="CharacterEllipsis" FontSize="13.5">
+                                <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="8,0" TextTrimming="CharacterEllipsis" FontSize="13.5"
+                                           Visibility="{Binding DataContext.NavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource VisibleIf}}">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="FontWeight" Value="Normal"/>
@@ -136,7 +160,8 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
-                                <Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="10" MinWidth="24" Padding="6,2" VerticalAlignment="Center">
+                                <Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="10" MinWidth="24" Padding="6,2" VerticalAlignment="Center"
+                                        Visibility="{Binding DataContext.NavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource VisibleIf}}">
                                     <TextBlock Text="{Binding Count}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
                                 </Border>
                             </Grid>
