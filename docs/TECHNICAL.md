@@ -317,7 +317,11 @@ numbered outward from the current message, for example Previous (2), Previous (1
 links, so this is a heuristic: subjects must share enough words (prefixes,
 case, and diacritics are ignored, so an added or changed middle part such as
 "Hodnocení / Evaluation" still matches) and the other person must match. Matches
-may be wrong or incomplete; selecting one opens it in its folder.
+may be wrong or incomplete; selecting one opens it in its folder. When three or more
+messages share the subject and person (for example repeated excuses), a link also
+needs similar body text, or must be the adjacent message from the other side
+(Inbox vs Sent) with no same-subject message from the selected message's side in
+between; otherwise nothing is shown rather than a guess.
 Selecting a message does not mark it read or send any server requests.
 Switching folders restores the last selected message in that folder for the
 current app session. On a first visit, or if that message is no longer present,

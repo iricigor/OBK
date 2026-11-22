@@ -137,17 +137,20 @@ public static partial class MessageInsights
     /// <summary>
     /// Finds possible earlier messages and responses. This is a heuristic: Komens lists do not expose
     /// reply links, so results must be presented as possible matches, not confirmed threads.
+    /// When many messages share the subject and person (for example repeated excuses), a match also needs
+    /// similar body text, or must be an adjacent message from the other side (Inbox vs Sent) with no
+    /// same-subject message from the target's side between them.
     /// </summary>
     public static RelatedMessages FindRelated(MessageRef target, IEnumerable<MessageRef> all, int limit = 5)
     {
         if (target.Folder == "noticeboard") return new([], []);
         var targetExcuse = IsExcuse(target.Message);
         var person = Counterpart(target.Message, target.Folder);
+        var pool = all.Where(c => c.Folder != "noticeboard").ToList();
         var matches = new List<RelatedMessage>();
-        foreach (var candidate in all)
+        foreach (var candidate in pool)
         {
-            if (candidate.Folder == "noticeboard" ||
-                (candidate.Folder == target.Folder && candidate.Message.Id == target.Message.Id) ||
+            if ((candidate.Folder == target.Folder && candidate.Message.Id == target.Message.Id) ||
                 (targetExcuse && IsExcuse(candidate.Message))) continue;
             var score = SubjectScore(target.Message.Title, candidate.Message.Title);
             var same = SamePerson(person, Counterpart(candidate.Message, candidate.Folder));
@@ -155,9 +158,36 @@ public static partial class MessageInsights
             matches.Add(new(candidate, score));
         }
         var date = target.Message.Date;
+        var family = pool.Where(c => SubjectScore(target.Message.Title, c.Message.Title) >= 0.9 &&
+            SamePerson(person, Counterpart(c.Message, c.Folder)) != false).ToList();
+        if (family.Count >= AmbiguousSubjectCount)
+        {
+            var targetBody = BodyTokens(target.Message);
+            bool Adjacent(MessageRef candidate)
+            {
+                if (candidate.Folder == target.Folder) return false;
+                var other = candidate.Message.Date;
+                var (from, to) = other < date ? (other, date) : (date, other);
+                return !family.Any(x => x.Folder == target.Folder && x.Message.Date > from && x.Message.Date < to);
+            }
+            matches = matches.Where(m => BodySimilarity(targetBody, BodyTokens(m.Item.Message)) >= 0.5 || Adjacent(m.Item)).ToList();
+        }
         return new(
             matches.Where(m => m.Item.Message.Date < date).OrderByDescending(m => m.Item.Message.Date).Take(limit).ToArray(),
             matches.Where(m => m.Item.Message.Date > date).OrderBy(m => m.Item.Message.Date).Take(limit).ToArray());
+    }
+
+    public const int AmbiguousSubjectCount = 3;
+
+    private static HashSet<string> BodyTokens(Message message) =>
+        Words().Matches(Fold(string.Concat(MessageRenderer.Render(message.Text).Select(p => p.Text))))
+            .Select(m => m.Value).Where(w => w.Length >= 4).ToHashSet();
+
+    /// <summary>Shared words relative to the shorter body; very short bodies never count as similar.</summary>
+    public static double BodySimilarity(HashSet<string> a, HashSet<string> b)
+    {
+        var shorter = Math.Min(a.Count, b.Count);
+        return shorter < 3 ? 0 : (double)a.Intersect(b).Count() / shorter;
     }
 
     [GeneratedRegex(@"\s+")] private static partial Regex Whitespace();

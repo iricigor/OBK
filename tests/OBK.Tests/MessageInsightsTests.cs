@@ -100,6 +100,28 @@ public sealed class MessageInsightsTests
     }
 
     [Fact]
+    public void RepeatedSubjectsLinkOnlyAdjacentOrSimilarMessages()
+    {
+        MessageRef Excuse(string id, int day) => new(Make(id, "omluvenka: Irić Marko, 1.T", $"2026-10-{day:00}T08:00:00+02:00",
+            "Parent", "Veronika Lachnitová, M.A.", $"<p>Omlouvám syna dne {day}. 10.</p>", "OMLUVENKA"), "sent");
+        MessageRef Reply(string id, int day, string text) => new(Make(id, "Re: omluvenka: Irić Marko, 1.T", $"2026-10-{day:00}T12:00:00+02:00",
+            "Veronika Lachnitová, M.A.", text: text), "received");
+        var e1 = Excuse("e1", 1);
+        var r1 = Reply("r1", 2, "<p>Děkuji, beru na vědomí.</p>");
+        var e2 = Excuse("e2", 5);
+        var r2 = Reply("r2", 6, "<p>Děkuji, omluvenka přijata.</p>");
+        var e3 = Excuse("e3", 9);
+        var all = new[] { e1, r1, e2, r2, e3 };
+
+        var related = MessageInsights.FindRelated(e2, all);
+        Assert.Equal("r1", Assert.Single(related.Previous).Item.Message.Id);
+        Assert.Equal("r2", Assert.Single(related.Responses).Item.Message.Id);
+        var fromReply = MessageInsights.FindRelated(r1, all);
+        Assert.Equal("e1", Assert.Single(fromReply.Previous).Item.Message.Id);
+        Assert.Equal("e2", Assert.Single(fromReply.Responses).Item.Message.Id);
+    }
+
+    [Fact]
     public void LinksBecomeClickablePartsWithoutDuplicatedOrRelativeDestinations()
     {
         var parts = MessageRenderer.Render(
