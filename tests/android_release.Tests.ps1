@@ -16,6 +16,7 @@ function Assert-Rejected([scriptblock]$Action, [string]$Message) {
     try { & $Action }
     catch {
         if ($_.Exception.Message -notlike "*$Message*") { throw }
+        $global:LASTEXITCODE = 0
         return
     }
     throw "Expected rejection: $Message"

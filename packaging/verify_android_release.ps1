@@ -30,7 +30,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Android release signature verification failed.' }
     $signers = @($signature | Select-String '^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]{64})$')
     if ($signers.Count -ne 1 -or $signers[0].Matches[0].Groups[1].Value -ine $CertificateSha256) {
-        throw 'The APK is not signed with the expected release certificate.'
+        $digests = @($signature | Where-Object { $_ -match 'certificate.*digest' }) -join '; '
+        throw "The APK is not signed with the expected release certificate. Expected SHA-256: $CertificateSha256. Build-tools: $($tools.Name). Reported digests: $digests"
     }
     $manifest = & $aapt dump badging $ApkPath
     if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect the Android release manifest.' }
