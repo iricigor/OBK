@@ -423,6 +423,7 @@ public sealed class PresentationTests
                             Read = true, Attachments = []
                         };
                         readerFolders["received"].Add(ReaderMessage("original", "Reader shades", 1));
+                        readerFolders["received"][0].Attachments.Add(new Attachment { Id = "reader-file", Name = "schedule.pdf" });
                         readerFolders["received"].Add(ReaderMessage("unrelated", "Separate notice", 3));
                         readerFolders["sent"].Add(ReaderMessage("reply", "Re: Reader shades", 2));
                         await Task.Run(() => store.SaveArchive("https://school.example", "reader-shades",
@@ -433,6 +434,11 @@ public sealed class PresentationTests
                         await main.ViewModel.MessageReady;
                         var header = (Border)main.FindName("MessageHeader");
                         var band = (Border)main.FindName("RelatedBand");
+                        var attachmentBand = (Border)main.FindName("AttachmentBand");
+                        var attachmentPanel = (StackPanel)main.FindName("AttachmentPanel");
+                        var contentReader = (RichTextBox)main.FindName("ContentReader");
+                        Assert.Same(attachmentBand, attachmentPanel.Parent);
+                        Assert.False(attachmentBand.IsAncestorOf(contentReader));
                         var relatedPanel = (StackPanel)main.FindName("RelatedPanel");
                         var relatedItems = Assert.IsType<ItemsControl>(relatedPanel.Children[1]);
                         Assert.True(main.ViewModel.HasRelated);
@@ -442,6 +448,10 @@ public sealed class PresentationTests
                             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                             main.UpdateLayout();
                             Assert.Equal(Visibility.Visible, band.Visibility);
+                            Assert.Equal(Visibility.Visible, attachmentBand.Visibility);
+                            Assert.Equal(band.ActualWidth, attachmentBand.ActualWidth);
+                            var attachmentSurface = ((SolidColorBrush)attachmentBand.Background).Color;
+                            Assert.NotEqual(((SolidColorBrush)readingPane.Background).Color, attachmentSurface);
                             Assert.NotEqual(((SolidColorBrush)header.Background).Color, ((SolidColorBrush)band.Background).Color);
                             Assert.Equal(header.ActualWidth, band.ActualWidth);
                             Assert.True(header.ActualWidth > 0);
@@ -450,6 +460,8 @@ public sealed class PresentationTests
                             var primary = (SolidColorBrush)main.FindResource("TextPrimary");
                             var accent = (SolidColorBrush)main.FindResource("Accent");
                             var relatedLink = (SolidColorBrush)main.FindResource("RelatedLink");
+                            Assert.True(Contrast(primary.Color, attachmentSurface) >= 4.5);
+                            Assert.True(Contrast(accent.Color, attachmentSurface) >= 4.5);
                             Assert.True(Contrast(primary.Color, ((SolidColorBrush)header.Background).Color) >= 4.5);
                             Assert.True(Contrast(secondary.Color, ((SolidColorBrush)header.Background).Color) >= 4.5);
                             Assert.True(Contrast(secondary.Color, ((SolidColorBrush)band.Background).Color) >= 4.5);
@@ -483,6 +495,8 @@ public sealed class PresentationTests
                         Assert.False(main.ViewModel.HasRelated);
                         Assert.Equal(Visibility.Collapsed, band.Visibility);
                         Assert.Equal(0, band.ActualHeight);
+                        Assert.Equal(Visibility.Collapsed, attachmentBand.Visibility);
+                        Assert.Equal(0, attachmentBand.ActualHeight);
                         await main.ViewModel.Theme.SetReadingSizeAsync("Medium");
                         main.Width = 1000;
                         main.Height = 700;

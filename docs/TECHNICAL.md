@@ -155,7 +155,9 @@ messages, and the existing neutral body surface. The related band is hidden
 when there are no matches. Both themes use dedicated dynamic brush resources
 so theme switching preserves readable metadata and navigation links.
 Message discovery, navigation, attachments, and reading-size behavior remain
-unchanged.
+unchanged. Attachments stay below related messages and above the body, on
+their own neutral-shaded surface. This band is hidden when there are no files;
+file cards and attachment actions are unchanged.
 
 ## Interface text and localization
 

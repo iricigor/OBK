@@ -486,8 +486,9 @@
                                 </ItemsControl>
                             </StackPanel>
                         </Border>
-                        <StackPanel Margin="24,20,24,24">
-                            <StackPanel x:Name="AttachmentPanel" Visibility="{Binding HasAttachments, Converter={StaticResource VisibleIf}}" Margin="0,0,0,20">
+                        <Border x:Name="AttachmentBand" Background="{DynamicResource AttachmentSurface}" Padding="24,20,24,12"
+                                Visibility="{Binding HasAttachments, Converter={StaticResource VisibleIf}}">
+                            <StackPanel x:Name="AttachmentPanel">
                                 <ItemsControl ItemsSource="{Binding VisibleAttachments}">
                                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
@@ -575,6 +576,8 @@
                                             ToolTip="{x:Static loc:AppStrings.AttachmentSaveAllTooltip}" ToolTipService.ShowOnDisabled="True"/>
                                 </StackPanel>
                             </StackPanel>
+                        </Border>
+                        <StackPanel Margin="24,20,24,24">
                             <RichTextBox x:Name="ContentReader" local:MessageDocument.Parts="{Binding Body}" IsReadOnly="True" IsDocumentEnabled="True"
                                          PreviewMouseWheel="ReaderMouseWheel"
                                          BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimary}"
