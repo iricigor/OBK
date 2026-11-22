@@ -57,6 +57,32 @@ public sealed class PresentationTests
     }
 
     [Fact]
+    public void LargeInitialRequiresAllExplicitChildNamesToBeOneWord()
+    {
+        var anna = new Login("https://sample.example", "anna", ChildName: "Anna");
+        var tomas = new Login("https://sample.example", "tomas", ChildName: "  Tomas  ");
+        var school = new Login("https://other.example", "parent", SchoolName: "Example Primary School");
+        Assert.True(AvatarPresentation.UseLargeInitial(anna, [anna, tomas, school]));
+        Assert.False(AvatarPresentation.UseLargeInitial(school, [anna, tomas, school]));
+        Assert.False(AvatarPresentation.UseLargeInitial(anna, [anna, tomas with { ChildName = "Tomas Novak" }]));
+        Assert.False(AvatarPresentation.UseLargeInitial(anna with { ChildName = "Anna\tNovak" }, [anna]));
+        Assert.False(AvatarPresentation.UseLargeInitial(null, []));
+    }
+
+    [Fact]
+    public void AccountAvatarColorsDoNotDependOnNamesOrOrder()
+    {
+        var login = new Login("https://sample.example", "anna", ChildName: "Anna");
+        var renamed = login with { ChildName = "Anna Novak" };
+        var key = login.Url + "|" + login.Username;
+        Assert.Equal(Palette.PairIndex(key), AvatarPresentation.PaletteIndex(key));
+        Assert.Equal(AvatarPresentation.PaletteIndex(key),
+            AvatarPresentation.PaletteIndex(renamed.Url + "|" + renamed.Username));
+        Assert.Equal(AvatarPresentation.PaletteIndex(key),
+            AvatarPresentation.PaletteIndex("  " + key.ToUpperInvariant() + "  "));
+    }
+
+    [Fact]
     public void RelatedRowsAreChronologicalNumberedOutwardAndShowTheSender()
     {
         Message Make(string id, int day, string sender) => new()
@@ -211,9 +237,11 @@ public sealed class PresentationTests
                     Assert.Equal(2, vm.Messages.Count);
                     Assert.Equal("noticeboard", vm.Navigation[0].Key);
                     Assert.Equal(["second", "first"], vm.Messages.Select(m => m.Message.Id));
+                    Assert.Equal([false, true], vm.Messages.Select(m => m.IsAlternate));
                     vm.SearchText = "SECOND conténť";
                     await vm.FolderReady;
                     Assert.Equal("second", Assert.Single(vm.Messages).Message.Id);
+                    Assert.False(Assert.Single(vm.Messages).IsAlternate);
                     Assert.Equal("1 of 2 messages match", vm.FolderCaption);
                     vm.SearchText = "";
                     await vm.FolderReady;
@@ -441,12 +469,30 @@ public sealed class PresentationTests
                         Assert.False(attachmentBand.IsAncestorOf(contentReader));
                         var relatedPanel = (StackPanel)main.FindName("RelatedPanel");
                         var relatedItems = Assert.IsType<ItemsControl>(relatedPanel.Children[1]);
+                        var messageList = (ListBox)main.FindName("Messages");
+                        static IEnumerable<ListBoxItem> RowContainers(DependencyObject root)
+                        {
+                            if (root is ListBoxItem row) yield return row;
+                            for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+                                foreach (var child in RowContainers(VisualTreeHelper.GetChild(root, index)))
+                                    yield return child;
+                        }
                         Assert.True(main.ViewModel.HasRelated);
                         foreach (var mode in new[] { "Light", "Dark" })
                         {
                             main.ViewModel.Theme.Apply(mode);
                             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                             main.UpdateLayout();
+                            var rows = RowContainers(messageList).ToArray();
+                            Assert.Equal(2, rows.Length);
+                            var striped = Assert.Single(rows, row => ((MessageRow)row.DataContext).IsAlternate);
+                            var stripe = ((SolidColorBrush)main.FindResource("ListAlternateSurface")).Color;
+                            Assert.Equal(stripe, ((SolidColorBrush)striped.Background).Color);
+                            var selected = Assert.Single(rows, row => row.IsSelected);
+                            var selectedChrome = (Border)selected.Template.FindName("Chrome", selected);
+                            Assert.Equal(((SolidColorBrush)main.FindResource("Selection")).Color,
+                                ((SolidColorBrush)selectedChrome.Background).Color);
+                            Assert.True(Contrast(((SolidColorBrush)main.FindResource("TextSecondary")).Color, stripe) >= 4.5);
                             Assert.Equal(Visibility.Visible, band.Visibility);
                             Assert.Equal(Visibility.Visible, attachmentBand.Visibility);
                             Assert.Equal(band.ActualWidth, attachmentBand.ActualWidth);

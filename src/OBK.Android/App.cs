@@ -41,6 +41,7 @@ public sealed class App : Application
         {
             Setters = { new Setter { Property = VisualElement.MinimumHeightRequestProperty, Value = 48d } }
         });
+        ReaderPreferences.Initialize();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
@@ -105,19 +106,75 @@ public sealed class App : Application
         var navigation = new NavigationPage(reader);
         navigation.SetAppThemeColor(NavigationPage.BarBackgroundColorProperty, Color.FromArgb("#EAEFF5"), Color.FromArgb("#1B2129"));
         navigation.SetAppThemeColor(NavigationPage.BarTextColorProperty, Color.FromArgb("#1A1A1A"), Colors.White);
-        var settings = ReaderTheme.Subtle(new Button { Text = AppStrings.SettingsPageTitle, HorizontalOptions = LayoutOptions.Start });
+        var settings = ReaderTheme.DrawerButton(new Button { Text = AppStrings.SettingsPageTitle });
         settings.Clicked += async (_, _) =>
         {
             flyout.IsPresented = false;
             await reader.OpenSettingsAsync();
         };
+        var accounts = ReaderTheme.DrawerButton(new Button { Text = AppStrings.SettingsManageAccounts });
+        accounts.Clicked += async (_, _) =>
+        {
+            flyout.IsPresented = false;
+            await reader.AccountActionsAsync();
+        };
+        var folders = new VerticalStackLayout { Spacing = 8 };
+        var folderButtons = new List<Button>();
+        foreach (var index in Enumerable.Range(0, reader.FolderLabels.Count))
+        {
+            var button = ReaderTheme.DrawerButton(new Button
+            {
+                Text = reader.FolderLabels[index],
+                ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 12)
+            });
+            button.SetAppTheme<ImageSource>(Button.ImageSourceProperty,
+                ImageSource.FromFile($"{ReaderPage.FolderIcons[index]}.png"),
+                ImageSource.FromFile($"{ReaderPage.FolderIcons[index]}_dark.png"));
+            button.Clicked += (_, _) =>
+            {
+                reader.SelectFolder(index);
+                flyout.IsPresented = false;
+            };
+            folders.Add(button);
+            folderButtons.Add(button);
+        }
+        flyout.IsPresentedChanged += (_, _) =>
+        {
+            accounts.IsEnabled = reader.AccountsAvailable;
+            for (var index = 0; index < folderButtons.Count; index++)
+            {
+                var button = folderButtons[index];
+                button.IsEnabled = !reader.Busy;
+                button.FontAttributes = index == reader.FolderIndex ? FontAttributes.Bold : FontAttributes.None;
+                button.SetAppThemeColor(Button.BackgroundColorProperty,
+                    index == reader.FolderIndex ? Color.FromArgb("#EAEFF5") : Colors.Transparent,
+                    index == reader.FolderIndex ? Color.FromArgb("#1B2129") : Colors.Transparent);
+                SemanticProperties.SetDescription(button, index == reader.FolderIndex ?
+                    Localized.Format(AppStrings.ReaderSelectedFolder, reader.FolderLabels[index]) : reader.FolderLabels[index]);
+            }
+        };
         flyout.Flyout = ReaderTheme.Apply(new ContentPage
         {
             Title = "OBK",
-            Content = new VerticalStackLayout
+            Content = new ScrollView
             {
-                Padding = new Thickness(16, 24), Spacing = 24,
-                Children = { new Label { Text = "OBK", FontSize = 24, FontAttributes = FontAttributes.Bold }, settings }
+                Content = new VerticalStackLayout
+                {
+                    Padding = new Thickness(16, 24), Spacing = 24,
+                    Children =
+                    {
+                        new VerticalStackLayout
+                        {
+                            Spacing = 4,
+                            Children =
+                            {
+                                new Label { Text = "OBK", FontSize = 24, FontAttributes = FontAttributes.Bold },
+                                ReaderTheme.Metadata(new Label { Text = "Offline Bakalari Komens" })
+                            }
+                        },
+                        folders, new BoxView { HeightRequest = 1 }, accounts, settings
+                    }
+                }
             }
         });
         flyout.Detail = navigation;

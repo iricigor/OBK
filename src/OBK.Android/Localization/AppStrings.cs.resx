@@ -156,6 +156,33 @@
   <data name="SettingsAppearance" xml:space="preserve">
     <value>Vzhled</value>
   </data>
+  <data name="SettingsReadingSize" xml:space="preserve">
+    <value>Velikost textu</value>
+  </data>
+  <data name="SettingsReadingSizeDescription" xml:space="preserve">
+    <value>Velikost textu v seznamu zpráv a při čtení</value>
+  </data>
+  <data name="SettingsReadingSizeSmall" xml:space="preserve">
+    <value>Malá</value>
+  </data>
+  <data name="SettingsReadingSizeMedium" xml:space="preserve">
+    <value>Střední</value>
+  </data>
+  <data name="SettingsReadingSizeLarge" xml:space="preserve">
+    <value>Velká</value>
+  </data>
+  <data name="SettingsListDensity" xml:space="preserve">
+    <value>Hustota seznamu zpráv</value>
+  </data>
+  <data name="SettingsListDensityDescription" xml:space="preserve">
+    <value>Mezery mezi zprávami v seznamu</value>
+  </data>
+  <data name="SettingsListDensityCompact" xml:space="preserve">
+    <value>Kompaktní</value>
+  </data>
+  <data name="SettingsListDensityRelaxed" xml:space="preserve">
+    <value>Vzdušná</value>
+  </data>
   <data name="SettingsThemeSystem" xml:space="preserve">
     <value>Podle systému</value>
   </data>
@@ -243,8 +270,16 @@
     <value>Hledat zprávy</value>
   </data>
   <data name="ReaderStatusArchiveReady" xml:space="preserve">
-    <value>Offline archiv je připraven. Poslední synchronizace: {0}</value>
+    <value>Synchronizace: {0}</value>
     <comment>{0} = already localized last synchronization date and time.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoFew" xml:space="preserve">
+    <value>před {0} dny</value>
+    <comment>Relative sync date, two through four days ago.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoMany" xml:space="preserve">
+    <value>před {0} dny</value>
+    <comment>Relative sync date, five through nine days ago.</comment>
   </data>
   <data name="ReaderStatusNoAccounts" xml:space="preserve">
     <value>Přidejte dítě a stáhněte zprávy. Čtení uložených zpráv nikdy nekontaktuje vaši školu.</value>

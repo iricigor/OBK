@@ -159,6 +159,33 @@
   <data name="SettingsAppearance" xml:space="preserve">
     <value>Appearance</value>
   </data>
+  <data name="SettingsReadingSize" xml:space="preserve">
+    <value>Reading size</value>
+  </data>
+  <data name="SettingsReadingSizeDescription" xml:space="preserve">
+    <value>Text size of the message list and the reader</value>
+  </data>
+  <data name="SettingsReadingSizeSmall" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="SettingsReadingSizeMedium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="SettingsReadingSizeLarge" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="SettingsListDensity" xml:space="preserve">
+    <value>Message list density</value>
+  </data>
+  <data name="SettingsListDensityDescription" xml:space="preserve">
+    <value>Space between messages in the list</value>
+  </data>
+  <data name="SettingsListDensityCompact" xml:space="preserve">
+    <value>Compact</value>
+  </data>
+  <data name="SettingsListDensityRelaxed" xml:space="preserve">
+    <value>Relaxed</value>
+  </data>
   <data name="SettingsThemeSystem" xml:space="preserve">
     <value>System</value>
   </data>
@@ -246,8 +273,16 @@
     <value>Search messages</value>
   </data>
   <data name="ReaderStatusArchiveReady" xml:space="preserve">
-    <value>Offline archive ready. Last sync: {0}</value>
+    <value>Synced: {0}</value>
     <comment>{0} = already localized last synchronization date and time.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoFew" xml:space="preserve">
+    <value>{0} days ago</value>
+    <comment>Relative sync date, two through four days ago.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoMany" xml:space="preserve">
+    <value>{0} days ago</value>
+    <comment>Relative sync date, five through nine days ago.</comment>
   </data>
   <data name="ReaderStatusNoAccounts" xml:space="preserve">
     <value>Add a child to download messages. Reading cached messages never contacts your school.</value>

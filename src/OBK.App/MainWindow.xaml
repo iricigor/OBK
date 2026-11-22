@@ -289,7 +289,16 @@
                                    Margin="12,24" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}"/>
                         <ListBox x:Name="Messages" ItemsSource="{Binding MessagesView}" SelectedItem="{Binding SelectedMessage}" IsSynchronizedWithCurrentItem="False"
                                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel"
-                                 ItemContainerStyle="{StaticResource SelectableRow}" AutomationProperties.Name="{x:Static loc:AppStrings.MainMessagesName}">
+                                 AutomationProperties.Name="{x:Static loc:AppStrings.MainMessagesName}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource SelectableRow}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAlternate}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource ListAlternateSurface}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
                             <ListBox.GroupStyle>
                                 <GroupStyle>
                                     <GroupStyle.ContainerStyle>

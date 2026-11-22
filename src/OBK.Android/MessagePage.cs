@@ -25,14 +25,18 @@ internal sealed class MessagePage : ContentPage
         this.message = message;
         Title = AppStrings.MessagePageTitle;
         LanguageToolbar.Add(this);
+        var subject = new Label { Text = message.Title, FontAttributes = FontAttributes.Bold };
+        subject.SetDynamicResource(Label.FontSizeProperty, "ReaderSubjectSize");
+        var sender = new Label { Text = message.SenderName };
+        sender.SetDynamicResource(Label.FontSizeProperty, "ReaderSenderSize");
+        var date = ReaderTheme.Metadata(new Label { Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) });
+        date.SetDynamicResource(Label.FontSizeProperty, "ReaderMetaSize");
         content.Add(new VerticalStackLayout
         {
             Spacing = 4,
             Children =
             {
-                new Label { Text = message.Title, FontSize = 20, FontAttributes = FontAttributes.Bold },
-                new Label { Text = message.SenderName, FontSize = 14 },
-                ReaderTheme.Metadata(new Label { Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) })
+                subject, sender, date
             }
         });
         content.Add(status);
@@ -62,7 +66,9 @@ internal sealed class MessagePage : ContentPage
                 };
                 text.Spans.Add(span);
             }
-            content.Add(new Label { FormattedText = text, FontSize = 16 });
+            var body = new Label { FormattedText = text };
+            body.SetDynamicResource(Label.FontSizeProperty, "ReaderBodySize");
+            content.Add(body);
             var links = parts.Where(part => part.Link is not null).Select(part => part.Link!).Distinct().ToList();
             if (links.Count > 0) content.Add(new Label { Text = AppStrings.MessageLinksHeader, FontAttributes = FontAttributes.Bold });
             foreach (var link in links)

@@ -156,6 +156,33 @@
   <data name="SettingsManageAccounts" xml:space="preserve">
     <value>Керування обліковими записами</value>
   </data>
+  <data name="SettingsReadingSize" xml:space="preserve">
+    <value>Розмір тексту</value>
+  </data>
+  <data name="SettingsReadingSizeDescription" xml:space="preserve">
+    <value>Розмір тексту списку повідомлень і засобу читання</value>
+  </data>
+  <data name="SettingsReadingSizeSmall" xml:space="preserve">
+    <value>Малий</value>
+  </data>
+  <data name="SettingsReadingSizeMedium" xml:space="preserve">
+    <value>Середній</value>
+  </data>
+  <data name="SettingsReadingSizeLarge" xml:space="preserve">
+    <value>Великий</value>
+  </data>
+  <data name="SettingsListDensity" xml:space="preserve">
+    <value>Щільність списку повідомлень</value>
+  </data>
+  <data name="SettingsListDensityDescription" xml:space="preserve">
+    <value>Відстань між повідомленнями в списку</value>
+  </data>
+  <data name="SettingsListDensityCompact" xml:space="preserve">
+    <value>Компактна</value>
+  </data>
+  <data name="SettingsListDensityRelaxed" xml:space="preserve">
+    <value>Вільна</value>
+  </data>
   <data name="SettingsAppearance" xml:space="preserve">
     <value>Вигляд</value>
   </data>
@@ -246,8 +273,16 @@
     <value>Пошук повідомлень</value>
   </data>
   <data name="ReaderStatusArchiveReady" xml:space="preserve">
-    <value>Автономний архів готовий. Остання синхронізація: {0}</value>
+    <value>Синхронізовано: {0}</value>
     <comment>{0} = already localized last synchronization date and time.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoFew" xml:space="preserve">
+    <value>{0} дні тому</value>
+    <comment>Relative sync date, two through four days ago.</comment>
+  </data>
+  <data name="ReaderStatusDaysAgoMany" xml:space="preserve">
+    <value>{0} днів тому</value>
+    <comment>Relative sync date, five through nine days ago.</comment>
   </data>
   <data name="ReaderStatusNoAccounts" xml:space="preserve">
     <value>Додайте дитину, щоб завантажити повідомлення. Читання кешованих повідомлень не під’єднується до вашої школи.</value>

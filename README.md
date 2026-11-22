@@ -115,9 +115,15 @@ refresh, offline folders/search, and opening or sharing downloaded attachments.
 It uses Android Keystore-backed encryption and remains read-only toward school
 servers.
 
-Planned reader improvements are tracked in [#62](https://github.com/iricigor/OBK/issues/62):
-a two-line message list, Compact/Relaxed density, and Small/Medium/Large reading
-size preferences for the list and opened messages.
+The hamburger menu shows **OBK — Offline Bakalari Komens**, with **Inbox**,
+**Noticeboard**, **Sent**, and **Excuses** first, then **Manage accounts**
+and **Settings**. **Settings** offers **Compact / Relaxed** message
+list density and **Small / Medium / Large** reading sizes for the list and opened
+messages. The two-line list shows subject and date above the sender; long text is
+ellipsized. Defaults are Medium and Relaxed, with tighter spacing than the earlier
+three-line list. Choices are saved on the device and respect Android text scaling.
+Android and Windows message lists use pale alternating row backgrounds, with
+subtle dark-theme stripes. Windows selection and hover remain distinct.
 
 To avoid typing credentials on the phone, open **Settings > Accounts >
 Transfer to Android** in OBK on Windows, then tap **Scan from PC** on Android's

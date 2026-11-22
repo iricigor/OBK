@@ -7,10 +7,6 @@ namespace OBK.AndroidApp;
 internal sealed class SettingsPage : ContentPage
 {
     private static readonly AppTheme[] Themes = [AppTheme.Unspecified, AppTheme.Light, AppTheme.Dark];
-    private readonly Func<bool> accountsAvailable;
-    private readonly Func<string?> currentAccount;
-    private readonly Button accounts = ReaderTheme.Subtle(new Button { Text = AppStrings.SettingsManageAccounts });
-    private readonly Label accountName = ReaderTheme.Metadata(new Label());
     private readonly Button checkUpdate = new() { Text = AppStrings.UpdateCheck };
     private readonly Button installUpdate = ReaderTheme.Primary(new Button { Text = AppStrings.UpdateDownload, IsVisible = false });
     private readonly Button cancelUpdate = ReaderTheme.Subtle(new Button { Text = AppStrings.ReaderAccountsSheetCancel, IsVisible = false });
@@ -20,10 +16,8 @@ internal sealed class SettingsPage : ContentPage
     private CancellationTokenSource? updateCancellation;
     internal bool Busy => updateCancellation is not null;
 
-    public SettingsPage(Func<Task> accountActions, Func<bool> accountsAvailable, Func<string?> currentAccount)
+    public SettingsPage()
     {
-        this.accountsAvailable = accountsAvailable;
-        this.currentAccount = currentAccount;
         LanguageToolbar.Add(this);
         Title = AppStrings.SettingsPageTitle;
         var appearance = new Picker
@@ -40,7 +34,30 @@ internal sealed class SettingsPage : ContentPage
             Preferences.Default.Set(App.AppearancePreference, theme.ToString());
             Application.Current!.UserAppTheme = theme;
         };
-        accounts.Clicked += async (_, _) => await accountActions();
+        var readingSize = new Picker
+        {
+            Title = AppStrings.SettingsReadingSize,
+            ItemsSource = new[] { AppStrings.SettingsReadingSizeSmall, AppStrings.SettingsReadingSizeMedium, AppStrings.SettingsReadingSizeLarge },
+            SelectedIndex = Array.IndexOf(ReaderPreferences.ReadingSizes, ReaderPreferences.ReadingSize)
+        };
+        SemanticProperties.SetDescription(readingSize, AppStrings.SettingsReadingSize);
+        readingSize.SelectedIndexChanged += (_, _) =>
+        {
+            if (readingSize.SelectedIndex >= 0)
+                ReaderPreferences.SetReadingSize(ReaderPreferences.ReadingSizes[readingSize.SelectedIndex]);
+        };
+        var density = new Picker
+        {
+            Title = AppStrings.SettingsListDensity,
+            ItemsSource = new[] { AppStrings.SettingsListDensityCompact, AppStrings.SettingsListDensityRelaxed },
+            SelectedIndex = Array.IndexOf(ReaderPreferences.ListDensities, ReaderPreferences.ListDensity)
+        };
+        SemanticProperties.SetDescription(density, AppStrings.SettingsListDensity);
+        density.SelectedIndexChanged += (_, _) =>
+        {
+            if (density.SelectedIndex >= 0)
+                ReaderPreferences.SetListDensity(ReaderPreferences.ListDensities[density.SelectedIndex]);
+        };
         var repository = ReaderTheme.Subtle(new Button
         {
             Text = SharedStrings.RepositoryLink,
@@ -110,8 +127,12 @@ internal sealed class SettingsPage : ContentPage
                     new Label { Text = AppStrings.SettingsAppearance, FontSize = 18, FontAttributes = FontAttributes.Bold },
                     ReaderTheme.Panel(appearance, new Thickness(8, 0)),
                     ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsThemeExplanation }),
-                    new Label { Text = AppStrings.ReaderAccountsSheetTitle, FontSize = 18, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 20, 0, 0) },
-                    accountName, accounts,
+                    new Label { Text = AppStrings.SettingsReadingSize, FontSize = 18, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 20, 0, 0) },
+                    ReaderTheme.Panel(readingSize, new Thickness(8, 0)),
+                    ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsReadingSizeDescription }),
+                    new Label { Text = AppStrings.SettingsListDensity, FontSize = 18, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 20, 0, 0) },
+                    ReaderTheme.Panel(density, new Thickness(8, 0)),
+                    ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsListDensityDescription }),
                     new Label { Text = AppStrings.UpdateHeading, FontSize = 18, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 20, 0, 0) },
                     ReaderTheme.Metadata(new Label { Text = Localized.Format(AppStrings.UpdateInstalledVersion, AppInfo.Current.VersionString) }),
                     updateStatus, updateProgress, checkUpdate, installUpdate, cancelUpdate,
@@ -158,11 +179,4 @@ internal sealed class SettingsPage : ContentPage
         updateCancellation?.Cancel();
     }
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        accounts.IsEnabled = accountsAvailable();
-        accountName.Text = currentAccount();
-        accountName.IsVisible = accountName.Text is not null;
-    }
 }

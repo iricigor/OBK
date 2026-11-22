@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
+using OBK.Core;
 
 namespace OBK.AndroidApp;
 
@@ -10,10 +11,34 @@ internal static class ReaderTheme
     private static readonly Color DarkSecondary = Color.FromArgb("#A6A6A6");
     internal static readonly Color Surface = Colors.White;
     internal static readonly Color DarkSurface = Color.FromArgb("#2B2B2B");
+    internal static readonly Color AlternateSurface = Color.FromArgb("#F5F7FA");
+    internal static readonly Color DarkAlternateSurface = Color.FromArgb("#30343A");
     internal static readonly Color Stroke = Color.FromArgb("#E5E5E5");
     internal static readonly Color DarkStroke = Color.FromArgb("#808080");
     internal static readonly Color Accent = Color.FromArgb("#0F6CBD");
     internal static readonly Color DarkAccent = Color.FromArgb("#4CC2FF");
+    private static readonly (string LightBackground, string LightText, string DarkBackground, string DarkText)[] AvatarColors =
+    [
+        ("#E0F2F1", "#00695C", "#163835", "#4DD0E1"),
+        ("#E8EAF6", "#3949AB", "#232A4D", "#9FA8FF"),
+        ("#F3E5F5", "#7B1FA2", "#3A2440", "#E1A6F0"),
+        ("#FDE7E2", "#B3412B", "#43251F", "#FF9E8A"),
+        ("#FFF3D6", "#8A5A00", "#3D3016", "#FBBF24"),
+        ("#DDF3E4", "#1B7A3E", "#17372A", "#6EE7A0")
+    ];
+
+    public static void SetAvatarColors(Button button, Login? account)
+    {
+        if (account is null)
+        {
+            button.SetAppThemeColor(Button.BackgroundColorProperty, Colors.Transparent, Colors.Transparent);
+            button.SetAppThemeColor(Button.TextColorProperty, Accent, DarkAccent);
+            return;
+        }
+        var colors = AvatarColors[AvatarPresentation.PaletteIndex(account.Url + "|" + account.Username)];
+        button.SetAppThemeColor(Button.BackgroundColorProperty, Color.FromArgb(colors.LightBackground), Color.FromArgb(colors.DarkBackground));
+        button.SetAppThemeColor(Button.TextColorProperty, Color.FromArgb(colors.LightText), Color.FromArgb(colors.DarkText));
+    }
 
     public static ImageButton Icon(string name, string description)
     {
@@ -49,6 +74,18 @@ internal static class ReaderTheme
     {
         button.BackgroundColor = Colors.Transparent;
         button.BorderWidth = 0;
+        return button;
+    }
+
+    public static Button DrawerButton(Button button)
+    {
+        Subtle(button);
+        button.HorizontalOptions = LayoutOptions.Fill;
+        button.HandlerChanged += (_, _) =>
+        {
+            if (button.Handler?.PlatformView is global::Android.Widget.Button native)
+                native.Gravity = global::Android.Views.GravityFlags.Start | global::Android.Views.GravityFlags.CenterVertical;
+        };
         return button;
     }
 
