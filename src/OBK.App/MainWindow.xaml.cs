@@ -64,7 +64,7 @@ public partial class MainWindow : Window
         BuildRibbonTimestamp.Text = build.TimestampText;
         BuildRibbon.ToolTip = Localized.Format(AppStrings.BuildRibbonTooltip, build.FullTimestampText);
         System.Windows.Automation.AutomationProperties.SetHelpText(BuildRibbon, (string)BuildRibbon.ToolTip);
-        BuildRibbon.Visibility = build.IsLocal && !buildAcknowledged ? Visibility.Visible : Visibility.Collapsed;
+        UpdateBuildRibbonLayout();
         if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
         {
             // Zero glass makes WPF install a window region, which prevents native DWM rounding.
@@ -104,7 +104,14 @@ public partial class MainWindow : Window
     private void BuildRibbonClick(object sender, RoutedEventArgs e)
     {
         buildAcknowledged = true;
-        BuildRibbon.Visibility = Visibility.Collapsed;
+        UpdateBuildRibbonLayout();
+    }
+
+    private void UpdateBuildRibbonLayout()
+    {
+        var visible = BuildIdentity.Current.IsLocal && !buildAcknowledged;
+        BuildRibbonArea.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        ReadingPane.Margin = SettingsPage.Margin = new Thickness(0, visible ? 112 : 0, 0, 0);
     }
 
     // Clicking the already-selected folder does not change selection, so close Settings on any folder click.

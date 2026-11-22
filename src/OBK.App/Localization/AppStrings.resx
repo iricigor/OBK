@@ -30,7 +30,7 @@
   </data>
   <data name="BuildRibbonLabel" xml:space="preserve">
     <value>DEV BUILD</value>
-    <comment>Title-bar ribbon for locally built Windows apps.</comment>
+    <comment>Diagonal corner ribbon for locally built Windows apps.</comment>
   </data>
   <data name="BuildRibbonDismiss" xml:space="preserve">
     <value>Acknowledge development build</value>

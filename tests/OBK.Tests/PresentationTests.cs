@@ -302,19 +302,24 @@ public sealed class PresentationTests
                         await main.InitializeAsync();
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         var ribbon = (Button)main.FindName("BuildRibbon");
+                        var ribbonArea = (Canvas)main.FindName("BuildRibbonArea");
+                        var readingPane = (Border)main.FindName("ReadingPane");
                         var timestamp = (TextBlock)main.FindName("BuildRibbonTimestamp");
-                        Assert.Equal(BuildIdentity.Current.IsLocal ? Visibility.Visible : Visibility.Collapsed, ribbon.Visibility);
+                        Assert.Equal(BuildIdentity.Current.IsLocal ? Visibility.Visible : Visibility.Collapsed, ribbonArea.Visibility);
                         Assert.Equal(BuildIdentity.Current.TimestampText, timestamp.Text);
                         if (BuildIdentity.Current.IsLocal)
                         {
                             main.Width = 880;
                             main.Height = 620;
                             main.UpdateLayout();
-                            var bounds = ribbon.TransformToAncestor(main).TransformBounds(new Rect(ribbon.RenderSize));
+                            var bounds = ribbonArea.TransformToAncestor(main).TransformBounds(new Rect(ribbonArea.RenderSize));
                             var maximize = (Button)main.FindName("MaximizeButton");
                             var captionBounds = maximize.TransformToAncestor(main).TransformBounds(new Rect(maximize.RenderSize));
-                            Assert.True(bounds.Right < captionBounds.Left);
-                            Assert.InRange(bounds.Bottom, 0, 40);
+                            var readerBounds = readingPane.TransformToAncestor(main).TransformBounds(new Rect(readingPane.RenderSize));
+                            Assert.True(bounds.Top >= captionBounds.Bottom);
+                            Assert.True(readerBounds.Top >= bounds.Bottom);
+                            var timestampBounds = timestamp.TransformToAncestor(ribbonArea).TransformBounds(new Rect(timestamp.RenderSize));
+                            Assert.True(new Rect(ribbonArea.RenderSize).Contains(timestampBounds));
                             Assert.True(timestamp.DesiredSize.Width <= ribbon.ActualWidth - ribbon.Padding.Left - ribbon.Padding.Right);
                             Assert.True(ribbon.Focus());
                             Assert.True(ribbon.IsKeyboardFocused);
@@ -344,12 +349,14 @@ public sealed class PresentationTests
                             var invoke = (IInvokeProvider)new ButtonAutomationPeer(ribbon).GetPattern(PatternInterface.Invoke);
                             invoke.Invoke();
                             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-                            Assert.Equal(Visibility.Collapsed, ribbon.Visibility);
+                            Assert.Equal(Visibility.Collapsed, ribbonArea.Visibility);
+                            Assert.Equal(new Thickness(0), readingPane.Margin);
+                            Assert.Equal(new Thickness(0), ((ScrollViewer)main.FindName("SettingsPage")).Margin);
                             var reopened = new MainWindow(store, showLogin: false, enableUpdates: false);
                             try
                             {
                                 reopened.Show();
-                                Assert.Equal(Visibility.Collapsed, ((Button)reopened.FindName("BuildRibbon")).Visibility);
+                                Assert.Equal(Visibility.Collapsed, ((Canvas)reopened.FindName("BuildRibbonArea")).Visibility);
                             }
                             finally { reopened.Close(); }
                         }
