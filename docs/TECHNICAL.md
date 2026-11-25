@@ -271,23 +271,47 @@ three-column layout. UI refinement does not imply adding missing desktop
 features or implementing the separately tracked language controls.
 
 The reader uses an integrated search bar above the list: the hamburger opens
-a navigation drawer headed **OBK / Offline Bakalari Komens** with a compact
-**Children** section and **Add child** first, then **Inbox**,
-**Noticeboard**, **Sent**, and **Excuses**, followed by **Manage accounts**
-and **Settings**. The active folder is highlighted and announced in the drawer;
-selecting a folder or child closes it. Account rows show avatar, name, school
-where available, and active status. The active-child avatar is 56 dp tall,
-overlapping the left end of the 48-dp search surface by 4 dp above and below;
-the magnifier is at its right end. The refresh icon refreshes all accounts.
-The avatar opens a normal chooser page sharing Manage accounts' identity rows
-(avatar, name, school, username and active status), without management actions.
+a 280-dp navigation drawer headed **OBK / Offline Bakalari Komens** with a compact
+**Children** section (**All children** first when more than one account exists)
+and **Add child**, then **Inbox**, **Noticeboard**, **Sent**, and **Excuses**,
+followed by **Manage accounts** and **Settings**. Child and folder rows show
+blue new-message counts. The active folder is highlighted and announced in the drawer;
+selecting a folder or child closes it. Account rows show a 40-dp avatar, name, school
+where available, and active status. The 56-dp header avatar overlaps the left end
+of the 48-dp search surface by 4 dp above and below; in the all-children scope it
+shows up to three overlapping child avatars. The refresh icon refreshes all accounts.
+The avatar opens a normal chooser page with **All children** and each account's
+identity row (avatar, name, school, username and active status), without management actions.
+
+**All children** is the default scope and is remembered. It merges every account's
+cached folder, shows each row's 40-dp child avatar and `Child · Sender`, and opens
+messages and attachments with the owning account. Selecting a child filters to that
+account. Message rows use 8-dp horizontal padding.
+
+Search is an `Entry` with OBK's own icons, so the native SearchView magnifier is
+gone. Focusing it hides the menu, avatar, and refresh, giving the field the whole
+header; the back arrow or system Back clears and closes search. The keyboard action
+is **Done** because results update 200 ms after typing stops, using the shared
+Windows accent-insensitive matching on rendered message text, sender/recipient,
+and localized dates. The sliders button shows the Group (None, Date, Child, Sender,
+Subject) and Sort (Date, Sender, Subject) chips; ordering and date-group labels come
+from the shared `MessageInsights.Arrange`. **Child** is Android-only and appears in
+the all-children scope. Android defaults to Date grouping; both choices are saved.
+
+Messages in Inbox and Noticeboard not yet opened on this device show a bold subject,
+blue date, and dot. Opening one records its ID in the encrypted `opened_messages`
+table, per account; nothing is sent to the school. The first time an account with
+a cached archive loads, all its existing messages are recorded as opened, so
+upgrades and newly added accounts start with no new messages; only messages
+arriving in later refreshes are new. Sent and Excuses never show as new.
 Tapping a row selects that account and returns to the reader; language switching
 also rebuilds the chooser. Sync status stays below the list. Refresh summaries
 expire after one minute using monotonic elapsed time; a new operation or leaving
 the reader cancels the pending reset so it cannot overwrite newer state.
-**Settings** offers
-**System**, **Light**, and **Dark** appearance, **Small / Medium / Large** reading
-sizes, and **Compact / Relaxed** list density. The list uses two lines: a
+**Settings** groups one-tap segmented controls into **Appearance** (**System**,
+**Light**, **Dark**), **Reading** (**Small / Medium / Large** reading sizes and
+**Compact / Relaxed** list density), **App updates**, and **About** (GitHub
+repository link). The list uses two lines: a
 single-line, ellipsized subject and right-aligned short date, then an ellipsized
 sender. Older years remain visible in dates; full timestamps stay in the reader.
 Both densities are tighter than the previous three-line layout; rows retain a
@@ -410,6 +434,10 @@ add `--ez obk_verification_saved_password true` to the verification launch once.
 This seeds a fictional password for Anna only in the isolated verification
 database. Omit that extra on subsequent launches to verify that forgetting
 persists; verification mode never contacts a school.
+To exercise new-message markers, launch once with `--ez obk_verification true`
+to create the opened-state baseline, then add `--ez obk_verification_new_message true`
+on a later launch. That adds one fictional message for Tomas dated now; opening it
+clears its marker, and the opened state persists across restarts.
 Restart without the launch extra for real sign-in. Fictional data does not prove
 compatibility with a real school's deployment.
 

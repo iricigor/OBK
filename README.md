@@ -110,7 +110,7 @@ still apply. OBK is not affiliated with or endorsed by Bakaláři.
 
 ## Android preview
 
-Mobile usability follow-up is tracked in [#66](https://github.com/iricigor/OBK/issues/66):
+Mobile usability improvements from [#66](https://github.com/iricigor/OBK/issues/66):
 compact navigation, GitHub link handling, all-children reading, grouping/sorting,
 search layout, Settings presentation, and locally new-message indicators.
 
@@ -120,17 +120,26 @@ It uses Android Keystore-backed encryption and remains read-only toward school
 servers.
 
 The compact, 280 dp hamburger drawer shows **OBK — Offline Bakalari Komens**, with a
-**Children** section first: tap a child to switch accounts, or **Add child**.
+**Children** section first: **All children** (the default) shows every child's
+messages together with each child's avatar on the left; tap a child to show only
+theirs, or **Add child**. Blue counts show messages not yet opened on this phone.
 Child avatars are 40 dp, while account and navigation rows retain at least
 48 dp touch targets and expand with Android text scaling.
 **Inbox**, **Noticeboard**, **Sent**, and **Excuses** follow, then **Manage accounts**
 and **Settings**. The larger child avatar overlaps the left end of the search
 bar; the magnifier sits on the right. Tapping the avatar opens a simple chooser
-with each account's avatar, name, school, username and active status, without
-account-management actions. Refresh summaries return to the normal archive
-timestamp after one minute. **Settings** offers **Compact / Relaxed** message
-list density and **Small / Medium / Large** reading sizes for the list and opened
-messages. The two-line list shows subject and date above the sender; long text is
+with **All children** and each account's avatar, name, school, username and active
+status, without account-management actions.
+Tapping search gives the field the whole header, with results updating as you
+type (accents ignored, as on Windows). The sliders button groups messages by
+**None / Date / Child / Sender / Subject** and sorts by **Date / Sender / Subject**;
+the back arrow or Back closes search. New messages show a bold subject, blue date
+and dot until opened in OBK. This is tracked only on the phone: OBK never marks
+messages read on the school server. After upgrading, existing messages count as
+opened. Refresh summaries return to the normal archive
+timestamp after one minute. **Settings** groups one-tap choices for appearance,
+**Small / Medium / Large** reading sizes and **Compact / Relaxed** message
+list density, plus app updates and the GitHub link. The two-line list shows subject and date above the sender; long text is
 ellipsized. Defaults are Medium and Relaxed, with tighter spacing than the earlier
 three-line list. Choices are saved on the device and respect Android text scaling.
 Android and Windows message lists use pale alternating row backgrounds, with

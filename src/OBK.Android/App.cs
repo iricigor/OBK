@@ -137,6 +137,7 @@ public sealed class App : Application
         };
         var folders = new VerticalStackLayout { Spacing = 0 };
         var folderButtons = new List<Button>();
+        var folderBadges = new List<Grid>();
         foreach (var index in Enumerable.Range(0, reader.FolderLabels.Count))
         {
             var button = ReaderTheme.StartAlignedButton(new Button
@@ -152,8 +153,10 @@ public sealed class App : Application
                 reader.SelectFolder(index);
                 flyout.IsPresented = false;
             };
-            folders.Add(button);
+            var badge = new Grid { InputTransparent = true, HorizontalOptions = LayoutOptions.End };
+            folders.Add(new Grid { Children = { button, badge } });
             folderButtons.Add(button);
+            folderBadges.Add(badge);
         }
         flyout.IsPresentedChanged += (_, _) =>
         {
@@ -161,23 +164,34 @@ public sealed class App : Application
             accounts.IsEnabled = reader.AccountsAvailable;
             addChild.IsEnabled = reader.AccountsAvailable;
             children.Children.Clear();
+            if (reader.KnownAccounts.Count > 1)
+                children.Add(ReaderTheme.AllChildrenChoice(reader.KnownAccounts, reader.ShowingAllChildren, reader.NewCountAll, async (_, _) =>
+                {
+                    flyout.IsPresented = false;
+                    await reader.SelectAllChildrenAsync();
+                }));
             foreach (var login in reader.KnownAccounts)
                 children.Add(ReaderTheme.AccountChoice(login, reader.KnownAccounts, reader.ActiveAccount, async (_, _) =>
                 {
                     flyout.IsPresented = false;
                     await reader.SelectAccountAsync(login);
-                }, compact: true));
+                }, compact: true, newCount: reader.NewCount(login)));
             children.IsEnabled = reader.AccountsAvailable;
             for (var index = 0; index < folderButtons.Count; index++)
             {
                 var button = folderButtons[index];
+                var count = reader.FolderNewCount(index);
+                folderBadges[index].Children.Clear();
+                folderBadges[index].Add(ReaderTheme.Badge(count));
                 button.IsEnabled = !reader.Busy;
                 button.FontAttributes = index == reader.FolderIndex ? FontAttributes.Bold : FontAttributes.None;
                 button.SetAppThemeColor(Button.BackgroundColorProperty,
-                    index == reader.FolderIndex ? Color.FromArgb("#EAEFF5") : Colors.Transparent,
-                    index == reader.FolderIndex ? Color.FromArgb("#1B2129") : Colors.Transparent);
-                SemanticProperties.SetDescription(button, index == reader.FolderIndex ?
-                    Localized.Format(AppStrings.ReaderSelectedFolder, reader.FolderLabels[index]) : reader.FolderLabels[index]);
+                    index == reader.FolderIndex ? ReaderTheme.Selection : Colors.Transparent,
+                    index == reader.FolderIndex ? ReaderTheme.DarkSelection : Colors.Transparent);
+                var description = index == reader.FolderIndex ?
+                    Localized.Format(AppStrings.ReaderSelectedFolder, reader.FolderLabels[index]) : reader.FolderLabels[index];
+                SemanticProperties.SetDescription(button, count > 0
+                    ? description + ", " + Localized.Format(AppStrings.ReaderNewCount, count) : description);
             }
         };
         flyout.Flyout = ReaderTheme.Apply(new ContentPage

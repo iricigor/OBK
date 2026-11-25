@@ -32,6 +32,9 @@ public sealed class LocalStore
                     url TEXT NOT NULL, username TEXT NOT NULL, id TEXT NOT NULL,
                     chunk_index INTEGER NOT NULL, payload BLOB NOT NULL,
                     PRIMARY KEY (url, username, id, chunk_index));
+                CREATE TABLE IF NOT EXISTS opened_messages (
+                    url TEXT NOT NULL, username TEXT NOT NULL, ids BLOB NOT NULL,
+                    PRIMARY KEY (url, username));
                 """;
             command.ExecuteNonQuery();
             return true;
@@ -388,6 +391,47 @@ public sealed class LocalStore
         if (!DateTimeOffset.TryParse(stamp, out _)) throw new ObkException(SharedStrings.ErrorSyncTimestampDamaged);
         return new Archive(reader.GetString(0), folders, stamp);
     });
+
+    /// <summary>
+    /// Returns message IDs opened on this device. The first call for an account records
+    /// <paramref name="existing"/> as opened, so only messages arriving afterwards appear new.
+    /// </summary>
+    public HashSet<string> OpenedMessages(string url, string username, IEnumerable<string> existing)
+    {
+        url = KomensClient.NormalizeUrl(url);
+        if (StoredOpened(url, username) is { } opened) return opened;
+        var baseline = existing.ToHashSet(StringComparer.Ordinal);
+        SaveOpened(url, username, baseline);
+        return baseline;
+    }
+
+    public void MarkOpened(string url, string username, string id)
+    {
+        url = KomensClient.NormalizeUrl(url);
+        var opened = StoredOpened(url, username) ?? new HashSet<string>(StringComparer.Ordinal);
+        if (opened.Add(id)) SaveOpened(url, username, opened);
+    }
+
+    private HashSet<string>? StoredOpened(string url, string username) => Access(connection =>
+    {
+        using var command = Command(connection,
+            "SELECT ids FROM opened_messages WHERE url = $url AND username = $user",
+            parameters: [("$url", url), ("$user", username)]);
+        return command.ExecuteScalar() is byte[] value
+            ? DecodeStored<List<string>>(value).ToHashSet(StringComparer.Ordinal) : null;
+    });
+
+    private void SaveOpened(string url, string username, HashSet<string> ids)
+    {
+        var payload = EncodeStored(ids.Order(StringComparer.Ordinal).ToList());
+        Access(connection =>
+        {
+            using var command = Command(connection,
+                "INSERT OR REPLACE INTO opened_messages VALUES ($url, $user, $ids)",
+                parameters: [("$url", url), ("$user", username), ("$ids", payload)]);
+            return command.ExecuteNonQuery();
+        });
+    }
 
     public AttachmentInfo? AttachmentInfo(string url, string username, string id) => Access(connection =>
     {

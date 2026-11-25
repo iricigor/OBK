@@ -20,51 +20,31 @@ internal sealed class SettingsPage : ContentPage
     {
         LanguageToolbar.Add(this);
         Title = AppStrings.SettingsPageTitle;
-        var appearance = new Picker
-        {
-            Title = AppStrings.SettingsAppearance,
-            ItemsSource = new[] { AppStrings.SettingsThemeSystem, AppStrings.SettingsThemeLight, AppStrings.SettingsThemeDark },
-            SelectedIndex = Array.IndexOf(Themes, Application.Current!.UserAppTheme)
-        };
-        SemanticProperties.SetDescription(appearance, AppStrings.SettingsAppearance);
-        appearance.SelectedIndexChanged += (_, _) =>
-        {
-            if (appearance.SelectedIndex < 0) return;
-            var theme = Themes[appearance.SelectedIndex];
-            Preferences.Default.Set(App.AppearancePreference, theme.ToString());
-            Application.Current!.UserAppTheme = theme;
-        };
-        var readingSize = new Picker
-        {
-            Title = AppStrings.SettingsReadingSize,
-            ItemsSource = new[] { AppStrings.SettingsReadingSizeSmall, AppStrings.SettingsReadingSizeMedium, AppStrings.SettingsReadingSizeLarge },
-            SelectedIndex = Array.IndexOf(ReaderPreferences.ReadingSizes, ReaderPreferences.ReadingSize)
-        };
-        SemanticProperties.SetDescription(readingSize, AppStrings.SettingsReadingSize);
-        readingSize.SelectedIndexChanged += (_, _) =>
-        {
-            if (readingSize.SelectedIndex >= 0)
-                ReaderPreferences.SetReadingSize(ReaderPreferences.ReadingSizes[readingSize.SelectedIndex]);
-        };
-        var density = new Picker
-        {
-            Title = AppStrings.SettingsListDensity,
-            ItemsSource = new[] { AppStrings.SettingsListDensityCompact, AppStrings.SettingsListDensityRelaxed },
-            SelectedIndex = Array.IndexOf(ReaderPreferences.ListDensities, ReaderPreferences.ListDensity)
-        };
-        SemanticProperties.SetDescription(density, AppStrings.SettingsListDensity);
-        density.SelectedIndexChanged += (_, _) =>
-        {
-            if (density.SelectedIndex >= 0)
-                ReaderPreferences.SetListDensity(ReaderPreferences.ListDensities[density.SelectedIndex]);
-        };
-        var repository = ReaderTheme.Subtle(new Button
+        var appearance = ReaderTheme.Segmented(
+            [AppStrings.SettingsThemeSystem, AppStrings.SettingsThemeLight, AppStrings.SettingsThemeDark],
+            Math.Max(0, Array.IndexOf(Themes, Application.Current!.UserAppTheme)), index =>
+            {
+                var theme = Themes[index];
+                Preferences.Default.Set(App.AppearancePreference, theme.ToString());
+                Application.Current!.UserAppTheme = theme;
+            });
+        var readingSize = ReaderTheme.Segmented(
+            [AppStrings.SettingsReadingSizeSmall, AppStrings.SettingsReadingSizeMedium, AppStrings.SettingsReadingSizeLarge],
+            Math.Max(0, Array.IndexOf(ReaderPreferences.ReadingSizes, ReaderPreferences.ReadingSize)),
+            index => ReaderPreferences.SetReadingSize(ReaderPreferences.ReadingSizes[index]));
+        var density = ReaderTheme.Segmented(
+            [AppStrings.SettingsListDensityCompact, AppStrings.SettingsListDensityRelaxed],
+            Math.Max(0, Array.IndexOf(ReaderPreferences.ListDensities, ReaderPreferences.ListDensity)),
+            index => ReaderPreferences.SetListDensity(ReaderPreferences.ListDensities[index]));
+        var repository = ReaderTheme.StartAlignedButton(new Button
         {
             Text = SharedStrings.RepositoryLink,
             LineBreakMode = LineBreakMode.WordWrap,
             MinimumHeightRequest = 48,
-            Margin = new Thickness(0, 20, 0, 0)
+            ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Right, 12)
         });
+        repository.SetAppTheme<ImageSource>(Button.ImageSourceProperty,
+            ImageSource.FromFile("external.png"), ImageSource.FromFile("external_dark.png"));
         SemanticProperties.SetHint(repository, "https://github.com/iricigor/OBK");
         repository.Clicked += async (_, _) =>
         {
@@ -118,30 +98,52 @@ internal sealed class SettingsPage : ContentPage
             installUpdate.IsVisible = !installed;
         });
         cancelUpdate.Clicked += (_, _) => updateCancellation?.Cancel();
+        checkUpdate.CornerRadius = 20;
+        checkUpdate.SetAppThemeColor(Button.BorderColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
         Content = new ScrollView
         {
             Content = new VerticalStackLayout
             {
-                Padding = 24, Spacing = 12,
+                Padding = new Thickness(12, 16), Spacing = 6,
                 Children =
                 {
-                    new Label { Text = AppStrings.SettingsAppearance, FontSize = 18, FontAttributes = FontAttributes.Bold },
-                    ReaderTheme.Panel(appearance, new Thickness(8, 0)),
-                    ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsThemeExplanation }),
-                    new Label { Text = AppStrings.SettingsReadingSize, FontSize = 18, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 20, 0, 0) },
-                    ReaderTheme.Panel(readingSize, new Thickness(8, 0)),
-                    ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsReadingSizeDescription }),
-                    new Label { Text = AppStrings.SettingsListDensity, FontSize = 18, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 20, 0, 0) },
-                    ReaderTheme.Panel(density, new Thickness(8, 0)),
-                    ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsListDensityDescription }),
-                    new Label { Text = AppStrings.UpdateHeading, FontSize = 18, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 20, 0, 0) },
-                    ReaderTheme.Metadata(new Label { Text = Localized.Format(AppStrings.UpdateInstalledVersion, AppInfo.Current.VersionString) }),
-                    updateStatus, updateProgress, checkUpdate, installUpdate, cancelUpdate,
-                    repository
+                    Section(AppStrings.SettingsAppearance, appearance,
+                        ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsThemeExplanation, FontSize = 12 })),
+                    Section(AppStrings.SettingsSectionReading,
+                        RowTitle(AppStrings.SettingsReadingSize, AppStrings.SettingsReadingSizeDescription), readingSize,
+                        new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
+                        RowTitle(AppStrings.SettingsListDensity, AppStrings.SettingsListDensityDescription), density),
+                    Section(AppStrings.UpdateHeading,
+                        new Label { Text = Localized.Format(AppStrings.UpdateInstalledVersion, AppInfo.Current.VersionString), FontSize = 15, FontAttributes = FontAttributes.Bold },
+                        updateStatus, updateProgress, checkUpdate, installUpdate, cancelUpdate),
+                    Section(AppStrings.SettingsSectionAbout, repository)
                 }
             }
         };
         ReaderTheme.Apply(this);
+    }
+
+    private static VerticalStackLayout RowTitle(string title, string description) => new()
+    {
+        Spacing = 2,
+        Children =
+        {
+            new Label { Text = title, FontSize = 15, FontAttributes = FontAttributes.Bold },
+            ReaderTheme.Metadata(new Label { Text = description, FontSize = 12 })
+        }
+    };
+
+    private static VerticalStackLayout Section(string title, params View[] content)
+    {
+        var heading = new Label { Text = title, FontSize = 13, FontAttributes = FontAttributes.Bold, Margin = new Thickness(8, 14, 8, 4) };
+        heading.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        SemanticProperties.SetHeadingLevel(heading, SemanticHeadingLevel.Level2);
+        var body = new VerticalStackLayout { Spacing = 10 };
+        foreach (var view in content) body.Add(view);
+        var card = ReaderTheme.Panel(body, 16);
+        card.StrokeThickness = 0;
+        card.StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 };
+        return new VerticalStackLayout { Children = { heading, card } };
     }
 
     private static async Task OpenRepositoryAsync()

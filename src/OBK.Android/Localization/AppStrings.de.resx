@@ -465,4 +465,61 @@
   <data name="UpdatePermissionExplanation" xml:space="preserve"><value>In den Android-Einstellungen die Installation von OBK erlauben und hierher zurückkehren. Android fragt nach Bestätigung. OBK kann nicht still installieren.</value></data>
   <data name="UpdateOpenSettings" xml:space="preserve"><value>Android-Einstellungen öffnen</value></data>
   <data name="UpdatePermissionDenied" xml:space="preserve"><value>Installation von OBK ist nicht erlaubt. „Update installieren“ tippen, erneut versuchen und diese Quelle in den Android-Einstellungen zulassen.</value></data>
+  <data name="ReaderAllChildren" xml:space="preserve">
+    <value>Alle Kinder</value>
+  </data>
+  <data name="ReaderSelectedAllChildren" xml:space="preserve">
+    <value>Alle Kinder werden angezeigt. Kind oder Konto wechseln</value>
+  </data>
+  <data name="ReaderCloseSearch" xml:space="preserve">
+    <value>Suche schließen</value>
+  </data>
+  <data name="ReaderClearSearch" xml:space="preserve">
+    <value>Suche löschen</value>
+  </data>
+  <data name="ReaderArrangeOptions" xml:space="preserve">
+    <value>Gruppierungs- und Sortieroptionen</value>
+  </data>
+  <data name="ReaderGroupHeading" xml:space="preserve">
+    <value>Gruppieren</value>
+  </data>
+  <data name="ReaderSortHeading" xml:space="preserve">
+    <value>Sortieren</value>
+  </data>
+  <data name="ReaderOptionNone" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="ReaderOptionDate" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="ReaderOptionChild" xml:space="preserve">
+    <value>Kind</value>
+  </data>
+  <data name="ReaderOptionSender" xml:space="preserve">
+    <value>Absender</value>
+  </data>
+  <data name="ReaderOptionSubject" xml:space="preserve">
+    <value>Betreff</value>
+  </data>
+  <data name="ReaderOptionSelected" xml:space="preserve">
+    <value>{0}, ausgewählt</value>
+  </data>
+  <data name="ReaderHideOptions" xml:space="preserve">
+    <value>Optionen ausblenden</value>
+  </data>
+  <data name="ReaderSearchSummary" xml:space="preserve">
+    <value>Ergebnisse: {0} · {1} · {2}</value>
+  </data>
+  <data name="ReaderNewCount" xml:space="preserve">
+    <value>Neu: {0}</value>
+  </data>
+  <data name="ReaderNewMessage" xml:space="preserve">
+    <value>Neue Nachricht: {0}</value>
+  </data>
+  <data name="SettingsSectionReading" xml:space="preserve">
+    <value>Lesen</value>
+  </data>
+  <data name="SettingsSectionAbout" xml:space="preserve">
+    <value>Über</value>
+  </data>
 </root>
