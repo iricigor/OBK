@@ -462,4 +462,61 @@
   <data name="UpdatePermissionExplanation" xml:space="preserve"><value>V nastavení Androidu povolte instalaci z OBK a vraťte se sem. Android vás požádá o potvrzení aktualizace. OBK nemůže instalovat bez potvrzení.</value></data>
   <data name="UpdateOpenSettings" xml:space="preserve"><value>Otevřít nastavení Androidu</value></data>
   <data name="UpdatePermissionDenied" xml:space="preserve"><value>Instalace z OBK není povolena. Klepněte na Nainstalovat aktualizaci a povolte tento zdroj v nastavení Androidu.</value></data>
+  <data name="ReaderAllChildren" xml:space="preserve">
+    <value>Všechny děti</value>
+  </data>
+  <data name="ReaderSelectedAllChildren" xml:space="preserve">
+    <value>Zobrazeny všechny děti. Změnit dítě nebo účet</value>
+  </data>
+  <data name="ReaderCloseSearch" xml:space="preserve">
+    <value>Zavřít hledání</value>
+  </data>
+  <data name="ReaderClearSearch" xml:space="preserve">
+    <value>Vymazat hledání</value>
+  </data>
+  <data name="ReaderArrangeOptions" xml:space="preserve">
+    <value>Možnosti seskupení a řazení</value>
+  </data>
+  <data name="ReaderGroupHeading" xml:space="preserve">
+    <value>Seskupit</value>
+  </data>
+  <data name="ReaderSortHeading" xml:space="preserve">
+    <value>Řadit</value>
+  </data>
+  <data name="ReaderOptionNone" xml:space="preserve">
+    <value>Žádné</value>
+  </data>
+  <data name="ReaderOptionDate" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="ReaderOptionChild" xml:space="preserve">
+    <value>Dítě</value>
+  </data>
+  <data name="ReaderOptionSender" xml:space="preserve">
+    <value>Odesílatel</value>
+  </data>
+  <data name="ReaderOptionSubject" xml:space="preserve">
+    <value>Předmět</value>
+  </data>
+  <data name="ReaderOptionSelected" xml:space="preserve">
+    <value>{0}, vybráno</value>
+  </data>
+  <data name="ReaderHideOptions" xml:space="preserve">
+    <value>Skrýt možnosti</value>
+  </data>
+  <data name="ReaderSearchSummary" xml:space="preserve">
+    <value>Výsledky: {0} · {1} · {2}</value>
+  </data>
+  <data name="ReaderNewCount" xml:space="preserve">
+    <value>Nové: {0}</value>
+  </data>
+  <data name="ReaderNewMessage" xml:space="preserve">
+    <value>Nová zpráva: {0}</value>
+  </data>
+  <data name="SettingsSectionReading" xml:space="preserve">
+    <value>Čtení</value>
+  </data>
+  <data name="SettingsSectionAbout" xml:space="preserve">
+    <value>O aplikaci</value>
+  </data>
 </root>

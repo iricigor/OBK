@@ -60,6 +60,19 @@ internal static class VerificationData
         store.SaveAccount(url, "anna", "Anna", "Fictional school");
         if (Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification_saved_password", false) == true)
             store.RememberPassword(url, "anna", "fictional-password");
+        if (Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification_new_message", false) == true)
+        {
+            // Simulates a message arriving in a later refresh, after opened-state tracking began.
+            store.OpenedMessages(url, "tomas", store.LoadArchive(url, "tomas", year)!.Folders.Values.SelectMany(f => f).Select(m => m.Id));
+            var archive = store.LoadArchive(url, "tomas", year)!;
+            archive.Folders["received"].Add(new Message
+            {
+                Id = $"sample-new-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", Title = "After-school club arrangements",
+                Text = "<p>Fictional new message for verification.</p>", SentDate = DateTimeOffset.Now.ToString("O"),
+                Sender = JsonSerializer.SerializeToElement(new { Name = "Petra Svoboda" }), Attachments = []
+            });
+            store.SaveArchive(url, "tomas", year, "Fictional school", archive.Folders);
+        }
         global::Android.Util.Log.Info("OBK.Verify", "Keystore nonce/tamper checks and encrypted archive/attachment round-trip passed.");
     }
 

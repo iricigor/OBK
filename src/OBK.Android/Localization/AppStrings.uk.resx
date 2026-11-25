@@ -465,4 +465,61 @@
   <data name="UpdatePermissionExplanation" xml:space="preserve"><value>У параметрах Android дозвольте встановлення з OBK, а потім поверніться сюди. Android попросить підтвердити це оновлення. OBK не може встановлювати його непомітно.</value></data>
   <data name="UpdateOpenSettings" xml:space="preserve"><value>Відкрити параметри Android</value></data>
   <data name="UpdatePermissionDenied" xml:space="preserve"><value>Встановлення з OBK не дозволено. Натисніть «Установити оновлення», щоб повторити спробу, і дозвольте це джерело в параметрах Android.</value></data>
+  <data name="ReaderAllChildren" xml:space="preserve">
+    <value>Усі діти</value>
+  </data>
+  <data name="ReaderSelectedAllChildren" xml:space="preserve">
+    <value>Показано всіх дітей. Змінити дитину або обліковий запис</value>
+  </data>
+  <data name="ReaderCloseSearch" xml:space="preserve">
+    <value>Закрити пошук</value>
+  </data>
+  <data name="ReaderClearSearch" xml:space="preserve">
+    <value>Очистити пошук</value>
+  </data>
+  <data name="ReaderArrangeOptions" xml:space="preserve">
+    <value>Параметри групування та сортування</value>
+  </data>
+  <data name="ReaderGroupHeading" xml:space="preserve">
+    <value>Групувати</value>
+  </data>
+  <data name="ReaderSortHeading" xml:space="preserve">
+    <value>Сортувати</value>
+  </data>
+  <data name="ReaderOptionNone" xml:space="preserve">
+    <value>Немає</value>
+  </data>
+  <data name="ReaderOptionDate" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="ReaderOptionChild" xml:space="preserve">
+    <value>Дитина</value>
+  </data>
+  <data name="ReaderOptionSender" xml:space="preserve">
+    <value>Відправник</value>
+  </data>
+  <data name="ReaderOptionSubject" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="ReaderOptionSelected" xml:space="preserve">
+    <value>{0}, вибрано</value>
+  </data>
+  <data name="ReaderHideOptions" xml:space="preserve">
+    <value>Сховати параметри</value>
+  </data>
+  <data name="ReaderSearchSummary" xml:space="preserve">
+    <value>Результати: {0} · {1} · {2}</value>
+  </data>
+  <data name="ReaderNewCount" xml:space="preserve">
+    <value>Нові: {0}</value>
+  </data>
+  <data name="ReaderNewMessage" xml:space="preserve">
+    <value>Нове повідомлення: {0}</value>
+  </data>
+  <data name="SettingsSectionReading" xml:space="preserve">
+    <value>Читання</value>
+  </data>
+  <data name="SettingsSectionAbout" xml:space="preserve">
+    <value>Про застосунок</value>
+  </data>
 </root>

@@ -43,6 +43,20 @@ public sealed class MigrationTests : IDisposable
     }
 
     [Fact]
+    public void OpenedMessagesTreatExistingMessagesAsOpenedOnlyOnFirstUse()
+    {
+        using var protection = new TestProtection();
+        var path = Path.Combine(directory, "opened.sqlite3");
+        var store = new LocalStore(path, protection);
+        Assert.Equal(["old"], store.OpenedMessages(Url, "child", ["old"]));
+        Assert.Equal(["old"], store.OpenedMessages(Url, "child", ["old", "arrived-later"]));
+        store.MarkOpened(Url + "/", "child", "arrived-later");
+        var reopened = new LocalStore(path, protection);
+        Assert.Equal(["arrived-later", "old"], reopened.OpenedMessages(Url, "child", []).Order());
+        Assert.Empty(reopened.OpenedMessages(Url, "sibling", []));
+    }
+
+    [Fact]
     public void InjectedProtectionRejectsWrongKeysWithoutReplacingStoredData()
     {
         using var original = new TestProtection();

@@ -1,13 +1,18 @@
 using Microsoft.Maui.Controls.Shapes;
 using OBK.AndroidApp.Localization;
 using OBK.Core;
+using OBK.Core.Localization;
 
 namespace OBK.AndroidApp;
 
 internal static class ReaderTheme
 {
-    private static readonly Color Foreground = Color.FromArgb("#1A1A1A");
-    private static readonly Color DarkForeground = Colors.White;
+    internal static readonly Color Foreground = Color.FromArgb("#1A1A1A");
+    internal static readonly Color DarkForeground = Colors.White;
+    internal static readonly Color Selection = Color.FromArgb("#EAEFF5");
+    internal static readonly Color DarkSelection = Color.FromArgb("#1B2129");
+    internal static readonly Color OpenedForeground = Color.FromArgb("#3A3A3A");
+    internal static readonly Color DarkOpenedForeground = Color.FromArgb("#D6D6D6");
     private static readonly Color Secondary = Color.FromArgb("#616161");
     private static readonly Color DarkSecondary = Color.FromArgb("#A6A6A6");
     internal static readonly Color Surface = Colors.White;
@@ -51,23 +56,133 @@ internal static class ReaderTheme
         button.SetAppThemeColor(Button.TextColorProperty, Color.FromArgb(colors.LightText), Color.FromArgb(colors.DarkText));
     }
 
-    public static Border AccountAvatar(Login login, IReadOnlyList<Login> known)
+    public static Border AccountAvatar(Login login, IReadOnlyList<Login> known, bool compact = false)
     {
-        var colors = AvatarColors[AvatarPresentation.PaletteIndex(login.Url + "|" + login.Username)];
         var letter = new Label
         {
-            Text = AvatarPresentation.Initials(ReaderPage.AccountLabelConverter.Label(login)),
-            FontSize = AvatarPresentation.UseLargeInitial(login, known) ? 24 : 16,
             FontAttributes = FontAttributes.Bold,
             HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center
         };
-        letter.SetAppThemeColor(Label.TextColorProperty, Color.FromArgb(colors.LightText), Color.FromArgb(colors.DarkText));
         var border = new Border
         {
-            Content = letter, WidthRequest = 48, HeightRequest = 48, StrokeThickness = 0,
-            VerticalOptions = LayoutOptions.Start, StrokeShape = new RoundRectangle { CornerRadius = 24 }
+            Content = letter, WidthRequest = compact ? 40 : 48, HeightRequest = compact ? 40 : 48, StrokeThickness = 0,
+            VerticalOptions = LayoutOptions.Start, StrokeShape = new RoundRectangle { CornerRadius = compact ? 20 : 24 }
         };
+        StyleAvatar(border, letter, login, known, compact ? 20 : 24);
+        return border;
+    }
+
+    /// <summary>Applies a child's stable initials and palette to an existing avatar circle.</summary>
+    public static void StyleAvatar(Border border, Label letter, Login login, IReadOnlyList<Login> known, double largeSize)
+    {
+        var colors = AvatarColors[AvatarPresentation.PaletteIndex(login.Url + "|" + login.Username)];
+        letter.Text = AvatarPresentation.Initials(ReaderPage.AccountLabelConverter.Label(login));
+        letter.FontSize = AvatarPresentation.UseLargeInitial(login, known) ? largeSize : Math.Min(16, largeSize);
+        letter.SetAppThemeColor(Label.TextColorProperty, Color.FromArgb(colors.LightText), Color.FromArgb(colors.DarkText));
         border.SetAppThemeColor(VisualElement.BackgroundColorProperty, Color.FromArgb(colors.LightBackground), Color.FromArgb(colors.DarkBackground));
+    }
+
+    /// <summary>Overlapping avatars of up to three children inside one circle, for the all-children scope.</summary>
+    public static Grid GroupAvatar(IReadOnlyList<Login> known, double size)
+    {
+        var group = new Grid { WidthRequest = size, HeightRequest = size, InputTransparent = true };
+        var positions = known.Count == 2
+            ? new[] { (X: 0.06, Y: 0.14, Size: 0.55), (X: 0.39, Y: 0.30, Size: 0.55) }
+            : [(0.05, 0.11, 0.47), (0.48, 0.11, 0.47), (0.27, 0.48, 0.47)];
+        foreach (var (login, position) in known.Take(3).Zip(positions))
+        {
+            var letter = new Label
+            {
+                FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center
+            };
+            var avatar = new Border
+            {
+                Content = letter, WidthRequest = size*position.Size, HeightRequest = size*position.Size, StrokeThickness = 0,
+                HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Start,
+                Margin = new Thickness(size*position.X, size*position.Y, 0, 0),
+                StrokeShape = new RoundRectangle { CornerRadius = size*position.Size/2 }
+            };
+            StyleAvatar(avatar, letter, login, known, Math.Round(size*position.Size*0.5));
+            letter.FontSize = Math.Round(size*position.Size*0.5);
+            group.Add(avatar);
+        }
+        return group;
+    }
+
+    public static Border Badge(int count)
+    {
+        var text = new Label
+        {
+            Text = count.ToString(LanguageSettings.Culture), FontSize = 12, FontAttributes = FontAttributes.Bold,
+            TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center
+        };
+        var badge = new Border
+        {
+            Content = text, MinimumWidthRequest = 22, HeightRequest = 22, Padding = new Thickness(7, 0), StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 11 }, InputTransparent = true,
+            HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.Center, Margin = new Thickness(0, 0, 12, 0),
+            IsVisible = count > 0
+        };
+        badge.SetAppThemeColor(VisualElement.BackgroundColorProperty, Accent, Color.FromArgb("#0F6CBD"));
+        AutomationProperties.SetIsInAccessibleTree(badge, false);
+        return badge;
+    }
+
+    public static Button Chip(string label, bool selected, EventHandler select)
+    {
+        var chip = new Button
+        {
+            Text = label, CornerRadius = 20, BorderWidth = 1, Padding = new Thickness(14, 0),
+            FontAttributes = selected ? FontAttributes.Bold : FontAttributes.None, Margin = new Thickness(0, 0, 8, 8)
+        };
+        chip.SetAppThemeColor(VisualElement.BackgroundColorProperty, selected ? Selection : Surface, selected ? DarkSelection : DarkSurface);
+        chip.SetAppThemeColor(Button.TextColorProperty, selected ? Accent : Foreground, selected ? DarkAccent : DarkForeground);
+        chip.SetAppThemeColor(Button.BorderColorProperty, selected ? Accent : Stroke, selected ? DarkAccent : DarkStroke);
+        SemanticProperties.SetDescription(chip, selected ? Localized.Format(AppStrings.ReaderOptionSelected, label) : label);
+        chip.Clicked += select;
+        return chip;
+    }
+
+    /// <summary>A rounded single-choice control; each option is one tap and announces its selected state.</summary>
+    public static Border Segmented(IReadOnlyList<string> labels, int selected, Action<int> changed)
+    {
+        var grid = new Grid { ColumnSpacing = 0, Padding = 3 };
+        var buttons = new List<Button>();
+        void Update()
+        {
+            for (var index = 0; index < buttons.Count; index++)
+            {
+                var on = index == selected;
+                buttons[index].FontAttributes = on ? FontAttributes.Bold : FontAttributes.None;
+                buttons[index].SetAppThemeColor(VisualElement.BackgroundColorProperty, on ? Selection : Surface, on ? DarkSelection : DarkSurface);
+                buttons[index].SetAppThemeColor(Button.TextColorProperty, on ? Accent : Foreground, on ? DarkAccent : DarkForeground);
+                SemanticProperties.SetDescription(buttons[index], on ? Localized.Format(AppStrings.ReaderOptionSelected, labels[index]) : labels[index]);
+            }
+        }
+        for (var index = 0; index < labels.Count; index++)
+        {
+            var option = index;
+            grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            var button = new Button
+            {
+                Text = labels[index], CornerRadius = 20, BorderWidth = 0, Padding = new Thickness(4, 0),
+                LineBreakMode = LineBreakMode.TailTruncation, MinimumHeightRequest = 42
+            };
+            button.Clicked += (_, _) =>
+            {
+                if (selected == option) return;
+                selected = option;
+                Update();
+                changed(option);
+            };
+            buttons.Add(button);
+            grid.Add(button, index);
+        }
+        Update();
+        var border = new Border { Content = grid, StrokeThickness = 1, StrokeShape = new RoundRectangle { CornerRadius = 24 } };
+        border.SetAppThemeColor(VisualElement.BackgroundColorProperty, Surface, DarkSurface);
+        border.SetAppTheme<Brush>(Border.StrokeProperty, new SolidColorBrush(Stroke), new SolidColorBrush(DarkStroke));
         return border;
     }
 
@@ -75,7 +190,7 @@ internal static class ReaderTheme
     {
         var title = new Label
         {
-            Text = ReaderPage.AccountLabelConverter.Label(login), FontSize = compact ? 16 : 18,
+            Text = ReaderPage.AccountLabelConverter.Label(login), FontSize = compact ? 15 : 18,
             FontAttributes = FontAttributes.Bold, MaxLines = compact ? 1 : -1,
             LineBreakMode = compact ? LineBreakMode.TailTruncation : LineBreakMode.WordWrap
         };
@@ -83,16 +198,16 @@ internal static class ReaderTheme
         heading.Add(title);
         if (active?.Url == login.Url && active.Username == login.Username)
         {
-            var current = new Label { Text = AppStrings.AccountsActive, FontSize = 13, VerticalOptions = LayoutOptions.Center };
+            var current = new Label { Text = AppStrings.AccountsActive, FontSize = compact ? 12 : 13, VerticalOptions = LayoutOptions.Center };
             current.SetAppThemeColor(Label.TextColorProperty, Accent, DarkAccent);
             heading.Add(current, 1);
         }
-        var details = new VerticalStackLayout { Spacing = 4, VerticalOptions = LayoutOptions.Center };
+        var details = new VerticalStackLayout { Spacing = compact ? 2 : 4, VerticalOptions = LayoutOptions.Center };
         details.Add(heading);
         if (!string.IsNullOrWhiteSpace(login.SchoolName))
             details.Add(Metadata(new Label
             {
-                Text = login.SchoolName, MaxLines = compact ? 1 : -1,
+                Text = login.SchoolName, FontSize = compact ? 12 : 13, MaxLines = compact ? 1 : -1,
                 LineBreakMode = compact ? LineBreakMode.TailTruncation : LineBreakMode.WordWrap
             }));
         if (!compact)
@@ -100,31 +215,73 @@ internal static class ReaderTheme
         return details;
     }
 
-    public static Grid AccountChoice(Login login, IReadOnlyList<Login> known, Login? active, EventHandler select, bool compact = false)
+    public static Grid AccountChoice(Login login, IReadOnlyList<Login> known, Login? active, EventHandler select,
+        bool compact = false, int newCount = 0)
     {
-        var avatar = AccountAvatar(login, known);
+        var avatar = AccountAvatar(login, known, compact);
         avatar.VerticalOptions = LayoutOptions.Center;
-        var details = AccountDetails(login, active, compact);
-        var content = new Grid
-        {
-            Padding = new Thickness(8, compact ? 4 : 8),
-            ColumnDefinitions = [new(48), new(GridLength.Star)], ColumnSpacing = 12
-        };
-        content.Add(avatar);
-        content.Add(details, 1);
-        content.InputTransparent = true;
-        AutomationProperties.SetIsInAccessibleTree(content, false);
-        var button = StartAlignedButton(new Button { BackgroundColor = Colors.Transparent });
+        var isActive = active?.Url == login.Url && active.Username == login.Username;
         var description = string.Join(", ", new[]
         {
             ReaderPage.AccountLabelConverter.Label(login), login.SchoolName, login.Username,
-            active?.Url == login.Url && active.Username == login.Username ? AppStrings.AccountsActive : null
+            isActive ? AppStrings.AccountsActive : null,
+            newCount > 0 ? Localized.Format(AppStrings.ReaderNewCount, newCount) : null
         }.Where(text => !string.IsNullOrWhiteSpace(text)));
+        return Choice(avatar, AccountDetails(login, active, compact), description, isActive, newCount, select, compact);
+    }
+
+    public static Grid AllChildrenChoice(IReadOnlyList<Login> known, bool active, int newCount, EventHandler select)
+    {
+        var avatar = GroupAvatar(known, 40);
+        avatar.VerticalOptions = LayoutOptions.Center;
+        var title = new Label
+        {
+            Text = AppStrings.ReaderAllChildren, FontSize = 15, FontAttributes = FontAttributes.Bold,
+            VerticalOptions = LayoutOptions.Center, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation
+        };
+        if (active) title.SetAppThemeColor(Label.TextColorProperty, Accent, DarkAccent);
+        var description = string.Join(", ", new[]
+        {
+            AppStrings.ReaderAllChildren, active ? AppStrings.AccountsActive : null,
+            newCount > 0 ? Localized.Format(AppStrings.ReaderNewCount, newCount) : null
+        }.Where(text => text is not null));
+        return Choice(avatar, title, description, active, newCount, select, compact: true);
+    }
+
+    private static Grid Choice(View avatar, View details, string description, bool active, int newCount,
+        EventHandler select, bool compact)
+    {
+        var content = new Grid
+        {
+            Padding = new Thickness(8, compact ? 4 : 8),
+            ColumnDefinitions = [new(compact ? 40 : 48), new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = compact ? 8 : 12
+        };
+        content.Add(avatar);
+        content.Add(details, 1);
+        var badge = Badge(newCount);
+        badge.Margin = 0;
+        content.Add(badge, 2);
+        content.InputTransparent = true;
+        AutomationProperties.SetIsInAccessibleTree(content, false);
+        var button = StartAlignedButton(new Button { BackgroundColor = Colors.Transparent });
         SemanticProperties.SetDescription(button, description);
         button.Clicked += select;
         var row = new Grid { MinimumHeightRequest = 48 };
-        if (active?.Url == login.Url && active.Username == login.Username)
-            row.SetAppThemeColor(VisualElement.BackgroundColorProperty, Color.FromArgb("#EAEFF5"), Color.FromArgb("#1B2129"));
+        if (active)
+        {
+            VisualElement background = row;
+            if (compact)
+            {
+                var highlight = new Border
+                {
+                    StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 6 },
+                    InputTransparent = true
+                };
+                row.Add(highlight);
+                background = highlight;
+            }
+            background.SetAppThemeColor(VisualElement.BackgroundColorProperty, Selection, DarkSelection);
+        }
         row.Add(content);
         row.Add(button);
         return Apply(row);
@@ -144,6 +301,9 @@ internal static class ReaderTheme
 
     public static void SetIcon(ImageButton button, string name) =>
         button.SetAppTheme<ImageSource>(ImageButton.SourceProperty, ImageSource.FromFile($"{name}.png"), ImageSource.FromFile($"{name}_dark.png"));
+
+    public static void SetIcon(Image image, string name) =>
+        image.SetAppTheme<ImageSource>(Image.SourceProperty, ImageSource.FromFile($"{name}.png"), ImageSource.FromFile($"{name}_dark.png"));
 
     public static Label Metadata(Label label, string? sizeResource = null)
     {

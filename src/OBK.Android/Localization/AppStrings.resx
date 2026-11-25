@@ -465,4 +465,77 @@
   <data name="UpdatePermissionExplanation" xml:space="preserve"><value>In Android settings, allow installation from OBK, then return here. Android will ask you to confirm this update. OBK cannot install silently.</value></data>
   <data name="UpdateOpenSettings" xml:space="preserve"><value>Open Android settings</value></data>
   <data name="UpdatePermissionDenied" xml:space="preserve"><value>Installation from OBK is not allowed. Tap Install update to try again and allow this source in Android settings.</value></data>
+  <data name="ReaderAllChildren" xml:space="preserve">
+    <value>All children</value>
+    <comment>Account scope that shows messages of every child together.</comment>
+  </data>
+  <data name="ReaderSelectedAllChildren" xml:space="preserve">
+    <value>Showing all children. Change child or account</value>
+    <comment>Accessibility description of the all-children avatar.</comment>
+  </data>
+  <data name="ReaderCloseSearch" xml:space="preserve">
+    <value>Close search</value>
+  </data>
+  <data name="ReaderClearSearch" xml:space="preserve">
+    <value>Clear search</value>
+  </data>
+  <data name="ReaderArrangeOptions" xml:space="preserve">
+    <value>Group and sort options</value>
+    <comment>Button inside search that shows grouping and sorting choices.</comment>
+  </data>
+  <data name="ReaderGroupHeading" xml:space="preserve">
+    <value>Group</value>
+    <comment>Heading above grouping choices.</comment>
+  </data>
+  <data name="ReaderSortHeading" xml:space="preserve">
+    <value>Sort</value>
+    <comment>Heading above sorting choices.</comment>
+  </data>
+  <data name="ReaderOptionNone" xml:space="preserve">
+    <value>None</value>
+    <comment>Grouping choice: no grouping.</comment>
+  </data>
+  <data name="ReaderOptionDate" xml:space="preserve">
+    <value>Date</value>
+    <comment>Grouping/sorting choice: by date.</comment>
+  </data>
+  <data name="ReaderOptionChild" xml:space="preserve">
+    <value>Child</value>
+    <comment>Grouping choice: by child/account.</comment>
+  </data>
+  <data name="ReaderOptionSender" xml:space="preserve">
+    <value>Sender</value>
+    <comment>Grouping/sorting choice: by sender.</comment>
+  </data>
+  <data name="ReaderOptionSubject" xml:space="preserve">
+    <value>Subject</value>
+    <comment>Grouping/sorting choice: by subject.</comment>
+  </data>
+  <data name="ReaderOptionSelected" xml:space="preserve">
+    <value>{0}, selected</value>
+    <comment>Accessibility description of a selected choice. {0} = choice label.</comment>
+  </data>
+  <data name="ReaderHideOptions" xml:space="preserve">
+    <value>Hide options</value>
+  </data>
+  <data name="ReaderSearchSummary" xml:space="preserve">
+    <value>Results: {0} · {1} · {2}</value>
+    <comment>{0} = number of matching messages, {1} = folder, {2} = child or All children.</comment>
+  </data>
+  <data name="ReaderNewCount" xml:space="preserve">
+    <value>New: {0}</value>
+    <comment>Accessibility description of a new-message count badge. {0} = count.</comment>
+  </data>
+  <data name="ReaderNewMessage" xml:space="preserve">
+    <value>New message: {0}</value>
+    <comment>Accessibility description of a message not yet opened on this device. {0} = subject.</comment>
+  </data>
+  <data name="SettingsSectionReading" xml:space="preserve">
+    <value>Reading</value>
+    <comment>Settings section for text size and density.</comment>
+  </data>
+  <data name="SettingsSectionAbout" xml:space="preserve">
+    <value>About</value>
+    <comment>Settings section with the repository link.</comment>
+  </data>
 </root>

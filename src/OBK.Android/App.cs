@@ -122,15 +122,22 @@ public sealed class App : Application
             flyout.IsPresented = false;
             await reader.AccountActionsAsync();
         };
-        var children = new VerticalStackLayout { Spacing = 4 };
-        var addChild = ReaderTheme.StartAlignedButton(new Button { Text = AppStrings.ReaderAccountsSheetAddChild });
+        var children = new VerticalStackLayout { Spacing = 0 };
+        var addChild = ReaderTheme.StartAlignedButton(new Button
+        {
+            Text = AppStrings.ReaderAccountsSheetAddChild,
+            ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 12)
+        });
+        addChild.SetAppTheme<ImageSource>(Button.ImageSourceProperty,
+            ImageSource.FromFile("add.png"), ImageSource.FromFile("add_dark.png"));
         addChild.Clicked += async (_, _) =>
         {
             flyout.IsPresented = false;
             await reader.AddAccountAsync();
         };
-        var folders = new VerticalStackLayout { Spacing = 4 };
+        var folders = new VerticalStackLayout { Spacing = 0 };
         var folderButtons = new List<Button>();
+        var folderBadges = new List<Grid>();
         foreach (var index in Enumerable.Range(0, reader.FolderLabels.Count))
         {
             var button = ReaderTheme.StartAlignedButton(new Button
@@ -146,8 +153,10 @@ public sealed class App : Application
                 reader.SelectFolder(index);
                 flyout.IsPresented = false;
             };
-            folders.Add(button);
+            var badge = new Grid { InputTransparent = true, HorizontalOptions = LayoutOptions.End };
+            folders.Add(new Grid { Children = { button, badge } });
             folderButtons.Add(button);
+            folderBadges.Add(badge);
         }
         flyout.IsPresentedChanged += (_, _) =>
         {
@@ -155,23 +164,34 @@ public sealed class App : Application
             accounts.IsEnabled = reader.AccountsAvailable;
             addChild.IsEnabled = reader.AccountsAvailable;
             children.Children.Clear();
+            if (reader.KnownAccounts.Count > 1)
+                children.Add(ReaderTheme.AllChildrenChoice(reader.KnownAccounts, reader.ShowingAllChildren, reader.NewCountAll, async (_, _) =>
+                {
+                    flyout.IsPresented = false;
+                    await reader.SelectAllChildrenAsync();
+                }));
             foreach (var login in reader.KnownAccounts)
                 children.Add(ReaderTheme.AccountChoice(login, reader.KnownAccounts, reader.ActiveAccount, async (_, _) =>
                 {
                     flyout.IsPresented = false;
                     await reader.SelectAccountAsync(login);
-                }, compact: true));
+                }, compact: true, newCount: reader.NewCount(login)));
             children.IsEnabled = reader.AccountsAvailable;
             for (var index = 0; index < folderButtons.Count; index++)
             {
                 var button = folderButtons[index];
+                var count = reader.FolderNewCount(index);
+                folderBadges[index].Children.Clear();
+                folderBadges[index].Add(ReaderTheme.Badge(count));
                 button.IsEnabled = !reader.Busy;
                 button.FontAttributes = index == reader.FolderIndex ? FontAttributes.Bold : FontAttributes.None;
                 button.SetAppThemeColor(Button.BackgroundColorProperty,
-                    index == reader.FolderIndex ? Color.FromArgb("#EAEFF5") : Colors.Transparent,
-                    index == reader.FolderIndex ? Color.FromArgb("#1B2129") : Colors.Transparent);
-                SemanticProperties.SetDescription(button, index == reader.FolderIndex ?
-                    Localized.Format(AppStrings.ReaderSelectedFolder, reader.FolderLabels[index]) : reader.FolderLabels[index]);
+                    index == reader.FolderIndex ? ReaderTheme.Selection : Colors.Transparent,
+                    index == reader.FolderIndex ? ReaderTheme.DarkSelection : Colors.Transparent);
+                var description = index == reader.FolderIndex ?
+                    Localized.Format(AppStrings.ReaderSelectedFolder, reader.FolderLabels[index]) : reader.FolderLabels[index];
+                SemanticProperties.SetDescription(button, count > 0
+                    ? description + ", " + Localized.Format(AppStrings.ReaderNewCount, count) : description);
             }
         };
         flyout.Flyout = ReaderTheme.Apply(new ContentPage
@@ -181,19 +201,19 @@ public sealed class App : Application
             {
                 Content = new VerticalStackLayout
                 {
-                    Padding = new Thickness(16, 20), Spacing = 12,
+                    Padding = new Thickness(12, 14), Spacing = 8,
                     Children =
                     {
                         new VerticalStackLayout
                         {
-                            Spacing = 4,
+                            Spacing = 3,
                             Children =
                             {
-                                new Label { Text = "OBK", FontSize = 24, FontAttributes = FontAttributes.Bold },
-                                ReaderTheme.Metadata(new Label { Text = "Offline Bakalari Komens" })
+                                new Label { Text = "OBK", FontSize = 20, FontAttributes = FontAttributes.Bold },
+                                ReaderTheme.Metadata(new Label { Text = "Offline Bakalari Komens", FontSize = 12 })
                             }
                         },
-                        ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderDrawerChildren, FontAttributes = FontAttributes.Bold }),
+                        ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderDrawerChildren, FontSize = 12, FontAttributes = FontAttributes.Bold }),
                         children, addChild, new BoxView { HeightRequest = 1 },
                         folders, new BoxView { HeightRequest = 1 }, accounts, settings
                     }
@@ -204,8 +224,10 @@ public sealed class App : Application
         return (flyout, navigation, reader);
     }
 
-    private sealed class ReaderNavigation : FlyoutPage
+    private sealed class ReaderNavigation : FlyoutPage, IFlyoutView
     {
+        double IFlyoutView.FlyoutWidth => 280;
+
         protected override bool OnBackButtonPressed()
         {
             if (!IsPresented) return base.OnBackButtonPressed();
