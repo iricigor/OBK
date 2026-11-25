@@ -13,6 +13,7 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
     private string theme = "Light";
     private string readingSize = "Medium";
     private string listDensity = "Relaxed";
+    private bool? allChildren;
     public string Theme => theme;
     public string ReadingSize => readingSize;
     public bool IsSmallText => readingSize == "Small";
@@ -25,6 +26,8 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
     public bool IsLight => !IsDark;
     public string ToggleTooltip => IsDark ? AppStrings.ThemeSwitchToLightTooltip : AppStrings.ThemeSwitchToDarkTooltip;
     public string ToggleIcon => IsDark ? "\uE706" : "\uE708";
+    /// <summary>The remembered reader scope: true for All children, false for one child, null until chosen.</summary>
+    public bool? AllChildren => allChildren;
 
     public async Task InitializeAsync()
     {
@@ -45,6 +48,7 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
         ApplyScale(loaded.ReadingSize is "Small" or "Large" ? loaded.ReadingSize : "Medium");
         ApplyDensity(loaded.ListDensity == "Compact" ? "Compact" : "Relaxed");
         Apply(loaded.Theme);
+        allChildren = loaded.AllChildren;
     }
 
     public async Task ToggleAsync() => await SetAsync(IsDark ? "Light" : "Dark");
@@ -72,9 +76,17 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
         await SaveAsync();
     }
 
+    /// <summary>Remembers the reader scope; the new value applies immediately, even if saving fails.</summary>
+    public async Task SetAllChildrenAsync(bool selected)
+    {
+        if (allChildren == selected) return;
+        allChildren = selected;
+        await SaveAsync();
+    }
+
     private async Task SaveAsync()
     {
-        var settings = new ThemeSettings(theme, readingSize, listDensity);
+        var settings = new ThemeSettings(theme, readingSize, listDensity, allChildren);
         await Task.Run(() =>
         {
             var temporary = settingsPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -148,5 +160,5 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
         Notify(nameof(IsRelaxedList));
     }
 
-    private sealed record ThemeSettings(string Theme, string? ReadingSize = null, string? ListDensity = null);
+    private sealed record ThemeSettings(string Theme, string? ReadingSize = null, string? ListDensity = null, bool? AllChildren = null);
 }

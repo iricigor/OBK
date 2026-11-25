@@ -26,7 +26,7 @@
   </data>
   <data name="AppTitleWithAccount" xml:space="preserve">
     <value>OBK - Offline Komens - {0}</value>
-    <comment>Window caption. {0} = active child name or school name.</comment>
+    <comment>Window caption. {0} = active child name or school name, or All children (ScopeAllChildren).</comment>
   </data>
   <data name="BuildRibbonLabel" xml:space="preserve">
     <value>DEV BUILD</value>
@@ -367,6 +367,22 @@ Refresh to check your school.</value>
     <value>{0} of {1} messages match</value>
     <comment>Folder caption while searching. {0} = matching messages; {1} = all messages in the folder.</comment>
   </data>
+  <data name="MainFolderNewOne" xml:space="preserve">
+    <value>{0} new</value>
+    <comment>{0} = number of messages in the folder not yet opened on this PC. Singular form (Czech: 1; Ukrainian: 1, 21, 31...).</comment>
+  </data>
+  <data name="MainFolderNewFew" xml:space="preserve">
+    <value>{0} new</value>
+    <comment>{0} = number of new messages. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural.</comment>
+  </data>
+  <data name="MainFolderNewMany" xml:space="preserve">
+    <value>{0} new</value>
+    <comment>{0} = number of new messages. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...).</comment>
+  </data>
+  <data name="MainFolderCaptionDetail" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>Folder caption with one more detail. {0} = message count or search matches; {1} = new-message count or the All children scope.</comment>
+  </data>
   <data name="MainGroupHeaderTooltip" xml:space="preserve">
     <value>Collapse or expand this group</value>
   </data>
@@ -377,6 +393,10 @@ Refresh to check your school.</value>
   <data name="MainGroupName" xml:space="preserve">
     <value>Group messages by</value>
     <comment>Accessible name of the grouping drop-down.</comment>
+  </data>
+  <data name="MainGroupOptionChild" xml:space="preserve">
+    <value>Child</value>
+    <comment>Grouping option offered only in the All children scope: group messages by child.</comment>
   </data>
   <data name="MainGroupOptionDate" xml:space="preserve">
     <value>Date</value>
@@ -440,6 +460,10 @@ Refresh to check your school.</value>
     <value>Title</value>
     <comment>Sort option: sort messages by subject.</comment>
   </data>
+  <data name="MessageChildAndPerson" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>Second line of a message row in the All children scope. {0} = child name; {1} = sender, or recipient in Sent.</comment>
+  </data>
   <data name="MessageExcuseBadge" xml:space="preserve">
     <value>Excuse</value>
     <comment>Short badge on excuse notes in the message list.</comment>
@@ -451,6 +475,14 @@ Refresh to check your school.</value>
   <data name="MessageHasAttachments" xml:space="preserve">
     <value>Has attachments</value>
     <comment>Accessible name of the attachment icon in the message list.</comment>
+  </data>
+  <data name="MessageRowName" xml:space="preserve">
+    <value>{0}, {1}, {2}</value>
+    <comment>Accessible name of a message row. {0} = subject; {1} = sender line (with the child name in the All children scope); {2} = date and time sent.</comment>
+  </data>
+  <data name="MessageRowNameNew" xml:space="preserve">
+    <value>New message: {0}</value>
+    <comment>Accessible name of a message not yet opened on this PC. {0} = the row description (MessageRowName).</comment>
   </data>
   <data name="PromptPasswordAction" xml:space="preserve">
     <value>Verify and save</value>
@@ -485,6 +517,10 @@ Refresh to check your school.</value>
   <data name="ReaderMetadata" xml:space="preserve">
     <value>Sent: {0} • Folder: {1}</value>
     <comment>{0} = date and time the message was sent; {1} = folder name.</comment>
+  </data>
+  <data name="ReaderMetadataChild" xml:space="preserve">
+    <value>Sent: {0} • Folder: {1} • Child: {2}</value>
+    <comment>Reader metadata in the All children scope. {0} = date and time the message was sent; {1} = folder name; {2} = child name.</comment>
   </data>
   <data name="ReaderNoContent" xml:space="preserve">
     <value>(No message content)</value>
@@ -523,6 +559,14 @@ Refresh to check your school.</value>
   <data name="RefreshSummarySignInNeeded" xml:space="preserve">
     <value>Sign in needed (no saved password): {0}.</value>
     <comment>{0} = comma-separated account names.</comment>
+  </data>
+  <data name="ScopeAllChildren" xml:space="preserve">
+    <value>All children</value>
+    <comment>Sidebar entry, folder caption detail and window title for the scope that shows every child's messages together.</comment>
+  </data>
+  <data name="ScopeAllChildrenTooltip" xml:space="preserve">
+    <value>Show the messages of all children together</value>
+    <comment>Tooltip of the All children sidebar entry.</comment>
   </data>
   <data name="SettingsAbout" xml:space="preserve">
     <value>About</value>
@@ -707,6 +751,14 @@ Refresh to check your school.</value>
     <value>Folders</value>
     <comment>Accessible name of the folder list.</comment>
   </data>
+  <data name="SidebarItemNewName" xml:space="preserve">
+    <value>{0}, new: {1}</value>
+    <comment>Accessible name of a child or folder with new messages. {0} = child or folder name; {1} = number of messages not yet opened on this PC.</comment>
+  </data>
+  <data name="SidebarNewCount" xml:space="preserve">
+    <value>New: {0}</value>
+    <comment>Accessible name and tooltip of a blue new-message badge. {0} = number of messages not yet opened on this PC.</comment>
+  </data>
   <data name="SidebarResizeName" xml:space="preserve">
     <value>Resize sidebar</value>
     <comment>Accessible name of the sidebar splitter.</comment>
@@ -742,6 +794,10 @@ Refresh to check your school.</value>
     <value>Offline archive ready • Synced ({0} messages, {1} attachments) • Last synchronized: {2}</value>
     <comment>{0} = message count; {1} = cached attachment count; {2} = last synchronization date and time.</comment>
   </data>
+  <data name="StatusArchiveReadyAllChildren" xml:space="preserve">
+    <value>Offline archive ready • {0} • Last synchronized: {1}</value>
+    <comment>Status in the All children scope. {0} = number of children with an offline archive (StatusChildCount...); {1} = the oldest last synchronization date and time among them.</comment>
+  </data>
   <data name="StatusAttachmentOpened" xml:space="preserve">
     <value>Opened decrypted copy: {0}. It remains in the local opened folder.</value>
     <comment>{0} = attachment file name.</comment>
@@ -753,6 +809,18 @@ Refresh to check your school.</value>
   <data name="StatusAttachmentsSaved" xml:space="preserve">
     <value>Saved {0} decrypted attachment copies. Delete copies when no longer needed.</value>
     <comment>{0} = number of saved copies.</comment>
+  </data>
+  <data name="StatusChildCountOne" xml:space="preserve">
+    <value>{0} child</value>
+    <comment>{0} = number of children. Singular form (Czech: 1; Ukrainian: 1, 21, 31...).</comment>
+  </data>
+  <data name="StatusChildCountFew" xml:space="preserve">
+    <value>{0} children</value>
+    <comment>{0} = number of children. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural.</comment>
+  </data>
+  <data name="StatusChildCountMany" xml:space="preserve">
+    <value>{0} children</value>
+    <comment>{0} = number of children. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...).</comment>
   </data>
   <data name="StatusChildNameRemoved" xml:space="preserve">
     <value>Removed the child name for {0}.</value>
@@ -941,5 +1009,9 @@ Refresh to check your school.</value>
   <data name="TransferWordsName" xml:space="preserve">
     <value>Transfer words</value>
     <comment>Accessible name of the words text.</comment>
+  </data>
+  <data name="StatusChildrenNotDownloaded" xml:space="preserve">
+    <value>{0} • Not downloaded yet: {1}</value>
+    <comment>{0} = archive status for all children; {1} = comma-separated names of children whose archive has not been downloaded yet.</comment>
   </data>
 </root>

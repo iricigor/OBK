@@ -824,7 +824,8 @@ the list collapses while a school search is active, so up to six matches fit
 without scrolling. Choosing one restores its username and optional child name;
 passwords are filled only for explicitly remembered profiles. Choosing or
 searching for a different school starts with blank account fields.
-Later starts open the last used child's offline archive without signing in; the
+Later starts open the remembered scope (**All children** or the last used child's
+offline archive) without signing in; the
 popup appears only from **Add child**, or from **Refresh** when a password is
 needed. Signing in happens only when **Refresh** or **Sign in and sync** is used.
 The action footer stays visible while the form scrolls, with **Read offline**
@@ -833,24 +834,50 @@ separate from **Sign in and sync**.
 The Fluent workspace has three columns: child/folder navigation, a virtualized
 message list, and a reading pane. The left column lists every known child or
 school account; clicking one opens its offline archive for the current school
-year without network requests. **Add child** opens the account picker.
-**Noticeboard**, **Inbox**, **Sent**, and **Excuses** show actual archive counts; unread dots
-reflect the cached server read state.
+year without network requests. With two or more children, **All children** comes
+first, shown with overlapping avatars of up to three children. It merges every
+child's archive for the current school year into one set of folders, like the
+Android default scope. The chosen scope is remembered; without a saved choice,
+two or more children start in **All children**. **Add child** opens the account picker.
+
+A message is new when it is in **Inbox** or **Noticeboard** and has not been
+opened on this PC; **Sent** and **Excuses** are never new. Windows and Android
+share this rule and the encrypted per-account `opened_messages` table: the first
+load of an account's archive records its existing messages as opened, so only
+later arrivals are new. The school's read state is no longer shown and is never
+changed. Blue badges on the children and folders count new messages; **All
+children** sums its children, and folder badges follow the current scope. Totals
+appear in the list caption, for example `7 messages · 3 new · All children`
+(searches show the match count instead). New rows show a dot, a semibold subject,
+and an accent-colored date. Clicking a message, selecting it with the keyboard,
+pressing Enter or Space on the selected message, or opening it from a related
+link marks it opened. The automatic selection when a folder opens, the list
+refreshes, the scope changes, or search results change does not.
 
 Each list item has two lines: subject and date, then the sender (or recipient in
-Sent). Sent excuses, identified by the API message type `OMLUVENKA` (not by subject
+Sent). In **All children**, rows also show the owning child's avatar, the second
+line reads `Child · Sender`, and the reading pane's metadata adds `Child: <name>`.
+Attachments, related messages, and related links always use the owning child's
+account and archive. Sent excuses, identified by the API message type `OMLUVENKA` (not by subject
 text), appear in a separate **Excuses** folder after **Sent** instead of in Sent,
 and carry an **Excuse** badge. The search box filters the current folder
 live by subject, contents, sender/recipient, and sent date (for example
 `3.11.2026` or `2026-11-03`), ignoring case and diacritics; every word must
 match. **Sort** orders by date (newest first), sender, or subject; **Group**
 groups by date (Today, Yesterday, This week, This month, then months), sender,
-or subject, ignoring Re:/Odp:/Fwd: prefixes. Click a group header to collapse or expand it;
+or subject, ignoring Re:/Odp:/Fwd: prefixes. **All children** also offers
+**Child** grouping; switching to a single child replaces it with no grouping.
+Click a group header to collapse or expand it;
 groups expand again when the list is re-sorted, searched, or reopened.
 
 Above the message body, **Possibly related** links possible previous and next
-messages across Inbox and Sent, oldest first, each showing its date (for example
-21.Sep 15:53) and sender (**From: you** for Sent). When a side has several, they are
+messages across Inbox and Sent of the same child, oldest first. Each shows its
+day relative to the selected message and the sender (**From: you** for Sent).
+For a message received today, the days count back from today: Today, Yesterday,
+then `N days ago`. For an older message, they count from its own date:
+`N days before`, Same day, or `N days after`. Days are local calendar dates;
+Czech and Ukrainian use their plural forms. The exact date and time appear in
+each link's tooltip and accessible name. When a side has several, they are
 numbered outward from the current message, for example Previous (2), Previous (1). Komens lists do not expose reply
 links, so this is a heuristic: subjects must share enough words (prefixes,
 case, and diacritics are ignored, so an added or changed middle part such as
@@ -860,12 +887,12 @@ messages share the subject and person (for example repeated excuses), a link als
 needs similar body text, or must be the adjacent message from the other side
 (Inbox vs Sent) with no same-subject message from the selected message's side in
 between; otherwise nothing is shown rather than a guess.
-Selecting a message does not mark it read or send any server requests.
+Selecting a message never marks it read on the school server or sends any request.
 Switching folders restores the last selected message in that folder for the
 current app session. On a first visit, or if that message is no longer present,
 the newest message by sent date is selected and scrolled into view. Empty
-folders remain unselected. Selection memory resets when changing accounts or
-school years; it is not saved when the app closes.
+folders remain unselected. Selection memory resets when changing children, the
+**All children** scope, or school years; it is not saved when the app closes.
 Drag the dividers to resize the sidebar, list, and reading pane. Dragging the
 sidebar narrower than about 140 pixels, or using the arrow button at its bottom,
 switches it to icons only (names in tooltips); the arrow expands it again. The layout
@@ -877,7 +904,8 @@ The sun/moon button switches **Light** and **Dark** immediately, including
 message text, login controls, menus, and window chrome. **Settings > Appearance**
 offers the same choice; both stay in sync. The choice is saved
 per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
-startup. It contains only the theme, reading size and list density, not credentials or archive data.
+startup. It contains only the theme, reading size, list density and the
+**All children** scope choice, not credentials or archive data.
 
 **Settings**, at the bottom of the sidebar, replaces the message list and
 reading pane with Windows 11-style sections that start collapsed:
@@ -908,6 +936,10 @@ changes only after **Sign in and sync** or **Read offline**.
 one after another, then reloads the visible archive. Accounts without a saved
 password are listed in the status bar; the sign-in dialog opens for the current
 account if it needs a password, or for the first account if none could refresh.
+**All children** has no current account, so it opens the dialog only when no
+account could refresh. In that scope, the status bar shows the number of
+children, the oldest last synchronization, and any children whose archive has
+not been downloaded yet.
 A failure for one account is reported and does not replace its offline archive
 or stop the others. Saved credential
 profiles and account history remain available; no offline archive is removed.

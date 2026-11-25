@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
@@ -181,6 +182,10 @@ public sealed class PresentationTests
                         await vm.MessageReady;
                     }
                     await vm.InitializeAsync();
+                    Assert.True(vm.ShowingAllChildren);
+                    await vm.SelectAccountAsync(vm.Accounts.Single(a => a.Login.Username == "test"));
+                    Assert.False(vm.ShowingAllChildren);
+                    Assert.False(theme.AllChildren);
                     await vm.ActivateAccountAsync("https://school.example", "test");
                     await WaitForFolderAsync();
                     Assert.Equal(2, vm.Messages.Count);
@@ -207,7 +212,7 @@ public sealed class PresentationTests
                     vm.ExpandAttachmentsCommand.Execute(null);
                     Assert.Equal(6, vm.VisibleAttachments.Count);
                     Assert.False(M("first").Message.Read);
-                    Assert.True(M("first").Unread);
+                    Assert.False(M("first").IsNew);
 
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "sent");
                     await WaitForFolderAsync();
@@ -327,9 +332,11 @@ public sealed class PresentationTests
                     var restored = new ThemeManager(settingsPath);
                     await restored.InitializeAsync();
                     Assert.True(restored.IsLargeText && restored.IsCompactList && restored.IsLight);
+                    Assert.False(restored.AllChildren);
                     await File.WriteAllTextAsync(settingsPath, "{\"Theme\":\"Light\",\"ReadingSize\":\"huge\",\"ListDensity\":\"tiny\"}");
                     await restored.InitializeAsync();
                     Assert.True(restored.IsMediumText && restored.IsRelaxedList);
+                    Assert.Null(restored.AllChildren);
                     Assert.Equal(14.0, (double)application.Resources["ReaderBodySize"]);
                     await Assert.ThrowsAsync<ObkException>(() => restored.SetReadingSizeAsync("huge"));
                     await File.WriteAllTextAsync(settingsPath, "{\"Theme\":\"invalid\"}");
@@ -365,6 +372,79 @@ public sealed class PresentationTests
                             main.ViewModel.CloseSettingsCommand.Execute(null);
                         }
                         AssertRepositoryLink();
+
+                        // Two children open together by default: badges, owner avatars, and opening only by user action.
+                        await Task.Run(() =>
+                        {
+                            var archive = store.LoadArchive("https://school.example", "other", SchoolYear.Current())!;
+                            foreach (var (id, day) in new[] { ("fresh", 5), ("fresher", 6) })
+                                archive.Folders["received"].Add(new Message
+                                {
+                                    Id = id, Title = id == "fresh" ? "Fresh notice" : "Fresher notice", Text = "<p>New</p>", Attachments = [],
+                                    SentDate = SchoolYear.Current().Start.AddDays(day).ToString("O")
+                                });
+                            store.SaveArchive("https://school.example", "other", SchoolYear.Current(), "Other account", archive.Folders);
+                        });
+                        // Changing the scope resets the remembered selection, so the newest message is selected again.
+                        await main.ViewModel.SelectAccountAsync(main.ViewModel.Accounts.Single(account => account.Login.Username == "test"));
+                        Assert.False(main.ViewModel.ShowingAllChildren);
+                        await main.ViewModel.SelectAllChildrenAsync();
+                        await main.ViewModel.FolderReady;
+                        await main.ViewModel.MessageReady;
+                        main.UpdateLayout();
+                        Assert.True(main.ViewModel.ShowingAllChildren);
+                        var allChildrenButton = (Button)main.FindName("AllChildrenButton");
+                        Assert.Equal(Visibility.Visible, allChildrenButton.Visibility);
+                        Assert.Equal("All children, new: 2", AutomationProperties.GetName(allChildrenButton));
+                        Assert.Equal(2, ((ItemsControl)main.FindName("AllChildrenAvatar")).Items.Count);
+                        var scopeList = (ListBox)main.FindName("Messages");
+                        var folderList = (ListBox)main.FindName("FolderList");
+                        ListBoxItem Item(ListBox list, object row) => (ListBoxItem)list.ItemContainerGenerator.ContainerFromItem(row);
+                        ListBoxItem NewRow(string id) => Item(scopeList, main.ViewModel.Messages.Single(row => row.Message.Id == id));
+                        var inbox = Item(folderList, main.ViewModel.Navigation.Single(folder => folder.Key == "received"));
+                        Assert.Equal("Inbox, new: 2", AutomationProperties.GetName(inbox));
+                        var fresher = NewRow("fresher");
+                        Assert.True(fresher.IsSelected, "The newest message is selected automatically.");
+                        Assert.StartsWith("New message: Fresher notice, Other account · ", AutomationProperties.GetName(fresher));
+                        static IEnumerable<T> Within<T>(DependencyObject root) where T : DependencyObject
+                        {
+                            for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+                            {
+                                var child = VisualTreeHelper.GetChild(root, index);
+                                if (child is T match) yield return match;
+                                foreach (var nested in Within<T>(child)) yield return nested;
+                            }
+                        }
+                        var freshRow = (MessageRow)fresher.DataContext;
+                        var date = Within<TextBlock>(fresher).Single(text => text.Text == freshRow.ShortSent);
+                        Assert.Equal(((SolidColorBrush)main.FindResource("Accent")).Color, ((SolidColorBrush)date.Foreground).Color);
+                        Assert.Equal(FontWeights.SemiBold, date.FontWeight);
+                        Assert.Contains(Within<Border>(fresher), border => border.Width == 24 && border.IsVisible);
+                        fresher.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+                        {
+                            RoutedEvent = Mouse.PreviewMouseUpEvent
+                        });
+                        main.UpdateLayout();
+                        Assert.False(freshRow.IsNew, "Clicking the automatically selected message opens it.");
+                        Assert.Equal("All children, new: 1", AutomationProperties.GetName(allChildrenButton));
+                        Assert.Equal("Inbox, new: 1", AutomationProperties.GetName(inbox));
+                        Assert.Equal(FontWeights.Normal, date.FontWeight);
+                        NewRow("fresh").IsSelected = true;
+                        await main.ViewModel.MessageReady;
+                        Assert.False(main.ViewModel.SelectedMessage!.IsNew, "Selecting a message in the list opens it.");
+                        Assert.Equal("All children", AutomationProperties.GetName(allChildrenButton));
+                        await main.ViewModel.OpenedSaved;
+                        var groupBox = (ComboBox)main.FindName("GroupBox");
+                        main.ViewModel.Grouping = ListGrouping.Child;
+                        await main.ViewModel.FolderReady;
+                        Assert.Equal(ListGrouping.Child, groupBox.SelectedValue);
+                        await main.ViewModel.SelectAccountAsync(main.ViewModel.Accounts.Single(account => account.Login.Username == "test"));
+                        await main.ViewModel.FolderReady;
+                        await main.ViewModel.MessageReady;
+                        Assert.False(main.ViewModel.ShowingAllChildren);
+                        Assert.Equal(ListGrouping.None, main.ViewModel.Grouping);
+                        Assert.Equal(ListGrouping.None, groupBox.SelectedValue);
+                        Assert.DoesNotContain(groupBox.Items.Cast<DisplayOption<ListGrouping>>(), option => option.Value == ListGrouping.Child);
                         var ribbon = (Button)main.FindName("BuildRibbon");
                         var ribbonArea = (Canvas)main.FindName("BuildRibbonArea");
                         var readingPane = (Border)main.FindName("ReadingPane");
@@ -564,7 +644,7 @@ public sealed class PresentationTests
                         await main.ViewModel.FolderReady;
                         main.ViewModel.SearchText = "sent Sep";
                         main.ViewModel.Sort = MessageSort.Sender;
-                        main.ViewModel.Grouping = MessageGrouping.Sender;
+                        main.ViewModel.Grouping = ListGrouping.Sender;
                         await main.ViewModel.FolderReady;
                         main.ViewModel.SelectedMessage = main.ViewModel.Messages.Single(row => row.Message.Id == "sent-old");
                         await main.ViewModel.MessageReady;
@@ -614,7 +694,7 @@ public sealed class PresentationTests
                         Assert.Equal("test", main.Account!.Username);
                         Assert.Equal("sent Sep", main.ViewModel.SearchText);
                         Assert.Equal(MessageSort.Sender, main.ViewModel.Sort);
-                        Assert.Equal(MessageGrouping.Sender, main.ViewModel.Grouping);
+                        Assert.Equal(ListGrouping.Sender, main.ViewModel.Grouping);
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Same(updates, main.Updates);
                         Assert.Same(appearance, main.ViewModel.Theme);
