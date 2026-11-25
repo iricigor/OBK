@@ -163,14 +163,15 @@ file cards and attachment actions are unchanged.
 
 ## Planned messaging enhancements
 
-Planned work tracked in #71 (superseding #70): optional scheduled Android
-message checks with independent new-message and empty-run notifications
-(`POST_NOTIFICATIONS` requested only when notifications are enabled), Android
-related-message links, relative related-message dates on both platforms, an
-Android message-list attachment indicator, cataloged handling of special
-message types such as evaluations, and Windows **All children** and
-new-message views matching Android. Open questions are listed in #71.
-Implementation and local user verification are pending.
+Planned work tracked in #71: hourly scheduled Android message checks with
+optional new-message and empty-run notifications (`POST_NOTIFICATIONS`
+requested only when notifications are enabled), Android related-message links,
+relative related-message dates on both platforms, an Android message-list
+attachment indicator, and Windows **All children** and new-message views
+matching Android. Handling of evaluations and other special message types is
+deferred to #70 (see [DI-04](../DEFERRED_IDEAS.md#di-04-evaluations-and-other-special-komens-message-types)).
+Agreed decisions are recorded in #71. Implementation and local user
+verification are pending.
 
 ## Interface text and localization
 

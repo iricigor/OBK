@@ -173,3 +173,78 @@ manual-only updates. End-to-end updates still require device verification.
 - [Android release signing and APK publication](https://github.com/iricigor/OBK/issues/39)
 - [Android build and verification](docs/TECHNICAL.md#android-preview)
 - [Android package installation permission](https://developer.android.com/reference/android/Manifest.permission#REQUEST_INSTALL_PACKAGES)
+
+## DI-04: Evaluations and other special Komens message types
+
+**Status:** Deferred on 2026-11-25 and tracked in #70. Removed from the
+messaging enhancements in #71 (its former F5) before implementation.
+
+**Idea:** Recognise evaluations (*hodnocení*) and any other special Komens
+message types by their API type and present them distinctly, for example in an
+Evaluations folder or with a type label, as OBK already does for excuses.
+
+### What is known
+
+Verified from real cached API responses (an aggregate-only scan; no content,
+names, dates or counts were recorded):
+
+- OBK keeps unrecognised API fields in `Message.Extra`, so the type fields are
+  available offline without new server requests.
+- Evaluations arrive in the received list with `Type: "HODNOCENI"`,
+  `$type: "RatingMessage"`, `LifeTime: "ToConfirm"` and `CanConfirm: true`.
+  Besides the common fields they carry `RatingType`, `Scale`,
+  `RecipientsRead`, `RecipientsConfirmed`, `Recipients` and `CanDelete`.
+- Their `Title` is a generic caption starting with `hodnocení:` followed by the
+  pupil and class. The short label that the Bakaláři web shows in place of a
+  subject is in neither `Title` nor `Text`.
+- In the sample examined, `RatingType` was `null` and `Scale` was `0`, so no
+  field distinguishing praise from a reprimand could be identified.
+- A general message can also mention hodnocení in its subject, so evaluations
+  must be identified by type, not by subject.
+- Other types: `OBECNA` (general messages), `OMLUVENKA` (excuses in Sent, with
+  the excused period in `DateFrom`/`DateTo`), and noticeboard items without a
+  `$type`, coded `NASTRI` (from teachers, `LifeTime: "ToRemoval"`) or `NASSKO`
+  (from the school administration, `LifeTime: "Validity"` with
+  `DateFrom`/`DateTo`). No system messages were present.
+
+From public or secondary sources, not verified against OBK data:
+
+- The community API documentation lists only `OBECNA` and `OMLUVENKA`;
+  `GET /api/3/komens/messages/unread` also reports `RatingCount`.
+- A third-party client's notes show the Bakaláři web list filtering general
+  messages, excuses, ratings and system messages, and a `RatingOfMessage`
+  field in the web message detail.
+- According to the maintainer's description, evaluations record praise or
+  reprimands about behaviour and attitude, usually need a parent's
+  confirmation, and are separate from marks in **Klasifikace**.
+- `NASTRI` and `NASSKO` probably mean class and school noticeboards; this is
+  inferred from the codes and senders.
+
+### Why this is deferred
+
+Evaluations can be detected reliably, but presenting them depends on open
+questions: whether praise and reprimands can be told apart, and where the web
+UI's short label comes from. The maintainer chose to continue #71 without them.
+
+### Investigation before implementation
+
+- Determine whether `RatingType` or `Scale` distinguishes praise from
+  reprimands: re-scan cached data after a praise arrives or, with the
+  maintainer's consent, inspect one evaluation's detail response
+  (`GET /api/3/komens/messages/received/{id}`) read-only.
+- Agree the presentation: an Evaluations folder or label, whether evaluations
+  also stay in Inbox, and how to show the confirmation state while OBK stays
+  read-only.
+- Exclude evaluation-to-evaluation subject matches from related messages, as
+  excuse pairs already are, because their captions share the pupil and class.
+- Decide whether system messages, the two noticeboard types or excuse periods
+  need any treatment, and check the codes with another school where possible.
+
+Do not commit private payloads, screenshots or credentials as examples.
+
+### References
+
+- [Evaluation tracking issue](https://github.com/iricigor/OBK/issues/70) and [proposed, unagreed evaluation mocks](https://github.com/iricigor/OBK/issues/71#issuecomment-7170916171)
+- [Komens message lists and details](https://github.com/bakalari-api/bakalari-api-v3/blob/master/moduly/komens.md)
+- [Komens message types](https://github.com/bakalari-api/bakalari-api-v3/blob/master/moduly/komens_message-types.md)
+- [Third-party notes on the Bakaláři web Komens list](https://github.com/DeNdlerX/strakalari/blob/main/docs/BAKALARI_API.md)
