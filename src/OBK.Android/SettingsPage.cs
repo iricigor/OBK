@@ -71,12 +71,13 @@ internal sealed class SettingsPage : ContentPage
             repository.IsEnabled = false;
             try
             {
-                if (!await Launcher.TryOpenAsync("https://github.com/iricigor/OBK"))
-                    throw new ObkException(AppStrings.ErrorNoAppForLink);
+                await OpenRepositoryAsync();
             }
             catch (Exception error) when (error is ObkException or FeatureNotSupportedException)
             {
-                await DisplayAlertAsync(SharedStrings.RepositoryLink, error.Message, AppStrings.AlertOkButton);
+                await DisplayAlertAsync(SharedStrings.RepositoryLink,
+                    error is FeatureNotSupportedException ? AppStrings.ErrorNoAppForLink : error.Message,
+                    AppStrings.AlertOkButton);
             }
             finally { repository.IsEnabled = true; }
         };
@@ -141,6 +142,21 @@ internal sealed class SettingsPage : ContentPage
             }
         };
         ReaderTheme.Apply(this);
+    }
+
+    private static async Task OpenRepositoryAsync()
+    {
+        var uri = new Uri("https://github.com/iricigor/OBK");
+        try
+        {
+            if (await Launcher.TryOpenAsync(uri)) return;
+        }
+        catch (global::Android.Content.ActivityNotFoundException)
+        {
+            // A handler may disappear between discovery and launch; retry without discovery.
+        }
+        if (!await Browser.OpenAsync(uri, BrowserLaunchMode.External))
+            throw new ObkException(AppStrings.ErrorNoAppForLink);
     }
 
     private static UpdateService CreateUpdateService() => new(Path.Combine(FileSystem.CacheDirectory, "updates"));

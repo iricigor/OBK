@@ -137,6 +137,9 @@ subtle dark-theme stripes. Windows selection and hover remain distinct.
 their school, username and saved-password status, with account-specific
 **Sign in** and **Forget password** actions and a fixed **Add child** button.
 Forgetting a password asks for confirmation and keeps the offline archive.
+The GitHub link in **Settings** opens through Android's installed app/browser
+handler. If handler discovery fails, OBK retries external URL opening; if no
+handler is available, it shows an error.
 
 To avoid typing credentials on the phone, open **Settings > Accounts >
 Transfer to Android** in OBK on Windows, then tap **Scan from PC** on Android's
