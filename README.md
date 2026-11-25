@@ -110,6 +110,10 @@ still apply. OBK is not affiliated with or endorsed by Bakaláři.
 
 ## Android preview
 
+Mobile usability follow-up is tracked in [#66](https://github.com/iricigor/OBK/issues/66):
+compact navigation, GitHub link handling, all-children reading, grouping/sorting,
+search layout, Settings presentation, and locally new-message indicators.
+
 The Android 10+ .NET MAUI reader supports school sign-in, multiple children, manual
 refresh, offline folders/search, and opening or sharing downloaded attachments.
 It uses Android Keystore-backed encryption and remains read-only toward school
