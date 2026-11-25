@@ -161,6 +161,17 @@ unchanged. Attachments stay below related messages and above the body, on
 their own neutral-shaded surface. This band is hidden when there are no files;
 file cards and attachment actions are unchanged.
 
+## Planned messaging enhancements
+
+Planned work tracked in #71 (superseding #70): optional scheduled Android
+message checks with independent new-message and empty-run notifications
+(`POST_NOTIFICATIONS` requested only when notifications are enabled), Android
+related-message links, relative related-message dates on both platforms, an
+Android message-list attachment indicator, cataloged handling of special
+message types such as evaluations, and Windows **All children** and
+new-message views matching Android. Open questions are listed in #71.
+Implementation and local user verification are pending.
+
 ## Interface text and localization
 
 App-owned interface text lives in `.resx` resource sets. English is the neutral
