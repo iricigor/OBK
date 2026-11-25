@@ -508,16 +508,6 @@
     <value>Кому: {0}</value>
     <comment>{0} = recipient name of a sent message.</comment>
   </data>
-  <data name="ReaderRelatedHelpName" xml:space="preserve">
-    <value>Про можливо пов’язані повідомлення</value>
-    <comment>Accessible name of the help icon.</comment>
-  </data>
-  <data name="ReaderRelatedHelpTooltip" xml:space="preserve">
-    <value>Визначено за схожою темою й тією самою особою. Komens не повідомляє про фактичні зв’язки відповідей, тому повідомлення можуть бути пов’язані неправильно або неповністю.</value>
-  </data>
-  <data name="ReaderRelatedTitle" xml:space="preserve">
-    <value>Можливо пов’язані</value>
-  </data>
   <data name="RefreshSummaryFailed" xml:space="preserve">
     <value>Помилка: {0} Наявні автономні архіви залишено без змін.</value>
     <comment>{0} = semicolon-separated list of 'account: error' entries.</comment>
@@ -533,30 +523,6 @@
   <data name="RefreshSummarySignInNeeded" xml:space="preserve">
     <value>Потрібен вхід (немає збереженого пароля): {0}.</value>
     <comment>{0} = comma-separated account names.</comment>
-  </data>
-  <data name="RelatedFromYou" xml:space="preserve">
-    <value>ви</value>
-    <comment>Sender of a related message that you sent; inserted into RelatedLabel.</comment>
-  </data>
-  <data name="RelatedLabel" xml:space="preserve">
-    <value>{0} — Від: {1}</value>
-    <comment>Related message link. {0} = short date and time; {1} = sender name or 'you'.</comment>
-  </data>
-  <data name="RelatedNext" xml:space="preserve">
-    <value>Наступне</value>
-    <comment>Direction of a later related message.</comment>
-  </data>
-  <data name="RelatedNextNumbered" xml:space="preserve">
-    <value>Наступне ({0})</value>
-    <comment>Direction of a later related message. {0} = position counted from the current message.</comment>
-  </data>
-  <data name="RelatedPrevious" xml:space="preserve">
-    <value>Попереднє</value>
-    <comment>Direction of an earlier related message.</comment>
-  </data>
-  <data name="RelatedPreviousNumbered" xml:space="preserve">
-    <value>Попереднє ({0})</value>
-    <comment>Direction of an earlier related message. {0} = position counted from the current message.</comment>
   </data>
   <data name="SettingsAbout" xml:space="preserve">
     <value>Про програму</value>

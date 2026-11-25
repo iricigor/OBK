@@ -470,20 +470,20 @@
                                 Visibility="{Binding HasRelated, Converter={StaticResource VisibleIf}}">
                             <StackPanel x:Name="RelatedPanel">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                    <TextBlock Text="{x:Static loc:AppStrings.ReaderRelatedTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource MessageHeaderSecondary}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Static shared:SharedStrings.RelatedTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource MessageHeaderSecondary}" VerticalAlignment="Center"/>
                                     <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="12" Margin="6,0,0,0" Foreground="{DynamicResource MessageHeaderSecondary}"
                                                VerticalAlignment="Center" Background="Transparent" Cursor="Help" ToolTipService.InitialShowDelay="0"
-                                               AutomationProperties.Name="{x:Static loc:AppStrings.ReaderRelatedHelpName}"
-                                               ToolTip="{x:Static loc:AppStrings.ReaderRelatedHelpTooltip}"/>
+                                               AutomationProperties.Name="{x:Static shared:SharedStrings.RelatedHelpName}"
+                                               ToolTip="{x:Static shared:SharedStrings.RelatedHelpTooltip}"/>
                                 </StackPanel>
                                 <ItemsControl ItemsSource="{Binding Related}">
                                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
-                                                    Padding="8,4" Margin="0,0,6,4" ToolTip="{Binding Subject}" BorderBrush="{DynamicResource RelatedStroke}" BorderThickness="1"
+                                                    Padding="8,4" Margin="0,0,6,4" ToolTip="{Binding ToolTip}" BorderBrush="{DynamicResource RelatedStroke}" BorderThickness="1"
                                                     Background="{DynamicResource MessageHeaderSurface}"
-                                                    AutomationProperties.Name="{Binding Label}">
+                                                    AutomationProperties.Name="{Binding AccessibleName}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Style="{StaticResource Icon}" Text="{Binding Icon}" FontSize="11" Foreground="{DynamicResource RelatedLink}" VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Direction}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource MessageHeaderSecondary}" Margin="6,0,6,0" VerticalAlignment="Center"/>

@@ -102,11 +102,15 @@ public sealed class PresentationTests
         var related = new RelatedMessages(
             [new(new(Make("p1", 20, "Jan Novák"), "received"), 1), new(new(Make("p2", 10, "Parent"), "sent"), 1)],
             [new(new(Make("n1", 25, "Jan Novák"), "received"), 1)]);
-        var rows = RelatedRow.Build(null!, related);
+        var rows = RelatedRow.Build(null!, related, new DateTimeOffset(2026, 9, 21, 10, 0, 0, TimeSpan.FromHours(2)),
+            new DateTime(2026, 9, 30));
         Assert.Equal(["p2", "p1", "n1"], rows.Select(r => r.Item.Message.Id));
         Assert.Equal(["Previous (2)", "Previous (1)", "Next"], rows.Select(r => r.Direction));
         Assert.Equal("you", rows[0].From);
-        Assert.Equal($"{new DateTime(2026, 9, 20, 10, 0, 0):dd.MMM HH:mm} \u2022 From: Jan Novák", rows[1].Label);
+        Assert.Equal("1 day before \u2022 From: Jan Novák", rows[1].Label);
+        Assert.Equal("Hodnocení\n20 Sep 2026 10:00", rows[1].ToolTip);
+        Assert.Equal("Previous (1): 1 day before \u2022 From: Jan Novák, 20 Sep 2026 10:00", rows[1].AccessibleName);
+        Assert.Equal("4 days after \u2022 From: Jan Novák", rows[2].Label);
     }
 
     [Fact]

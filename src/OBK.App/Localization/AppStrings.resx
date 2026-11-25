@@ -508,16 +508,6 @@ Refresh to check your school.</value>
     <value>To: {0}</value>
     <comment>{0} = recipient name of a sent message.</comment>
   </data>
-  <data name="ReaderRelatedHelpName" xml:space="preserve">
-    <value>About possibly related messages</value>
-    <comment>Accessible name of the help icon.</comment>
-  </data>
-  <data name="ReaderRelatedHelpTooltip" xml:space="preserve">
-    <value>Matched by similar subject and the same person. Komens does not report actual reply links, so these may be unrelated or incomplete.</value>
-  </data>
-  <data name="ReaderRelatedTitle" xml:space="preserve">
-    <value>Possibly related</value>
-  </data>
   <data name="RefreshSummaryFailed" xml:space="preserve">
     <value>Failed: {0} Existing offline archives were kept.</value>
     <comment>{0} = semicolon-separated list of 'account: error' entries.</comment>
@@ -533,30 +523,6 @@ Refresh to check your school.</value>
   <data name="RefreshSummarySignInNeeded" xml:space="preserve">
     <value>Sign in needed (no saved password): {0}.</value>
     <comment>{0} = comma-separated account names.</comment>
-  </data>
-  <data name="RelatedFromYou" xml:space="preserve">
-    <value>you</value>
-    <comment>Sender of a related message that you sent; inserted into RelatedLabel.</comment>
-  </data>
-  <data name="RelatedLabel" xml:space="preserve">
-    <value>{0} • From: {1}</value>
-    <comment>Related message link. {0} = short date and time; {1} = sender name or 'you'.</comment>
-  </data>
-  <data name="RelatedNext" xml:space="preserve">
-    <value>Next</value>
-    <comment>Direction of a later related message.</comment>
-  </data>
-  <data name="RelatedNextNumbered" xml:space="preserve">
-    <value>Next ({0})</value>
-    <comment>Direction of a later related message. {0} = position counted from the current message.</comment>
-  </data>
-  <data name="RelatedPrevious" xml:space="preserve">
-    <value>Previous</value>
-    <comment>Direction of an earlier related message.</comment>
-  </data>
-  <data name="RelatedPreviousNumbered" xml:space="preserve">
-    <value>Previous ({0})</value>
-    <comment>Direction of an earlier related message. {0} = position counted from the current message.</comment>
   </data>
   <data name="SettingsAbout" xml:space="preserve">
     <value>About</value>

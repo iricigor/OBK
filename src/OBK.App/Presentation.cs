@@ -170,30 +170,23 @@ public sealed class AccountRow(Login login, bool current, bool passwordSaved = f
     }
 }
 
-public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool next, int? number = null)
+public sealed class RelatedRow(MainViewModel owner, RelatedLink link)
 {
     public MainViewModel Owner { get; } = owner;
-    public MessageRef Item { get; } = item;
-    public bool IsNext { get; } = next;
-    public string Direction => number is { } n
-        ? Localized.Format(IsNext ? AppStrings.RelatedNextNumbered : AppStrings.RelatedPreviousNumbered, n)
-        : IsNext ? AppStrings.RelatedNext : AppStrings.RelatedPrevious;
+    public MessageRef Item => link.Item;
+    public bool IsNext => link.IsNext;
+    public string Direction => link.Direction;
     public string Icon => IsNext ? "\uE72A" : "\uE72B";
     public string Subject => MainViewModel.OneLine(Item.Message.Title) is { Length: > 0 } title ? title : SharedStrings.NoSubject;
-    public string From => Item.Folder == "sent" ? AppStrings.RelatedFromYou :
+    public string From => link.FromYou ? SharedStrings.RelatedFromYou :
         MainViewModel.OneLine(Item.Message.SenderName) is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
-    public string Label => Localized.Format(AppStrings.RelatedLabel,
-        Item.Message.Date.ToString(SharedStrings.DateRelatedFormat, LanguageSettings.Culture), From);
+    public string Label => Localized.Format(SharedStrings.RelatedLabel, link.When, From);
+    /// <summary>The chip shows a relative day, so the exact date joins the subject in the tooltip.</summary>
+    public string ToolTip => Subject + "\n" + link.FullDate;
+    public string AccessibleName => Localized.Format(SharedStrings.RelatedAccessibleName, Direction, Label, link.FullDate);
 
-    /// <summary>Chronological rows; numbers count outward from the current message when a side has several.</summary>
-    public static IReadOnlyList<RelatedRow> Build(MainViewModel owner, RelatedMessages related)
-    {
-        var previous = related.Previous.Select((r, i) =>
-            new RelatedRow(owner, r.Item, false, related.Previous.Count > 1 ? i + 1 : null)).Reverse();
-        var following = related.Responses.Select((r, i) =>
-            new RelatedRow(owner, r.Item, true, related.Responses.Count > 1 ? i + 1 : null));
-        return previous.Concat(following).ToArray();
-    }
+    public static IReadOnlyList<RelatedRow> Build(MainViewModel owner, RelatedMessages related, DateTimeOffset displayed, DateTime today) =>
+        RelatedLinks.Build(related, displayed, today).Select(link => new RelatedRow(owner, link)).ToArray();
 }
 
 public static class LinkOpener

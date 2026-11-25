@@ -580,7 +580,7 @@ public sealed class MainViewModel : ObservableObject
             if (version != messageVersion) return;
             Body = result.parts.Count == 0 ? [new(AppStrings.ReaderNoContent, false, false, false, false)] : result.parts;
             SetAttachments(result.files);
-            Related = RelatedRow.Build(this, result.related);
+            Related = RelatedRow.Build(this, result.related, row.Message.Date, DateTime.Today);
         }
         catch (ObkException error) { if (version == messageVersion) ReportError(error.Message); }
     }
