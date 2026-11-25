@@ -203,7 +203,7 @@
     <value>Dichte der Nachrichtenliste</value>
   </data>
   <data name="SettingsListDensityDescription" xml:space="preserve">
-    <value>Abstand zwischen Nachrichten in der Liste</value>
+    <value>Abstände in der Nachrichtenliste und im Nachrichtenkopf</value>
   </data>
   <data name="SettingsListDensityCompact" xml:space="preserve">
     <value>Kompakt</value>
@@ -524,6 +524,27 @@
   </data>
   <data name="ReaderWithAttachments" xml:space="preserve">
     <value>{0}. Hat Anhänge</value>
+  </data>
+  <data name="ReaderGroupDescription" xml:space="preserve">
+    <value>{0}, {1}, {2}</value>
+  </data>
+  <data name="ReaderGroupMessagesOne" xml:space="preserve">
+    <value>{0} Nachricht</value>
+  </data>
+  <data name="ReaderGroupMessagesFew" xml:space="preserve">
+    <value>{0} Nachrichten</value>
+  </data>
+  <data name="ReaderGroupMessagesMany" xml:space="preserve">
+    <value>{0} Nachrichten</value>
+  </data>
+  <data name="ReaderGroupExpanded" xml:space="preserve">
+    <value>ausgeklappt</value>
+  </data>
+  <data name="ReaderGroupCollapsed" xml:space="preserve">
+    <value>eingeklappt</value>
+  </data>
+  <data name="ReaderGroupHint" xml:space="preserve">
+    <value>Tippen, um diese Gruppe ein- oder auszuklappen</value>
   </data>
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Lesen</value>

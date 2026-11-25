@@ -13,9 +13,11 @@ internal sealed class MessagePage : ContentPage
     private readonly Archive? archive;
     private readonly Func<Login, MessageRef, Task> openRelated;
     private readonly VerticalStackLayout content = new() { Padding = 20, Spacing = 16 };
+    private readonly Border header = ReaderTheme.Panel(new ContentView(), 16);
     private readonly Label status = new() { IsVisible = false };
     private readonly List<Button> actions = [];
     private readonly Message message;
+    private bool? compactHeader;
     private bool loaded;
     private bool busy;
     private bool loading;
@@ -35,26 +37,9 @@ internal sealed class MessagePage : ContentPage
         message = item.Message;
         Title = AppStrings.MessagePageTitle;
         LanguageToolbar.Add(this);
-        var subject = new Label { Text = message.Title, FontAttributes = FontAttributes.Bold };
-        subject.SetDynamicResource(Label.FontSizeProperty, "ReaderSubjectSize");
-        var sender = new Label { Text = message.SenderName };
-        sender.SetDynamicResource(Label.FontSizeProperty, "ReaderSenderSize");
-        var date = ReaderTheme.Metadata(new Label
-        {
-            Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture)
-        }, "ReaderMetaSize");
-        sender.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
-        date.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
-        var header = ReaderTheme.Panel(new VerticalStackLayout
-        {
-            Spacing = 4,
-            Children =
-            {
-                subject, sender, date
-            }
-        }, 16);
         header.StrokeThickness = 0;
         header.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.MessageHeaderSurface, ReaderTheme.DarkMessageHeaderSurface);
+        UpdateHeader();
         content.Add(header);
         content.Add(status);
         Content = new ScrollView { Content = content };
@@ -62,9 +47,50 @@ internal sealed class MessagePage : ContentPage
         this.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
     }
 
+    /// <summary>
+    /// Lays the header out for the list density: Relaxed stacks subject, sender and date; Compact puts the sender and
+    /// the date on one row with less padding.
+    /// </summary>
+    private void UpdateHeader()
+    {
+        var compact = ReaderPreferences.CompactDensity;
+        if (compactHeader == compact) return;
+        compactHeader = compact;
+        var subject = new Label { Text = message.Title, FontAttributes = FontAttributes.Bold };
+        subject.SetDynamicResource(Label.FontSizeProperty, "ReaderSubjectSize");
+        var sender = new Label { Text = message.SenderName };
+        sender.SetDynamicResource(Label.FontSizeProperty, "ReaderSenderSize");
+        var date = new Label { Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) };
+        date.SetDynamicResource(Label.FontSizeProperty, "ReaderMetaSize");
+        sender.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
+        date.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
+        header.Padding = compact ? 12 : 16;
+        if (compact)
+        {
+            sender.MaxLines = date.MaxLines = 1;
+            sender.LineBreakMode = LineBreakMode.TailTruncation;
+            sender.VerticalOptions = date.VerticalOptions = LayoutOptions.Center;
+            date.HorizontalOptions = LayoutOptions.End;
+            var rows = new Grid
+            {
+                ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)],
+                RowDefinitions = [new(GridLength.Auto), new(GridLength.Auto)], ColumnSpacing = 12, RowSpacing = 2
+            };
+            rows.Add(subject);
+            Grid.SetColumnSpan(subject, 2);
+            rows.Add(sender, 0, 1);
+            rows.Add(date, 1, 1);
+            header.Content = rows;
+        }
+        else header.Content = new VerticalStackLayout { Spacing = 4, Children = { subject, sender, date } };
+        ReaderTheme.Apply(header);
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        // Settings can be opened on top of this page and change the density.
+        UpdateHeader();
         if (loaded) return;
         loaded = true;
         loading = true;
@@ -176,19 +202,24 @@ internal sealed class MessagePage : ContentPage
         help.Margin = new Thickness(-8, 0, 0, 0);
         help.Clicked += async (_, _) => await PerformAsync(() =>
             DisplayAlertAsync(SharedStrings.RelatedTitle, SharedStrings.RelatedHelpTooltip, AppStrings.AlertOkButton));
-        var rows = new VerticalStackLayout { Spacing = 8 };
-        foreach (var link in links) rows.Add(RelatedRow(link));
-        // The 48 dp help button already leaves room around the title, so no top padding or gap is added there.
+        var subject = Subject(message.Title);
+        var rows = new VerticalStackLayout { Spacing = 4 };
+        foreach (var link in links) rows.Add(RelatedRow(link, subject));
+        // The 48 dp help button spans the band's top padding and the gap below the title, so neither is added.
         var band = new Border
         {
             Content = new VerticalStackLayout { Children = { new HorizontalStackLayout { Children = { title, help } }, rows } },
-            Padding = new Thickness(12, 0, 12, 12), StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 6 }
+            Padding = new Thickness(12, 0, 12, 8), StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 6 }
         };
         band.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.RelatedSurface, ReaderTheme.DarkRelatedSurface);
         return band;
     }
 
-    private Grid RelatedRow(RelatedLink link)
+    /// <summary>A subject compared without case, accents or reply and forward prefixes.</summary>
+    private static string Subject(string? title) => MessageInsights.Fold(MessageInsights.StripPrefixes(title));
+
+    /// <summary>A one-line link; a second line shows the related subject only when it differs from the open message's.</summary>
+    private Grid RelatedRow(RelatedLink link, string subject)
     {
         var related = link.Item.Message;
         var from = link.FromYou ? SharedStrings.RelatedFromYou :
@@ -201,18 +232,22 @@ internal sealed class MessagePage : ContentPage
         var heading = new Label
         {
             FormattedText = new FormattedString { Spans = { direction, new Span { Text = " " }, context } },
-            FontSize = 13, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation
+            FontSize = 13, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation, VerticalOptions = LayoutOptions.Center
         };
-        var subject = new Label { Text = related.Title, FontSize = 14, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation };
         var arrow = new Image { WidthRequest = 20, HeightRequest = 20, VerticalOptions = LayoutOptions.Center };
         ReaderTheme.SetIcon(arrow, link.IsNext ? "related_next" : "related_previous");
-        var details = new Grid { ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)], ColumnSpacing = 12, InputTransparent = true };
+        var details = new Grid { ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)], ColumnSpacing = 10, InputTransparent = true };
         details.Add(arrow);
-        details.Add(new VerticalStackLayout { Spacing = 2, VerticalOptions = LayoutOptions.Center, Children = { heading, subject } }, 1);
+        if (Subject(related.Title) == subject) details.Add(heading, 1);
+        else
+        {
+            var other = new Label { Text = related.Title, FontSize = 14, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation };
+            details.Add(new VerticalStackLayout { VerticalOptions = LayoutOptions.Center, Children = { heading, other } }, 1);
+        }
         AutomationProperties.SetIsInAccessibleTree(details, false);
         var card = new Border
         {
-            Content = details, Padding = new Thickness(12, 8), StrokeThickness = 1, MinimumHeightRequest = 56,
+            Content = details, Padding = new Thickness(10, 4), StrokeThickness = 1, MinimumHeightRequest = 48,
             StrokeShape = new RoundRectangle { CornerRadius = 6 }, InputTransparent = true
         };
         card.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.MessageHeaderSurface, ReaderTheme.DarkMessageHeaderSurface);
@@ -222,7 +257,7 @@ internal sealed class MessagePage : ContentPage
             Localized.Format(SharedStrings.RelatedAccessibleName, link.Direction, label, link.FullDate), related.Title));
         open.Clicked += async (_, _) => await PerformAsync(() => openRelated(account, link.Item));
         actions.Add(open);
-        return new Grid { MinimumHeightRequest = 56, Children = { card, open } };
+        return new Grid { MinimumHeightRequest = 48, Children = { card, open } };
     }
 
     private static ReadOnlyFile AttachmentFile(string path, string? contentType)

@@ -113,26 +113,32 @@ internal sealed class SettingsPage : ContentPage
         checks.Toggle.Toggled += (_, args) =>
         {
             if (updatingSwitches || args.Value == ReaderPreferences.ScheduledChecks) return;
+            // Turning checks off also saves both notification switches as off; turning them on again leaves those off.
             ReaderPreferences.ScheduledChecks = args.Value;
+            if (!args.Value) notificationsDenied = false;
             ScheduledCheck.Schedule(args.Value);
             UpdateChecks();
         };
         notifications.Toggle.Toggled += async (_, args) =>
         {
             // Android can echo a state set while it was still reporting the tap; only changes to the shown state count.
-            if (updatingSwitches || requestingNotifications ||
+            if (updatingSwitches || requestingNotifications || !notifications.Toggle.IsEnabled ||
                 args.Value == (ReaderPreferences.CheckNotifications && CheckNotifier.Enabled)) return;
             if (args.Value)
             {
                 await EnableNotificationsAsync();
                 return;
             }
+            // Also saves empty-check notifications as off.
             ReaderPreferences.CheckNotifications = notificationsDenied = false;
             UpdateChecks();
         };
         emptyNotifications.Toggle.Toggled += (_, args) =>
         {
-            if (!updatingSwitches) ReaderPreferences.EmptyCheckNotifications = args.Value;
+            // A greyed switch only changes when a switch above it turns it off.
+            if (updatingSwitches || !emptyNotifications.Toggle.IsEnabled ||
+                args.Value == ReaderPreferences.EmptyCheckNotifications) return;
+            ReaderPreferences.EmptyCheckNotifications = args.Value;
         };
         var openNotificationSettings = new Button { Text = AppStrings.SettingsOpenNotificationSettings, CornerRadius = 20 };
         openNotificationSettings.SetAppThemeColor(Button.BorderColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
@@ -235,7 +241,10 @@ internal sealed class SettingsPage : ContentPage
         return notice;
     }
 
-    /// <summary>Shows the stored check settings; notifications show off while Android blocks them.</summary>
+    /// <summary>
+    /// Shows the stored check settings: a switch whose parent is off is greyed and off, and notifications show off
+    /// while Android blocks them. Reading the nested settings also saves them as off under an off parent.
+    /// </summary>
     private void UpdateChecks()
     {
         if (requestingNotifications) return;
@@ -246,10 +255,10 @@ internal sealed class SettingsPage : ContentPage
         updatingSwitches = true;
         checks.Toggle.IsToggled = checking;
         notifications.Toggle.IsToggled = notifying;
-        emptyNotifications.Toggle.IsToggled = ReaderPreferences.EmptyCheckNotifications;
+        emptyNotifications.Toggle.IsToggled = notifying && ReaderPreferences.EmptyCheckNotifications;
         updatingSwitches = false;
         SetAvailable(notifications, checking, AppStrings.SettingsNotificationsDescription, AppStrings.SettingsNotificationsNeedChecks);
-        SetAvailable(emptyNotifications, checking && notifying, AppStrings.SettingsEmptyNotificationsDescription,
+        SetAvailable(emptyNotifications, notifying, AppStrings.SettingsEmptyNotificationsDescription,
             AppStrings.SettingsEmptyNotificationsNeedNotifications);
         notificationsBlocked.IsVisible = checking && !allowed && (notificationsDenied || ReaderPreferences.CheckNotifications);
     }
@@ -257,7 +266,6 @@ internal sealed class SettingsPage : ContentPage
     private async Task EnableNotificationsAsync()
     {
         requestingNotifications = true;
-        notifications.Toggle.IsEnabled = false;
         try
         {
             var allowed = await CheckNotifier.RequestAsync();

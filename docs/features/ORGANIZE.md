@@ -4,7 +4,7 @@
 
 Search finds subject, message text, sender, and date without an internet
 connection. Group by date, child, sender, or subject, and sort the results by
-date, sender, or subject.
+date, sender, or subject. Click or tap a group header to collapse or expand it.
 
 Likely earlier messages and replies are linked from the open message, labelled
 with how many days apart they are. Both apps mark messages as new until they are

@@ -299,6 +299,11 @@ and localized dates. The sliders button shows the Group (None, Date, Child, Send
 Subject) and Sort (Date, Sender, Subject) chips; ordering and date-group labels come
 from the shared `MessageInsights.Arrange`. **Child** is Android-only and appears in
 the all-children scope. Android defaults to Date grouping; both choices are saved.
+Tapping a group header collapses or expands that group; the header shows a
+chevron and the group's message count, and TalkBack reads the title, count and
+state. Groups expand again when the folder, child scope, grouping, sort or
+search changes, or the reader is recreated (restart or language switch);
+**Refresh** and background reloads keep collapsed groups.
 
 Messages in Inbox and Noticeboard not yet opened on this device show a bold subject,
 blue date, and dot. Opening one records its ID in the encrypted `opened_messages`
@@ -327,7 +332,9 @@ days ago plus the local time. Older syncs use a short date (including a year onl
 for previous years) plus time. The language control remains in the right-hand
 auto-sized column; long status text truncates instead of pushing it off-screen.
 Font and spacing resources update live and persist independently across restarts
-and language changes. Medium / Relaxed are the defaults.
+and language changes. Medium / Relaxed are the defaults. List density also sets
+the message header: **Relaxed** stacks subject, sender and date; **Compact** uses
+two rows (subject; sender with the date and time on the right) and less padding.
 Appearance applies immediately and persists in app-private preferences; this
 non-sensitive UI preference is separate from encrypted school/account settings.
 The child avatar reuses the desktop's six contrast-paired light/dark colors.
@@ -350,8 +357,10 @@ message body remains on the normal reader surface. Below the header, the same
 light-blue **Possibly related** band as on Windows lists likely previous and next
 messages, found by the shared heuristic within the owning child's archive and
 labelled with relative days (see [Windows desktop client](#windows-desktop-client)).
-Each link is a full-width 56-dp row showing the direction, relative day and
-sender, then the subject; TalkBack also reads the exact date. The info button
+Each link is a single 48-dp row showing the direction, relative day and sender;
+a second line shows the subject only when it differs from the open message's
+subject, ignoring case, diacritics and reply or forward prefixes. TalkBack also
+reads the exact date and the subject. The info button
 explains that matches are heuristic. Tapping a link opens that message on top
 with its owning account and marks it opened; Back returns. The band is hidden
 when there are no matches and for Noticeboard messages.
@@ -463,8 +472,9 @@ preview signing. No signing key or password belongs in Git.
 **Settings > Scheduled checks** offers three nested switches, all off by default:
 **Check for new messages** (every hour, also while OBK is closed),
 **New-message notifications** (needs scheduled checks), and **Also notify when
-nothing is new** (needs notifications). A switch whose parent is off is greyed
-out and keeps its saved value. The choices are non-sensitive app preferences.
+nothing is new** (needs notifications). Turning a switch off also turns off,
+and saves off, every switch below it, which is greyed out until its parent is
+on again. The choices are non-sensitive app preferences.
 
 Checks use WorkManager unique periodic work (`obk_scheduled_check`) every hour,
 requiring any network connection. Turning checks on schedules the work, app

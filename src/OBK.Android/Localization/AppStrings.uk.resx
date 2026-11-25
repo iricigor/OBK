@@ -203,7 +203,7 @@
     <value>Щільність списку повідомлень</value>
   </data>
   <data name="SettingsListDensityDescription" xml:space="preserve">
-    <value>Відстань між повідомленнями в списку</value>
+    <value>Відступи в списку повідомлень і в заголовку повідомлення</value>
   </data>
   <data name="SettingsListDensityCompact" xml:space="preserve">
     <value>Компактна</value>
@@ -524,6 +524,27 @@
   </data>
   <data name="ReaderWithAttachments" xml:space="preserve">
     <value>{0}. Має вкладення</value>
+  </data>
+  <data name="ReaderGroupDescription" xml:space="preserve">
+    <value>{0}, {1}, {2}</value>
+  </data>
+  <data name="ReaderGroupMessagesOne" xml:space="preserve">
+    <value>{0} повідомлення</value>
+  </data>
+  <data name="ReaderGroupMessagesFew" xml:space="preserve">
+    <value>{0} повідомлення</value>
+  </data>
+  <data name="ReaderGroupMessagesMany" xml:space="preserve">
+    <value>{0} повідомлень</value>
+  </data>
+  <data name="ReaderGroupExpanded" xml:space="preserve">
+    <value>розгорнуто</value>
+  </data>
+  <data name="ReaderGroupCollapsed" xml:space="preserve">
+    <value>згорнуто</value>
+  </data>
+  <data name="ReaderGroupHint" xml:space="preserve">
+    <value>Натисніть, щоб згорнути або розгорнути цю групу</value>
   </data>
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Читання</value>

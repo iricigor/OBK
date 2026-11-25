@@ -207,7 +207,7 @@
     <value>Message list density</value>
   </data>
   <data name="SettingsListDensityDescription" xml:space="preserve">
-    <value>Space between messages in the list</value>
+    <value>Spacing in the message list and the message header</value>
   </data>
   <data name="SettingsListDensityCompact" xml:space="preserve">
     <value>Compact</value>
@@ -541,6 +541,34 @@
   <data name="ReaderWithAttachments" xml:space="preserve">
     <value>{0}. Has attachments</value>
     <comment>Accessibility description of a message row with attachments. {0} = subject, or the ReaderNewMessage text for a message not yet opened.</comment>
+  </data>
+  <data name="ReaderGroupDescription" xml:space="preserve">
+    <value>{0}, {1}, {2}</value>
+    <comment>Accessibility description of a message group header. {0} = group title, for example 'Yesterday' or a sender; {1} = message count (ReaderGroupMessagesOne, Few or Many); {2} = ReaderGroupExpanded or ReaderGroupCollapsed.</comment>
+  </data>
+  <data name="ReaderGroupMessagesOne" xml:space="preserve">
+    <value>{0} message</value>
+    <comment>Number of messages in a group, read by screen readers. {0} = count. Singular form (Czech: 1; Ukrainian: 1, 21, 31...).</comment>
+  </data>
+  <data name="ReaderGroupMessagesFew" xml:space="preserve">
+    <value>{0} messages</value>
+    <comment>Number of messages in a group, read by screen readers. {0} = count. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural.</comment>
+  </data>
+  <data name="ReaderGroupMessagesMany" xml:space="preserve">
+    <value>{0} messages</value>
+    <comment>Number of messages in a group, read by screen readers. {0} = count. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...).</comment>
+  </data>
+  <data name="ReaderGroupExpanded" xml:space="preserve">
+    <value>expanded</value>
+    <comment>Screen-reader state of a message group whose messages are shown.</comment>
+  </data>
+  <data name="ReaderGroupCollapsed" xml:space="preserve">
+    <value>collapsed</value>
+    <comment>Screen-reader state of a message group whose messages are hidden.</comment>
+  </data>
+  <data name="ReaderGroupHint" xml:space="preserve">
+    <value>Tap to collapse or expand this group</value>
+    <comment>Screen-reader hint of a message group header.</comment>
   </data>
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Reading</value>
