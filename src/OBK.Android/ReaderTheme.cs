@@ -51,21 +51,21 @@ internal static class ReaderTheme
         button.SetAppThemeColor(Button.TextColorProperty, Color.FromArgb(colors.LightText), Color.FromArgb(colors.DarkText));
     }
 
-    public static Border AccountAvatar(Login login, IReadOnlyList<Login> known)
+    public static Border AccountAvatar(Login login, IReadOnlyList<Login> known, bool compact = false)
     {
         var colors = AvatarColors[AvatarPresentation.PaletteIndex(login.Url + "|" + login.Username)];
         var letter = new Label
         {
             Text = AvatarPresentation.Initials(ReaderPage.AccountLabelConverter.Label(login)),
-            FontSize = AvatarPresentation.UseLargeInitial(login, known) ? 24 : 16,
+            FontSize = AvatarPresentation.UseLargeInitial(login, known) ? (compact ? 20 : 24) : 16,
             FontAttributes = FontAttributes.Bold,
             HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center
         };
         letter.SetAppThemeColor(Label.TextColorProperty, Color.FromArgb(colors.LightText), Color.FromArgb(colors.DarkText));
         var border = new Border
         {
-            Content = letter, WidthRequest = 48, HeightRequest = 48, StrokeThickness = 0,
-            VerticalOptions = LayoutOptions.Start, StrokeShape = new RoundRectangle { CornerRadius = 24 }
+            Content = letter, WidthRequest = compact ? 40 : 48, HeightRequest = compact ? 40 : 48, StrokeThickness = 0,
+            VerticalOptions = LayoutOptions.Start, StrokeShape = new RoundRectangle { CornerRadius = compact ? 20 : 24 }
         };
         border.SetAppThemeColor(VisualElement.BackgroundColorProperty, Color.FromArgb(colors.LightBackground), Color.FromArgb(colors.DarkBackground));
         return border;
@@ -75,7 +75,7 @@ internal static class ReaderTheme
     {
         var title = new Label
         {
-            Text = ReaderPage.AccountLabelConverter.Label(login), FontSize = compact ? 16 : 18,
+            Text = ReaderPage.AccountLabelConverter.Label(login), FontSize = compact ? 15 : 18,
             FontAttributes = FontAttributes.Bold, MaxLines = compact ? 1 : -1,
             LineBreakMode = compact ? LineBreakMode.TailTruncation : LineBreakMode.WordWrap
         };
@@ -83,16 +83,16 @@ internal static class ReaderTheme
         heading.Add(title);
         if (active?.Url == login.Url && active.Username == login.Username)
         {
-            var current = new Label { Text = AppStrings.AccountsActive, FontSize = 13, VerticalOptions = LayoutOptions.Center };
+            var current = new Label { Text = AppStrings.AccountsActive, FontSize = compact ? 12 : 13, VerticalOptions = LayoutOptions.Center };
             current.SetAppThemeColor(Label.TextColorProperty, Accent, DarkAccent);
             heading.Add(current, 1);
         }
-        var details = new VerticalStackLayout { Spacing = 4, VerticalOptions = LayoutOptions.Center };
+        var details = new VerticalStackLayout { Spacing = compact ? 2 : 4, VerticalOptions = LayoutOptions.Center };
         details.Add(heading);
         if (!string.IsNullOrWhiteSpace(login.SchoolName))
             details.Add(Metadata(new Label
             {
-                Text = login.SchoolName, MaxLines = compact ? 1 : -1,
+                Text = login.SchoolName, FontSize = compact ? 12 : 13, MaxLines = compact ? 1 : -1,
                 LineBreakMode = compact ? LineBreakMode.TailTruncation : LineBreakMode.WordWrap
             }));
         if (!compact)
@@ -102,13 +102,13 @@ internal static class ReaderTheme
 
     public static Grid AccountChoice(Login login, IReadOnlyList<Login> known, Login? active, EventHandler select, bool compact = false)
     {
-        var avatar = AccountAvatar(login, known);
+        var avatar = AccountAvatar(login, known, compact);
         avatar.VerticalOptions = LayoutOptions.Center;
         var details = AccountDetails(login, active, compact);
         var content = new Grid
         {
             Padding = new Thickness(8, compact ? 4 : 8),
-            ColumnDefinitions = [new(48), new(GridLength.Star)], ColumnSpacing = 12
+            ColumnDefinitions = [new(compact ? 40 : 48), new(GridLength.Star)], ColumnSpacing = compact ? 8 : 12
         };
         content.Add(avatar);
         content.Add(details, 1);
@@ -124,7 +124,20 @@ internal static class ReaderTheme
         button.Clicked += select;
         var row = new Grid { MinimumHeightRequest = 48 };
         if (active?.Url == login.Url && active.Username == login.Username)
-            row.SetAppThemeColor(VisualElement.BackgroundColorProperty, Color.FromArgb("#EAEFF5"), Color.FromArgb("#1B2129"));
+        {
+            VisualElement background = row;
+            if (compact)
+            {
+                var highlight = new Border
+                {
+                    StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 6 },
+                    InputTransparent = true
+                };
+                row.Add(highlight);
+                background = highlight;
+            }
+            background.SetAppThemeColor(VisualElement.BackgroundColorProperty, Color.FromArgb("#EAEFF5"), Color.FromArgb("#1B2129"));
+        }
         row.Add(content);
         row.Add(button);
         return Apply(row);

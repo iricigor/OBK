@@ -122,14 +122,20 @@ public sealed class App : Application
             flyout.IsPresented = false;
             await reader.AccountActionsAsync();
         };
-        var children = new VerticalStackLayout { Spacing = 4 };
-        var addChild = ReaderTheme.StartAlignedButton(new Button { Text = AppStrings.ReaderAccountsSheetAddChild });
+        var children = new VerticalStackLayout { Spacing = 0 };
+        var addChild = ReaderTheme.StartAlignedButton(new Button
+        {
+            Text = AppStrings.ReaderAccountsSheetAddChild,
+            ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 12)
+        });
+        addChild.SetAppTheme<ImageSource>(Button.ImageSourceProperty,
+            ImageSource.FromFile("add.png"), ImageSource.FromFile("add_dark.png"));
         addChild.Clicked += async (_, _) =>
         {
             flyout.IsPresented = false;
             await reader.AddAccountAsync();
         };
-        var folders = new VerticalStackLayout { Spacing = 4 };
+        var folders = new VerticalStackLayout { Spacing = 0 };
         var folderButtons = new List<Button>();
         foreach (var index in Enumerable.Range(0, reader.FolderLabels.Count))
         {
@@ -181,19 +187,19 @@ public sealed class App : Application
             {
                 Content = new VerticalStackLayout
                 {
-                    Padding = new Thickness(16, 20), Spacing = 12,
+                    Padding = new Thickness(12, 14), Spacing = 8,
                     Children =
                     {
                         new VerticalStackLayout
                         {
-                            Spacing = 4,
+                            Spacing = 3,
                             Children =
                             {
-                                new Label { Text = "OBK", FontSize = 24, FontAttributes = FontAttributes.Bold },
-                                ReaderTheme.Metadata(new Label { Text = "Offline Bakalari Komens" })
+                                new Label { Text = "OBK", FontSize = 20, FontAttributes = FontAttributes.Bold },
+                                ReaderTheme.Metadata(new Label { Text = "Offline Bakalari Komens", FontSize = 12 })
                             }
                         },
-                        ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderDrawerChildren, FontAttributes = FontAttributes.Bold }),
+                        ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderDrawerChildren, FontSize = 12, FontAttributes = FontAttributes.Bold }),
                         children, addChild, new BoxView { HeightRequest = 1 },
                         folders, new BoxView { HeightRequest = 1 }, accounts, settings
                     }
@@ -204,8 +210,10 @@ public sealed class App : Application
         return (flyout, navigation, reader);
     }
 
-    private sealed class ReaderNavigation : FlyoutPage
+    private sealed class ReaderNavigation : FlyoutPage, IFlyoutView
     {
+        double IFlyoutView.FlyoutWidth => 280;
+
         protected override bool OnBackButtonPressed()
         {
             if (!IsPresented) return base.OnBackButtonPressed();

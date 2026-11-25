@@ -119,8 +119,10 @@ refresh, offline folders/search, and opening or sharing downloaded attachments.
 It uses Android Keystore-backed encryption and remains read-only toward school
 servers.
 
-The hamburger menu shows **OBK — Offline Bakalari Komens**, with a compact
+The compact, 280 dp hamburger drawer shows **OBK — Offline Bakalari Komens**, with a
 **Children** section first: tap a child to switch accounts, or **Add child**.
+Child avatars are 40 dp, while account and navigation rows retain at least
+48 dp touch targets and expand with Android text scaling.
 **Inbox**, **Noticeboard**, **Sent**, and **Excuses** follow, then **Manage accounts**
 and **Settings**. The larger child avatar overlaps the left end of the search
 bar; the magnifier sits on the right. Tapping the avatar opens a simple chooser
