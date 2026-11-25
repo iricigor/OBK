@@ -4,11 +4,13 @@ Developer, maintainer, and security details for OBK (Offline Bakaláři Komens).
 For an overview and installation, see the [README](../README.md). Potential
 future work and its prerequisites are recorded in [Deferred ideas](../DEFERRED_IDEAS.md).
 
-## Documentation screenshot
+## Documentation screenshots
 
 `docs\images\obk-main.png` is rendered from fictional sample data, without
-contacting any school. Regenerate it with a release-style build so the local
-development banner is not included:
+contacting any school. The Windows and Android light/dark examples in
+`docs\images` must also use fictional data and must not reveal school account
+details. Regenerate the primary Windows image with a release-style build so
+the local development banner is not included:
 
 ```powershell
 dotnet build .\src\OBK.App\OBK.App.csproj -c Release -p:LocalBuild=false

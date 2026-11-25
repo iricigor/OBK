@@ -4,186 +4,121 @@
 [![Downloads](https://img.shields.io/github/downloads/iricigor/OBK/total?label=downloads)](https://github.com/iricigor/OBK/releases)
 [![Release build](https://github.com/iricigor/OBK/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/iricigor/OBK/actions/workflows/release.yml)
 [![Validation](https://github.com/iricigor/OBK/actions/workflows/validate.yml/badge.svg?event=pull_request)](https://github.com/iricigor/OBK/actions/workflows/validate.yml)
-[![Platform](https://img.shields.io/badge/platform-Windows%2010%2B-0078D4)](https://github.com/iricigor/OBK/releases/latest)
 
-OBK downloads your children's **Bakaláři Komens** messages and attachments to
-your Windows PC so you can read, search, and organize them offline.
+[![Download for Windows](https://img.shields.io/badge/Download-Windows%2010%2B-0078D4?style=for-the-badge&logo=windows)](https://github.com/iricigor/OBK/releases/latest)
+[![Get Android preview](https://img.shields.io/badge/Get-Android%2010%2B%20preview-3DDC84?style=for-the-badge&logo=android)](docs/ANDROID.md)
 
-![OBK showing an inbox grouped by date, with a selected message and a possibly related reply](docs/images/obk-main.png)
+OBK downloads your children's **Bakaláři Komens** messages and attachments so
+you can read, search, and organize them offline on Windows or Android.
 
-<sub>Screenshot uses fictional sample data.</sub>
+| Windows | Android |
+|:--:|:--:|
+| ![OBK on Windows, showing a light inbox grouped by date](docs/images/obk-main.png) | ![OBK on Android, showing messages from all children](docs/images/android-light-messages.png) |
 
-**Privacy and security:** Your Bakaláři login details, messages, and attachments
-travel **only between your PC and your school's Bakaláři server**, over HTTPS.
-OBK does not send this data to its developer or GitHub, and there is no OBK
-cloud service. Separate connections to GitHub are used for app updates, not
-for your school data. Cached messages, attachments, and optionally saved passwords
-are encrypted for your Windows account. Some database metadata, including your
-school address and username, is not encrypted, and this protection does not
-stop software running under your Windows account. Opening or exporting an
-attachment leaves an unencrypted copy on disk, so only open files you trust
-and delete copies when no longer needed. When reporting problems, never share
-passwords or private messages. See [Privacy](#privacy) and the
-[security details](docs/TECHNICAL.md#windows-desktop-client) for more information.
+<sub>Documentation screenshots use fictional sample data.</sub>
+
+## Contents
+
+- [Features](#features)
+- [Install](#install)
+- [Getting started](#getting-started)
+- [Privacy and security](#privacy-and-security)
+- [License](#license)
+- [More information](#more-information)
 
 ## Features
 
-- **All your children in one place** – switch between children and schools with
-  one click in the sidebar; **Refresh** updates all of them at once.
-- **Works offline** – messages and attachments are stored on your PC, encrypted
-  for your Windows account.
-- **Noticeboard, Inbox, Sent, and Excuses** – sent excuses (omluvenky) get their
-  own folder.
-- **Search** subject, text, sender, and date; **sort** and **group** messages by
-  date, sender, or subject, and collapse groups you do not need.
-- **Possibly related messages** – quick links to likely earlier messages and
-  replies in the same conversation.
-- **Clickable links** in messages, and attachments that open with one click.
-- **Light and dark themes**, a resizable sidebar that can shrink to icons, and
-  **automatic updates**.
-- **Czech, Ukrainian, German, and English interface** – cycle with
-  **CS / UK / DE / EN**, including before sign-in. Your choice is remembered;
-  dates and numbers follow it. School messages are never translated.
-- **Settings** at the bottom of the sidebar – choose the theme, reading size and
-  message list density, rename children, save, change, or clear saved passwords,
-  check for updates, and transfer an account to OBK on Android.
+- [**All children and folders in one place**](docs/features/ACCOUNTS.md) –
+  switch between children and schools, refresh every account, and browse
+  Inbox, Noticeboard, Sent, and Excuses.
+- [**Fast offline reading and organization**](docs/features/ORGANIZE.md) –
+  search by subject, text, sender, or date; group and sort messages; follow
+  likely related replies.
+- [**Messages and attachments offline**](docs/features/OFFLINE.md) – keep
+  downloaded content available without a school connection, then open or
+  share attachments when needed.
+- [**Comfortable on desktop and mobile**](docs/features/APPEARANCE.md) –
+  light and dark themes, adjustable reading and list sizes, Czech/Ukrainian/
+  German/English UI, and automatic Windows updates.
 
-OBK only reads messages. It cannot send messages, replies, excuses, or
-confirmations, and it never marks messages as read on the server.
+OBK is read-only. It cannot send messages, replies, excuses, or confirmations,
+and it never marks a message as read on the school server.
 
 ## Install
 
-1. Download the latest `OBK-…-windows-x64-setup.exe` from
-   [Releases](https://github.com/iricigor/OBK/releases/latest).
-2. Run it. No administrator rights or separate .NET installation are needed.
-3. Start **OBK** from the Start menu.
+- **[Windows](docs/WINDOWS.md)** – download and run the installer. The current
+  Windows package is unsigned, so Windows may show a warning.
+- **[Android preview](docs/ANDROID.md)** – download the APK from Releases or a
+  preview workflow. Preview packages use development signing or are otherwise
+  not distributed through a trusted store, so Android may show a warning.
 
-OBK checks for new versions while it runs and offers **Update and restart**
-when one is ready.
+See the platform pages before updating: changing from a development-signed
+Android preview to a differently signed APK can require uninstalling the
+preview and deleting its local archive.
 
 ## Getting started
 
-1. On first start, search for your child's school (or enter its Bakaláři web
+1. On first start, search for your child's school (or enter its Bakaláři
    address), then sign in with your Komens username and password.
-2. Optionally enter the child's name and choose **Remember credentials** so
-   **Refresh** can update this child without asking again.
-3. Use **Add child** in the sidebar to add more children or schools.
-4. Click **Refresh** to download new messages for every child.
+2. Optionally name the child and remember the password so **Refresh** can
+   update that account without asking again.
+3. Add more children or schools from the child/account controls.
+4. Refresh to download new messages for every child.
 
-OBK downloads messages for the current school year (September–August).
+OBK downloads the current school year (September–August). The interface
+language defaults to a supported system language and can be changed in the app;
+school messages are never translated.
 
-On first launch, OBK uses your system's Czech, Ukrainian, German, or English
-language; other system languages default to Czech. The language button is beside
-the Windows theme button, in Android's reader footer, and in the native toolbar
-on its other pages.
+On Android, you can avoid typing a saved Windows password by using **Settings >
+Accounts > Transfer to Android** on Windows and **Scan from PC** on the phone.
+The encrypted QR transfer is offline and works only while the three-word
+confirmation is available in the Windows window.
 
-## Privacy
+## Privacy and security
 
-- Your password is stored only if you choose **Remember credentials** (or
-  **Save password** in Settings, after OBK verifies it with your school), and is
-  encrypted with Windows for your user account, like your messages.
-- OBK talks only to your school's Bakaláři server and to GitHub for updates;
-  there is no OBK cloud service.
-- OBK uses the same interface as the official Bakaláři mobile app. It is not an
-  official Bakaláři product, and some schools may disable this access.
+### Privacy
 
-## Code signing policy
+- Your password is stored only when you choose to remember/save it.
+- Messages and attachments travel directly between the app and the school's
+  Bakaláři server over HTTPS. OBK does not send school data to its developer,
+  GitHub, or an OBK cloud service.
+- Update checks connect to GitHub Releases, separately from school traffic.
+- OBK uses the same interface as the official Bakaláři mobile app. It is not
+  an official Bakaláři product, and individual schools can disable that access.
 
-SignPath Foundation enrollment is pending; Windows releases remain unsigned.
-See the [code signing policy](docs/CODE_SIGNING.md) for signing responsibilities,
-privacy details, enrollment instructions, and release verification.
+### Security
+
+- Cached messages, attachments, and remembered passwords are encrypted for the
+  current Windows account or with Android Keystore-backed protection.
+- Some database metadata, including a school address and username, is not
+  encrypted. OS-level protection does not stop other software running under
+  your account.
+- Opening or exporting an attachment creates an unencrypted copy. Open only
+  files you trust and remove unnecessary copies.
+- Never include passwords or private messages in issue reports.
+
+Windows releases currently remain unsigned while
+[SignPath Foundation enrollment](docs/CODE_SIGNING.md) is pending. Android
+preview signing and APK verification are described in the
+[technical documentation](docs/TECHNICAL.md#android-release-signing).
+
+For storage, encryption, synchronization, and threat-model details, see
+[Windows desktop client](docs/TECHNICAL.md#windows-desktop-client) and
+[Android preview](docs/TECHNICAL.md#android-preview).
 
 ## License
 
-OBK-owned code is available under the [MIT license](LICENSE). Bundled dependencies
-retain their own licenses and notices. This license does not grant rights to
-Bakaláři software, school data, or API access; the service's applicable terms
-still apply. OBK is not affiliated with or endorsed by Bakaláři.
+OBK-owned code is available under the [MIT license](LICENSE). Bundled
+dependencies retain their own licenses and notices. This license does not grant
+rights to Bakaláři software, school data, or API access; the service's applicable
+terms still apply. OBK is not affiliated with or endorsed by Bakaláři.
 
 ## More information
 
-- [Technical documentation](docs/TECHNICAL.md) – building from source, data
-  storage, security details, synchronization behavior, and release process.
+- [Technical documentation](docs/TECHNICAL.md) – building, storage, security,
+  synchronization, Android verification, and release process.
+- [Code signing policy](docs/CODE_SIGNING.md) – signing responsibilities and
+  release verification.
 - [Deferred ideas](DEFERRED_IDEAS.md) – possible future work.
-- [Report a problem](https://github.com/iricigor/OBK/issues) – please do not
-  include passwords or private message content.
-
-## Android preview
-
-Mobile usability improvements from [#66](https://github.com/iricigor/OBK/issues/66):
-compact navigation, GitHub link handling, all-children reading, grouping/sorting,
-search layout, Settings presentation, and locally new-message indicators.
-
-The Android 10+ .NET MAUI reader supports school sign-in, multiple children, manual
-refresh, offline folders/search, and opening or sharing downloaded attachments.
-It uses Android Keystore-backed encryption and remains read-only toward school
-servers.
-
-The compact, 280 dp hamburger drawer shows **OBK — Offline Bakalari Komens**, with a
-**Children** section first: **All children** (the default) shows every child's
-messages together with each child's avatar on the left; tap a child to show only
-theirs, or **Add child**. Blue counts show messages not yet opened on this phone.
-Child avatars are 40 dp, while account and navigation rows retain at least
-48 dp touch targets and expand with Android text scaling.
-**Inbox**, **Noticeboard**, **Sent**, and **Excuses** follow, then **Manage accounts**
-and **Settings**. The larger child avatar overlaps the left end of the search
-bar; the magnifier sits on the right. Tapping the avatar opens a simple chooser
-with **All children** and each account's avatar, name, school, username and active
-status, without account-management actions.
-Tapping search gives the field the whole header, with results updating as you
-type (accents ignored, as on Windows). The sliders button groups messages by
-**None / Date / Child / Sender / Subject** and sorts by **Date / Sender / Subject**;
-the back arrow or Back closes search. New messages show a bold subject, blue date
-and dot until opened in OBK. This is tracked only on the phone: OBK never marks
-messages read on the school server. After upgrading, existing messages count as
-opened. Refresh summaries return to the normal archive
-timestamp after one minute. **Settings** groups one-tap choices for appearance,
-**Small / Medium / Large** reading sizes and **Compact / Relaxed** message
-list density, plus app updates and the GitHub link. The two-line list shows subject and date above the sender; long text is
-ellipsized. Defaults are Medium and Relaxed, with tighter spacing than the earlier
-three-line list. Choices are saved on the device and respect Android text scaling.
-Android and Windows message lists use pale alternating row backgrounds, with
-subtle dark-theme stripes. Windows selection and hover remain distinct.
-**Manage accounts** opens a dedicated page showing all children/accounts,
-their school, username and saved-password status, with account-specific
-**Sign in** and **Forget password** actions and a fixed **Add child** button.
-Forgetting a password asks for confirmation and keeps the offline archive.
-The GitHub link in **Settings** opens through Android's installed app/browser
-handler. If handler discovery fails, OBK retries external URL opening; if no
-handler is available, it shows an error.
-
-To avoid typing credentials on the phone, open **Settings > Accounts >
-Transfer to Android** in OBK on Windows, then tap **Scan from PC** on Android's
-sign-in page and enter the three words shown. The QR code is encrypted and the
-transfer works offline; the QR code blurs after 15 seconds, while the words stay
-until you close the window. Anyone who has both the QR code and the words can
-recover that account's password, so do
-not photograph or share them. Android asks for camera access only when you tap
-**Scan from PC**.
-
-Development-signed APKs are available as artifacts of **🔨 Android preview**
-workflow runs. They are for device verification, not production distribution;
-installing previews from different build machines may require uninstalling the
-previous preview, which deletes its local archives and encryption key.
-New releases include a persistently signed `OBK-<version>-android.apk` and
-`ANDROID-SHA256SUMS.txt` once the owner has configured release signing.
-Download the APK from [Releases](https://github.com/iricigor/OBK/releases/latest),
-open it on the phone, allow installation from that download source when Android
-asks, and confirm installation. Android may still display installation warnings.
-Older releases may contain only the Windows installer.
-
-Install a newer release APK over the existing release app to keep accounts and
-offline archives. **Switching from a development-signed preview requires
-uninstalling it first, which deletes all local data and its encryption key.**
-Do not uninstall a release app just to update it. In Android, open **Settings >
-App updates > Check for updates** to check GitHub Releases manually. If a newer
-stable Android release is available, tap **Download update**. OBK verifies the
-APK's checksum, package/version and signing compatibility before opening
-Android's installer. Allow installation from OBK if prompted, then confirm the
-update. If you cancel, tap **Install update** to try again.
-There are no startup/background checks or automatic downloads. Downloading
-manually from Releases remains available. Play Store publishing is separate
-work.
-
-See the [Android build and verification instructions](docs/TECHNICAL.md#android-preview).
-Maintainers: see [release signing setup](docs/TECHNICAL.md#android-release-signing).
+- [Report a problem](https://github.com/iricigor/OBK/issues) – do not include
+  passwords or private message content.
