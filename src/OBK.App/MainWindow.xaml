@@ -12,6 +12,38 @@
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="40" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
+    <Window.Resources>
+        <!-- Blue pill counting messages not yet opened on this PC; hidden when zero or while the sidebar shows icons only. -->
+        <Style x:Key="NewBadge" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Accent}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="MinWidth" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="ToolTip" Value="{Binding NewCountName}"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding HasNew}" Value="True"/>
+                        <Condition Binding="{Binding DataContext.NavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible"/>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="NewBadgeText" TargetType="TextBlock">
+            <Setter Property="Text" Value="{Binding NewCount}"/>
+            <Setter Property="AutomationProperties.Name" Value="{Binding NewCountName}"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentText}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
     <Grid x:Name="WindowRoot" Background="{DynamicResource AppBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -71,14 +103,65 @@
                           ToolTip="{x:Static loc:AppStrings.SidebarResizeTooltip}" AutomationProperties.Name="{x:Static loc:AppStrings.SidebarResizeName}"/>
             <DockPanel Margin="4,8,4,0">
                 <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <Button x:Name="AllChildrenButton" Style="{StaticResource SubtleButton}" Command="{Binding SelectAllChildrenCommand}"
+                            Visibility="{Binding ShowAllChildrenEntry, Converter={StaticResource VisibleIf}}"
+                            ToolTip="{x:Static loc:AppStrings.ScopeAllChildrenTooltip}" AutomationProperties.Name="{Binding AllChildrenEntry.AccessibleName}"
+                            HorizontalContentAlignment="Stretch" Height="40" Padding="8,0" Margin="0,0,0,2">
+                        <Grid DataContext="{Binding AllChildrenEntry}">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <Border CornerRadius="2" Background="{DynamicResource Accent}" Height="20"
+                                    Visibility="{Binding IsCurrent, Converter={StaticResource VisibleIf}}"/>
+                            <ItemsControl x:Name="AllChildrenAvatar" Grid.Column="1" Width="28" Height="28" Margin="6,0,0,0" ItemsSource="{Binding Avatars}"
+                                          Focusable="False" IsHitTestVisible="False">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><Canvas/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding Left}"/>
+                                        <Setter Property="Canvas.Top" Value="{Binding Top}"/>
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Width="{Binding Size}" Height="{Binding Size}" CornerRadius="{Binding Corner}">
+                                            <Border.Background>
+                                                <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
+                                                    <Binding Path="ColorKey"/>
+                                                    <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                </MultiBinding>
+                                            </Border.Background>
+                                            <TextBlock Text="{Binding Initial}" FontSize="{Binding FontSize}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock.Foreground>
+                                                    <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                                        <Binding Path="ColorKey"/>
+                                                        <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Foreground>
+                                            </TextBlock>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Grid.Column="2" Text="{x:Static loc:AppStrings.ScopeAllChildren}" VerticalAlignment="Center" Margin="10,0,0,0"
+                                       Visibility="{Binding DataContext.NavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource VisibleIf}}"
+                                       TextTrimming="CharacterEllipsis" FontSize="13.5">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Normal"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding IsCurrent}" Value="True"><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <Border Grid.Column="3" Style="{StaticResource NewBadge}"><TextBlock Style="{StaticResource NewBadgeText}"/></Border>
+                        </Grid>
+                    </Button>
                     <ItemsControl x:Name="AccountList" ItemsSource="{Binding Accounts}" AutomationProperties.Name="{x:Static loc:AppStrings.SidebarChildrenName}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Button Style="{StaticResource SubtleButton}" Command="{Binding DataContext.SelectAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}" ToolTip="{Binding Detail}" AutomationProperties.Name="{Binding Label}"
+                                        CommandParameter="{Binding}" ToolTip="{Binding Detail}" AutomationProperties.Name="{Binding AccessibleName}"
                                         HorizontalContentAlignment="Stretch" Height="40" Padding="8,0" Margin="0,0,0,2">
                                     <Grid>
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <Border CornerRadius="2" Background="{DynamicResource Accent}" Height="20"
                                                 Visibility="{Binding IsCurrent, Converter={StaticResource VisibleIf}}"/>
                                         <Border Grid.Column="1" Width="28" Height="28" CornerRadius="14" Margin="6,0,0,0">
@@ -107,6 +190,7 @@
                                                 </Style>
                                             </TextBlock.Style>
                                         </TextBlock>
+                                        <Border Grid.Column="3" Style="{StaticResource NewBadge}"><TextBlock Style="{StaticResource NewBadgeText}"/></Border>
                                     </Grid>
                                 </Button>
                             </DataTemplate>
@@ -175,6 +259,7 @@
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem" BasedOn="{StaticResource SelectableRow}">
                             <Setter Property="Height" Value="36"/>
+                            <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}"/>
                         </Style>
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
@@ -202,10 +287,7 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
-                                <Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="10" MinWidth="24" Padding="6,2" VerticalAlignment="Center"
-                                        Visibility="{Binding DataContext.NavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource VisibleIf}}">
-                                    <TextBlock Text="{Binding Count}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
-                                </Border>
+                                <Border Grid.Column="2" Style="{StaticResource NewBadge}"><TextBlock Style="{StaticResource NewBadgeText}"/></Border>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -289,9 +371,11 @@
                                    Margin="12,24" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}"/>
                         <ListBox x:Name="Messages" ItemsSource="{Binding MessagesView}" SelectedItem="{Binding SelectedMessage}" IsSynchronizedWithCurrentItem="False"
                                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel"
+                                 PreviewMouseLeftButtonUp="MessageListClick" PreviewKeyDown="MessageListKeyDown"
                                  AutomationProperties.Name="{x:Static loc:AppStrings.MainMessagesName}">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem" BasedOn="{StaticResource SelectableRow}">
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsAlternate}" Value="True">
                                             <Setter Property="Background" Value="{DynamicResource ListAlternateSurface}"/>
@@ -346,23 +430,53 @@
                                 <DataTemplate>
                                     <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="{DynamicResource ListRowPadding}">
                                         <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
                                             <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" VerticalAlignment="Center" Margin="0,0,4,0"
-                                                     Visibility="{Binding Unread, Converter={StaticResource VisibleIf}}"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" FontSize="{DynamicResource ListSubjectSize}" ToolTip="{Binding Subject}">
+                                                     Visibility="{Binding IsNew, Converter={StaticResource VisibleIf}}"/>
+                                            <Border Grid.Column="1" Grid.RowSpan="2" Width="24" Height="24" CornerRadius="12" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                    Visibility="{Binding ShowOwner, Converter={StaticResource VisibleIf}}">
+                                                <Border.Background>
+                                                    <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
+                                                        <Binding Path="OwnerColorKey"/>
+                                                        <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                    </MultiBinding>
+                                                </Border.Background>
+                                                <TextBlock Text="{Binding OwnerInitials}" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock.Foreground>
+                                                        <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
+                                                            <Binding Path="OwnerColorKey"/>
+                                                            <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                        </MultiBinding>
+                                                    </TextBlock.Foreground>
+                                                </TextBlock>
+                                            </Border>
+                                            <TextBlock Grid.Column="2" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" FontSize="{DynamicResource ListSubjectSize}" ToolTip="{Binding Subject}">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="FontWeight" Value="Normal"/>
-                                                        <Style.Triggers><DataTrigger Binding="{Binding Unread}" Value="True"><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger></Style.Triggers>
+                                                        <Style.Triggers><DataTrigger Binding="{Binding IsNew}" Value="True"><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger></Style.Triggers>
                                                     </Style>
                                                 </TextBlock.Style>
                                             </TextBlock>
-                                            <TextBlock Grid.Column="2" Text="{Binding ShortSent}" ToolTip="{Binding Sent}" FontSize="{DynamicResource ListDateSize}" Foreground="{DynamicResource TextSecondary}"
-                                                       VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            <TextBlock Grid.Row="1" Grid.Column="1"                                             Text="{Binding Person}" FontSize="{DynamicResource ListSenderSize}" Foreground="{DynamicResource TextSecondary}"
-                                                                                                   TextTrimming="CharacterEllipsis" Margin="{DynamicResource ListLineGap}"/>
-                                                                                        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="{DynamicResource ListBadgeMargin}">
+                                            <TextBlock Grid.Column="3" Text="{Binding ShortSent}" ToolTip="{Binding Sent}" FontSize="{DynamicResource ListDateSize}"
+                                                       VerticalAlignment="Center" Margin="8,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                                                        <Setter Property="FontWeight" Value="Normal"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsNew}" Value="True">
+                                                                <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+                                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding PersonLine}" FontSize="{DynamicResource ListSenderSize}" Foreground="{DynamicResource TextSecondary}"
+                                                       TextTrimming="CharacterEllipsis" Margin="{DynamicResource ListLineGap}"/>
+                                            <StackPanel Grid.Row="1" Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="{DynamicResource ListBadgeMargin}">
                                                 <Border Background="{DynamicResource Avatar3Bg}" CornerRadius="4" Padding="5,0" VerticalAlignment="Center"
                                                         Visibility="{Binding IsExcuse, Converter={StaticResource VisibleIf}}" ToolTip="{x:Static loc:AppStrings.MessageExcuseLabel}">
                                                     <TextBlock Text="{x:Static loc:AppStrings.MessageExcuseBadge}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource Avatar3Fg}"/>
@@ -470,20 +584,20 @@
                                 Visibility="{Binding HasRelated, Converter={StaticResource VisibleIf}}">
                             <StackPanel x:Name="RelatedPanel">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                    <TextBlock Text="{x:Static loc:AppStrings.ReaderRelatedTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource MessageHeaderSecondary}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Static shared:SharedStrings.RelatedTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource MessageHeaderSecondary}" VerticalAlignment="Center"/>
                                     <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="12" Margin="6,0,0,0" Foreground="{DynamicResource MessageHeaderSecondary}"
                                                VerticalAlignment="Center" Background="Transparent" Cursor="Help" ToolTipService.InitialShowDelay="0"
-                                               AutomationProperties.Name="{x:Static loc:AppStrings.ReaderRelatedHelpName}"
-                                               ToolTip="{x:Static loc:AppStrings.ReaderRelatedHelpTooltip}"/>
+                                               AutomationProperties.Name="{x:Static shared:SharedStrings.RelatedHelpName}"
+                                               ToolTip="{x:Static shared:SharedStrings.RelatedHelpTooltip}"/>
                                 </StackPanel>
                                 <ItemsControl ItemsSource="{Binding Related}">
                                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource SubtleButton}" Command="{Binding Owner.OpenRelatedCommand}" CommandParameter="{Binding}"
-                                                    Padding="8,4" Margin="0,0,6,4" ToolTip="{Binding Subject}" BorderBrush="{DynamicResource RelatedStroke}" BorderThickness="1"
+                                                    Padding="8,4" Margin="0,0,6,4" ToolTip="{Binding ToolTip}" BorderBrush="{DynamicResource RelatedStroke}" BorderThickness="1"
                                                     Background="{DynamicResource MessageHeaderSurface}"
-                                                    AutomationProperties.Name="{Binding Label}">
+                                                    AutomationProperties.Name="{Binding AccessibleName}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Style="{StaticResource Icon}" Text="{Binding Icon}" FontSize="11" Foreground="{DynamicResource RelatedLink}" VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Direction}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource MessageHeaderSecondary}" Margin="6,0,6,0" VerticalAlignment="Center"/>

@@ -141,7 +141,7 @@ public partial class App : Application
                         window.UpdateLayout();
                         if (window.NavigationColumn.ActualWidth < 140)
                             throw new ObkException("Expanding the sidebar did not restore its width.");
-                        window.ViewModel.Grouping = MessageGrouping.Date;
+                        window.ViewModel.Grouping = ListGrouping.Date;
                         await window.ViewModel.FolderReady;
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         window.UpdateLayout();
@@ -153,7 +153,7 @@ public partial class App : Application
                             throw new ObkException("Collapsing a message group did not hide its messages.");
                         Capture(window, Path.ChangeExtension(resultPath, ".grouped.png"));
                         groupHeader.IsChecked = true;
-                        window.ViewModel.Grouping = MessageGrouping.None;
+                        window.ViewModel.Grouping = ListGrouping.None;
                         await window.ViewModel.FolderReady;
                         window.Width = 1280;
                         window.Height = 760;
@@ -264,7 +264,7 @@ public partial class App : Application
                             window = await window.ChangeLanguageAsync();
                             if (LanguageSettings.Code != language)
                                 throw new ObkException($"Language switching selected {LanguageSettings.Code} instead of {language}.");
-                            if (window.ViewModel.SelectedMessage?.Message.Id != readerState.MessageIds[readerState.Folder] ||
+                            if (window.ViewModel.SelectedMessage?.Key != readerState.MessageIds[readerState.Folder] ||
                                 window.ViewModel.SearchText != readerState.Search || window.ViewModel.Grouping != readerState.Grouping)
                                 throw new ObkException("Language switching lost reader state.");
                             foreach (var size in new[] { "Small", "Medium", "Large" })
@@ -324,10 +324,10 @@ public partial class App : Application
             var store = await Task.Run(() => new LocalStore(Path.Combine(directory, "demo.sqlite3")));
             var year = SchoolYear.Current();
             var now = DateTimeOffset.Now;
-            Message Make(string id, string title, string sender, TimeSpan age, string text, bool read = true,
+            Message Make(string id, string title, string sender, TimeSpan age, string text,
                 string? recipient = null, string? type = null, int files = 0) => new()
             {
-                Id = id, Title = title, Text = text, Read = read, RelevantName = recipient,
+                Id = id, Title = title, Text = text, Read = true, RelevantName = recipient,
                 SentDate = (now - age < year.Start ? year.Start.AddDays(1) : now - age).ToString("O"),
                 Sender = JsonSerializer.SerializeToElement(new { Name = sender }),
                 Attachments = Enumerable.Range(1, files).Select(i => new Attachment { Id = $"{id}-{i}", Name = $"{id}-{i}.pdf" }).ToList(),
@@ -339,14 +339,11 @@ public partial class App : Application
                 Make("trip", "Školní výlet do Brna", "Mgr. Eva Svobodová", TimeSpan.FromMinutes(40),
                     "<p>Dobrý den,</p><p>ve čtvrtek pojedeme na <b>školní výlet do Brna</b>. Sraz je v 7:30 před školou.</p>" +
                     "<p>Program a mapu najdete na https://www.example.com/vylet.</p><p>S pozdravem<br>Eva Svobodová</p>",
-                    read: false, files: 2),
+                    files: 2),
                 Make("grades", "Hodnocení / Evaluation - Matematika", "Ing. Petr Novák", TimeSpan.FromDays(2),
                     "<p>Posílám průběžné hodnocení z matematiky za první čtvrtletí.</p>"),
-                Make("lunch", "Změna jídelníčku", "Školní jídelna", TimeSpan.FromDays(4),
-                    "<p>Od pondělí se mění jídelníček.</p>", read: false),
                 Make("meeting", "Třídní schůzky", "Mgr. Eva Svobodová", TimeSpan.FromDays(9),
-                    "<p>Třídní schůzky proběhnou v úterý od 17:00.</p>", files: 1),
-                Make("library", "Školní knihovna", "Knihovna", TimeSpan.FromDays(16), "<p>Knihovna je otevřena i o přestávkách.</p>")
+                    "<p>Třídní schůzky proběhnou v úterý od 17:00.</p>", files: 1)
             ]);
             folders["sent"].AddRange(
             [
@@ -357,12 +354,21 @@ public partial class App : Application
             ]);
             folders["noticeboard"].Add(Make("holiday", "Podzimní prázdniny", "Ředitelství", TimeSpan.FromDays(12),
                 "<p>Podzimní prázdniny budou 29. a 30. října.</p>"));
+            var sibling = Folders.Empty();
+            sibling["received"].AddRange(
+            [
+                Make("lunch", "Změna jídelníčku", "Školní jídelna", TimeSpan.FromDays(4), "<p>Od pondělí se mění jídelníček.</p>"),
+                Make("library", "Školní knihovna", "Knihovna", TimeSpan.FromDays(16), "<p>Knihovna je otevřena i o přestávkách.</p>")
+            ]);
             await Task.Run(() =>
             {
                 store.SaveLogin("https://tomas.example", "tomas", "unused", false, "Tomáš", "Základní škola Lipová");
                 store.SaveLogin("https://anna.example", "anna", "unused", false, "Anna", "Základní škola Lipová");
                 store.SaveArchive("https://anna.example", "anna", year, "Základní škola Lipová", folders);
-                store.SaveArchive("https://tomas.example", "tomas", year, "Základní škola Lipová", Folders.Empty());
+                store.SaveArchive("https://tomas.example", "tomas", year, "Základní škola Lipová", sibling);
+                // The first load treats every listed message as opened, so leaving one out shows it as new.
+                store.OpenedMessages("https://anna.example", "anna", folders.Values.SelectMany(m => m).Select(m => m.Id).Where(id => id != "trip"));
+                store.OpenedMessages("https://tomas.example", "tomas", sibling.Values.SelectMany(m => m).Select(m => m.Id).Where(id => id != "lunch"));
             });
             foreach (var attachment in folders["received"].SelectMany(m => m.Attachments))
             {
@@ -373,7 +379,7 @@ public partial class App : Application
             MainWindow = window;
             window.Show();
             await window.InitializeAsync();
-            window.ViewModel.Grouping = MessageGrouping.Date;
+            window.ViewModel.Grouping = ListGrouping.Date;
             await window.ViewModel.FolderReady;
             window.ViewModel.SelectedMessage = window.ViewModel.Messages.Single(m => m.Message.Id == "grades");
             await window.ViewModel.MessageReady;

@@ -25,6 +25,12 @@ internal static class ReaderTheme
     internal static readonly Color DarkMessageHeaderSecondary = Color.FromArgb("#CBDDEB");
     internal static readonly Color AttachmentSurface = Color.FromArgb("#F5F7FA");
     internal static readonly Color DarkAttachmentSurface = Color.FromArgb("#242424");
+    internal static readonly Color RelatedSurface = Color.FromArgb("#EBF3FC");
+    internal static readonly Color DarkRelatedSurface = Color.FromArgb("#354D62");
+    internal static readonly Color RelatedStroke = Color.FromArgb("#547C9F");
+    internal static readonly Color DarkRelatedStroke = Color.FromArgb("#91ADC3");
+    internal static readonly Color RelatedLink = Color.FromArgb("#095EA8");
+    internal static readonly Color DarkRelatedLink = Color.FromArgb("#4CC2FF");
     internal static readonly Color Stroke = Color.FromArgb("#E5E5E5");
     internal static readonly Color DarkStroke = Color.FromArgb("#808080");
     internal static readonly Color Accent = Color.FromArgb("#0F6CBD");
@@ -33,6 +39,10 @@ internal static class ReaderTheme
     internal static readonly Color DarkStatusGood = Color.FromArgb("#6CCB5F");
     internal static readonly Color Danger = Color.FromArgb("#C42B1C");
     internal static readonly Color DarkDanger = Color.FromArgb("#FF9E8A");
+    internal static readonly Color DangerSurface = Color.FromArgb("#FDE7E9");
+    internal static readonly Color DarkDangerSurface = Color.FromArgb("#442726");
+    internal static readonly Color DisabledForeground = Color.FromArgb("#8A8A8A");
+    internal static readonly Color DarkDisabledForeground = Color.FromArgb("#7A7A7A");
     private static readonly (string LightBackground, string LightText, string DarkBackground, string DarkText)[] AvatarColors =
     [
         ("#E0F2F1", "#00695C", "#163835", "#4DD0E1"),

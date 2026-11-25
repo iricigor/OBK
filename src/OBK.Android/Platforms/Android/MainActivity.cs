@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.OS;
 
 namespace OBK.AndroidApp;
 
@@ -12,6 +13,24 @@ public sealed class MainActivity : MauiAppCompatActivity
 {
     private const int UpdateRequest = 7401;
     private TaskCompletionSource<Result>? updateResult;
+
+    protected override void OnCreate(Bundle? savedInstanceState)
+    {
+        if (savedInstanceState is null && OpensInbox(Intent)) App.RequestInbox();
+        base.OnCreate(savedInstanceState);
+    }
+
+    protected override async void OnNewIntent(Intent? intent)
+    {
+        base.OnNewIntent(intent);
+        if (!OpensInbox(intent) || Microsoft.Maui.Controls.Application.Current is not App app) return;
+        App.RequestInbox();
+        await app.ShowRequestedInboxAsync();
+    }
+
+    // A check notification was tapped; reopening OBK from Recents repeats its intent and is ignored.
+    private static bool OpensInbox(Intent? intent) => intent?.Action == CheckNotifier.OpenInboxAction &&
+        !intent.Flags.HasFlag(ActivityFlags.LaunchedFromHistory);
 
     internal async Task<Result> RunForResultAsync(Intent intent)
     {

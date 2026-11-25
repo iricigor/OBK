@@ -26,7 +26,7 @@
   </data>
   <data name="AppTitleWithAccount" xml:space="preserve">
     <value>OBK - Komens офлайн - {0}</value>
-    <comment>Window caption. {0} = active child name or school name.</comment>
+    <comment>Window caption. {0} = active child name or school name, or All children (ScopeAllChildren).</comment>
   </data>
   <data name="BuildRibbonLabel" xml:space="preserve">
     <value>ЗБІРКА ДЛЯ РОЗРОБКИ</value>
@@ -367,6 +367,22 @@
     <value>Пошуку відповідають: {0} з {1} повідомлень</value>
     <comment>Folder caption while searching. {0} = matching messages; {1} = all messages in the folder.</comment>
   </data>
+  <data name="MainFolderNewOne" xml:space="preserve">
+    <value>{0} нове</value>
+    <comment>{0} = number of messages in the folder not yet opened on this PC. Singular form (Czech: 1; Ukrainian: 1, 21, 31...).</comment>
+  </data>
+  <data name="MainFolderNewFew" xml:space="preserve">
+    <value>{0} нові</value>
+    <comment>{0} = number of new messages. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural.</comment>
+  </data>
+  <data name="MainFolderNewMany" xml:space="preserve">
+    <value>{0} нових</value>
+    <comment>{0} = number of new messages. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...).</comment>
+  </data>
+  <data name="MainFolderCaptionDetail" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>Folder caption with one more detail. {0} = message count or search matches; {1} = new-message count or the All children scope.</comment>
+  </data>
   <data name="MainGroupHeaderTooltip" xml:space="preserve">
     <value>Згорнути або розгорнути цю групу</value>
   </data>
@@ -377,6 +393,10 @@
   <data name="MainGroupName" xml:space="preserve">
     <value>Групувати повідомлення за</value>
     <comment>Accessible name of the grouping drop-down.</comment>
+  </data>
+  <data name="MainGroupOptionChild" xml:space="preserve">
+    <value>Дитиною</value>
+    <comment>Grouping option offered only in the All children scope: group messages by child.</comment>
   </data>
   <data name="MainGroupOptionDate" xml:space="preserve">
     <value>Датою</value>
@@ -440,6 +460,10 @@
     <value>Темою</value>
     <comment>Sort option: sort messages by subject.</comment>
   </data>
+  <data name="MessageChildAndPerson" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>Second line of a message row in the All children scope. {0} = child name; {1} = sender, or recipient in Sent.</comment>
+  </data>
   <data name="MessageExcuseBadge" xml:space="preserve">
     <value>Пояснювальна</value>
     <comment>Short badge on excuse notes in the message list.</comment>
@@ -451,6 +475,14 @@
   <data name="MessageHasAttachments" xml:space="preserve">
     <value>Має вкладення</value>
     <comment>Accessible name of the attachment icon in the message list.</comment>
+  </data>
+  <data name="MessageRowName" xml:space="preserve">
+    <value>{0}, {1}, {2}</value>
+    <comment>Accessible name of a message row. {0} = subject; {1} = sender line (with the child name in the All children scope); {2} = date and time sent.</comment>
+  </data>
+  <data name="MessageRowNameNew" xml:space="preserve">
+    <value>Нове повідомлення: {0}</value>
+    <comment>Accessible name of a message not yet opened on this PC. {0} = the row description (MessageRowName).</comment>
   </data>
   <data name="PromptPasswordAction" xml:space="preserve">
     <value>Перевірити та зберегти</value>
@@ -486,6 +518,10 @@
     <value>Надіслано: {0} — Папка: {1}</value>
     <comment>{0} = date and time the message was sent; {1} = folder name.</comment>
   </data>
+  <data name="ReaderMetadataChild" xml:space="preserve">
+    <value>Надіслано: {0} — Папка: {1} — Дитина: {2}</value>
+    <comment>Reader metadata in the All children scope. {0} = date and time the message was sent; {1} = folder name; {2} = child name.</comment>
+  </data>
   <data name="ReaderNoContent" xml:space="preserve">
     <value>(Вміст повідомлення відсутній)</value>
   </data>
@@ -508,16 +544,6 @@
     <value>Кому: {0}</value>
     <comment>{0} = recipient name of a sent message.</comment>
   </data>
-  <data name="ReaderRelatedHelpName" xml:space="preserve">
-    <value>Про можливо пов’язані повідомлення</value>
-    <comment>Accessible name of the help icon.</comment>
-  </data>
-  <data name="ReaderRelatedHelpTooltip" xml:space="preserve">
-    <value>Визначено за схожою темою й тією самою особою. Komens не повідомляє про фактичні зв’язки відповідей, тому повідомлення можуть бути пов’язані неправильно або неповністю.</value>
-  </data>
-  <data name="ReaderRelatedTitle" xml:space="preserve">
-    <value>Можливо пов’язані</value>
-  </data>
   <data name="RefreshSummaryFailed" xml:space="preserve">
     <value>Помилка: {0} Наявні автономні архіви залишено без змін.</value>
     <comment>{0} = semicolon-separated list of 'account: error' entries.</comment>
@@ -534,29 +560,13 @@
     <value>Потрібен вхід (немає збереженого пароля): {0}.</value>
     <comment>{0} = comma-separated account names.</comment>
   </data>
-  <data name="RelatedFromYou" xml:space="preserve">
-    <value>ви</value>
-    <comment>Sender of a related message that you sent; inserted into RelatedLabel.</comment>
+  <data name="ScopeAllChildren" xml:space="preserve">
+    <value>Усі діти</value>
+    <comment>Sidebar entry, folder caption detail and window title for the scope that shows every child's messages together.</comment>
   </data>
-  <data name="RelatedLabel" xml:space="preserve">
-    <value>{0} — Від: {1}</value>
-    <comment>Related message link. {0} = short date and time; {1} = sender name or 'you'.</comment>
-  </data>
-  <data name="RelatedNext" xml:space="preserve">
-    <value>Наступне</value>
-    <comment>Direction of a later related message.</comment>
-  </data>
-  <data name="RelatedNextNumbered" xml:space="preserve">
-    <value>Наступне ({0})</value>
-    <comment>Direction of a later related message. {0} = position counted from the current message.</comment>
-  </data>
-  <data name="RelatedPrevious" xml:space="preserve">
-    <value>Попереднє</value>
-    <comment>Direction of an earlier related message.</comment>
-  </data>
-  <data name="RelatedPreviousNumbered" xml:space="preserve">
-    <value>Попереднє ({0})</value>
-    <comment>Direction of an earlier related message. {0} = position counted from the current message.</comment>
+  <data name="ScopeAllChildrenTooltip" xml:space="preserve">
+    <value>Показати повідомлення всіх дітей разом</value>
+    <comment>Tooltip of the All children sidebar entry.</comment>
   </data>
   <data name="SettingsAbout" xml:space="preserve">
     <value>Про програму</value>
@@ -741,6 +751,14 @@
     <value>Папки</value>
     <comment>Accessible name of the folder list.</comment>
   </data>
+  <data name="SidebarItemNewName" xml:space="preserve">
+    <value>{0}, нові: {1}</value>
+    <comment>Accessible name of a child or folder with new messages. {0} = child or folder name; {1} = number of messages not yet opened on this PC.</comment>
+  </data>
+  <data name="SidebarNewCount" xml:space="preserve">
+    <value>Нові: {0}</value>
+    <comment>Accessible name and tooltip of a blue new-message badge. {0} = number of messages not yet opened on this PC.</comment>
+  </data>
   <data name="SidebarResizeName" xml:space="preserve">
     <value>Змінити розмір бічної панелі</value>
     <comment>Accessible name of the sidebar splitter.</comment>
@@ -776,6 +794,10 @@
     <value>Автономний архів готовий — синхронізовано (повідомлень: {0}, вкладень: {1}) — остання синхронізація: {2}</value>
     <comment>{0} = message count; {1} = cached attachment count; {2} = last synchronization date and time.</comment>
   </data>
+  <data name="StatusArchiveReadyAllChildren" xml:space="preserve">
+    <value>Автономний архів готовий — {0} — остання синхронізація: {1}</value>
+    <comment>Status in the All children scope. {0} = number of children with an offline archive (StatusChildCount...); {1} = the oldest last synchronization date and time among them.</comment>
+  </data>
   <data name="StatusAttachmentOpened" xml:space="preserve">
     <value>Відкрито розшифровану копію: {0}. Вона залишається в локальній папці відкритих файлів.</value>
     <comment>{0} = attachment file name.</comment>
@@ -787,6 +809,18 @@
   <data name="StatusAttachmentsSaved" xml:space="preserve">
     <value>Збережено розшифрованих копій вкладень: {0}. Видаліть копії, коли вони більше не потрібні.</value>
     <comment>{0} = number of saved copies.</comment>
+  </data>
+  <data name="StatusChildCountOne" xml:space="preserve">
+    <value>{0} дитина</value>
+    <comment>{0} = number of children. Singular form (Czech: 1; Ukrainian: 1, 21, 31...).</comment>
+  </data>
+  <data name="StatusChildCountFew" xml:space="preserve">
+    <value>{0} дитини</value>
+    <comment>{0} = number of children. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural.</comment>
+  </data>
+  <data name="StatusChildCountMany" xml:space="preserve">
+    <value>{0} дітей</value>
+    <comment>{0} = number of children. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...).</comment>
   </data>
   <data name="StatusChildNameRemoved" xml:space="preserve">
     <value>Ім’я дитини для {0} видалено.</value>
@@ -975,5 +1009,9 @@
   <data name="TransferWordsName" xml:space="preserve">
     <value>Слова для перенесення</value>
     <comment>Accessible name of the words text.</comment>
+  </data>
+  <data name="StatusChildrenNotDownloaded" xml:space="preserve">
+    <value>{0} • Ще не завантажено: {1}</value>
+    <comment>{0} = archive status for all children; {1} = comma-separated names of children whose archive has not been downloaded yet.</comment>
   </data>
 </root>

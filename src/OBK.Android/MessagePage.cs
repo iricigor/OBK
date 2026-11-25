@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Shapes;
 using OBK.AndroidApp.Localization;
 using OBK.Core;
 using OBK.Core.Localization;
@@ -8,43 +9,37 @@ internal sealed class MessagePage : ContentPage
 {
     private readonly ReaderSession session;
     private readonly Login account;
+    private readonly MessageRef item;
+    private readonly Archive? archive;
+    private readonly Func<Login, MessageRef, Task> openRelated;
     private readonly VerticalStackLayout content = new() { Padding = 20, Spacing = 16 };
+    private readonly Border header = ReaderTheme.Panel(new ContentView(), 16);
     private readonly Label status = new() { IsVisible = false };
     private readonly List<Button> actions = [];
     private readonly Message message;
+    private bool? compactHeader;
     private bool loaded;
     private bool busy;
     private bool loading;
     internal bool Busy => busy || loading;
-    internal MessagePage Rebuild() => new(session, account, message);
+    internal MessagePage Rebuild(Func<Login, MessageRef, Task> open) => new(session, account, item, archive, open);
 
-    public MessagePage(ReaderSession session, Login account, Message message)
+    /// <param name="item">The message and its server folder key (received, sent or noticeboard).</param>
+    /// <param name="archive">The owning account's archive, searched for possibly related messages.</param>
+    /// <param name="openRelated">Opens a related message with the owning account on top of this page.</param>
+    public MessagePage(ReaderSession session, Login account, MessageRef item, Archive? archive, Func<Login, MessageRef, Task> openRelated)
     {
         this.session = session;
         this.account = account;
-        this.message = message;
+        this.item = item;
+        this.archive = archive;
+        this.openRelated = openRelated;
+        message = item.Message;
         Title = AppStrings.MessagePageTitle;
         LanguageToolbar.Add(this);
-        var subject = new Label { Text = message.Title, FontAttributes = FontAttributes.Bold };
-        subject.SetDynamicResource(Label.FontSizeProperty, "ReaderSubjectSize");
-        var sender = new Label { Text = message.SenderName };
-        sender.SetDynamicResource(Label.FontSizeProperty, "ReaderSenderSize");
-        var date = ReaderTheme.Metadata(new Label
-        {
-            Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture)
-        }, "ReaderMetaSize");
-        sender.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
-        date.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
-        var header = ReaderTheme.Panel(new VerticalStackLayout
-        {
-            Spacing = 4,
-            Children =
-            {
-                subject, sender, date
-            }
-        }, 16);
         header.StrokeThickness = 0;
         header.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.MessageHeaderSurface, ReaderTheme.DarkMessageHeaderSurface);
+        UpdateHeader();
         content.Add(header);
         content.Add(status);
         Content = new ScrollView { Content = content };
@@ -52,15 +47,57 @@ internal sealed class MessagePage : ContentPage
         this.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
     }
 
+    /// <summary>
+    /// Lays the header out for the list density: Relaxed stacks subject, sender and date; Compact puts the sender and
+    /// the date on one row with less padding.
+    /// </summary>
+    private void UpdateHeader()
+    {
+        var compact = ReaderPreferences.CompactDensity;
+        if (compactHeader == compact) return;
+        compactHeader = compact;
+        var subject = new Label { Text = message.Title, FontAttributes = FontAttributes.Bold };
+        subject.SetDynamicResource(Label.FontSizeProperty, "ReaderSubjectSize");
+        var sender = new Label { Text = message.SenderName };
+        sender.SetDynamicResource(Label.FontSizeProperty, "ReaderSenderSize");
+        var date = new Label { Text = message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture) };
+        date.SetDynamicResource(Label.FontSizeProperty, "ReaderMetaSize");
+        sender.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
+        date.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
+        header.Padding = compact ? 12 : 16;
+        if (compact)
+        {
+            sender.MaxLines = date.MaxLines = 1;
+            sender.LineBreakMode = LineBreakMode.TailTruncation;
+            sender.VerticalOptions = date.VerticalOptions = LayoutOptions.Center;
+            date.HorizontalOptions = LayoutOptions.End;
+            var rows = new Grid
+            {
+                ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)],
+                RowDefinitions = [new(GridLength.Auto), new(GridLength.Auto)], ColumnSpacing = 12, RowSpacing = 2
+            };
+            rows.Add(subject);
+            Grid.SetColumnSpan(subject, 2);
+            rows.Add(sender, 0, 1);
+            rows.Add(date, 1, 1);
+            header.Content = rows;
+        }
+        else header.Content = new VerticalStackLayout { Spacing = 4, Children = { subject, sender, date } };
+        ReaderTheme.Apply(header);
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        // Settings can be opened on top of this page and change the density.
+        UpdateHeader();
         if (loaded) return;
         loaded = true;
         loading = true;
         try
         {
-            var parts = await Task.Run(() => MessageRenderer.Render(message.Text));
+            var (parts, related) = await Task.Run(() => (MessageRenderer.Render(message.Text), FindRelated()));
+            if (related.Count > 0) content.Add(RelatedBand(related));
             var text = new FormattedString();
             foreach (var part in parts)
             {
@@ -143,6 +180,84 @@ internal sealed class MessagePage : ContentPage
             await DisplayAlertAsync(AppStrings.MessageReadFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
         finally { loading = false; }
+    }
+
+    private IReadOnlyList<RelatedLink> FindRelated()
+    {
+        if (archive is null) return [];
+        var all = archive.Folders.SelectMany(folder => folder.Value.Select(other => new MessageRef(other, folder.Key)));
+        return RelatedLinks.Build(MessageInsights.FindRelated(item, all), message.Date, DateTime.Today);
+    }
+
+    private Border RelatedBand(IReadOnlyList<RelatedLink> links)
+    {
+        var title = new Label
+        {
+            Text = SharedStrings.RelatedTitle, FontSize = 13, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center
+        };
+        title.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
+        SemanticProperties.SetHeadingLevel(title, SemanticHeadingLevel.Level2);
+        var help = ReaderTheme.Icon("info", SharedStrings.RelatedHelpName);
+        help.Padding = 14;
+        help.Margin = new Thickness(-8, 0, 0, 0);
+        help.Clicked += async (_, _) => await PerformAsync(() =>
+            DisplayAlertAsync(SharedStrings.RelatedTitle, SharedStrings.RelatedHelpTooltip, AppStrings.AlertOkButton));
+        var subject = Subject(message.Title);
+        var rows = new VerticalStackLayout { Spacing = 4 };
+        foreach (var link in links) rows.Add(RelatedRow(link, subject));
+        // The 48 dp help button spans the band's top padding and the gap below the title, so neither is added.
+        var band = new Border
+        {
+            Content = new VerticalStackLayout { Children = { new HorizontalStackLayout { Children = { title, help } }, rows } },
+            Padding = new Thickness(12, 0, 12, 8), StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 6 }
+        };
+        band.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.RelatedSurface, ReaderTheme.DarkRelatedSurface);
+        return band;
+    }
+
+    /// <summary>A subject compared without case, accents or reply and forward prefixes.</summary>
+    private static string Subject(string? title) => MessageInsights.Fold(MessageInsights.StripPrefixes(title));
+
+    /// <summary>A one-line link; a second line shows the related subject only when it differs from the open message's.</summary>
+    private Grid RelatedRow(RelatedLink link, string subject)
+    {
+        var related = link.Item.Message;
+        var from = link.FromYou ? SharedStrings.RelatedFromYou :
+            string.Join(' ', related.SenderName.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        var label = Localized.Format(SharedStrings.RelatedLabel, link.When, from);
+        var direction = new Span { Text = link.Direction, FontAttributes = FontAttributes.Bold };
+        direction.SetAppThemeColor(Span.TextColorProperty, ReaderTheme.MessageHeaderSecondary, ReaderTheme.DarkMessageHeaderSecondary);
+        var context = new Span { Text = label };
+        context.SetAppThemeColor(Span.TextColorProperty, ReaderTheme.RelatedLink, ReaderTheme.DarkRelatedLink);
+        var heading = new Label
+        {
+            FormattedText = new FormattedString { Spans = { direction, new Span { Text = " " }, context } },
+            FontSize = 13, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation, VerticalOptions = LayoutOptions.Center
+        };
+        var arrow = new Image { WidthRequest = 20, HeightRequest = 20, VerticalOptions = LayoutOptions.Center };
+        ReaderTheme.SetIcon(arrow, link.IsNext ? "related_next" : "related_previous");
+        var details = new Grid { ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)], ColumnSpacing = 10, InputTransparent = true };
+        details.Add(arrow);
+        if (Subject(related.Title) == subject) details.Add(heading, 1);
+        else
+        {
+            var other = new Label { Text = related.Title, FontSize = 14, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation };
+            details.Add(new VerticalStackLayout { VerticalOptions = LayoutOptions.Center, Children = { heading, other } }, 1);
+        }
+        AutomationProperties.SetIsInAccessibleTree(details, false);
+        var card = new Border
+        {
+            Content = details, Padding = new Thickness(10, 4), StrokeThickness = 1, MinimumHeightRequest = 48,
+            StrokeShape = new RoundRectangle { CornerRadius = 6 }, InputTransparent = true
+        };
+        card.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.MessageHeaderSurface, ReaderTheme.DarkMessageHeaderSurface);
+        card.SetAppTheme<Brush>(Border.StrokeProperty, new SolidColorBrush(ReaderTheme.RelatedStroke), new SolidColorBrush(ReaderTheme.DarkRelatedStroke));
+        var open = new Button { BackgroundColor = Colors.Transparent, BorderWidth = 0, Padding = 0 };
+        SemanticProperties.SetDescription(open, Localized.Format(AppStrings.MessageRelatedDescription,
+            Localized.Format(SharedStrings.RelatedAccessibleName, link.Direction, label, link.FullDate), related.Title));
+        open.Clicked += async (_, _) => await PerformAsync(() => openRelated(account, link.Item));
+        actions.Add(open);
+        return new Grid { MinimumHeightRequest = 48, Children = { card, open } };
     }
 
     private static ReadOnlyFile AttachmentFile(string path, string? contentType)

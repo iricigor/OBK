@@ -299,23 +299,31 @@ and localized dates. The sliders button shows the Group (None, Date, Child, Send
 Subject) and Sort (Date, Sender, Subject) chips; ordering and date-group labels come
 from the shared `MessageInsights.Arrange`. **Child** is Android-only and appears in
 the all-children scope. Android defaults to Date grouping; both choices are saved.
+Tapping a group header collapses or expands that group; the header shows a
+chevron and the group's message count, and TalkBack reads the title, count and
+state. Groups expand again when the folder, child scope, grouping, sort or
+search changes, or the reader is recreated (restart or language switch);
+**Refresh** and background reloads keep collapsed groups.
 
 Messages in Inbox and Noticeboard not yet opened on this device show a bold subject,
 blue date, and dot. Opening one records its ID in the encrypted `opened_messages`
 table, per account; nothing is sent to the school. The first time an account with
 a cached archive loads, all its existing messages are recorded as opened, so
 upgrades and newly added accounts start with no new messages; only messages
-arriving in later refreshes are new. Sent and Excuses never show as new.
+arriving in later refreshes or scheduled checks are new. Sent and Excuses never show as new.
 Tapping a row selects that account and returns to the reader; language switching
 also rebuilds the chooser. Sync status stays below the list. Refresh summaries
 expire after one minute using monotonic elapsed time; a new operation or leaving
 the reader cancels the pending reset so it cannot overwrite newer state.
 **Settings** groups one-tap segmented controls into **Appearance** (**System**,
 **Light**, **Dark**), **Reading** (**Small / Medium / Large** reading sizes and
-**Compact / Relaxed** list density), **App updates**, and **About** (GitHub
-repository link). The list uses two lines: a
+**Compact / Relaxed** list density), **Scheduled checks** (see
+[Android scheduled checks and notifications](#android-scheduled-checks-and-notifications)),
+**App updates**, and **About** (GitHub repository link). The list uses two lines: a
 single-line, ellipsized subject and right-aligned short date, then an ellipsized
-sender. Older years remain visible in dates; full timestamps stay in the reader.
+sender. Rows of messages with attachments show a paperclip on the sender line,
+before the new-message dot, and TalkBack adds "Has attachments". Older years
+remain visible in dates; full timestamps stay in the reader.
 Both densities are tighter than the previous three-line layout; rows retain a
 48-dp minimum touch height and grow with system font scaling. Reading sizes use
 the desktop's 0.9 / 1.0 / 1.15 scale factors on Android's existing type sizes.
@@ -324,7 +332,9 @@ days ago plus the local time. Older syncs use a short date (including a year onl
 for previous years) plus time. The language control remains in the right-hand
 auto-sized column; long status text truncates instead of pushing it off-screen.
 Font and spacing resources update live and persist independently across restarts
-and language changes. Medium / Relaxed are the defaults.
+and language changes. Medium / Relaxed are the defaults. List density also sets
+the message header: **Relaxed** stacks subject, sender and date; **Compact** uses
+two rows (subject; sender with the date and time on the right) and less padding.
 Appearance applies immediately and persists in app-private preferences; this
 non-sensitive UI preference is separate from encrypted school/account settings.
 The child avatar reuses the desktop's six contrast-paired light/dark colors.
@@ -343,8 +353,17 @@ an existing account). Message links and attachment actions stay explicit taps,
 with privacy notices beneath the content. Appearance follows Android by default.
 Opened messages reuse desktop's light/dark shaded header with contrasting
 secondary text, plus a separate attachment band when files are present. The
-message body remains on the normal reader surface. Android does not currently
-show related-message links; this styling does not add that functionality.
+message body remains on the normal reader surface. Below the header, the same
+light-blue **Possibly related** band as on Windows lists likely previous and next
+messages, found by the shared heuristic within the owning child's archive and
+labelled with relative days (see [Windows desktop client](#windows-desktop-client)).
+Each link is a single 48-dp row showing the direction, relative day and sender;
+a second line shows the subject only when it differs from the open message's
+subject, ignoring case, diacritics and reply or forward prefixes. TalkBack also
+reads the exact date and the subject. The info button
+explains that matches are heuristic. Tapping a link opens that message on top
+with its owning account and marks it opened; Back returns. The band is hidden
+when there are no matches and for Noticeboard messages.
 
 The launcher icon uses `Resources\AppIcon\obk.png` declared as a `MauiIcon`.
 The Android application manifest must reference MAUI's generated `@mipmap/obk`
@@ -447,6 +466,59 @@ The preview is development-signed and does not use the Windows update service.
 Previews signed on different machines are not interchangeable; uninstalling
 to switch keys loses local data. Production release signing is separate from
 preview signing. No signing key or password belongs in Git.
+
+### Android scheduled checks and notifications
+
+**Settings > Scheduled checks** offers three nested switches, all off by default:
+**Check for new messages** (every hour, also while OBK is closed),
+**New-message notifications** (needs scheduled checks), and **Also notify when
+nothing is new** (needs notifications). Turning a switch off also turns off,
+and saves off, every switch below it, which is greyed out until its parent is
+on again. The choices are non-sensitive app preferences.
+
+Checks use WorkManager unique periodic work (`obk_scheduled_check`) every hour,
+requiring any network connection. Turning checks on schedules the work, app
+start re-ensures it without resetting an existing schedule, and turning checks
+off cancels it. Android may postpone runs, for example in Doze or battery saver,
+and may stop a run after about ten minutes, so timing is best-effort. The worker
+(`cz.obk.reader.ScheduledCheckWorker`) opens the same encrypted database as the
+app (never the verification database) and does nothing when it is missing. For
+every child with a saved password, it downloads messages and attachments
+exactly like **Refresh**, through the same endpoints; children without a saved
+password are not checked. One process-wide lock keeps checks and foreground
+downloads apart: a check skips its run while a download is in progress, and
+**Refresh** or sign-in waits for a running check. A check reads each child's
+saved password under that lock, just before downloading, and never changes saved
+logins or the last used child, so a password forgotten during a check is neither
+used nor saved again.
+
+Arrivals are Inbox and Noticeboard messages that a check downloaded and that
+are not opened in the reader. The opened-message baseline is recorded before
+each download, so arrivals also stay new in the reader. After a school-year
+change, the first check counts every unopened message of the new year; an
+account's very first download is recorded as opened, like the reader's first
+load, and announces nothing. A running app reloads its archives from the device
+after a check that changed them.
+
+With notifications on, a check with arrivals posts one summary for all children
+on the **New messages** channel. It has a plural-aware title and up to five
+`Child · Subject` lines, newest first; when more arrived, the last line reads
+`+N more`. Children that could not be checked follow (sign-in needed or check
+failed). Each summary has its own ID, so earlier ones remain. With **Also notify
+when nothing is new**, a check without arrivals instead posts a status on the
+low-importance **Check status** channel, replacing the previous status. Texts use
+the saved interface language. Lines contain message subjects; lock screens set to
+hide sensitive content show only the title. Tapping a notification opens Inbox,
+in **All children** when there are several children, from the offline archives
+without network access. Notifications are local; OBK has no push service.
+
+Android 13 and later require the `POST_NOTIFICATIONS` permission, which OBK
+requests only when the user turns on **New-message notifications**. If it is
+denied, or notifications are later blocked, the switch shows off with guidance
+and an **Open Android settings** button for OBK's notification settings;
+returning to Settings rechecks the state. WorkManager merges the network-state,
+wake-lock, boot-completed and foreground-service permissions it needs into the
+manifest.
 
 ### Android release signing
 
@@ -813,7 +885,8 @@ the list collapses while a school search is active, so up to six matches fit
 without scrolling. Choosing one restores its username and optional child name;
 passwords are filled only for explicitly remembered profiles. Choosing or
 searching for a different school starts with blank account fields.
-Later starts open the last used child's offline archive without signing in; the
+Later starts open the remembered scope (**All children** or the last used child's
+offline archive) without signing in; the
 popup appears only from **Add child**, or from **Refresh** when a password is
 needed. Signing in happens only when **Refresh** or **Sign in and sync** is used.
 The action footer stays visible while the form scrolls, with **Read offline**
@@ -822,24 +895,51 @@ separate from **Sign in and sync**.
 The Fluent workspace has three columns: child/folder navigation, a virtualized
 message list, and a reading pane. The left column lists every known child or
 school account; clicking one opens its offline archive for the current school
-year without network requests. **Add child** opens the account picker.
-**Noticeboard**, **Inbox**, **Sent**, and **Excuses** show actual archive counts; unread dots
-reflect the cached server read state.
+year without network requests. With two or more children, **All children** comes
+first, shown with overlapping avatars of up to three children. It merges every
+child's archive for the current school year into one set of folders, like the
+Android default scope. The chosen scope is remembered; without a saved choice,
+two or more children start in **All children**. **Add child** opens the account picker.
+
+A message is new when it is in **Inbox** or **Noticeboard** and has not been
+opened on this PC; **Sent** and **Excuses** are never new. Windows and Android
+share this rule and the encrypted per-account `opened_messages` table: the first
+load of an account's archive records its existing messages as opened, so only
+later arrivals are new. The school's read state is no longer shown and is never
+changed. Blue badges on the children and folders count new messages; **All
+children** sums its children, and folder badges follow the current scope. Totals
+appear in the list caption, for example `7 messages · 3 new · All children`
+(searches show the match count instead). New rows show a dot, a semibold subject,
+and an accent-colored date. Clicking a message, selecting it with the keyboard,
+pressing Enter or Space on the selected message, or opening it from a related
+link marks it opened. The automatic selection when a folder opens, the list
+refreshes, the scope changes, or search results change does not.
 
 Each list item has two lines: subject and date, then the sender (or recipient in
-Sent). Sent excuses, identified by the API message type `OMLUVENKA` (not by subject
+Sent). In **All children**, rows also show the owning child's avatar, the second
+line reads `Child · Sender`, and the reading pane's metadata adds `Child: <name>`.
+Attachments, related messages, and related links always use the owning child's
+account and archive. Sent excuses, identified by the API message type `OMLUVENKA` (not by subject
 text), appear in a separate **Excuses** folder after **Sent** instead of in Sent,
 and carry an **Excuse** badge. The search box filters the current folder
 live by subject, contents, sender/recipient, and sent date (for example
 `3.11.2026` or `2026-11-03`), ignoring case and diacritics; every word must
 match. **Sort** orders by date (newest first), sender, or subject; **Group**
 groups by date (Today, Yesterday, This week, This month, then months), sender,
-or subject, ignoring Re:/Odp:/Fwd: prefixes. Click a group header to collapse or expand it;
+or subject, ignoring Re:/Odp:/Fwd: prefixes. **All children** also offers
+**Child** grouping; switching to a single child replaces it with no grouping.
+Click a group header to collapse or expand it;
 groups expand again when the list is re-sorted, searched, or reopened.
 
 Above the message body, **Possibly related** links possible previous and next
-messages across Inbox and Sent, oldest first, each showing its date (for example
-21.Sep 15:53) and sender (**From: you** for Sent). When a side has several, they are
+messages across Inbox and Sent of the same child, oldest first. Each shows its
+day relative to the selected message and the sender (**From: you** for Sent).
+For a message received today, the days count back from today: Today, Yesterday,
+then `N days ago`. For an older message, they count from its own date:
+`N days before`, Same day, or `N days after`. Today and Same day include the
+time, for example `Same day 11:40`. Days are local calendar dates;
+Czech and Ukrainian use their plural forms. The exact date and time appear in
+each link's tooltip and accessible name. When a side has several, they are
 numbered outward from the current message, for example Previous (2), Previous (1). Komens lists do not expose reply
 links, so this is a heuristic: subjects must share enough words (prefixes,
 case, and diacritics are ignored, so an added or changed middle part such as
@@ -849,12 +949,12 @@ messages share the subject and person (for example repeated excuses), a link als
 needs similar body text, or must be the adjacent message from the other side
 (Inbox vs Sent) with no same-subject message from the selected message's side in
 between; otherwise nothing is shown rather than a guess.
-Selecting a message does not mark it read or send any server requests.
+Selecting a message never marks it read on the school server or sends any request.
 Switching folders restores the last selected message in that folder for the
 current app session. On a first visit, or if that message is no longer present,
 the newest message by sent date is selected and scrolled into view. Empty
-folders remain unselected. Selection memory resets when changing accounts or
-school years; it is not saved when the app closes.
+folders remain unselected. Selection memory resets when changing children, the
+**All children** scope, or school years; it is not saved when the app closes.
 Drag the dividers to resize the sidebar, list, and reading pane. Dragging the
 sidebar narrower than about 140 pixels, or using the arrow button at its bottom,
 switches it to icons only (names in tooltips); the arrow expands it again. The layout
@@ -866,7 +966,8 @@ The sun/moon button switches **Light** and **Dark** immediately, including
 message text, login controls, menus, and window chrome. **Settings > Appearance**
 offers the same choice; both stay in sync. The choice is saved
 per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
-startup. It contains only the theme, reading size and list density, not credentials or archive data.
+startup. It contains only the theme, reading size, list density and the
+**All children** scope choice, not credentials or archive data.
 
 **Settings**, at the bottom of the sidebar, replaces the message list and
 reading pane with Windows 11-style sections that start collapsed:
@@ -897,6 +998,10 @@ changes only after **Sign in and sync** or **Read offline**.
 one after another, then reloads the visible archive. Accounts without a saved
 password are listed in the status bar; the sign-in dialog opens for the current
 account if it needs a password, or for the first account if none could refresh.
+**All children** has no current account, so it opens the dialog only when no
+account could refresh. In that scope, the status bar shows the number of
+children, the oldest last synchronization, and any children whose archive has
+not been downloaded yet.
 A failure for one account is reported and does not replace its offline archive
 or stop the others. Saved credential
 profiles and account history remain available; no offline archive is removed.

@@ -2,9 +2,11 @@
 
 [Back to README](../README.md#install)
 
-The Android reader supports sign-in, multiple children, refresh, offline
-folders and search, and opening or sharing downloaded attachments. It requires
-Android 10 or later and is currently a preview.
+The Android reader supports sign-in, multiple children, refresh, optional hourly
+checks with new-message notifications, offline folders and search, and opening or
+sharing downloaded attachments. It requires Android 10 or later and is currently
+a preview. Notification permission is requested only when you turn on
+notifications in **Settings > Scheduled checks**.
 
 ![Android message list in light mode](images/android-light-messages.png)
 

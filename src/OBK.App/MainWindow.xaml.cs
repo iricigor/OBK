@@ -91,7 +91,8 @@ public partial class MainWindow : Window
         };
         ViewModel.PropertyChanged += (_, e) =>
         {
-            if (enableUpdates && e.PropertyName == nameof(MainViewModel.Account) && ViewModel.Account is not null) Updates.Start();
+            if (enableUpdates && e.PropertyName is nameof(MainViewModel.Account) or nameof(MainViewModel.ShowingAllChildren) &&
+                (ViewModel.Account is not null || ViewModel.ShowingAllChildren)) Updates.Start();
             if (e.PropertyName == nameof(MainViewModel.NavigationExpanded))
                 NavigationColumn.Width = new GridLength(ViewModel.NavigationExpanded ? expandedNavigationWidth : IconNavigationWidth);
             if (e.PropertyName != nameof(MainViewModel.SelectedMessage)) return;
@@ -131,6 +132,7 @@ public partial class MainWindow : Window
         {
             await ViewModel.FolderReady;
             await ViewModel.MessageReady;
+            await ViewModel.OpenedSaved;
             var state = ViewModel.CaptureState();
             var next = LanguageSettings.NextCode;
             await LanguageSettings.SaveAsync(Path.Combine(Path.GetDirectoryName(Store.Path)!, "language.json"), next);
@@ -191,6 +193,20 @@ public partial class MainWindow : Window
     {
         if (e.OriginalSource is DependencyObject source && ItemsControl.ContainerFromElement(FolderList, source) is ListBoxItem)
             ViewModel.SettingsOpen = false;
+    }
+
+    // A new message that was selected automatically is opened by clicking it or pressing Enter or Space on it.
+    private void MessageListClick(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is DependencyObject source &&
+            ItemsControl.ContainerFromElement(Messages, source) is ListBoxItem { IsSelected: true, DataContext: MessageRow row })
+            ViewModel.MarkOpened(row);
+    }
+
+    private void MessageListKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key is Key.Enter or Key.Space && e.OriginalSource is ListBoxItem { IsSelected: true, DataContext: MessageRow row })
+            ViewModel.MarkOpened(row);
     }
 
     private void RenameAccount(AccountRow row)
@@ -328,8 +344,9 @@ public partial class MainWindow : Window
         finally { login.SetBusy(false); }
     }
 
-    private async Task<string> ExportCopyAsync(Login account, AttachmentRow row, string? destination = null)
+    private async Task<string> ExportCopyAsync(AttachmentRow row, string? destination = null)
     {
+        var account = row.Account;
         return await Task.Run(() =>
         {
             if (destination is null)
@@ -348,7 +365,7 @@ public partial class MainWindow : Window
 
     private async Task ExportAsync(AttachmentRow row, string action)
     {
-        if (!ViewModel.CanChangeAccount || Account is not { } account) return;
+        if (!ViewModel.CanChangeAccount) return;
         if (action == "open" && !row.CanOpen)
             throw new ObkException(AppStrings.ErrorAttachmentCannotOpen);
         string? destination = null;
@@ -362,7 +379,7 @@ public partial class MainWindow : Window
         ViewModel.SetStatus(AppStrings.StatusPreparingAttachment);
         try
         {
-            var path = await ExportCopyAsync(account, row, destination);
+            var path = await ExportCopyAsync(row, destination);
             if (action is "open" or "folder")
             {
                 try
@@ -394,7 +411,7 @@ public partial class MainWindow : Window
 
     private async Task SaveAllAsync(IReadOnlyList<AttachmentRow> rows)
     {
-        if (!ViewModel.CanChangeAccount || Account is not { } account) return;
+        if (!ViewModel.CanChangeAccount || rows.Count == 0) return;
         var dialog = new OpenFolderDialog { Title = AppStrings.DialogSaveAllTitle };
         if (dialog.ShowDialog(this) != true) return;
         var destinations = new List<string>();
@@ -417,7 +434,7 @@ public partial class MainWindow : Window
             for (; saved < rows.Count; saved++)
             {
                 ViewModel.SetStatus(Localized.Format(AppStrings.StatusSavingAttachment, saved + 1, rows.Count));
-                await ExportCopyAsync(account, rows[saved], destinations[saved]);
+                await ExportCopyAsync(rows[saved], destinations[saved]);
             }
             ViewModel.SetStatus(Localized.Format(AppStrings.StatusAttachmentsSaved, saved), true);
         }
@@ -437,7 +454,7 @@ public partial class MainWindow : Window
     private async void AttachmentMouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed || sender is not Button { DataContext: AttachmentRow { Cached: true } row } ||
-            !ViewModel.CanChangeAccount || Account is not { } account) return;
+            !ViewModel.CanChangeAccount) return;
         var point = e.GetPosition(this);
         if (Math.Abs(point.X - dragOrigin.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(point.Y - dragOrigin.Y) < SystemParameters.MinimumVerticalDragDistance) return;
@@ -447,7 +464,7 @@ public partial class MainWindow : Window
         try
         {
             ViewModel.SetStatus(AppStrings.StatusPreparingDrag);
-            var path = await ExportCopyAsync(account, row);
+            var path = await ExportCopyAsync(row);
             if (Mouse.LeftButton == MouseButtonState.Pressed)
             {
                 var data = new DataObject(DataFormats.FileDrop, new[] { path });

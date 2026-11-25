@@ -30,7 +30,8 @@ you can read, search, and organize them offline on Windows or Android.
 
 - [**All children and folders in one place**](docs/features/ACCOUNTS.md) –
   switch between children and schools, refresh every account, and browse
-  Inbox, Noticeboard, Sent, and Excuses.
+  Inbox, Noticeboard, Sent, and Excuses. Android can also check hourly and
+  notify you about new messages.
 - [**Fast offline reading and organization**](docs/features/ORGANIZE.md) –
   search by subject, text, sender, or date; group and sort messages; follow
   likely related replies.

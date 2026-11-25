@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using OBK.AndroidApp.Localization;
 using OBK.Core;
 using OBK.Core.Localization;
@@ -53,11 +54,17 @@ internal sealed class ReaderPage : ContentPage
     private Login? account;
     private bool allChildren = ReaderPreferences.AllChildren;
     private bool busy;
+    private bool reloading;
     private bool searching;
     private bool optionsVisible;
     private int folderIndex;
     private bool initialized;
-    internal bool Busy => busy;
+    /// <summary>Keys of the groups collapsed in the current view; another view expands every group again.</summary>
+    private readonly HashSet<string> collapsed = [];
+    private string? collapsedView;
+    private ObservableCollection<object> listItems = [];
+    private Dictionary<string, List<MessageListItem>> groupRows = [];
+    internal bool Busy => busy || reloading;
     internal bool AccountsAvailable => session is not null && !busy;
     internal int FolderIndex => folderIndex;
     internal IReadOnlyList<string> FolderLabels => folderLabels;
@@ -76,7 +83,7 @@ internal sealed class ReaderPage : ContentPage
         public bool IsNew => Folder is "received" or "noticeboard" && !Opened.Contains(Message.Id);
     }
     private sealed record AccountArchive(Login Login, Archive? Archive, IReadOnlyList<MessageEntry> Entries);
-    private sealed record GroupHeader(string Title);
+    private sealed record GroupHeader(string Key, string Title, int Count, bool Collapsed);
     private sealed record MessageListItem(MessageEntry Entry, bool IsAlternate, bool ShowOwner, string OwnerLabel);
 
     public ReaderPage(Action openMenu)
@@ -190,13 +197,42 @@ internal sealed class ReaderPage : ContentPage
 
     private DataTemplate CreateHeaderTemplate() => new(() =>
     {
-        var label = ReaderTheme.Metadata(new Label { FontSize = 12, FontAttributes = FontAttributes.Bold, Padding = new Thickness(12, 6) });
-        label.SetBinding(Label.TextProperty, nameof(GroupHeader.Title));
-        var grid = new Grid { Children = { label } };
+        var chevron = new Image { WidthRequest = 18, HeightRequest = 18, VerticalOptions = LayoutOptions.Center };
+        var label = ReaderTheme.Metadata(new Label { FontSize = 12, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center });
+        var count = ReaderTheme.Metadata(new Label { FontSize = 12, VerticalOptions = LayoutOptions.Center });
+        var content = new Grid
+        {
+            ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 8,
+            Padding = new Thickness(12, 6), InputTransparent = true
+        };
+        content.Add(chevron);
+        content.Add(label, 1);
+        content.Add(count, 2);
+        AutomationProperties.SetIsInAccessibleTree(content, false);
+        // The whole header is one button that collapses or expands its group.
+        var toggle = new Button { BackgroundColor = Colors.Transparent, BorderWidth = 0, Padding = 0 };
+        SemanticProperties.SetHeadingLevel(toggle, SemanticHeadingLevel.Level2);
+        SemanticProperties.SetHint(toggle, AppStrings.ReaderGroupHint);
+        toggle.Clicked += (_, _) =>
+        {
+            if (toggle.BindingContext is GroupHeader header) Dispatcher.Dispatch(() => ToggleGroup(header.Key));
+        };
+        var grid = new Grid { MinimumHeightRequest = 48, Children = { content, toggle } };
         grid.SetAppThemeColor(BackgroundColorProperty, Color.FromArgb("#F3F3F3"), Color.FromArgb("#202020"));
-        SemanticProperties.SetHeadingLevel(label, SemanticHeadingLevel.Level2);
+        grid.BindingContextChanged += (_, _) =>
+        {
+            if (grid.BindingContext is not GroupHeader header) return;
+            ReaderTheme.SetIcon(chevron, header.Collapsed ? "chevron_right" : "chevron_down");
+            label.Text = header.Title;
+            count.Text = header.Count.ToString(LanguageSettings.Culture);
+            SemanticProperties.SetDescription(toggle, GroupDescription(header));
+        };
         return grid;
     });
+
+    private static string GroupDescription(GroupHeader header) => Localized.Format(AppStrings.ReaderGroupDescription, header.Title,
+        Localized.Plural(header.Count, AppStrings.ReaderGroupMessagesOne, AppStrings.ReaderGroupMessagesFew, AppStrings.ReaderGroupMessagesMany),
+        header.Collapsed ? AppStrings.ReaderGroupCollapsed : AppStrings.ReaderGroupExpanded);
 
     private DataTemplate CreateMessageTemplate() => new(() =>
     {
@@ -220,6 +256,14 @@ internal sealed class ReaderPage : ContentPage
             VerticalOptions = LayoutOptions.Center, StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 5 }
         };
         dot.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        // The negative margin keeps the 16 dp clip from making the sender line taller at small text sizes.
+        var clip = new Image { WidthRequest = 16, HeightRequest = 16, Margin = new Thickness(0, -2), VerticalOptions = LayoutOptions.Center };
+        ReaderTheme.SetIcon(clip, "attachment");
+        AutomationProperties.SetIsInAccessibleTree(clip, false);
+        var indicators = new HorizontalStackLayout
+        {
+            Spacing = 4, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.Center, Children = { clip, dot }
+        };
         var row = new Grid
         {
             ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)],
@@ -234,7 +278,7 @@ internal sealed class ReaderPage : ContentPage
         row.Add(title, 1, 0);
         row.Add(date, 2, 0);
         row.Add(sender, 1, 1);
-        row.Add(dot, 2, 1);
+        row.Add(indicators, 2, 1);
         var item = new Grid { RowDefinitions = [new(GridLength.Auto), new(1)], RowSpacing = 0 };
         item.Add(row);
         item.Add(new BoxView(), 0, 1);
@@ -255,7 +299,10 @@ internal sealed class ReaderPage : ContentPage
             if (isNew) date.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
             else ReaderTheme.Metadata(date, "ListDateSize");
             dot.IsVisible = isNew;
-            SemanticProperties.SetDescription(item, isNew ? Localized.Format(AppStrings.ReaderNewMessage, message.Title) : null);
+            clip.IsVisible = message.Attachments.Count > 0;
+            var description = isNew ? Localized.Format(AppStrings.ReaderNewMessage, message.Title) : null;
+            if (clip.IsVisible) description = Localized.Format(AppStrings.ReaderWithAttachments, description ?? message.Title);
+            SemanticProperties.SetDescription(item, description);
             item.SetAppThemeColor(BackgroundColorProperty,
                 entry.IsAlternate ? ReaderTheme.AlternateSurface : ReaderTheme.Surface,
                 entry.IsAlternate ? ReaderTheme.DarkAlternateSurface : ReaderTheme.DarkSurface);
@@ -485,6 +532,45 @@ internal sealed class ReaderPage : ContentPage
         session = await ReaderSession.OpenAsync();
         initialized = true;
         await ReloadAsync();
+        if (App.TakeInboxRequest()) ShowInbox();
+    }
+
+    /// <summary>Shows Inbox, for all children when there are several, with archives freshly read from this device.</summary>
+    internal Task ShowInboxAsync() => RunAsync(async () =>
+    {
+        if (!App.TakeInboxRequest()) return;
+        if (Navigation.NavigationStack.Count > 1) await Navigation.PopToRootAsync(false);
+        if (session is null) await InitializeAsync();
+        else await ReloadAsync();
+        ShowInbox();
+    });
+
+    private void ShowInbox()
+    {
+        folderIndex = 0;
+        ExitSearch();
+        if (known.Count > 1) SelectAllChildren();
+        else ApplyList();
+    }
+
+    /// <summary>Reloads archives that a scheduled check saved, without contacting the school or blocking the list.</summary>
+    internal async Task ReloadFromStoreAsync()
+    {
+        if (!initialized || session is null) return;
+        await operationGate.WaitAsync();
+        reloading = true;
+        try
+        {
+            var summary = refreshStatusTimeout.Pending ? status.Text : null;
+            await ReloadAsync();
+            if (summary is not null) status.Text = summary;
+        }
+        catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException) { status.Text = error.Message; }
+        finally
+        {
+            reloading = false;
+            operationGate.Release();
+        }
     }
 
     private void SetBusy(bool value)
@@ -598,8 +684,21 @@ internal sealed class ReaderPage : ContentPage
             entry.Opened.Add(entry.Message.Id);
             ApplyList();
         }
-        await Navigation.PushAsync(new MessagePage(session, entry.Owner, entry.Message));
+        var archive = archives.FirstOrDefault(item => SameAccount(item.Login, entry.Owner))?.Archive;
+        await Navigation.PushAsync(new MessagePage(session, entry.Owner, new MessageRef(entry.Message, ServerFolder(entry.Folder)),
+            archive, OpenRelatedAsync));
     }
+
+    /// <summary>Opens a possibly related message on top of the current page and marks it opened like the list does.</summary>
+    internal Task OpenRelatedAsync(Login owner, MessageRef item) => RunAsync(async () =>
+    {
+        var entry = archives.Where(archive => SameAccount(archive.Login, owner)).SelectMany(archive => archive.Entries)
+            .FirstOrDefault(candidate => candidate.Message.Id == item.Message.Id && ServerFolder(candidate.Folder) == item.Folder);
+        if (entry is not null) await OpenMessageAsync(entry);
+    });
+
+    /// <summary>The archive folder key of a list folder; Excuses is a view over Sent.</summary>
+    private static string ServerFolder(string folder) => folder == "excuses" ? "sent" : folder;
 
     private void ApplyList()
     {
@@ -611,6 +710,13 @@ internal sealed class ReaderPage : ContentPage
         var sort = ReaderPreferences.Sort;
         var today = DateTime.Today;
         var showOwner = ShowingAllChildren;
+        // Another folder, child, arrangement or search expands every group again; reloads keep collapsed groups.
+        var view = string.Join('\n', key, showOwner ? "*" : account is null ? "" : AccountKey(account), grouping, sort, query);
+        if (view != collapsedView)
+        {
+            collapsed.Clear();
+            collapsedView = view;
+        }
         IEnumerable<(MessageEntry Item, string Group)> arranged = grouping is ListGrouping.Child
             ? known.SelectMany(login => MessageInsights.Arrange(entries.Where(entry => SameAccount(entry.Owner, login)),
                 entry => entry.Message, entry => entry.Person, sort, MessageGrouping.None, today)
@@ -622,28 +728,51 @@ internal sealed class ReaderPage : ContentPage
                 ListGrouping.Subject => MessageGrouping.Title,
                 _ => MessageGrouping.None
             }, today);
-        var items = new List<object>();
-        string? current = null;
-        var index = 0;
-        var count = 0;
+        var groups = new List<(string Key, string Title, List<MessageListItem> Rows)>();
         foreach (var (entry, group) in arranged)
         {
-            if (grouping is not ListGrouping.None && group != current)
-            {
-                items.Add(new GroupHeader(group.Length > 0 ? group : "—"));
-                current = group;
-                index = 0;
-            }
-            items.Add(new MessageListItem(entry, index++ % 2 == 1, showOwner, AccountLabelConverter.Label(entry.Owner)));
-            count++;
+            // Two children can share a label, so child groups are keyed by account. Other labels come from a group's
+            // newest message, so the folded label that Arrange groups by keeps the key stable across reloads.
+            var groupKey = grouping is ListGrouping.Child ? AccountKey(entry.Owner) : MessageInsights.Fold(group);
+            if (groups.Count == 0 || groups[^1].Key != groupKey) groups.Add((groupKey, group.Length > 0 ? group : "—", []));
+            var rows = groups[^1].Rows;
+            rows.Add(new MessageListItem(entry, rows.Count % 2 == 1, showOwner, AccountLabelConverter.Label(entry.Owner)));
         }
-        messages.ItemsSource = items;
-        summary.Text = Localized.Format(AppStrings.ReaderSearchSummary, count, folderLabels[folderIndex],
+        var items = new ObservableCollection<object>();
+        groupRows = [];
+        foreach (var (groupKey, title, rows) in groups)
+        {
+            groupRows[groupKey] = rows;
+            var folded = grouping is not ListGrouping.None && collapsed.Contains(groupKey);
+            if (grouping is not ListGrouping.None) items.Add(new GroupHeader(groupKey, title, rows.Count, folded));
+            if (!folded) rows.ForEach(items.Add);
+        }
+        messages.ItemsSource = listItems = items;
+        summary.Text = Localized.Format(AppStrings.ReaderSearchSummary, groups.Sum(group => group.Rows.Count), folderLabels[folderIndex],
             showOwner ? AppStrings.ReaderAllChildren : account is null ? "" : AccountLabelConverter.Label(account));
         addChild.IsVisible = session is not null && known.Count == 0;
         empty.Text = query.Length > 0 ? AppStrings.ReaderEmptySearch :
             !ScopeArchives().Any(item => item.Archive is not null) ? AppStrings.ReaderEmptyNoArchive : AppStrings.ReaderEmptyFolder;
     }
+
+    /// <summary>Collapses or expands one group in place, so the list keeps its scroll position.</summary>
+    private void ToggleGroup(string key)
+    {
+        var index = listItems.TakeWhile(item => item is not GroupHeader candidate || candidate.Key != key).Count();
+        if (index == listItems.Count || !groupRows.TryGetValue(key, out var rows)) return;
+        var header = (GroupHeader)listItems[index];
+        header = header with { Collapsed = !header.Collapsed };
+        if (header.Collapsed) collapsed.Add(key);
+        else collapsed.Remove(key);
+        listItems[index] = header;
+        if (header.Collapsed)
+            for (var removed = 0; removed < rows.Count; removed++) listItems.RemoveAt(index + 1);
+        else
+            for (var offset = 0; offset < rows.Count; offset++) listItems.Insert(index + 1 + offset, rows[offset]);
+        SemanticScreenReader.Default.Announce(GroupDescription(header));
+    }
+
+    private static string AccountKey(Login login) => login.Url + "\n" + login.Username;
 
     private async Task OpenSignInAsync(Login? login = null)
     {

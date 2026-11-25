@@ -9,25 +9,29 @@ using System.Windows.Input;
 
 namespace OBK.App;
 
+/// <summary>Windows list grouping: the shared choices plus Child, offered only in the All children scope.</summary>
+public enum ListGrouping { None, Date, Child, Sender, Title }
+
 public sealed class MainViewModel : ObservableObject
 {
+    private static readonly Dictionary<string, List<Message>> NoMessages = Folders.Empty();
     private readonly LocalStore store;
     private readonly Action<bool, Login?> openLogin;
-    private Dictionary<string, List<Message>> folders = Folders.Empty();
-    private Dictionary<string, AttachmentInfo?> attachmentInfo = [];
+    private IReadOnlyList<ChildArchive> archives = [];
     private SchoolYear year = SchoolYear.Current();
     private string school = AppStrings.MainDefaultSchool;
-    private string? syncedAt;
     private Login? account;
+    private bool showingAllChildren;
+    private AllChildrenRow? allChildrenEntry;
     private bool syncing;
     private bool loading;
     private bool exporting;
     private bool goodStatus;
+    private bool listUpdating;
     private string status = AppStrings.StatusWelcome;
     private FolderRow? selectedFolder;
     private MessageRow? selectedMessage;
-    private readonly Dictionary<string, string> selectedMessageIds = [];
-    private IReadOnlyList<FolderRow> navigation = [];
+    private readonly Dictionary<string, MessageKey> selectedMessageIds = [];
     private IReadOnlyList<AccountRow> accounts = [];
     private IReadOnlyList<MessageRow> folderRows = [];
     private IReadOnlyList<MessageRow> messages = [];
@@ -35,13 +39,14 @@ public sealed class MainViewModel : ObservableObject
     private IReadOnlyList<AttachmentRow> attachments = [];
     private IReadOnlyList<TextPart> body = [];
     private IReadOnlyList<RelatedRow> related = [];
+    private IReadOnlyList<DisplayOption<ListGrouping>> groupOptions = GroupChoices(false);
     private string subject = AppStrings.ReaderNoSelection;
     private string sender = AppStrings.ReaderNoSelectionSender;
     private string initials = "OB";
     private string metadata = AppStrings.ReaderNoSelectionDetail;
     private string searchText = "";
     private MessageSort sort = MessageSort.Date;
-    private MessageGrouping grouping = MessageGrouping.None;
+    private ListGrouping grouping = ListGrouping.None;
     private bool selectedIsExcuse;
     private bool navigationExpanded = true;
     private bool settingsOpen;
@@ -49,6 +54,15 @@ public sealed class MainViewModel : ObservableObject
     private int folderVersion;
     private int listVersion;
     private int messageVersion;
+
+    /// <summary>One child's archive for the shown school year and the IDs of messages already opened on this PC.</summary>
+    private sealed record ChildArchive(Login Login, bool Listed, bool PasswordSaved, Archive? Archive,
+        HashSet<string> Opened, Dictionary<string, AttachmentInfo?> Info)
+    {
+        public Dictionary<string, List<Message>> Items => Archive?.Folders ?? NoMessages;
+        public int NewIn(string folder) => CanBeNew(folder) ? Items[folder].Count(m => !Opened.Contains(m.Id)) : 0;
+        public int NewCount => NewIn("received") + NewIn("noticeboard");
+    }
 
     public MainViewModel(LocalStore store, ThemeManager theme, Action<bool, Login?> openLogin,
         Func<AttachmentRow, string, Task> export, Func<IReadOnlyList<AttachmentRow>, Task> saveAll)
@@ -69,6 +83,11 @@ public sealed class MainViewModel : ObservableObject
                 SettingsOpen = false;
                 return p is AccountRow { IsCurrent: false } row ? SelectAccountAsync(row) : Task.CompletedTask;
             }, ReportError, p => CanChangeAccount && p is AccountRow);
+        SelectAllChildrenCommand = new AsyncCommand(_ =>
+            {
+                SettingsOpen = false;
+                return showingAllChildren ? Task.CompletedTask : SelectAllChildrenAsync();
+            }, ReportError, _ => CanChangeAccount);
         OpenRelatedCommand = new RelayCommand(p => { if (p is RelatedRow row) OpenRelated(row.Item); });
         ClearSearchCommand = new RelayCommand(_ => SearchText = "");
         ToggleNavigationCommand = new RelayCommand(_ => NavigationExpanded = !NavigationExpanded);
@@ -78,7 +97,15 @@ public sealed class MainViewModel : ObservableObject
         SaveAllCommand = new AsyncCommand(_ => saveAll(attachments), ReportError,
             _ => CanChangeAccount && attachments.Count > 1 && attachments.All(a => a.Cached));
         ExpandAttachmentsCommand = new RelayCommand(_ => AttachmentsExpanded = !AttachmentsExpanded);
-        RebuildNavigation();
+        Navigation =
+        [
+            new("noticeboard", Folders.Title("noticeboard"), "\uE789"),
+            new("received", Folders.Title("received"), "\uE715"),
+            new("sent", Folders.Title("sent"), "\uE724"),
+            new("excuses", SharedStrings.FolderExcuses, "\uE8A5")
+        ];
+        selectedFolder = Navigation.Single(f => f.Key == "received");
+        RefreshFolder();
     }
 
     private AsyncCommand ExportCommand(string action, Func<AttachmentRow, string, Task> export) =>
@@ -101,6 +128,7 @@ public sealed class MainViewModel : ObservableObject
     public bool ShowMessages => !settingsOpen;
     public ICommand SwitchSchoolCommand { get; }
     public ICommand SelectAccountCommand { get; }
+    public ICommand SelectAllChildrenCommand { get; }
     public ICommand OpenRelatedCommand { get; }
     public ICommand ClearSearchCommand { get; }
     public ICommand ToggleNavigationCommand { get; }
@@ -112,6 +140,9 @@ public sealed class MainViewModel : ObservableObject
     public ICommand ExpandAttachmentsCommand { get; }
     public Task FolderReady { get; private set; } = Task.CompletedTask;
     public Task MessageReady { get; private set; } = Task.CompletedTask;
+    /// <summary>Completes when every opened-message mark so far has been written to the local database.</summary>
+    public Task OpenedSaved { get; private set; } = Task.CompletedTask;
+    /// <summary>The last single child shown; it stays set while the All children scope is active.</summary>
     public Login? Account
     {
         get => account;
@@ -137,19 +168,31 @@ public sealed class MainViewModel : ObservableObject
     public string AccountLabel => Account?.ChildName is { Length: > 0 } childName ? childName : School;
     public string AccountColorKey => Palette.PairKey(Account is { } a ? a.Url + "|" + a.Username : School);
     public string SenderColorKey => Palette.PairKey(Sender);
-    public string WindowTitle => AccountLabel == AppStrings.MainDefaultSchool ? AppStrings.AppTitle :
-        Localized.Format(AppStrings.AppTitleWithAccount, AccountLabel);
+    public string WindowTitle => showingAllChildren ? Localized.Format(AppStrings.AppTitleWithAccount, AppStrings.ScopeAllChildren) :
+        AccountLabel == AppStrings.MainDefaultSchool ? AppStrings.AppTitle : Localized.Format(AppStrings.AppTitleWithAccount, AccountLabel);
+    /// <summary>True while the merged All children scope is shown; it needs two or more children.</summary>
+    public bool ShowingAllChildren => showingAllChildren;
+    public AllChildrenRow? AllChildrenEntry
+    {
+        get => allChildrenEntry;
+        private set { if (Set(ref allChildrenEntry, value)) Notify(nameof(ShowAllChildrenEntry)); }
+    }
+    public bool ShowAllChildrenEntry => allChildrenEntry is not null;
     public string FolderTitle => selectedFolder?.Title ?? SharedStrings.FolderInbox;
     public string FolderCaption
     {
         get
         {
-            var total = FolderMessages(selectedFolder?.Key ?? "received").Count;
-            return SearchActive ? Localized.Format(AppStrings.MainFolderSearchCount, messages.Count, total) :
+            var total = FolderItems(selectedFolder?.Key ?? "received").Count();
+            var caption = SearchActive ? Localized.Format(AppStrings.MainFolderSearchCount, messages.Count, total) :
                 Localized.Format(AppStrings.MainFolderCount, total);
+            if (!SearchActive && selectedFolder is { HasNew: true } folder)
+                caption = Localized.Format(AppStrings.MainFolderCaptionDetail, caption, Localized.Plural(folder.NewCount,
+                    AppStrings.MainFolderNewOne, AppStrings.MainFolderNewFew, AppStrings.MainFolderNewMany));
+            return showingAllChildren ? Localized.Format(AppStrings.MainFolderCaptionDetail, caption, AppStrings.ScopeAllChildren) : caption;
         }
     }
-    public IReadOnlyList<FolderRow> Navigation { get => navigation; private set => Set(ref navigation, value); }
+    public IReadOnlyList<FolderRow> Navigation { get; }
     public IReadOnlyList<AccountRow> Accounts { get => accounts; private set => Set(ref accounts, value); }
     public IReadOnlyList<MessageRow> Messages { get => messages; private set => Set(ref messages, value); }
     public ICollectionView? MessagesView { get => messagesView; private set => Set(ref messagesView, value); }
@@ -207,15 +250,7 @@ public sealed class MainViewModel : ObservableObject
             MessageSort.Title => AppStrings.MainSortOptionTitle,
             _ => throw new ArgumentOutOfRangeException(nameof(value))
         })).ToArray();
-    public IReadOnlyList<DisplayOption<MessageGrouping>> GroupOptions { get; } = Enum.GetValues<MessageGrouping>()
-        .Select(value => new DisplayOption<MessageGrouping>(value, value switch
-        {
-            MessageGrouping.None => AppStrings.MainGroupOptionNone,
-            MessageGrouping.Date => AppStrings.MainGroupOptionDate,
-            MessageGrouping.Sender => AppStrings.MainGroupOptionSender,
-            MessageGrouping.Title => AppStrings.MainGroupOptionTitle,
-            _ => throw new ArgumentOutOfRangeException(nameof(value))
-        })).ToArray();
+    public IReadOnlyList<DisplayOption<ListGrouping>> GroupOptions { get => groupOptions; private set => Set(ref groupOptions, value); }
     public bool SearchActive => SearchText.Trim().Length > 0;
     public string SearchText
     {
@@ -228,7 +263,7 @@ public sealed class MainViewModel : ObservableObject
         }
     }
     public MessageSort Sort { get => sort; set { if (Set(ref sort, value)) ApplyList(); } }
-    public MessageGrouping Grouping { get => grouping; set { if (Set(ref grouping, value)) ApplyList(); } }
+    public ListGrouping Grouping { get => grouping; set { if (Set(ref grouping, value)) ApplyList(); } }
 
     public FolderRow? SelectedFolder
     {
@@ -240,17 +275,35 @@ public sealed class MainViewModel : ObservableObject
             RefreshFolder();
         }
     }
+    /// <summary>
+    /// Set by the list when the user clicks or keyboard-selects a message, which marks it opened on this PC.
+    /// Automatic selections (opening a folder, refreshing, changing scope or search) never mark messages opened.
+    /// </summary>
     public MessageRow? SelectedMessage
     {
         get => selectedMessage;
-        set
-        {
-            if (!Set(ref selectedMessage, value)) return;
-            if (value is not null && selectedFolder is { } folder)
-                selectedMessageIds[folder.Key] = value.Message.Id;
-            RefreshMessage();
-        }
+        set { if (SelectMessage(value) && !listUpdating && value is not null) MarkOpened(value); }
     }
+
+    private bool SelectMessage(MessageRow? value)
+    {
+        if (!Set(ref selectedMessage, value, nameof(SelectedMessage))) return false;
+        if (value is not null && selectedFolder is { } folder) selectedMessageIds[folder.Key] = value.Key;
+        RefreshMessage();
+        return true;
+    }
+
+    private static IReadOnlyList<DisplayOption<ListGrouping>> GroupChoices(bool child) => Enum.GetValues<ListGrouping>()
+        .Where(value => child || value != ListGrouping.Child)
+        .Select(value => new DisplayOption<ListGrouping>(value, value switch
+        {
+            ListGrouping.None => AppStrings.MainGroupOptionNone,
+            ListGrouping.Date => AppStrings.MainGroupOptionDate,
+            ListGrouping.Child => AppStrings.MainGroupOptionChild,
+            ListGrouping.Sender => AppStrings.MainGroupOptionSender,
+            ListGrouping.Title => AppStrings.MainGroupOptionTitle,
+            _ => throw new ArgumentOutOfRangeException(nameof(value))
+        })).ToArray();
 
     private void UpdateActions()
     {
@@ -269,49 +322,137 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             var last = await Task.Run(store.LastAccount);
-            if (last is not null)
-                await ActivateAccountAsync(last.Url, last.Username, childName: last.ChildName, schoolName: last.SchoolName);
-            else await ReloadAccountsAsync();
+            await LoadAsync(last is null ? null : Normalize(last.Url, last.Username, last.ChildName, last.SchoolName), year);
         }
         catch (ObkException error) { ReportError(error.Message); }
         if (themeError is not null) ReportError(themeError);
     }
 
+    /// <summary>Makes this the current child and reloads every child's archive; the remembered scope is kept.</summary>
     public async Task ActivateAccountAsync(string url, string username, SchoolYear? selectedYear = null,
-        string? childName = null, string? schoolName = null)
+        string? childName = null, string? schoolName = null) =>
+        await LoadAsync(Normalize(url, username, childName, schoolName), selectedYear ?? year);
+
+    private static Login Normalize(string url, string username, string? childName, string? schoolName) =>
+        new(KomensClient.NormalizeUrl(url), username, ChildName: childName?.Trim() is { Length: > 0 } child ? child : null,
+            SchoolName: schoolName?.Trim() is { Length: > 0 } schoolLabel ? schoolLabel : null);
+
+    private static bool Same(Login? left, Login? right) =>
+        left is not null && right is not null && left.Url == right.Url && left.Username == right.Username;
+
+    private static bool CanBeNew(string folder) => folder is "received" or "noticeboard";
+
+    private string ScopeKey => showingAllChildren ? "*" : account is { } current ? current.Url + "\n" + current.Username : "";
+
+    private IEnumerable<ChildArchive> ScopeArchives() => showingAllChildren ? archives.Where(child => child.Listed) :
+        archives.Where(child => Same(child.Login, account));
+
+    private bool HasArchive => ScopeArchives().Any(child => child.Archive is not null);
+
+    private async Task LoadAsync(Login? next, SchoolYear nextYear)
     {
         if (Loading || IsExporting) throw new ObkException(AppStrings.StatusWaitForArchive);
         Loading = true;
+        IReadOnlyList<string> errors;
         try
         {
-            var nextYear = selectedYear ?? year;
-            var normalized = KomensClient.NormalizeUrl(url);
-            var result = await Task.Run(() =>
-            {
-                var archive = store.LoadArchive(normalized, username, nextYear);
-                var items = archive?.Folders ?? Folders.Empty();
-                return (archive, items, info: ReadAttachmentInfo(normalized, username, items));
-            });
-            if (Account is not { } previous || previous.Url != normalized ||
-                previous.Username != username || year != nextYear)
+            // Opened marks still being written must not be read back as new.
+            await OpenedSaved;
+            (var loaded, errors) = await Task.Run(() => ReadArchives(next, nextYear));
+            // Opened state only grows; keep marks made while the archives were being read.
+            foreach (var child in loaded)
+                if (archives.FirstOrDefault(old => Same(old.Login, child.Login)) is { } old && child.Archive is not null)
+                    child.Opened.UnionWith(old.Opened);
+            var previous = (ScopeKey, year);
+            Account = next;
+            year = nextYear;
+            archives = loaded;
+            School = next?.SchoolName ?? loaded.FirstOrDefault(child => Same(child.Login, next))?.Archive?.SchoolName ??
+                AppStrings.MainDefaultSchool;
+            UpdateScope();
+            if ((ScopeKey, year) != previous)
             {
                 selectedMessageIds.Clear();
                 searchText = "";
                 Notify(nameof(SearchText));
                 Notify(nameof(SearchActive));
             }
-            Account = new(normalized, username, ChildName: childName?.Trim() is { Length: > 0 } child ? child : null,
-                SchoolName: schoolName?.Trim() is { Length: > 0 } schoolLabel ? schoolLabel : null);
-            year = nextYear;
-            folders = result.items;
-            attachmentInfo = result.info;
-            School = Account.SchoolName ?? result.archive?.SchoolName ?? AppStrings.MainDefaultSchool;
-            syncedAt = result.archive?.SyncedAt;
-            RebuildNavigation();
-            SetStatus(CacheStatus(), syncedAt is not null);
+            RefreshFolder();
+            if (next is not null || showingAllChildren) SetStatus(CacheStatus(), HasArchive);
         }
         finally { Loading = false; }
-        await ReloadAccountsAsync();
+        if (errors.Count > 0) ReportError(string.Join("; ", errors));
+    }
+
+    /// <summary>
+    /// Reads every known child's archive. A child whose archive cannot be read is shown without one and
+    /// reported, so the other children stay readable.
+    /// </summary>
+    private (IReadOnlyList<ChildArchive> Archives, IReadOnlyList<string> Errors) ReadArchives(Login? current, SchoolYear archiveYear)
+    {
+        var known = store.KnownLogins();
+        var entries = known.Select(login => (Login: login, Listed: true)).ToList();
+        if (current is not null && !known.Any(login => Same(login, current))) entries.Add((current, false));
+        var errors = new List<string>();
+        var result = entries.Select(entry =>
+        {
+            var login = entry.Login with { Password = null };
+            var saved = entry.Login.Password is not null;
+            try
+            {
+                var archive = store.LoadArchive(login.Url, login.Username, archiveYear);
+                if (archive is null) return new ChildArchive(login, entry.Listed, saved, null, [], []);
+                var opened = store.OpenedMessages(login.Url, login.Username,
+                    archive.Folders.Values.SelectMany(messages => messages).Select(message => message.Id));
+                return new ChildArchive(login, entry.Listed, saved, archive, opened,
+                    ReadAttachmentInfo(login.Url, login.Username, archive.Folders));
+            }
+            catch (ObkException error)
+            {
+                errors.Add(Localized.Format(SharedStrings.ErrorInContext, AccountRow.LabelFor(login), error.Message));
+                return new ChildArchive(login, entry.Listed, saved, null, [], []);
+            }
+        }).ToArray();
+        return (result, errors);
+    }
+
+    private void UpdateScope()
+    {
+        var all = Theme.AllChildren != false && archives.Count(child => child.Listed) >= 2;
+        if (showingAllChildren != all)
+        {
+            showingAllChildren = all;
+            Notify(nameof(ShowingAllChildren));
+            Notify(nameof(WindowTitle));
+        }
+        if (!all && grouping == ListGrouping.Child)
+        {
+            grouping = ListGrouping.None;
+            Notify(nameof(Grouping));
+        }
+        if (groupOptions.Any(option => option.Value == ListGrouping.Child) != all) GroupOptions = GroupChoices(all);
+        BuildAccounts();
+    }
+
+    private void BuildAccounts()
+    {
+        var comparer = StringComparer.Create(LanguageSettings.Culture, true);
+        Accounts = archives.Where(child => child.Listed)
+            .Select(child => new AccountRow(child.Login, !showingAllChildren && Same(child.Login, account), child.PasswordSaved))
+            .OrderBy(row => row.Label, comparer).ThenBy(row => row.Login.Url, StringComparer.Ordinal)
+            .ThenBy(row => row.Login.Username, StringComparer.Ordinal).ToArray();
+        AllChildrenEntry = accounts.Count >= 2 ? new AllChildrenRow(showingAllChildren, accounts) : null;
+        UpdateNewCounts();
+    }
+
+    /// <summary>Badges count new messages per child (All children sums them) and per folder in the current scope.</summary>
+    private void UpdateNewCounts()
+    {
+        foreach (var row in accounts) row.NewCount = archives.FirstOrDefault(child => Same(child.Login, row.Login))?.NewCount ?? 0;
+        if (allChildrenEntry is { } entry) entry.NewCount = accounts.Sum(row => row.NewCount);
+        var scope = ScopeArchives().ToArray();
+        foreach (var folder in Navigation) folder.NewCount = scope.Sum(child => child.NewIn(folder.Key));
+        Notify(nameof(FolderCaption));
     }
 
     private async Task ReloadAccountsAsync()
@@ -319,21 +460,31 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             var known = await Task.Run(store.KnownLogins);
-            var comparer = StringComparer.Create(LanguageSettings.Culture, true);
-            Accounts = known.Select(login => new AccountRow(login with { Password = null },
-                    Account is { } current && current.Url == login.Url && current.Username == login.Username,
-                    login.Password is not null))
-                .OrderBy(row => row.Label, comparer).ThenBy(row => row.Login.Url, StringComparer.Ordinal)
-                .ThenBy(row => row.Login.Username, StringComparer.Ordinal).ToArray();
+            archives = archives.Select(child => child with
+            {
+                PasswordSaved = known.Any(login => Same(login, child.Login) && login.Password is not null)
+            }).ToArray();
+            BuildAccounts();
         }
         catch (ObkException error) { ReportError(error.Message); }
     }
 
-    private async Task SelectAccountAsync(AccountRow row)
+    /// <summary>Shows one child's archive and remembers that choice instead of All children.</summary>
+    public async Task SelectAccountAsync(AccountRow row)
     {
         var login = row.Login;
         await Task.Run(() => store.SaveAccount(login.Url, login.Username, login.ChildName, login.SchoolName));
+        var saving = Theme.SetAllChildrenAsync(false);
         await ActivateAccountAsync(login.Url, login.Username, SchoolYear.Current(), login.ChildName, login.SchoolName);
+        await saving;
+    }
+
+    /// <summary>Merges every child's archive and remembers the All children scope.</summary>
+    public async Task SelectAllChildrenAsync()
+    {
+        var saving = Theme.SetAllChildrenAsync(true);
+        await LoadAsync(Account, SchoolYear.Current());
+        await saving;
     }
 
     public async Task RenameAccountAsync(AccountRow row, string? childName)
@@ -342,9 +493,11 @@ public sealed class MainViewModel : ObservableObject
         var login = row.Login;
         var label = childName?.Trim() is { Length: > 0 } name ? name : null;
         await Task.Run(() => store.RenameAccount(login.Url, login.Username, label));
-        if (Account is { } current && current.Url == login.Url && current.Username == login.Username)
-            Account = current with { ChildName = label };
-        await ReloadAccountsAsync();
+        if (Account is { } current && Same(current, login)) Account = current with { ChildName = label };
+        archives = archives.Select(child => Same(child.Login, login) ? child with { Login = child.Login with { ChildName = label } } : child)
+            .ToArray();
+        BuildAccounts();
+        if (showingAllChildren) RefreshFolder();
         SetStatus(label is null ? Localized.Format(AppStrings.StatusChildNameRemoved, login.SchoolName ?? login.Username) :
             Localized.Format(AppStrings.StatusRenamed, label), true);
     }
@@ -377,14 +530,32 @@ public sealed class MainViewModel : ObservableObject
         items.Values.SelectMany(m => m).SelectMany(m => m.Attachments).DistinctBy(a => a.Identifier)
             .ToDictionary(a => a.Identifier, a => store.AttachmentInfo(url, username, a.Identifier));
 
-    private string CacheStatus() => syncedAt is null ?
-        AppStrings.StatusNoArchive :
-        Localized.Format(AppStrings.StatusArchiveReady, folders.Values.Sum(m => m.Count),
-            attachmentInfo.Values.Count(a => a is not null),
-            DateTimeOffset.Parse(syncedAt).ToLocalTime().ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
+    /// <summary>
+    /// One child's archive totals, or in the All children scope how many children are listed, the oldest sync and
+    /// which children have no downloaded archive yet.
+    /// </summary>
+    private string CacheStatus()
+    {
+        var loaded = ScopeArchives().Where(child => child.Archive is not null).ToArray();
+        if (loaded.Length == 0) return AppStrings.StatusNoArchive;
+        static string When(string stamp) =>
+            DateTimeOffset.Parse(stamp).ToLocalTime().ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture);
+        if (showingAllChildren)
+        {
+            var children = ScopeArchives().ToArray();
+            var status = Localized.Format(AppStrings.StatusArchiveReadyAllChildren,
+                Localized.Plural(children.Length, AppStrings.StatusChildCountOne, AppStrings.StatusChildCountFew, AppStrings.StatusChildCountMany),
+                When(loaded.MinBy(child => DateTimeOffset.Parse(child.Archive!.SyncedAt))!.Archive!.SyncedAt));
+            var missing = children.Where(child => child.Archive is null).Select(child => AccountRow.LabelFor(child.Login)).ToArray();
+            return missing.Length == 0 ? status : Localized.Format(AppStrings.StatusChildrenNotDownloaded, status, string.Join(", ", missing));
+        }
+        var single = loaded[0];
+        return Localized.Format(AppStrings.StatusArchiveReady, single.Items.Values.Sum(m => m.Count),
+            single.Info.Values.Count(a => a is not null), When(single.Archive!.SyncedAt));
+    }
 
     public sealed record ReaderState(Login? Account, SchoolYear Year, string Folder, string Search,
-        MessageSort Sort, MessageGrouping Grouping, Dictionary<string, string> MessageIds,
+        MessageSort Sort, ListGrouping Grouping, Dictionary<string, MessageKey> MessageIds,
         bool NavigationExpanded, bool SettingsOpen, bool AttachmentsExpanded);
 
     public ReaderState CaptureState() => new(Account, year, SelectedFolder?.Key ?? "received", SearchText,
@@ -392,15 +563,13 @@ public sealed class MainViewModel : ObservableObject
 
     public async Task RestoreStateAsync(ReaderState state)
     {
-        if (state.Account is { } login)
-            await ActivateAccountAsync(login.Url, login.Username, state.Year, login.ChildName, login.SchoolName);
-        else await ReloadAccountsAsync();
+        await LoadAsync(state.Account, state.Year);
         await FolderReady;
         selectedMessageIds.Clear();
         foreach (var (key, id) in state.MessageIds) selectedMessageIds[key] = id;
         searchText = state.Search;
         sort = state.Sort;
-        grouping = state.Grouping;
+        grouping = state.Grouping == ListGrouping.Child && !showingAllChildren ? ListGrouping.None : state.Grouping;
         selectedFolder = Navigation.Single(folder => folder.Key == state.Folder);
         Notify(nameof(SearchText));
         Notify(nameof(SearchActive));
@@ -415,36 +584,48 @@ public sealed class MainViewModel : ObservableObject
         AttachmentsExpanded = state.AttachmentsExpanded;
     }
 
-    public void OfflineStatus() => SetStatus(syncedAt is null ? CacheStatus() :
-        Localized.Format(AppStrings.StatusOffline, CacheStatus()), syncedAt is not null);
-
-    private void RebuildNavigation()
-    {
-        var key = selectedFolder?.Key ?? "received";
-        Navigation =
-        [
-            new("noticeboard", Folders.Title("noticeboard"), "\uE789", folders["noticeboard"].Count),
-            new("received", Folders.Title("received"), "\uE715", folders["received"].Count),
-            new("sent", Folders.Title("sent"), "\uE724", FolderMessages("sent").Count),
-            new("excuses", SharedStrings.FolderExcuses, "\uE8A5", FolderMessages("excuses").Count)
-        ];
-        selectedFolder = Navigation.Single(f => f.Key == key);
-        Notify(nameof(SelectedFolder));
-        RefreshFolder();
-    }
+    public void OfflineStatus() => SetStatus(HasArchive ? Localized.Format(AppStrings.StatusOffline, CacheStatus()) : CacheStatus(),
+        HasArchive);
 
     /// <summary>Excuses are a view over Sent, split by the API message type; storage keeps the server folders.</summary>
-    private List<Message> FolderMessages(string key) => key switch
+    private static IEnumerable<Message> FolderMessages(Dictionary<string, List<Message>> items, string key) => key switch
     {
-        "excuses" => folders["sent"].Where(MessageInsights.IsExcuse).ToList(),
-        "sent" => folders["sent"].Where(m => !MessageInsights.IsExcuse(m)).ToList(),
-        _ => folders[key]
+        "excuses" => items["sent"].Where(MessageInsights.IsExcuse),
+        "sent" => items["sent"].Where(m => !MessageInsights.IsExcuse(m)),
+        _ => items[key]
     };
 
+    private IEnumerable<(ChildArchive Child, Message Message)> FolderItems(string key) =>
+        ScopeArchives().SelectMany(child => FolderMessages(child.Items, key).Select(message => (child, message)));
+
+    /// <summary>Records that the user opened a message on this PC; the school's read state is never changed.</summary>
+    public void MarkOpened(MessageRow row) => MarkOpened(row.Owner, row.Folder, row.Message.Id);
+
+    private void MarkOpened(Login owner, string folder, string id)
+    {
+        if (!CanBeNew(folder) || archives.FirstOrDefault(child => Same(child.Login, owner)) is not { } archive) return;
+        foreach (var row in folderRows)
+            if (row.IsNew && row.Message.Id == id && Same(row.Owner, owner)) row.IsNew = false;
+        if (!archive.Opened.Add(id)) return;
+        UpdateNewCounts();
+        OpenedSaved = SaveOpenedAsync(OpenedSaved, owner, id);
+    }
+
+    private async Task SaveOpenedAsync(Task previous, Login owner, string id)
+    {
+        await previous;
+        try { await Task.Run(() => store.MarkOpened(owner.Url, owner.Username, id)); }
+        catch (ObkException error) { ReportError(error.Message); }
+    }
+
+    /// <summary>Related messages come from the displayed message's own child, so the link opens in that child's archive.</summary>
     private void OpenRelated(MessageRef reference)
     {
+        if (selectedMessage is not { } current) return;
+        var owner = current.Owner;
         var item = reference.Folder == "sent" && MessageInsights.IsExcuse(reference.Message) ? reference with { Folder = "excuses" } : reference;
-        selectedMessageIds[item.Folder] = item.Message.Id;
+        selectedMessageIds[item.Folder] = new(owner.Url, owner.Username, item.Message.Id);
+        MarkOpened(owner, reference.Folder, item.Message.Id);
         if (SearchActive) { searchText = ""; Notify(nameof(SearchText)); Notify(nameof(SearchActive)); }
         if (selectedFolder?.Key == item.Folder) RefreshFolder();
         else SelectedFolder = Navigation.Single(f => f.Key == item.Folder);
@@ -461,20 +642,29 @@ public sealed class MainViewModel : ObservableObject
         var version = ++folderVersion;
         var key = selectedFolder?.Key ?? "received";
         Notify(nameof(FolderTitle));
-        SelectedMessage = null;
-        ClearMessage();
-        folderRows = [];
-        Messages = [];
-        MessagesView = null;
+        listUpdating = true;
+        try
+        {
+            SelectMessage(null);
+            ClearMessage();
+            folderRows = [];
+            Messages = [];
+            MessagesView = null;
+        }
+        finally { listUpdating = false; }
         Notify(nameof(FolderCaption));
         Notify(nameof(EmptyFolderText));
         Notify(nameof(EmptyFolder));
         try
         {
-            var source = FolderMessages(key);
+            var source = FolderItems(key).ToArray();
             var rowFolder = key == "excuses" ? "sent" : key;
-            var rows = await Task.Run(() => source.Select(m => new MessageRow(m, rowFolder)).ToArray());
+            var showOwner = showingAllChildren;
+            var rows = await Task.Run(() => source.Select(item =>
+                new MessageRow(item.Message, rowFolder, item.Child.Login, showOwner)).ToArray());
             if (version != folderVersion) return;
+            for (var index = 0; index < rows.Length; index++)
+                rows[index].IsNew = CanBeNew(rowFolder) && !source[index].Child.Opened.Contains(rows[index].Message.Id);
             folderRows = rows;
             await ApplyListAsync(version);
         }
@@ -496,13 +686,25 @@ public sealed class MainViewModel : ObservableObject
         var rows = folderRows;
         var query = SearchText;
         var (sortBy, groupBy) = (Sort, Grouping);
+        var children = accounts.Select(row => (row.Login, row.Label)).ToArray();
         var arranged = await Task.Run(() =>
         {
-            var matching = rows.Where(r => MessageInsights.Matches(r.SearchText, query));
-            return MessageInsights.Arrange(matching, r => r.Message, r => r.Person, sortBy, groupBy, DateTime.Today);
+            var matching = rows.Where(r => MessageInsights.Matches(r.SearchText, query)).ToArray();
+            // Child groups follow the sidebar order; the chosen sort applies within each child.
+            if (groupBy == ListGrouping.Child)
+                return children.SelectMany(child => MessageInsights.Arrange(matching.Where(r => Same(r.Owner, child.Login)),
+                        r => r.Message, r => r.Person, sortBy, MessageGrouping.None, DateTime.Today)
+                    .Select(a => (a.Item, Group: child.Label))).ToArray();
+            return MessageInsights.Arrange(matching, r => r.Message, r => r.Person, sortBy, groupBy switch
+            {
+                ListGrouping.Date => MessageGrouping.Date,
+                ListGrouping.Sender => MessageGrouping.Sender,
+                ListGrouping.Title => MessageGrouping.Title,
+                _ => MessageGrouping.None
+            }, DateTime.Today).ToArray();
         });
         if (version != folderVersion || listId != listVersion) return;
-        for (var index = 0; index < arranged.Count; index++)
+        for (var index = 0; index < arranged.Length; index++)
         {
             var (row, group) = arranged[index];
             row.Group = group;
@@ -510,16 +712,22 @@ public sealed class MainViewModel : ObservableObject
         }
         var list = arranged.Select(a => a.Item).ToList();
         var view = new ListCollectionView(list);
-        if (groupBy != MessageGrouping.None) view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MessageRow.Group)));
+        if (groupBy != ListGrouping.None) view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MessageRow.Group)));
         var previous = selectedMessage;
-        selectedMessageIds.TryGetValue(key, out var rememberedId);
-        Messages = list;
-        MessagesView = view;
-        var selected = list.FirstOrDefault(r => ReferenceEquals(r, previous)) ??
-            list.FirstOrDefault(r => r.Message.Id == rememberedId) ??
-            (query.Trim().Length > 0 ? list.FirstOrDefault() : list.MaxBy(r => r.Message.Date));
-        if (!ReferenceEquals(selected, selectedMessage)) SelectedMessage = selected;
-        else Notify(nameof(SelectedMessage));
+        selectedMessageIds.TryGetValue(key, out var remembered);
+        // The list control may write its selection back while its items are replaced; that is not the user's choice.
+        listUpdating = true;
+        try
+        {
+            Messages = list;
+            MessagesView = view;
+            var selected = list.FirstOrDefault(r => ReferenceEquals(r, previous)) ??
+                list.FirstOrDefault(r => r.Key == remembered) ??
+                (query.Trim().Length > 0 ? list.FirstOrDefault() : list.MaxBy(r => r.Message.Date));
+            if (!ReferenceEquals(selected, selectedMessage)) SelectMessage(selected);
+            else Notify(nameof(SelectedMessage));
+        }
+        finally { listUpdating = false; }
         Notify(nameof(FolderCaption));
         Notify(nameof(EmptyFolderText));
         Notify(nameof(EmptyFolder));
@@ -550,15 +758,18 @@ public sealed class MainViewModel : ObservableObject
         if (selectedMessage is not { } row) return;
         var version = messageVersion;
         var key = row.Folder;
-        var info = attachmentInfo;
-        var all = folders;
+        var owner = row.Owner;
+        var child = archives.FirstOrDefault(archive => Same(archive.Login, owner));
+        Dictionary<string, AttachmentInfo?> info = child?.Info ?? [];
+        var all = child?.Items ?? NoMessages;
         Subject = row.Subject;
         Sender = OneLine(row.Message.SenderName) is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
         var words = Sender.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => !w.Contains('.')).ToArray();
         Initials = string.IsNullOrWhiteSpace(row.Message.SenderName) || words.Length == 0 ? "?" :
             string.Concat(words.TakeLast(2).Select(w => w[0])).ToUpperInvariant();
         SelectedIsExcuse = row.IsExcuse;
-        Metadata = Localized.Format(AppStrings.ReaderMetadata, row.Sent, FolderTitle);
+        Metadata = row.ShowOwner ? Localized.Format(AppStrings.ReaderMetadataChild, row.Sent, FolderTitle, row.OwnerLabel) :
+            Localized.Format(AppStrings.ReaderMetadata, row.Sent, FolderTitle);
         if (key == "sent" && !string.IsNullOrEmpty(row.Message.RelevantName))
             Metadata += "\n" + Localized.Format(AppStrings.ReaderRecipient, OneLine(row.Message.RelevantName));
         if (row.Message.CanConfirm == true && row.Message.Confirmed != true)
@@ -571,8 +782,9 @@ public sealed class MainViewModel : ObservableObject
                 var files = row.Message.Attachments.Select(a =>
                 {
                     _ = a.SafeName;
-                    return new AttachmentRow(this, a, info.GetValueOrDefault(a.Identifier));
+                    return new AttachmentRow(this, a, info.GetValueOrDefault(a.Identifier), owner);
                 }).ToArray();
+                // Possibly related messages are searched only in the owning child's archive, never across children.
                 var related = MessageInsights.FindRelated(new(row.Message, key),
                     all.SelectMany(f => f.Value.Select(m => new MessageRef(m, f.Key))));
                 return (parts, files, related);
@@ -580,7 +792,7 @@ public sealed class MainViewModel : ObservableObject
             if (version != messageVersion) return;
             Body = result.parts.Count == 0 ? [new(AppStrings.ReaderNoContent, false, false, false, false)] : result.parts;
             SetAttachments(result.files);
-            Related = RelatedRow.Build(this, result.related);
+            Related = RelatedRow.Build(this, result.related, row.Message.Date, DateTime.Today);
         }
         catch (ObkException error) { if (version == messageVersion) ReportError(error.Message); }
     }
@@ -598,18 +810,17 @@ public sealed class MainViewModel : ObservableObject
         UpdateActions();
     }
 
-    private async Task<(string SchoolName, Dictionary<string, List<Message>> Folders, string Stamp,
-        Dictionary<string, AttachmentInfo?> Info)> DownloadAsync(KomensClient client, string token, string url,
-        string username, SchoolYear syncYear, bool fullRefresh, IProgress<string> progress) =>
+    /// <summary>Downloads one account's school year into the local store and returns the school's name.</summary>
+    private async Task<string> DownloadAsync(KomensClient client, string token, string url, string username,
+        SchoolYear syncYear, bool fullRefresh, IProgress<string> progress) =>
         await Task.Run(async () =>
         {
             var schoolName = await client.SchoolNameAsync(token);
             var cached = fullRefresh ? null : store.LoadArchive(url, username, syncYear);
             var fetched = await client.FetchYearAsync(token, syncYear, cached?.Folders, progress);
             await client.DownloadAttachmentsAsync(token, fetched, store, username, progress);
-            var info = ReadAttachmentInfo(url, username, fetched);
-            var stamp = store.SaveArchive(url, username, syncYear, schoolName, fetched);
-            return (schoolName, fetched, stamp, info);
+            store.SaveArchive(url, username, syncYear, schoolName, fetched);
+            return schoolName;
         });
 
     public async Task SynchronizeAsync(string url, string username, string password, bool remember, bool fullRefresh,
@@ -632,14 +843,8 @@ public sealed class MainViewModel : ObservableObject
                 return result;
             });
             await ActivateAccountAsync(url, username, syncYear, childName, schoolName);
-            var result = await DownloadAsync(client, token, url, username, syncYear, fullRefresh, progress);
-            var schoolLabel = Account?.SchoolName ?? result.SchoolName;
-            Account = Account! with { SchoolName = schoolLabel };
-            School = schoolLabel;
-            folders = result.Folders;
-            attachmentInfo = result.Info;
-            syncedAt = result.Stamp;
-            RebuildNavigation();
+            var schoolLabel = await DownloadAsync(client, token, url, username, syncYear, fullRefresh, progress);
+            await LoadAsync(Account! with { SchoolName = Account!.SchoolName ?? schoolLabel }, syncYear);
             SetStatus(CacheStatus(), true);
         }
         catch (ObkException error)
@@ -648,7 +853,6 @@ public sealed class MainViewModel : ObservableObject
             throw;
         }
         finally { IsSyncing = false; }
-        await ReloadAccountsAsync();
     }
 
     /// <summary>
@@ -693,9 +897,7 @@ public sealed class MainViewModel : ObservableObject
             }
         }
         finally { IsSyncing = false; }
-        if (Account is { } current)
-            await ActivateAccountAsync(current.Url, current.Username, syncYear, current.ChildName, current.SchoolName);
-        else await ReloadAccountsAsync();
+        await LoadAsync(Account, syncYear);
         var refreshed = ready.Count - failures.Count;
         var summary = new List<string>();
         if (ready.Count > 0)
@@ -705,8 +907,9 @@ public sealed class MainViewModel : ObservableObject
         if (missing.Count > 0)
             summary.Add(Localized.Format(AppStrings.RefreshSummarySignInNeeded, string.Join(", ", missing.Select(Label))));
         SetStatus(string.Join(" ", summary), failures.Count == 0 && missing.Count == 0);
-        var prompt = missing.FirstOrDefault(m => Account is { } a && a.Url == m.Url && a.Username == m.Username) ??
-            (ready.Count == 0 ? missing.FirstOrDefault() : null);
+        // All children has no single current child, so it prompts only when nothing could refresh.
+        var current = showingAllChildren ? null : Account;
+        var prompt = missing.FirstOrDefault(m => Same(m, current)) ?? (ready.Count == 0 ? missing.FirstOrDefault() : null);
         if (prompt is not null) openLogin(false, prompt);
     }
 }

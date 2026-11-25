@@ -124,6 +124,9 @@
   <data name="MessageReadFailedAlertTitle" xml:space="preserve">
     <value>Nachricht kann nicht gelesen werden</value>
   </data>
+  <data name="MessageRelatedDescription" xml:space="preserve">
+    <value>{0}. Betreff: {1}</value>
+  </data>
   <data name="MessageShareAttachment" xml:space="preserve">
     <value>Teilen / Kopie speichern</value>
     <comment>Button that shares an attachment or saves a copy via another app.</comment>
@@ -200,7 +203,7 @@
     <value>Dichte der Nachrichtenliste</value>
   </data>
   <data name="SettingsListDensityDescription" xml:space="preserve">
-    <value>Abstand zwischen Nachrichten in der Liste</value>
+    <value>Abstände in der Nachrichtenliste und im Nachrichtenkopf</value>
   </data>
   <data name="SettingsListDensityCompact" xml:space="preserve">
     <value>Kompakt</value>
@@ -401,6 +404,9 @@
     <value>Anmeldung läuft...</value>
     <comment>Progress status while signing in.</comment>
   </data>
+  <data name="StatusWaitingForCheck" xml:space="preserve">
+    <value>Warten auf Abschluss der geplanten Prüfung...</value>
+  </data>
   <data name="ScanCameraDenied" xml:space="preserve">
     <value>OBK verwendet die Kamera nur zum Scannen des Übertragungscodes. Kamerazugriff in den Android-Einstellungen erlauben oder manuell anmelden.</value>
   </data>
@@ -516,10 +522,121 @@
   <data name="ReaderNewMessage" xml:space="preserve">
     <value>Neue Nachricht: {0}</value>
   </data>
+  <data name="ReaderWithAttachments" xml:space="preserve">
+    <value>{0}. Hat Anhänge</value>
+  </data>
+  <data name="ReaderGroupDescription" xml:space="preserve">
+    <value>{0}, {1}, {2}</value>
+  </data>
+  <data name="ReaderGroupMessagesOne" xml:space="preserve">
+    <value>{0} Nachricht</value>
+  </data>
+  <data name="ReaderGroupMessagesFew" xml:space="preserve">
+    <value>{0} Nachrichten</value>
+  </data>
+  <data name="ReaderGroupMessagesMany" xml:space="preserve">
+    <value>{0} Nachrichten</value>
+  </data>
+  <data name="ReaderGroupExpanded" xml:space="preserve">
+    <value>ausgeklappt</value>
+  </data>
+  <data name="ReaderGroupCollapsed" xml:space="preserve">
+    <value>eingeklappt</value>
+  </data>
+  <data name="ReaderGroupHint" xml:space="preserve">
+    <value>Tippen, um diese Gruppe ein- oder auszuklappen</value>
+  </data>
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Lesen</value>
   </data>
   <data name="SettingsSectionAbout" xml:space="preserve">
     <value>Über</value>
+  </data>
+  <data name="SettingsSectionChecks" xml:space="preserve">
+    <value>Geplante Prüfungen</value>
+  </data>
+  <data name="SettingsChecks" xml:space="preserve">
+    <value>Nach neuen Nachrichten suchen</value>
+  </data>
+  <data name="SettingsChecksDescription" xml:space="preserve">
+    <value>Stündlich, auch wenn OBK geschlossen ist</value>
+  </data>
+  <data name="SettingsNotifications" xml:space="preserve">
+    <value>Benachrichtigungen zu neuen Nachrichten</value>
+  </data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve">
+    <value>Eine Zusammenfassung für alle Kinder</value>
+  </data>
+  <data name="SettingsNotificationsNeedChecks" xml:space="preserve">
+    <value>Erfordert geplante Prüfungen</value>
+  </data>
+  <data name="SettingsEmptyNotifications" xml:space="preserve">
+    <value>Auch ohne Neuigkeiten benachrichtigen</value>
+  </data>
+  <data name="SettingsEmptyNotificationsDescription" xml:space="preserve">
+    <value>Kurzer Status nach jeder Prüfung</value>
+  </data>
+  <data name="SettingsEmptyNotificationsNeedNotifications" xml:space="preserve">
+    <value>Erfordert Benachrichtigungen zu neuen Nachrichten</value>
+  </data>
+  <data name="SettingsChecksNote" xml:space="preserve">
+    <value>Geprüft werden Kinder mit gespeichertem Passwort. Android kann eine Prüfung verzögern, um Akku zu sparen.</value>
+  </data>
+  <data name="SettingsNotificationsBlocked" xml:space="preserve">
+    <value>Benachrichtigungen sind für OBK blockiert. In den Android-Einstellungen erlauben und diesen Schalter dann wieder einschalten.</value>
+  </data>
+  <data name="SettingsOpenNotificationSettings" xml:space="preserve">
+    <value>Android-Einstellungen öffnen</value>
+  </data>
+  <data name="NotificationChannelNewMessages" xml:space="preserve">
+    <value>Neue Nachrichten</value>
+  </data>
+  <data name="NotificationChannelNewMessagesDescription" xml:space="preserve">
+    <value>Zusammenfassung, wenn eine geplante Prüfung neue Nachrichten findet</value>
+  </data>
+  <data name="NotificationChannelStatus" xml:space="preserve">
+    <value>Prüfstatus</value>
+  </data>
+  <data name="NotificationChannelStatusDescription" xml:space="preserve">
+    <value>Kurzer Status, wenn eine geplante Prüfung nichts Neues findet</value>
+  </data>
+  <data name="NotificationNewMessagesOne" xml:space="preserve">
+    <value>{0} neue Nachricht</value>
+  </data>
+  <data name="NotificationNewMessagesFew" xml:space="preserve">
+    <value>{0} neue Nachrichten</value>
+  </data>
+  <data name="NotificationNewMessagesMany" xml:space="preserve">
+    <value>{0} neue Nachrichten</value>
+  </data>
+  <data name="NotificationArrival" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="NotificationMoreOne" xml:space="preserve">
+    <value>+{0} weitere</value>
+  </data>
+  <data name="NotificationMoreFew" xml:space="preserve">
+    <value>+{0} weitere</value>
+  </data>
+  <data name="NotificationMoreMany" xml:space="preserve">
+    <value>+{0} weitere</value>
+  </data>
+  <data name="NotificationNotCheckedSignIn" xml:space="preserve">
+    <value>Nicht geprüft: {0} (Anmeldung erforderlich)</value>
+  </data>
+  <data name="NotificationNotCheckedFailed" xml:space="preserve">
+    <value>Nicht geprüft: {0} (Prüfung fehlgeschlagen)</value>
+  </data>
+  <data name="NotificationNoNewTitle" xml:space="preserve">
+    <value>Keine neuen Nachrichten</value>
+  </data>
+  <data name="NotificationNotCheckedTitle" xml:space="preserve">
+    <value>Nachrichten nicht geprüft</value>
+  </data>
+  <data name="NotificationChecked" xml:space="preserve">
+    <value>{0} um {1} geprüft.</value>
+  </data>
+  <data name="NotificationListAnd" xml:space="preserve">
+    <value>{0} und {1}</value>
   </data>
 </root>

@@ -7,6 +7,7 @@ namespace OBK.AndroidApp;
 public sealed class App : Application
 {
     private bool switchingLanguage;
+    private static bool inboxRequested;
     private static string LanguagePath => Path.Combine(FileSystem.AppDataDirectory, "language.json");
     internal const string AppearancePreference = "reader_appearance";
     public App()
@@ -49,21 +50,47 @@ public sealed class App : Application
         var window = new Window();
         window.Created += async (_, _) =>
         {
-            var osLanguage = Java.Util.Locale.Default?.ToLanguageTag() ?? "und";
-            var language = LanguageSettings.Detect(osLanguage);
-            string? failure = null;
-            try { language = await LanguageSettings.LoadAsync(LanguagePath, osLanguage); }
-            catch (ObkException error) { failure = error.Message; }
-            LanguageSettings.Apply(language);
-            AppStrings.Culture = LanguageSettings.Culture;
+            var failure = await ApplySavedLanguageAsync();
             var surface = BuildNavigation();
             window.Page = surface.Shell;
+            if (ReaderPreferences.ScheduledChecks) ScheduledCheck.Schedule(true);
             if (failure is not null)
                 await surface.Reader.DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, failure, AppStrings.AlertOkButton);
         };
         window.Page = new ContentPage { Content = new ActivityIndicator { IsRunning = true } };
         return window;
     }
+
+    /// <summary>Applies the saved UI language, or the device language; returns a load failure to show, if any.</summary>
+    internal static async Task<string?> ApplySavedLanguageAsync()
+    {
+        var osLanguage = Java.Util.Locale.Default?.ToLanguageTag() ?? "und";
+        var language = LanguageSettings.Detect(osLanguage);
+        string? failure = null;
+        try { language = await LanguageSettings.LoadAsync(LanguagePath, osLanguage); }
+        catch (ObkException error) { failure = error.Message; }
+        LanguageSettings.Apply(language);
+        AppStrings.Culture = LanguageSettings.Culture;
+        return failure;
+    }
+
+    private ReaderPage? CurrentReader =>
+        Windows.FirstOrDefault()?.Page is FlyoutPage { Detail: NavigationPage { RootPage: ReaderPage reader } } ? reader : null;
+
+    /// <summary>Remembers a tapped check notification; the reader shows Inbox for all children once it is ready.</summary>
+    internal static void RequestInbox() => inboxRequested = true;
+
+    internal static bool TakeInboxRequest()
+    {
+        var requested = inboxRequested;
+        inboxRequested = false;
+        return requested;
+    }
+
+    internal Task ShowRequestedInboxAsync() => CurrentReader?.ShowInboxAsync() ?? Task.CompletedTask;
+
+    /// <summary>A scheduled check saved new messages; a running reader shows them without contacting the school.</summary>
+    internal Task ArchivesChangedAsync() => CurrentReader?.ReloadFromStoreAsync() ?? Task.CompletedTask;
 
     internal async Task SwitchLanguageAsync(ContentPage source)
     {
@@ -90,7 +117,7 @@ public sealed class App : Application
                 Page replacement = page switch
                 {
                     SignInPage signIn => signIn.Rebuild(surface.Reader.AccountSavedAsync),
-                    MessagePage message => message.Rebuild(),
+                    MessagePage message => message.Rebuild(surface.Reader.OpenRelatedAsync),
                     SettingsPage => surface.Reader.CreateSettingsPage(),
                     AccountsPage => surface.Reader.CreateAccountsPage(),
                     AccountPickerPage => surface.Reader.CreateAccountPickerPage(),

@@ -285,15 +285,93 @@
     <value>HH:mm</value>
     <comment>.NET custom date/time layout for a message time in 24-hour notation; not a composite-format string.</comment>
   </data>
-  <data name="DateRelatedFormat" xml:space="preserve">
-    <value>d. MMM HH:mm</value>
-    <comment>.NET custom date/time layout for a related-message date and time; not a composite-format string.</comment>
-  </data>
   <data name="DateGroupMonthFormat" xml:space="preserve">
     <value>MMMM yyyy</value>
     <comment>.NET custom date/time layout for a month/year group heading; not a composite-format string.</comment>
   </data>
   <data name="RepositoryLink" xml:space="preserve">
     <value>GitHub-Repository</value>
+  </data>
+  <data name="RelatedTitle" xml:space="preserve">
+    <value>Möglicherweise zugehörig</value>
+  </data>
+  <data name="RelatedHelpName" xml:space="preserve">
+    <value>Über möglicherweise zugehörige Nachrichten</value>
+    <comment>Accessible name of the help icon.</comment>
+  </data>
+  <data name="RelatedHelpTooltip" xml:space="preserve">
+    <value>Zuordnung nach ähnlichem Betreff und derselben Person. Komens meldet keine tatsächlichen Antwortverknüpfungen; die Nachrichten können daher unpassend oder unvollständig sein.</value>
+  </data>
+  <data name="RelatedFromYou" xml:space="preserve">
+    <value>Sie</value>
+    <comment>Sender of a related message that you sent; inserted into RelatedLabel.</comment>
+  </data>
+  <data name="RelatedLabel" xml:space="preserve">
+    <value>{0} • Von: {1}</value>
+    <comment>Related message link. {0} = relative day, for example 'Yesterday' or '2 days before'; {1} = sender name or 'you'.</comment>
+  </data>
+  <data name="RelatedNext" xml:space="preserve">
+    <value>Weiter</value>
+    <comment>Direction of a later related message.</comment>
+  </data>
+  <data name="RelatedNextNumbered" xml:space="preserve">
+    <value>Weiter ({0})</value>
+    <comment>Direction of a later related message. {0} = position counted from the current message.</comment>
+  </data>
+  <data name="RelatedPrevious" xml:space="preserve">
+    <value>Zurück</value>
+    <comment>Direction of an earlier related message.</comment>
+  </data>
+  <data name="RelatedPreviousNumbered" xml:space="preserve">
+    <value>Zurück ({0})</value>
+    <comment>Direction of an earlier related message. {0} = position counted from the current message.</comment>
+  </data>
+  <data name="RelatedAccessibleName" xml:space="preserve">
+    <value>{0}: {1}, {2}</value>
+    <comment>Screen-reader name of a related message link. {0} = direction, for example 'Previous (1)'; {1} = RelatedLabel text; {2} = full date and time.</comment>
+  </data>
+  <data name="RelatedSameDayAt" xml:space="preserve">
+    <value>Am selben Tag {0}</value>
+    <comment>Day and time of a related message sent on the same day as an earlier displayed message. {0} = time of day (24-hour).</comment>
+  </data>
+  <data name="RelatedTodayAt" xml:space="preserve">
+    <value>Heute {0}</value>
+    <comment>Day and time of a related message received today while today's message is displayed. {0} = time of day (24-hour).</comment>
+  </data>
+  <data name="RelatedDaysAgoOne" xml:space="preserve">
+    <value>vor {0} Tag</value>
+    <comment>{0} = number of days. Singular form (Czech: 1; Ukrainian: 1, 21, 31...). Counts back from today.</comment>
+  </data>
+  <data name="RelatedDaysAgoFew" xml:space="preserve">
+    <value>vor {0} Tagen</value>
+    <comment>{0} = number of days. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural. Counts back from today.</comment>
+  </data>
+  <data name="RelatedDaysAgoMany" xml:space="preserve">
+    <value>vor {0} Tagen</value>
+    <comment>{0} = number of days. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...). Counts back from today.</comment>
+  </data>
+  <data name="RelatedDaysBeforeOne" xml:space="preserve">
+    <value>{0} Tag vorher</value>
+    <comment>{0} = number of days. Singular form (Czech: 1; Ukrainian: 1, 21, 31...). Counts back from the displayed message's date.</comment>
+  </data>
+  <data name="RelatedDaysBeforeFew" xml:space="preserve">
+    <value>{0} Tage vorher</value>
+    <comment>{0} = number of days. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural. Counts back from the displayed message's date.</comment>
+  </data>
+  <data name="RelatedDaysBeforeMany" xml:space="preserve">
+    <value>{0} Tage vorher</value>
+    <comment>{0} = number of days. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...). Counts back from the displayed message's date.</comment>
+  </data>
+  <data name="RelatedDaysAfterOne" xml:space="preserve">
+    <value>{0} Tag später</value>
+    <comment>{0} = number of days. Singular form (Czech: 1; Ukrainian: 1, 21, 31...). Counts forward from the displayed message's date.</comment>
+  </data>
+  <data name="RelatedDaysAfterFew" xml:space="preserve">
+    <value>{0} Tage später</value>
+    <comment>{0} = number of days. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural. Counts forward from the displayed message's date.</comment>
+  </data>
+  <data name="RelatedDaysAfterMany" xml:space="preserve">
+    <value>{0} Tage später</value>
+    <comment>{0} = number of days. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...). Counts forward from the displayed message's date.</comment>
   </data>
 </root>

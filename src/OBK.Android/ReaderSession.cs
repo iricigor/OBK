@@ -5,11 +5,15 @@ namespace OBK.AndroidApp;
 
 internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, string attachmentDirectory)
 {
-    private readonly SemaphoreSlim syncGate = new(1, 1);
+    // Foreground downloads exclude each other and wait for a running scheduled check; all share one process-wide sync gate.
+    private static readonly SemaphoreSlim ForegroundGate = new(1, 1);
+    private static readonly SemaphoreSlim SyncGate = new(1, 1);
     public LocalStore Store { get; } = store;
     public SchoolDirectory Schools { get; } = schools;
     public string AttachmentDirectory { get; } = attachmentDirectory;
     public bool IsVerification { get; private init; }
+    internal static bool Syncing => SyncGate.CurrentCount == 0;
+    internal static string DatabasePath => Path.Combine(FileSystem.AppDataDirectory, "obk.sqlite3");
 
     public static Task<ReaderSession> OpenAsync() => Task.Run(async () =>
     {
@@ -17,7 +21,7 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
 #if DEBUG
         verification = Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification", false) == true;
 #endif
-        var path = Path.Combine(FileSystem.AppDataDirectory, verification ? "verification.sqlite3" : "obk.sqlite3");
+        var path = verification ? Path.Combine(FileSystem.AppDataDirectory, "verification.sqlite3") : DatabasePath;
         var protection = new AndroidDataProtection(File.Exists(path));
         var check = "OBK encryption check"u8.ToArray();
         if (!protection.Unprotect(protection.Protect(check)).SequenceEqual(check))
@@ -42,25 +46,71 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
     {
         if (IsVerification)
             throw new ObkException(AppStrings.ErrorVerificationCannotSync);
-        if (!await syncGate.WaitAsync(0))
+        if (!await ForegroundGate.WaitAsync(0))
             throw new ObkException(AppStrings.ErrorSyncInProgress);
         try
         {
-            await Task.Run(async () =>
+            if (!await SyncGate.WaitAsync(0))
             {
-                using var client = new KomensClient(login.Url);
-                var token = await client.SignInAsync(login.Username, password);
-                Store.SaveLogin(login.Url, login.Username, password, remember, login.ChildName, login.SchoolName);
-                var schoolName = await client.SchoolNameAsync(token);
-                var year = SchoolYear.Current();
-                var cached = Store.LoadArchive(login.Url, login.Username, year);
-                var folders = await client.FetchYearAsync(token, year, cached?.Folders, progress);
-                await client.DownloadAttachmentsAsync(token, folders, Store, login.Username, progress);
-                Store.SaveArchive(login.Url, login.Username, year, schoolName, folders);
-                Store.SaveAccount(login.Url, login.Username, login.ChildName, schoolName);
-            });
+                progress.Report(AppStrings.StatusWaitingForCheck);
+                await SyncGate.WaitAsync();
+            }
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    var year = SchoolYear.Current();
+                    await DownloadAsync(Store, login, password, remember, year,
+                        Store.LoadArchive(login.Url, login.Username, year), progress);
+                });
+            }
+            finally { SyncGate.Release(); }
         }
-        finally { syncGate.Release(); }
+        finally { ForegroundGate.Release(); }
+    }
+
+    /// <summary>
+    /// Downloads one account like Refresh for a scheduled check, or returns null when it has no saved password. It
+    /// returns the folders before and after, and the IDs opened in the reader. The opened baseline is recorded before
+    /// downloading, so arrivals stay new in the reader; an account's very first download is recorded as opened
+    /// afterwards, as the reader's first load would. Saved logins and the last used account are left unchanged.
+    /// </summary>
+    internal static async Task<(Dictionary<string, List<Message>>? Before, Dictionary<string, List<Message>> After,
+        HashSet<string> Opened)?> CheckAsync(LocalStore store, Login login)
+    {
+        await SyncGate.WaitAsync();
+        try
+        {
+            // Read under the lock, so a password forgotten while earlier children were checked is not used.
+            if (store.RememberedLogins().FirstOrDefault(saved => saved.Url == login.Url && saved.Username == login.Username)
+                ?.Password is not { } password) return null;
+            var year = SchoolYear.Current();
+            var before = store.LoadArchive(login.Url, login.Username, year);
+            if (before is not null) store.OpenedMessages(login.Url, login.Username, Ids(before.Folders));
+            var after = await DownloadAsync(store, login, password, null, year, before, null);
+            return (before?.Folders, after, store.OpenedMessages(login.Url, login.Username, Ids(after)));
+        }
+        finally { SyncGate.Release(); }
+    }
+
+    private static IEnumerable<string> Ids(Dictionary<string, List<Message>> folders) =>
+        folders.Values.SelectMany(folder => folder).Select(message => message.Id);
+
+    /// <param name="remember">
+    /// Whether to save the password; null for a scheduled check, which changes neither saved logins nor the last used account.
+    /// </param>
+    private static async Task<Dictionary<string, List<Message>>> DownloadAsync(LocalStore store, Login login, string password,
+        bool? remember, SchoolYear year, Archive? cached, IProgress<string>? progress)
+    {
+        using var client = new KomensClient(login.Url);
+        var token = await client.SignInAsync(login.Username, password);
+        if (remember is { } save) store.SaveLogin(login.Url, login.Username, password, save, login.ChildName, login.SchoolName);
+        var schoolName = await client.SchoolNameAsync(token);
+        var folders = await client.FetchYearAsync(token, year, cached?.Folders, progress);
+        await client.DownloadAttachmentsAsync(token, folders, store, login.Username, progress);
+        store.SaveArchive(login.Url, login.Username, year, schoolName, folders);
+        if (remember is not null) store.SaveAccount(login.Url, login.Username, login.ChildName, schoolName);
+        return folders;
     }
 
     public Task<string> ExportAsync(Login login, Attachment attachment) => Task.Run(() =>

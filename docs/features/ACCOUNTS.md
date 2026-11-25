@@ -4,7 +4,10 @@
 
 OBK keeps several children and schools in one archive. Choose one child or
 **All children**, then move between Inbox, Noticeboard, Sent, and Excuses.
-Refreshing from the main view updates every configured account.
+Refreshing from the main view updates every configured account. On Android,
+optional hourly checks can also do this in the background and notify you about
+new messages; Android asks for notification permission only when you turn
+notifications on.
 
 Account controls let you add or rename a child, save or forget a password, and
 transfer a saved account securely from Windows to Android.

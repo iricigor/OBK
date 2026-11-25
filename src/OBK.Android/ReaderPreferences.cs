@@ -12,11 +12,15 @@ internal static class ReaderPreferences
     private const string GroupingPreference = "reader_grouping";
     private const string SortPreference = "reader_sort";
     private const string AllChildrenPreference = "reader_all_children";
+    private const string ScheduledChecksPreference = "scheduled_checks";
+    private const string CheckNotificationsPreference = "scheduled_check_notifications";
+    private const string EmptyCheckNotificationsPreference = "scheduled_check_empty_notifications";
     internal static readonly string[] ReadingSizes = ["Small", "Medium", "Large"];
     internal static readonly string[] ListDensities = ["Compact", "Relaxed"];
 
     internal static string ReadingSize => Preferences.Default.Get(ReadingSizePreference, "Medium");
     internal static string ListDensity => Preferences.Default.Get(ListDensityPreference, "Relaxed");
+    internal static bool CompactDensity => ListDensity == "Compact";
     internal static ListGrouping Grouping
     {
         get => Enum.TryParse<ListGrouping>(Preferences.Default.Get(GroupingPreference, nameof(ListGrouping.Date)), out var value)
@@ -33,6 +37,46 @@ internal static class ReaderPreferences
     {
         get => Preferences.Default.Get(AllChildrenPreference, true);
         set => Preferences.Default.Set(AllChildrenPreference, value);
+    }
+    /// <summary>Hourly background checks; turning them off also turns off both notification settings below.</summary>
+    internal static bool ScheduledChecks
+    {
+        get => Preferences.Default.Get(ScheduledChecksPreference, false);
+        set
+        {
+            Preferences.Default.Set(ScheduledChecksPreference, value);
+            if (!value) CheckNotifications = false;
+        }
+    }
+    /// <summary>Only on while scheduled checks are on; turning it off also turns off empty-check notifications.</summary>
+    internal static bool CheckNotifications
+    {
+        get => Nested(CheckNotificationsPreference);
+        set
+        {
+            Preferences.Default.Set(CheckNotificationsPreference, value);
+            if (!value) EmptyCheckNotifications = false;
+        }
+    }
+    internal static bool EmptyCheckNotifications
+    {
+        get => Nested(EmptyCheckNotificationsPreference);
+        set => Preferences.Default.Set(EmptyCheckNotificationsPreference, value);
+    }
+
+    /// <summary>
+    /// Reads a nested check setting after saving each one under an off parent as off; earlier builds could leave them on.
+    /// </summary>
+    private static bool Nested(string key)
+    {
+        var parent = ScheduledChecks;
+        foreach (var nested in new[] { CheckNotificationsPreference, EmptyCheckNotificationsPreference })
+        {
+            var value = Preferences.Default.Get(nested, false);
+            if (value && !parent) Preferences.Default.Set(nested, false);
+            parent = value && parent;
+        }
+        return Preferences.Default.Get(key, false);
     }
 
     internal static void Initialize()

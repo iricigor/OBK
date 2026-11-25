@@ -106,26 +106,62 @@ public sealed record DisplayOption<T>(T Value, string Label)
     public override string ToString() => Label;
 }
 
-public sealed class FolderRow(string key, string title, string icon, int count)
+/// <summary>Identifies a message across children: two children can receive the same school message.</summary>
+public sealed record MessageKey(string Url, string Username, string Id);
+
+/// <summary>A sidebar entry with a badge counting messages not yet opened on this PC.</summary>
+public abstract class SidebarRow(string name) : ObservableObject
+{
+    private int newCount;
+    public int NewCount
+    {
+        get => newCount;
+        internal set
+        {
+            if (!Set(ref newCount, value)) return;
+            Notify(nameof(HasNew));
+            Notify(nameof(NewCountName));
+            Notify(nameof(AccessibleName));
+        }
+    }
+    public bool HasNew => newCount > 0;
+    public string NewCountName => Localized.Format(AppStrings.SidebarNewCount, newCount);
+    public string AccessibleName => HasNew ? Localized.Format(AppStrings.SidebarItemNewName, name, newCount) : name;
+}
+
+public sealed class FolderRow(string key, string title, string icon) : SidebarRow(title)
 {
     public string Key { get; } = key;
     public string AccentKey { get; } = key switch { "sent" or "excuses" => "FolderSent", "noticeboard" => "FolderNotice", _ => "FolderInbox" };
     public string Title { get; } = title;
     public string Icon { get; } = icon;
-    public int Count { get; } = count;
 }
 
-public sealed class MessageRow(Message message, string folder) : ObservableObject
+public sealed class MessageRow(Message message, string folder, Login owner, bool showOwner = false) : ObservableObject
 {
     private string? searchText;
     private bool isAlternate;
+    private bool isNew;
     public bool IsAlternate { get => isAlternate; internal set => Set(ref isAlternate, value); }
     public Message Message { get; } = message;
     public string Folder { get; } = folder;
-    public bool Unread => Folder != "sent" && Message.Read == false;
+    /// <summary>The child account whose archive holds this message; attachments and related links use it.</summary>
+    public Login Owner { get; } = owner;
+    public MessageKey Key => new(Owner.Url, Owner.Username, Message.Id);
+    public bool ShowOwner { get; } = showOwner;
+    public string OwnerLabel => AccountRow.LabelFor(Owner);
+    public string OwnerColorKey => AccountRow.ColorKeyFor(Owner);
+    public string OwnerInitials => AccountRow.InitialsFor(OwnerLabel);
+    /// <summary>Not yet opened on this PC; only Inbox and Noticeboard messages can be new.</summary>
+    public bool IsNew
+    {
+        get => isNew;
+        internal set { if (Set(ref isNew, value)) Notify(nameof(AccessibleName)); }
+    }
     public string Subject => MainViewModel.OneLine(Message.Title) is { Length: > 0 } title ? title : SharedStrings.NoSubject;
     public string Person => MainViewModel.OneLine(MessageInsights.Counterpart(Message, Folder))
         is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
+    public string PersonLine => ShowOwner ? Localized.Format(AppStrings.MessageChildAndPerson, OwnerLabel, Person) : Person;
     public string Sent => Message.Date.ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture);
     public string ShortSent
     {
@@ -138,19 +174,27 @@ public sealed class MessageRow(Message message, string folder) : ObservableObjec
                 local.ToString(SharedStrings.DateShortYearFormat, LanguageSettings.Culture);
         }
     }
+    public string AccessibleName
+    {
+        get
+        {
+            var name = Localized.Format(AppStrings.MessageRowName, Subject, PersonLine, Sent);
+            return IsNew ? Localized.Format(AppStrings.MessageRowNameNew, name) : name;
+        }
+    }
     public bool HasFiles => Message.Attachments.Count > 0;
     public bool IsExcuse { get; } = MessageInsights.IsExcuse(message);
     public string Group { get; set; } = "";
     public string SearchText => searchText ??= MessageInsights.SearchText(Message, Folder);
 }
 
-public sealed class AccountRow(Login login, bool current, bool passwordSaved = false)
+public sealed class AccountRow(Login login, bool current, bool passwordSaved = false) : SidebarRow(LabelFor(login))
 {
     public Login Login { get; } = login;
     public bool IsCurrent { get; } = current;
     public bool PasswordSaved { get; } = passwordSaved;
     public bool PasswordMissing => !PasswordSaved;
-    public string Label { get; } = login.ChildName ?? login.SchoolName ?? login.Username;
+    public string Label { get; } = LabelFor(login);
     public string SettingsDetail => string.Join(" \u2022 ", new[]
         {
             Login.ChildName is null ? null : Login.SchoolName,
@@ -159,41 +203,54 @@ public sealed class AccountRow(Login login, bool current, bool passwordSaved = f
         }.Where(v => !string.IsNullOrEmpty(v)));
     public string Detail => string.Join("\n", new[] { Label, Login.SchoolName, Login.Username }
         .Where(v => !string.IsNullOrEmpty(v)).Distinct());
-    public string ColorKey => Palette.PairKey(Login.Url + "|" + Login.Username);
-    public string Initials
+    public string ColorKey => ColorKeyFor(Login);
+    public string Initials => InitialsFor(Label);
+
+    public static string LabelFor(Login login) => login.ChildName ?? login.SchoolName ?? login.Username;
+    public static string ColorKeyFor(Login login) => Palette.PairKey(login.Url + "|" + login.Username);
+    public static string InitialsFor(string label)
     {
-        get
-        {
-            var words = Label.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => char.IsLetterOrDigit(w[0])).ToArray();
-            return words.Length == 0 ? "?" : string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
-        }
+        var words = label.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => char.IsLetterOrDigit(w[0])).ToArray();
+        return words.Length == 0 ? "?" : string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
     }
 }
 
-public sealed class RelatedRow(MainViewModel owner, MessageRef item, bool next, int? number = null)
+/// <summary>One child's circle inside the overlapping All children avatar.</summary>
+public sealed record GroupAvatarPart(string Initial, string ColorKey, double Left, double Top, double Size)
+{
+    public double FontSize => Math.Round(Size * 0.55);
+    public CornerRadius Corner => new(Size / 2);
+}
+
+/// <summary>The sidebar entry that merges every child's archive; its avatar overlaps up to three children.</summary>
+public sealed class AllChildrenRow(bool current, IReadOnlyList<AccountRow> children) : SidebarRow(AppStrings.ScopeAllChildren)
+{
+    private const double AvatarSize = 28;
+    public bool IsCurrent { get; } = current;
+    public IReadOnlyList<GroupAvatarPart> Avatars { get; } = children.Take(3).Zip(children.Count == 2
+        ? new[] { (X: 0.06, Y: 0.14, Size: 0.55), (X: 0.39, Y: 0.30, Size: 0.55) }
+        : [(0.05, 0.11, 0.47), (0.48, 0.11, 0.47), (0.27, 0.48, 0.47)],
+        (child, place) => new GroupAvatarPart(child.Initials[..1], child.ColorKey,
+            AvatarSize * place.X, AvatarSize * place.Y, Math.Round(AvatarSize * place.Size))).ToArray();
+}
+
+public sealed class RelatedRow(MainViewModel owner, RelatedLink link)
 {
     public MainViewModel Owner { get; } = owner;
-    public MessageRef Item { get; } = item;
-    public bool IsNext { get; } = next;
-    public string Direction => number is { } n
-        ? Localized.Format(IsNext ? AppStrings.RelatedNextNumbered : AppStrings.RelatedPreviousNumbered, n)
-        : IsNext ? AppStrings.RelatedNext : AppStrings.RelatedPrevious;
+    public MessageRef Item => link.Item;
+    public bool IsNext => link.IsNext;
+    public string Direction => link.Direction;
     public string Icon => IsNext ? "\uE72A" : "\uE72B";
     public string Subject => MainViewModel.OneLine(Item.Message.Title) is { Length: > 0 } title ? title : SharedStrings.NoSubject;
-    public string From => Item.Folder == "sent" ? AppStrings.RelatedFromYou :
+    public string From => link.FromYou ? SharedStrings.RelatedFromYou :
         MainViewModel.OneLine(Item.Message.SenderName) is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
-    public string Label => Localized.Format(AppStrings.RelatedLabel,
-        Item.Message.Date.ToString(SharedStrings.DateRelatedFormat, LanguageSettings.Culture), From);
+    public string Label => Localized.Format(SharedStrings.RelatedLabel, link.When, From);
+    /// <summary>The chip shows a relative day, so the exact date joins the subject in the tooltip.</summary>
+    public string ToolTip => Subject + "\n" + link.FullDate;
+    public string AccessibleName => Localized.Format(SharedStrings.RelatedAccessibleName, Direction, Label, link.FullDate);
 
-    /// <summary>Chronological rows; numbers count outward from the current message when a side has several.</summary>
-    public static IReadOnlyList<RelatedRow> Build(MainViewModel owner, RelatedMessages related)
-    {
-        var previous = related.Previous.Select((r, i) =>
-            new RelatedRow(owner, r.Item, false, related.Previous.Count > 1 ? i + 1 : null)).Reverse();
-        var following = related.Responses.Select((r, i) =>
-            new RelatedRow(owner, r.Item, true, related.Responses.Count > 1 ? i + 1 : null));
-        return previous.Concat(following).ToArray();
-    }
+    public static IReadOnlyList<RelatedRow> Build(MainViewModel owner, RelatedMessages related, DateTimeOffset displayed, DateTime today) =>
+        RelatedLinks.Build(related, displayed, today).Select(link => new RelatedRow(owner, link)).ToArray();
 }
 
 public static class LinkOpener
@@ -209,9 +266,11 @@ public static class LinkOpener
     }
 }
 
-public sealed class AttachmentRow(MainViewModel owner, Attachment attachment, AttachmentInfo? info)
+public sealed class AttachmentRow(MainViewModel owner, Attachment attachment, AttachmentInfo? info, Login account)
 {
     public MainViewModel Owner { get; } = owner;
+    /// <summary>The child account whose encrypted cache holds the file.</summary>
+    public Login Account { get; } = account;
     public Attachment Attachment { get; } = attachment;
     public string Name => info?.Name ?? Attachment.SafeName;
     public bool Cached => info is not null;
