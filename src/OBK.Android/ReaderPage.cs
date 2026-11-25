@@ -53,11 +53,12 @@ internal sealed class ReaderPage : ContentPage
     private Login? account;
     private bool allChildren = ReaderPreferences.AllChildren;
     private bool busy;
+    private bool reloading;
     private bool searching;
     private bool optionsVisible;
     private int folderIndex;
     private bool initialized;
-    internal bool Busy => busy;
+    internal bool Busy => busy || reloading;
     internal bool AccountsAvailable => session is not null && !busy;
     internal int FolderIndex => folderIndex;
     internal IReadOnlyList<string> FolderLabels => folderLabels;
@@ -220,6 +221,14 @@ internal sealed class ReaderPage : ContentPage
             VerticalOptions = LayoutOptions.Center, StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 5 }
         };
         dot.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        // The negative margin keeps the 16 dp clip from making the sender line taller at small text sizes.
+        var clip = new Image { WidthRequest = 16, HeightRequest = 16, Margin = new Thickness(0, -2), VerticalOptions = LayoutOptions.Center };
+        ReaderTheme.SetIcon(clip, "attachment");
+        AutomationProperties.SetIsInAccessibleTree(clip, false);
+        var indicators = new HorizontalStackLayout
+        {
+            Spacing = 4, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.Center, Children = { clip, dot }
+        };
         var row = new Grid
         {
             ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)],
@@ -234,7 +243,7 @@ internal sealed class ReaderPage : ContentPage
         row.Add(title, 1, 0);
         row.Add(date, 2, 0);
         row.Add(sender, 1, 1);
-        row.Add(dot, 2, 1);
+        row.Add(indicators, 2, 1);
         var item = new Grid { RowDefinitions = [new(GridLength.Auto), new(1)], RowSpacing = 0 };
         item.Add(row);
         item.Add(new BoxView(), 0, 1);
@@ -255,7 +264,10 @@ internal sealed class ReaderPage : ContentPage
             if (isNew) date.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
             else ReaderTheme.Metadata(date, "ListDateSize");
             dot.IsVisible = isNew;
-            SemanticProperties.SetDescription(item, isNew ? Localized.Format(AppStrings.ReaderNewMessage, message.Title) : null);
+            clip.IsVisible = message.Attachments.Count > 0;
+            var description = isNew ? Localized.Format(AppStrings.ReaderNewMessage, message.Title) : null;
+            if (clip.IsVisible) description = Localized.Format(AppStrings.ReaderWithAttachments, description ?? message.Title);
+            SemanticProperties.SetDescription(item, description);
             item.SetAppThemeColor(BackgroundColorProperty,
                 entry.IsAlternate ? ReaderTheme.AlternateSurface : ReaderTheme.Surface,
                 entry.IsAlternate ? ReaderTheme.DarkAlternateSurface : ReaderTheme.DarkSurface);
@@ -485,6 +497,45 @@ internal sealed class ReaderPage : ContentPage
         session = await ReaderSession.OpenAsync();
         initialized = true;
         await ReloadAsync();
+        if (App.TakeInboxRequest()) ShowInbox();
+    }
+
+    /// <summary>Shows Inbox, for all children when there are several, with archives freshly read from this device.</summary>
+    internal Task ShowInboxAsync() => RunAsync(async () =>
+    {
+        if (!App.TakeInboxRequest()) return;
+        if (Navigation.NavigationStack.Count > 1) await Navigation.PopToRootAsync(false);
+        if (session is null) await InitializeAsync();
+        else await ReloadAsync();
+        ShowInbox();
+    });
+
+    private void ShowInbox()
+    {
+        folderIndex = 0;
+        ExitSearch();
+        if (known.Count > 1) SelectAllChildren();
+        else ApplyList();
+    }
+
+    /// <summary>Reloads archives that a scheduled check saved, without contacting the school or blocking the list.</summary>
+    internal async Task ReloadFromStoreAsync()
+    {
+        if (!initialized || session is null) return;
+        await operationGate.WaitAsync();
+        reloading = true;
+        try
+        {
+            var summary = refreshStatusTimeout.Pending ? status.Text : null;
+            await ReloadAsync();
+            if (summary is not null) status.Text = summary;
+        }
+        catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException) { status.Text = error.Message; }
+        finally
+        {
+            reloading = false;
+            operationGate.Release();
+        }
     }
 
     private void SetBusy(bool value)
@@ -598,8 +649,21 @@ internal sealed class ReaderPage : ContentPage
             entry.Opened.Add(entry.Message.Id);
             ApplyList();
         }
-        await Navigation.PushAsync(new MessagePage(session, entry.Owner, entry.Message));
+        var archive = archives.FirstOrDefault(item => SameAccount(item.Login, entry.Owner))?.Archive;
+        await Navigation.PushAsync(new MessagePage(session, entry.Owner, new MessageRef(entry.Message, ServerFolder(entry.Folder)),
+            archive, OpenRelatedAsync));
     }
+
+    /// <summary>Opens a possibly related message on top of the current page and marks it opened like the list does.</summary>
+    internal Task OpenRelatedAsync(Login owner, MessageRef item) => RunAsync(async () =>
+    {
+        var entry = archives.Where(archive => SameAccount(archive.Login, owner)).SelectMany(archive => archive.Entries)
+            .FirstOrDefault(candidate => candidate.Message.Id == item.Message.Id && ServerFolder(candidate.Folder) == item.Folder);
+        if (entry is not null) await OpenMessageAsync(entry);
+    });
+
+    /// <summary>The archive folder key of a list folder; Excuses is a view over Sent.</summary>
+    private static string ServerFolder(string folder) => folder == "excuses" ? "sent" : folder;
 
     private void ApplyList()
     {

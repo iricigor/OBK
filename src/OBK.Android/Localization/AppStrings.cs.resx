@@ -124,6 +124,9 @@
   <data name="MessageReadFailedAlertTitle" xml:space="preserve">
     <value>Tuto zprávu nelze přečíst</value>
   </data>
+  <data name="MessageRelatedDescription" xml:space="preserve">
+    <value>{0}. Předmět: {1}</value>
+  </data>
   <data name="MessageShareAttachment" xml:space="preserve">
     <value>Sdílet / uložit kopii</value>
     <comment>Button that shares an attachment or saves a copy via another app.</comment>
@@ -398,6 +401,9 @@
     <value>Přihlašování...</value>
     <comment>Progress status while signing in.</comment>
   </data>
+  <data name="StatusWaitingForCheck" xml:space="preserve">
+    <value>Čeká se na dokončení plánované kontroly...</value>
+  </data>
   <data name="ScanCameraDenied" xml:space="preserve">
     <value>OBK používá kameru pouze ke skenování kódu pro přenos. Povolte přístup ke kameře v nastavení Androidu, nebo se přihlaste ručně.</value>
   </data>
@@ -513,10 +519,100 @@
   <data name="ReaderNewMessage" xml:space="preserve">
     <value>Nová zpráva: {0}</value>
   </data>
+  <data name="ReaderWithAttachments" xml:space="preserve">
+    <value>{0}. Obsahuje přílohy</value>
+  </data>
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Čtení</value>
   </data>
   <data name="SettingsSectionAbout" xml:space="preserve">
     <value>O aplikaci</value>
+  </data>
+  <data name="SettingsSectionChecks" xml:space="preserve">
+    <value>Plánované kontroly</value>
+  </data>
+  <data name="SettingsChecks" xml:space="preserve">
+    <value>Kontrolovat nové zprávy</value>
+  </data>
+  <data name="SettingsChecksDescription" xml:space="preserve">
+    <value>Každou hodinu, i když je aplikace OBK zavřená</value>
+  </data>
+  <data name="SettingsNotifications" xml:space="preserve">
+    <value>Oznámení o nových zprávách</value>
+  </data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve">
+    <value>Jedno shrnutí pro všechny děti</value>
+  </data>
+  <data name="SettingsNotificationsNeedChecks" xml:space="preserve">
+    <value>Vyžaduje plánované kontroly</value>
+  </data>
+  <data name="SettingsEmptyNotifications" xml:space="preserve">
+    <value>Oznamovat i bez nových zpráv</value>
+  </data>
+  <data name="SettingsEmptyNotificationsDescription" xml:space="preserve">
+    <value>Krátký stav po každé kontrole</value>
+  </data>
+  <data name="SettingsEmptyNotificationsNeedNotifications" xml:space="preserve">
+    <value>Vyžaduje oznámení o nových zprávách</value>
+  </data>
+  <data name="SettingsChecksNote" xml:space="preserve">
+    <value>Kontrolují se děti s uloženým heslem. Android může kontrolu odložit kvůli úspoře baterie.</value>
+  </data>
+  <data name="SettingsNotificationsBlocked" xml:space="preserve">
+    <value>Oznámení jsou pro OBK zablokovaná. Povolte je v nastavení Androidu a pak tento přepínač znovu zapněte.</value>
+  </data>
+  <data name="SettingsOpenNotificationSettings" xml:space="preserve">
+    <value>Otevřít nastavení Androidu</value>
+  </data>
+  <data name="NotificationChannelNewMessages" xml:space="preserve">
+    <value>Nové zprávy</value>
+  </data>
+  <data name="NotificationChannelNewMessagesDescription" xml:space="preserve">
+    <value>Shrnutí, když plánovaná kontrola najde nové zprávy</value>
+  </data>
+  <data name="NotificationChannelStatus" xml:space="preserve">
+    <value>Stav kontroly</value>
+  </data>
+  <data name="NotificationChannelStatusDescription" xml:space="preserve">
+    <value>Krátký stav, když plánovaná kontrola nic nového nenajde</value>
+  </data>
+  <data name="NotificationNewMessagesOne" xml:space="preserve">
+    <value>{0} nová zpráva</value>
+  </data>
+  <data name="NotificationNewMessagesFew" xml:space="preserve">
+    <value>{0} nové zprávy</value>
+  </data>
+  <data name="NotificationNewMessagesMany" xml:space="preserve">
+    <value>{0} nových zpráv</value>
+  </data>
+  <data name="NotificationArrival" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="NotificationMoreOne" xml:space="preserve">
+    <value>+{0} další</value>
+  </data>
+  <data name="NotificationMoreFew" xml:space="preserve">
+    <value>+{0} další</value>
+  </data>
+  <data name="NotificationMoreMany" xml:space="preserve">
+    <value>+{0} dalších</value>
+  </data>
+  <data name="NotificationNotCheckedSignIn" xml:space="preserve">
+    <value>Nezkontrolováno: {0} (je nutné přihlášení)</value>
+  </data>
+  <data name="NotificationNotCheckedFailed" xml:space="preserve">
+    <value>Nezkontrolováno: {0} (kontrola selhala)</value>
+  </data>
+  <data name="NotificationNoNewTitle" xml:space="preserve">
+    <value>Žádné nové zprávy</value>
+  </data>
+  <data name="NotificationNotCheckedTitle" xml:space="preserve">
+    <value>Zprávy nebyly zkontrolovány</value>
+  </data>
+  <data name="NotificationChecked" xml:space="preserve">
+    <value>Zkontrolováno v {1}: {0}.</value>
+  </data>
+  <data name="NotificationListAnd" xml:space="preserve">
+    <value>{0} a {1}</value>
   </data>
 </root>

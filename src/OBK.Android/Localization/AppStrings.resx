@@ -124,6 +124,10 @@
   <data name="MessageReadFailedAlertTitle" xml:space="preserve">
     <value>Cannot read this message</value>
   </data>
+  <data name="MessageRelatedDescription" xml:space="preserve">
+    <value>{0}. Subject: {1}</value>
+    <comment>Screen-reader description of a possibly related message row. {0} = the shared related-link description (direction, relative day and sender, full date); {1} = subject of the related message.</comment>
+  </data>
   <data name="MessageShareAttachment" xml:space="preserve">
     <value>Share / save a copy</value>
     <comment>Button that shares an attachment or saves a copy via another app.</comment>
@@ -401,6 +405,10 @@
     <value>Signing in...</value>
     <comment>Progress status while signing in.</comment>
   </data>
+  <data name="StatusWaitingForCheck" xml:space="preserve">
+    <value>Waiting for the scheduled check to finish...</value>
+    <comment>Progress status while a Refresh or sign-in waits for a running scheduled background check.</comment>
+  </data>
   <data name="ScanCameraDenied" xml:space="preserve">
     <value>OBK uses the camera only to scan the transfer code. Allow camera access in Android settings, or sign in manually.</value>
   </data>
@@ -530,6 +538,10 @@
     <value>New message: {0}</value>
     <comment>Accessibility description of a message not yet opened on this device. {0} = subject.</comment>
   </data>
+  <data name="ReaderWithAttachments" xml:space="preserve">
+    <value>{0}. Has attachments</value>
+    <comment>Accessibility description of a message row with attachments. {0} = subject, or the ReaderNewMessage text for a message not yet opened.</comment>
+  </data>
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Reading</value>
     <comment>Settings section for text size and density.</comment>
@@ -537,5 +549,117 @@
   <data name="SettingsSectionAbout" xml:space="preserve">
     <value>About</value>
     <comment>Settings section with the repository link.</comment>
+  </data>
+  <data name="SettingsSectionChecks" xml:space="preserve">
+    <value>Scheduled checks</value>
+    <comment>Settings section for hourly background checks and their notifications.</comment>
+  </data>
+  <data name="SettingsChecks" xml:space="preserve">
+    <value>Check for new messages</value>
+    <comment>Switch that turns hourly background checks on.</comment>
+  </data>
+  <data name="SettingsChecksDescription" xml:space="preserve">
+    <value>Every hour, also while OBK is closed</value>
+  </data>
+  <data name="SettingsNotifications" xml:space="preserve">
+    <value>New-message notifications</value>
+    <comment>Switch that turns on notifications after scheduled checks.</comment>
+  </data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve">
+    <value>One summary for all children</value>
+  </data>
+  <data name="SettingsNotificationsNeedChecks" xml:space="preserve">
+    <value>Needs scheduled checks</value>
+    <comment>Shown instead of the description while scheduled checks are off.</comment>
+  </data>
+  <data name="SettingsEmptyNotifications" xml:space="preserve">
+    <value>Also notify when nothing is new</value>
+    <comment>Switch for a status notification after checks that found nothing new.</comment>
+  </data>
+  <data name="SettingsEmptyNotificationsDescription" xml:space="preserve">
+    <value>A short status after each check</value>
+  </data>
+  <data name="SettingsEmptyNotificationsNeedNotifications" xml:space="preserve">
+    <value>Needs new-message notifications</value>
+    <comment>Shown instead of the description while new-message notifications are off.</comment>
+  </data>
+  <data name="SettingsChecksNote" xml:space="preserve">
+    <value>Checks children with a saved password. Android may delay a check to save battery.</value>
+  </data>
+  <data name="SettingsNotificationsBlocked" xml:space="preserve">
+    <value>Notifications are blocked for OBK. Allow them in Android settings, then turn this switch on again.</value>
+    <comment>Shown when Android blocks OBK's notifications, for example after the permission was denied.</comment>
+  </data>
+  <data name="SettingsOpenNotificationSettings" xml:space="preserve">
+    <value>Open Android settings</value>
+    <comment>Button that opens OBK's notification settings in Android.</comment>
+  </data>
+  <data name="NotificationChannelNewMessages" xml:space="preserve">
+    <value>New messages</value>
+    <comment>Android notification channel name, shown in Android's notification settings.</comment>
+  </data>
+  <data name="NotificationChannelNewMessagesDescription" xml:space="preserve">
+    <value>Summary after a scheduled check finds new messages</value>
+    <comment>Android notification channel description.</comment>
+  </data>
+  <data name="NotificationChannelStatus" xml:space="preserve">
+    <value>Check status</value>
+    <comment>Android notification channel name, shown in Android's notification settings.</comment>
+  </data>
+  <data name="NotificationChannelStatusDescription" xml:space="preserve">
+    <value>Short status after a scheduled check finds nothing new</value>
+    <comment>Android notification channel description.</comment>
+  </data>
+  <data name="NotificationNewMessagesOne" xml:space="preserve">
+    <value>{0} new message</value>
+    <comment>Notification title. {0} = number of new messages. Singular form (Czech: 1; Ukrainian: 1, 21, 31...).</comment>
+  </data>
+  <data name="NotificationNewMessagesFew" xml:space="preserve">
+    <value>{0} new messages</value>
+    <comment>Notification title. {0} = number of new messages. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural.</comment>
+  </data>
+  <data name="NotificationNewMessagesMany" xml:space="preserve">
+    <value>{0} new messages</value>
+    <comment>Notification title. {0} = number of new messages. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...).</comment>
+  </data>
+  <data name="NotificationArrival" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>Notification line for one new message. {0} = child name; {1} = message subject.</comment>
+  </data>
+  <data name="NotificationMoreOne" xml:space="preserve">
+    <value>+{0} more</value>
+    <comment>Last notification line when not every new message is listed. {0} = number of messages not listed. Singular form (Czech: 1; Ukrainian: 1, 21, 31...).</comment>
+  </data>
+  <data name="NotificationMoreFew" xml:space="preserve">
+    <value>+{0} more</value>
+    <comment>Last notification line when not every new message is listed. {0} = number of messages not listed. 'Few' plural form (Czech: 2-4; Ukrainian: 2-4, 22-24...); languages without it repeat the plural.</comment>
+  </data>
+  <data name="NotificationMoreMany" xml:space="preserve">
+    <value>+{0} more</value>
+    <comment>Last notification line when not every new message is listed. {0} = number of messages not listed. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...).</comment>
+  </data>
+  <data name="NotificationNotCheckedSignIn" xml:space="preserve">
+    <value>Not checked: {0} (sign-in needed)</value>
+    <comment>Notification line for a child without a saved password. {0} = child name.</comment>
+  </data>
+  <data name="NotificationNotCheckedFailed" xml:space="preserve">
+    <value>Not checked: {0} (check failed)</value>
+    <comment>Notification line for a child whose check failed, for example without a connection to the school. {0} = child name.</comment>
+  </data>
+  <data name="NotificationNoNewTitle" xml:space="preserve">
+    <value>No new messages</value>
+    <comment>Title of the status notification after a check that found nothing new.</comment>
+  </data>
+  <data name="NotificationNotCheckedTitle" xml:space="preserve">
+    <value>Messages were not checked</value>
+    <comment>Title of the status notification when no child could be checked.</comment>
+  </data>
+  <data name="NotificationChecked" xml:space="preserve">
+    <value>Checked {0} at {1}.</value>
+    <comment>Status notification text. {0} = names of the checked children, joined with NotificationListAnd; {1} = time of the check.</comment>
+  </data>
+  <data name="NotificationListAnd" xml:space="preserve">
+    <value>{0} and {1}</value>
+    <comment>Joins child names. {0} = all names but the last, separated by commas; {1} = the last name.</comment>
   </data>
 </root>

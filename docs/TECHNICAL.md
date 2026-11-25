@@ -161,17 +161,6 @@ unchanged. Attachments stay below related messages and above the body, on
 their own neutral-shaded surface. This band is hidden when there are no files;
 file cards and attachment actions are unchanged.
 
-## Planned messaging enhancements
-
-Planned work tracked in #71: hourly scheduled Android message checks with
-optional new-message and empty-run notifications (`POST_NOTIFICATIONS`
-requested only when notifications are enabled), Android related-message links,
-relative related-message dates on both platforms, an Android message-list
-attachment indicator, and Windows **All children** and new-message views
-matching Android. Handling of evaluations and other special message types is
-tracked separately in #70. Agreed decisions are recorded in #71.
-Implementation and local user verification are pending.
-
 ## Interface text and localization
 
 App-owned interface text lives in `.resx` resource sets. English is the neutral
@@ -316,17 +305,20 @@ blue date, and dot. Opening one records its ID in the encrypted `opened_messages
 table, per account; nothing is sent to the school. The first time an account with
 a cached archive loads, all its existing messages are recorded as opened, so
 upgrades and newly added accounts start with no new messages; only messages
-arriving in later refreshes are new. Sent and Excuses never show as new.
+arriving in later refreshes or scheduled checks are new. Sent and Excuses never show as new.
 Tapping a row selects that account and returns to the reader; language switching
 also rebuilds the chooser. Sync status stays below the list. Refresh summaries
 expire after one minute using monotonic elapsed time; a new operation or leaving
 the reader cancels the pending reset so it cannot overwrite newer state.
 **Settings** groups one-tap segmented controls into **Appearance** (**System**,
 **Light**, **Dark**), **Reading** (**Small / Medium / Large** reading sizes and
-**Compact / Relaxed** list density), **App updates**, and **About** (GitHub
-repository link). The list uses two lines: a
+**Compact / Relaxed** list density), **Scheduled checks** (see
+[Android scheduled checks and notifications](#android-scheduled-checks-and-notifications)),
+**App updates**, and **About** (GitHub repository link). The list uses two lines: a
 single-line, ellipsized subject and right-aligned short date, then an ellipsized
-sender. Older years remain visible in dates; full timestamps stay in the reader.
+sender. Rows of messages with attachments show a paperclip on the sender line,
+before the new-message dot, and TalkBack adds "Has attachments". Older years
+remain visible in dates; full timestamps stay in the reader.
 Both densities are tighter than the previous three-line layout; rows retain a
 48-dp minimum touch height and grow with system font scaling. Reading sizes use
 the desktop's 0.9 / 1.0 / 1.15 scale factors on Android's existing type sizes.
@@ -354,8 +346,15 @@ an existing account). Message links and attachment actions stay explicit taps,
 with privacy notices beneath the content. Appearance follows Android by default.
 Opened messages reuse desktop's light/dark shaded header with contrasting
 secondary text, plus a separate attachment band when files are present. The
-message body remains on the normal reader surface. Android does not currently
-show related-message links; this styling does not add that functionality.
+message body remains on the normal reader surface. Below the header, the same
+light-blue **Possibly related** band as on Windows lists likely previous and next
+messages, found by the shared heuristic within the owning child's archive and
+labelled with relative days (see [Windows desktop client](#windows-desktop-client)).
+Each link is a full-width 56-dp row showing the direction, relative day and
+sender, then the subject; TalkBack also reads the exact date. The info button
+explains that matches are heuristic. Tapping a link opens that message on top
+with its owning account and marks it opened; Back returns. The band is hidden
+when there are no matches and for Noticeboard messages.
 
 The launcher icon uses `Resources\AppIcon\obk.png` declared as a `MauiIcon`.
 The Android application manifest must reference MAUI's generated `@mipmap/obk`
@@ -458,6 +457,58 @@ The preview is development-signed and does not use the Windows update service.
 Previews signed on different machines are not interchangeable; uninstalling
 to switch keys loses local data. Production release signing is separate from
 preview signing. No signing key or password belongs in Git.
+
+### Android scheduled checks and notifications
+
+**Settings > Scheduled checks** offers three nested switches, all off by default:
+**Check for new messages** (every hour, also while OBK is closed),
+**New-message notifications** (needs scheduled checks), and **Also notify when
+nothing is new** (needs notifications). A switch whose parent is off is greyed
+out and keeps its saved value. The choices are non-sensitive app preferences.
+
+Checks use WorkManager unique periodic work (`obk_scheduled_check`) every hour,
+requiring any network connection. Turning checks on schedules the work, app
+start re-ensures it without resetting an existing schedule, and turning checks
+off cancels it. Android may postpone runs, for example in Doze or battery saver,
+and may stop a run after about ten minutes, so timing is best-effort. The worker
+(`cz.obk.reader.ScheduledCheckWorker`) opens the same encrypted database as the
+app (never the verification database) and does nothing when it is missing. For
+every child with a saved password, it downloads messages and attachments
+exactly like **Refresh**, through the same endpoints; children without a saved
+password are not checked. One process-wide lock keeps checks and foreground
+downloads apart: a check skips its run while a download is in progress, and
+**Refresh** or sign-in waits for a running check. A check reads each child's
+saved password under that lock, just before downloading, and never changes saved
+logins or the last used child, so a password forgotten during a check is neither
+used nor saved again.
+
+Arrivals are Inbox and Noticeboard messages that a check downloaded and that
+are not opened in the reader. The opened-message baseline is recorded before
+each download, so arrivals also stay new in the reader. After a school-year
+change, the first check counts every unopened message of the new year; an
+account's very first download is recorded as opened, like the reader's first
+load, and announces nothing. A running app reloads its archives from the device
+after a check that changed them.
+
+With notifications on, a check with arrivals posts one summary for all children
+on the **New messages** channel. It has a plural-aware title and up to five
+`Child · Subject` lines, newest first; when more arrived, the last line reads
+`+N more`. Children that could not be checked follow (sign-in needed or check
+failed). Each summary has its own ID, so earlier ones remain. With **Also notify
+when nothing is new**, a check without arrivals instead posts a status on the
+low-importance **Check status** channel, replacing the previous status. Texts use
+the saved interface language. Lines contain message subjects; lock screens set to
+hide sensitive content show only the title. Tapping a notification opens Inbox,
+in **All children** when there are several children, from the offline archives
+without network access. Notifications are local; OBK has no push service.
+
+Android 13 and later require the `POST_NOTIFICATIONS` permission, which OBK
+requests only when the user turns on **New-message notifications**. If it is
+denied, or notifications are later blocked, the switch shows off with guidance
+and an **Open Android settings** button for OBK's notification settings;
+returning to Settings rechecks the state. WorkManager merges the network-state,
+wake-lock, boot-completed and foreground-service permissions it needs into the
+manifest.
 
 ### Android release signing
 

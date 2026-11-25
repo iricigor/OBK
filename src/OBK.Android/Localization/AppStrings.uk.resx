@@ -124,6 +124,9 @@
   <data name="MessageReadFailedAlertTitle" xml:space="preserve">
     <value>Не вдалося прочитати це повідомлення</value>
   </data>
+  <data name="MessageRelatedDescription" xml:space="preserve">
+    <value>{0}. Тема: {1}</value>
+  </data>
   <data name="MessageShareAttachment" xml:space="preserve">
     <value>Поділитися / зберегти копію</value>
     <comment>Button that shares an attachment or saves a copy via another app.</comment>
@@ -401,6 +404,9 @@
     <value>Вхід...</value>
     <comment>Progress status while signing in.</comment>
   </data>
+  <data name="StatusWaitingForCheck" xml:space="preserve">
+    <value>Очікування завершення запланованої перевірки...</value>
+  </data>
   <data name="ScanCameraDenied" xml:space="preserve">
     <value>OBK використовує камеру лише для сканування коду перенесення. Дозвольте доступ до камери в параметрах Android або увійдіть вручну.</value>
   </data>
@@ -516,10 +522,100 @@
   <data name="ReaderNewMessage" xml:space="preserve">
     <value>Нове повідомлення: {0}</value>
   </data>
+  <data name="ReaderWithAttachments" xml:space="preserve">
+    <value>{0}. Має вкладення</value>
+  </data>
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Читання</value>
   </data>
   <data name="SettingsSectionAbout" xml:space="preserve">
     <value>Про застосунок</value>
+  </data>
+  <data name="SettingsSectionChecks" xml:space="preserve">
+    <value>Заплановані перевірки</value>
+  </data>
+  <data name="SettingsChecks" xml:space="preserve">
+    <value>Перевіряти нові повідомлення</value>
+  </data>
+  <data name="SettingsChecksDescription" xml:space="preserve">
+    <value>Щогодини, навіть коли OBK закрито</value>
+  </data>
+  <data name="SettingsNotifications" xml:space="preserve">
+    <value>Сповіщення про нові повідомлення</value>
+  </data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve">
+    <value>Одне зведення для всіх дітей</value>
+  </data>
+  <data name="SettingsNotificationsNeedChecks" xml:space="preserve">
+    <value>Потрібні заплановані перевірки</value>
+  </data>
+  <data name="SettingsEmptyNotifications" xml:space="preserve">
+    <value>Сповіщати, навіть коли нічого нового</value>
+  </data>
+  <data name="SettingsEmptyNotificationsDescription" xml:space="preserve">
+    <value>Короткий статус після кожної перевірки</value>
+  </data>
+  <data name="SettingsEmptyNotificationsNeedNotifications" xml:space="preserve">
+    <value>Потрібні сповіщення про нові повідомлення</value>
+  </data>
+  <data name="SettingsChecksNote" xml:space="preserve">
+    <value>Перевіряються діти зі збереженим паролем. Android може відкласти перевірку, щоб заощадити заряд.</value>
+  </data>
+  <data name="SettingsNotificationsBlocked" xml:space="preserve">
+    <value>Сповіщення для OBK заблоковано. Дозвольте їх у параметрах Android, а потім знову увімкніть цей перемикач.</value>
+  </data>
+  <data name="SettingsOpenNotificationSettings" xml:space="preserve">
+    <value>Відкрити параметри Android</value>
+  </data>
+  <data name="NotificationChannelNewMessages" xml:space="preserve">
+    <value>Нові повідомлення</value>
+  </data>
+  <data name="NotificationChannelNewMessagesDescription" xml:space="preserve">
+    <value>Зведення, коли запланована перевірка знаходить нові повідомлення</value>
+  </data>
+  <data name="NotificationChannelStatus" xml:space="preserve">
+    <value>Стан перевірки</value>
+  </data>
+  <data name="NotificationChannelStatusDescription" xml:space="preserve">
+    <value>Короткий статус, коли запланована перевірка не знаходить нічого нового</value>
+  </data>
+  <data name="NotificationNewMessagesOne" xml:space="preserve">
+    <value>{0} нове повідомлення</value>
+  </data>
+  <data name="NotificationNewMessagesFew" xml:space="preserve">
+    <value>{0} нові повідомлення</value>
+  </data>
+  <data name="NotificationNewMessagesMany" xml:space="preserve">
+    <value>{0} нових повідомлень</value>
+  </data>
+  <data name="NotificationArrival" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="NotificationMoreOne" xml:space="preserve">
+    <value>ще {0}</value>
+  </data>
+  <data name="NotificationMoreFew" xml:space="preserve">
+    <value>ще {0}</value>
+  </data>
+  <data name="NotificationMoreMany" xml:space="preserve">
+    <value>ще {0}</value>
+  </data>
+  <data name="NotificationNotCheckedSignIn" xml:space="preserve">
+    <value>Не перевірено: {0} (потрібен вхід)</value>
+  </data>
+  <data name="NotificationNotCheckedFailed" xml:space="preserve">
+    <value>Не перевірено: {0} (перевірка не вдалася)</value>
+  </data>
+  <data name="NotificationNoNewTitle" xml:space="preserve">
+    <value>Нових повідомлень немає</value>
+  </data>
+  <data name="NotificationNotCheckedTitle" xml:space="preserve">
+    <value>Повідомлення не перевірено</value>
+  </data>
+  <data name="NotificationChecked" xml:space="preserve">
+    <value>Перевірено о {1}: {0}.</value>
+  </data>
+  <data name="NotificationListAnd" xml:space="preserve">
+    <value>{0} і {1}</value>
   </data>
 </root>

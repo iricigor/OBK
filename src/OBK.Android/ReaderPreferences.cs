@@ -12,6 +12,9 @@ internal static class ReaderPreferences
     private const string GroupingPreference = "reader_grouping";
     private const string SortPreference = "reader_sort";
     private const string AllChildrenPreference = "reader_all_children";
+    private const string ScheduledChecksPreference = "scheduled_checks";
+    private const string CheckNotificationsPreference = "scheduled_check_notifications";
+    private const string EmptyCheckNotificationsPreference = "scheduled_check_empty_notifications";
     internal static readonly string[] ReadingSizes = ["Small", "Medium", "Large"];
     internal static readonly string[] ListDensities = ["Compact", "Relaxed"];
 
@@ -33,6 +36,22 @@ internal static class ReaderPreferences
     {
         get => Preferences.Default.Get(AllChildrenPreference, true);
         set => Preferences.Default.Set(AllChildrenPreference, value);
+    }
+    /// <summary>Hourly background checks; the two notification settings below only apply while this is on.</summary>
+    internal static bool ScheduledChecks
+    {
+        get => Preferences.Default.Get(ScheduledChecksPreference, false);
+        set => Preferences.Default.Set(ScheduledChecksPreference, value);
+    }
+    internal static bool CheckNotifications
+    {
+        get => Preferences.Default.Get(CheckNotificationsPreference, false);
+        set => Preferences.Default.Set(CheckNotificationsPreference, value);
+    }
+    internal static bool EmptyCheckNotifications
+    {
+        get => Preferences.Default.Get(EmptyCheckNotificationsPreference, false);
+        set => Preferences.Default.Set(EmptyCheckNotificationsPreference, value);
     }
 
     internal static void Initialize()

@@ -12,9 +12,19 @@ internal sealed class SettingsPage : ContentPage
     private readonly Button cancelUpdate = ReaderTheme.Subtle(new Button { Text = AppStrings.ReaderAccountsSheetCancel, IsVisible = false });
     private readonly Label updateStatus = ReaderTheme.Metadata(new Label { Text = AppStrings.UpdateManualNotice });
     private readonly ActivityIndicator updateProgress = new() { IsVisible = false };
+    private readonly SwitchRow checks = CreateSwitchRow(AppStrings.SettingsChecks, AppStrings.SettingsChecksDescription);
+    private readonly SwitchRow notifications = CreateSwitchRow(AppStrings.SettingsNotifications, AppStrings.SettingsNotificationsDescription);
+    private readonly SwitchRow emptyNotifications =
+        CreateSwitchRow(AppStrings.SettingsEmptyNotifications, AppStrings.SettingsEmptyNotificationsDescription);
+    private readonly VerticalStackLayout notificationsBlocked = new() { Spacing = 8, IsVisible = false };
     private AvailableUpdate? availableUpdate;
     private CancellationTokenSource? updateCancellation;
-    internal bool Busy => updateCancellation is not null;
+    private bool notificationsDenied;
+    private bool requestingNotifications;
+    private bool updatingSwitches;
+    internal bool Busy => updateCancellation is not null || requestingNotifications;
+
+    private sealed record SwitchRow(Grid View, Label Title, Label Description, Switch Toggle);
 
     public SettingsPage()
     {
@@ -100,6 +110,36 @@ internal sealed class SettingsPage : ContentPage
         cancelUpdate.Clicked += (_, _) => updateCancellation?.Cancel();
         checkUpdate.CornerRadius = 20;
         checkUpdate.SetAppThemeColor(Button.BorderColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        checks.Toggle.Toggled += (_, args) =>
+        {
+            if (updatingSwitches || args.Value == ReaderPreferences.ScheduledChecks) return;
+            ReaderPreferences.ScheduledChecks = args.Value;
+            ScheduledCheck.Schedule(args.Value);
+            UpdateChecks();
+        };
+        notifications.Toggle.Toggled += async (_, args) =>
+        {
+            // Android can echo a state set while it was still reporting the tap; only changes to the shown state count.
+            if (updatingSwitches || requestingNotifications ||
+                args.Value == (ReaderPreferences.CheckNotifications && CheckNotifier.Enabled)) return;
+            if (args.Value)
+            {
+                await EnableNotificationsAsync();
+                return;
+            }
+            ReaderPreferences.CheckNotifications = notificationsDenied = false;
+            UpdateChecks();
+        };
+        emptyNotifications.Toggle.Toggled += (_, args) =>
+        {
+            if (!updatingSwitches) ReaderPreferences.EmptyCheckNotifications = args.Value;
+        };
+        var openNotificationSettings = new Button { Text = AppStrings.SettingsOpenNotificationSettings, CornerRadius = 20 };
+        openNotificationSettings.SetAppThemeColor(Button.BorderColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        openNotificationSettings.Clicked += (_, _) => CheckNotifier.OpenSettings();
+        notificationsBlocked.Add(BlockedNotice());
+        notificationsBlocked.Add(openNotificationSettings);
+        UpdateChecks();
         Content = new ScrollView
         {
             Content = new VerticalStackLayout
@@ -113,6 +153,10 @@ internal sealed class SettingsPage : ContentPage
                         RowTitle(AppStrings.SettingsReadingSize, AppStrings.SettingsReadingSizeDescription), readingSize,
                         new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
                         RowTitle(AppStrings.SettingsListDensity, AppStrings.SettingsListDensityDescription), density),
+                    Section(AppStrings.SettingsSectionChecks,
+                        checks.View, new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
+                        notifications.View, notificationsBlocked, new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
+                        emptyNotifications.View, ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsChecksNote, FontSize = 12 })),
                     Section(AppStrings.UpdateHeading,
                         new Label { Text = Localized.Format(AppStrings.UpdateInstalledVersion, AppInfo.Current.VersionString), FontSize = 15, FontAttributes = FontAttributes.Bold },
                         updateStatus, updateProgress, checkUpdate, installUpdate, cancelUpdate),
@@ -132,6 +176,100 @@ internal sealed class SettingsPage : ContentPage
             ReaderTheme.Metadata(new Label { Text = description, FontSize = 12 })
         }
     };
+
+    private static SwitchRow CreateSwitchRow(string title, string description)
+    {
+        var text = RowTitle(title, description);
+        text.VerticalOptions = LayoutOptions.Center;
+        var toggle = new Switch { VerticalOptions = LayoutOptions.Center, ThumbColor = Colors.White };
+        toggle.SetAppThemeColor(Switch.OnColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        SemanticProperties.SetDescription(toggle, title);
+        SemanticProperties.SetHint(toggle, description);
+        var tap = new TapGestureRecognizer();
+        tap.Tapped += (_, _) =>
+        {
+            if (toggle.IsEnabled) toggle.IsToggled = !toggle.IsToggled;
+        };
+        text.GestureRecognizers.Add(tap);
+        var view = new Grid
+        {
+            ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 12, MinimumHeightRequest = 48
+        };
+        view.Add(text);
+        view.Add(toggle, 1);
+        return new(view, (Label)text.Children[0], (Label)text.Children[1], toggle);
+    }
+
+    /// <summary>A row whose parent switch is off is greyed and says what it needs.</summary>
+    private static void SetAvailable(SwitchRow row, bool available, string description, string unavailable)
+    {
+        row.Toggle.IsEnabled = available;
+        row.Description.Text = available ? description : unavailable;
+        SemanticProperties.SetHint(row.Toggle, row.Description.Text);
+        if (available)
+        {
+            row.Title.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.Foreground, ReaderTheme.DarkForeground);
+            ReaderTheme.Metadata(row.Description);
+            return;
+        }
+        row.Title.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.DisabledForeground, ReaderTheme.DarkDisabledForeground);
+        row.Description.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.DisabledForeground, ReaderTheme.DarkDisabledForeground);
+    }
+
+    private static Border BlockedNotice()
+    {
+        var icon = new Image { WidthRequest = 20, HeightRequest = 20, VerticalOptions = LayoutOptions.Start };
+        ReaderTheme.SetIcon(icon, "alert");
+        AutomationProperties.SetIsInAccessibleTree(icon, false);
+        var text = new Label { Text = AppStrings.SettingsNotificationsBlocked, FontSize = 13 };
+        text.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.Danger, ReaderTheme.DarkDanger);
+        var content = new Grid { ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)], ColumnSpacing = 8 };
+        content.Add(icon);
+        content.Add(text, 1);
+        var notice = new Border
+        {
+            Content = content, Padding = 12, StrokeThickness = 0,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 6 }
+        };
+        notice.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.DangerSurface, ReaderTheme.DarkDangerSurface);
+        return notice;
+    }
+
+    /// <summary>Shows the stored check settings; notifications show off while Android blocks them.</summary>
+    private void UpdateChecks()
+    {
+        if (requestingNotifications) return;
+        var allowed = CheckNotifier.Enabled;
+        if (allowed) notificationsDenied = false;
+        var checking = ReaderPreferences.ScheduledChecks;
+        var notifying = ReaderPreferences.CheckNotifications && allowed;
+        updatingSwitches = true;
+        checks.Toggle.IsToggled = checking;
+        notifications.Toggle.IsToggled = notifying;
+        emptyNotifications.Toggle.IsToggled = ReaderPreferences.EmptyCheckNotifications;
+        updatingSwitches = false;
+        SetAvailable(notifications, checking, AppStrings.SettingsNotificationsDescription, AppStrings.SettingsNotificationsNeedChecks);
+        SetAvailable(emptyNotifications, checking && notifying, AppStrings.SettingsEmptyNotificationsDescription,
+            AppStrings.SettingsEmptyNotificationsNeedNotifications);
+        notificationsBlocked.IsVisible = checking && !allowed && (notificationsDenied || ReaderPreferences.CheckNotifications);
+    }
+
+    private async Task EnableNotificationsAsync()
+    {
+        requestingNotifications = true;
+        notifications.Toggle.IsEnabled = false;
+        try
+        {
+            var allowed = await CheckNotifier.RequestAsync();
+            ReaderPreferences.CheckNotifications = allowed;
+            notificationsDenied = !allowed;
+        }
+        finally { requestingNotifications = false; }
+        UpdateChecks();
+        if (notificationsDenied) SemanticScreenReader.Default.Announce(AppStrings.SettingsNotificationsBlocked);
+    }
+
+    private void WindowResumed(object? sender, EventArgs args) => UpdateChecks();
 
     private static VerticalStackLayout Section(string title, params View[] content)
     {
@@ -191,9 +329,20 @@ internal sealed class SettingsPage : ContentPage
         }
     }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        UpdateChecks();
+        // Returning from Android settings resumes the window without a new Appearing event.
+        if (Window is not { } window) return;
+        window.Resumed -= WindowResumed;
+        window.Resumed += WindowResumed;
+    }
+
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+        if (Window is { } window) window.Resumed -= WindowResumed;
         updateCancellation?.Cancel();
     }
 

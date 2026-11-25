@@ -29,6 +29,8 @@
     <MauiSplashScreen Include="Resources\AppIcon\obk.png" Color="#0F6CBD" BaseSize="128,128" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.10.4" />
+    <!-- 2.10.2.1 matches the AndroidX versions that Microsoft.Maui.Controls 10.0.110 already uses. -->
+    <PackageReference Include="Xamarin.AndroidX.Work.Runtime" Version="2.10.2.1" />
     <ProjectReference Include="..\OBK.Core\OBK.Core.csproj" />
     <EmbeddedResource Include="..\..\data\schools.json.gz" LogicalName="OBK.schools.json.gz" />
   </ItemGroup>
