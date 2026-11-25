@@ -29,22 +29,24 @@ public static class RelatedLinks
 
     /// <summary>
     /// Labels a related message's date by calendar days in local time. A displayed message received today anchors
-    /// labels to today (Today, Yesterday, N days ago); an older one anchors them to its own date (Same day,
-    /// N days before, N days after).
+    /// labels to today (Today with the time, Yesterday, N days ago); an older one anchors them to its own date
+    /// (Same day with the time, N days before, N days after).
     /// </summary>
     public static string RelativeDay(DateTimeOffset date, DateTimeOffset displayed, DateTime today)
     {
-        var day = date.LocalDateTime.Date;
+        var local = date.LocalDateTime;
+        var day = local.Date;
         var anchor = displayed.LocalDateTime.Date;
         today = today.Date;
+        string Time() => local.ToString(SharedStrings.DateTimeFormat, LanguageSettings.Culture);
         if (anchor >= today)
         {
             var ago = (today - day).Days;
-            return ago <= 0 ? SharedStrings.GroupToday : ago == 1 ? SharedStrings.GroupYesterday :
+            return ago <= 0 ? Localized.Format(SharedStrings.RelatedTodayAt, Time()) : ago == 1 ? SharedStrings.GroupYesterday :
                 Localized.Plural(ago, SharedStrings.RelatedDaysAgoOne, SharedStrings.RelatedDaysAgoFew, SharedStrings.RelatedDaysAgoMany);
         }
         var offset = (day - anchor).Days;
-        return offset == 0 ? SharedStrings.RelatedSameDay : offset < 0
+        return offset == 0 ? Localized.Format(SharedStrings.RelatedSameDayAt, Time()) : offset < 0
             ? Localized.Plural(-offset, SharedStrings.RelatedDaysBeforeOne, SharedStrings.RelatedDaysBeforeFew, SharedStrings.RelatedDaysBeforeMany)
             : Localized.Plural(offset, SharedStrings.RelatedDaysAfterOne, SharedStrings.RelatedDaysAfterFew, SharedStrings.RelatedDaysAfterMany);
     }

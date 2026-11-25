@@ -330,9 +330,13 @@
     <value>{0}: {1}, {2}</value>
     <comment>Screen-reader name of a related message link. {0} = direction, for example 'Previous (1)'; {1} = RelatedLabel text; {2} = full date and time.</comment>
   </data>
-  <data name="RelatedSameDay" xml:space="preserve">
-    <value>Того ж дня</value>
-    <comment>Relative day of a related message sent on the same day as an earlier displayed message.</comment>
+  <data name="RelatedSameDayAt" xml:space="preserve">
+    <value>Того ж дня {0}</value>
+    <comment>Day and time of a related message sent on the same day as an earlier displayed message. {0} = time of day (24-hour).</comment>
+  </data>
+  <data name="RelatedTodayAt" xml:space="preserve">
+    <value>Сьогодні {0}</value>
+    <comment>Day and time of a related message received today while today's message is displayed. {0} = time of day (24-hour).</comment>
   </data>
   <data name="RelatedDaysAgoOne" xml:space="preserve">
     <value>{0} день тому</value>

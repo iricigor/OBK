@@ -926,7 +926,8 @@ messages across Inbox and Sent of the same child, oldest first. Each shows its
 day relative to the selected message and the sender (**From: you** for Sent).
 For a message received today, the days count back from today: Today, Yesterday,
 then `N days ago`. For an older message, they count from its own date:
-`N days before`, Same day, or `N days after`. Days are local calendar dates;
+`N days before`, Same day, or `N days after`. Today and Same day include the
+time, for example `Same day 11:40`. Days are local calendar dates;
 Czech and Ukrainian use their plural forms. The exact date and time appear in
 each link's tooltip and accessible name. When a side has several, they are
 numbered outward from the current message, for example Previous (2), Previous (1). Komens lists do not expose reply

@@ -22,14 +22,14 @@ public sealed class RelatedLinksTests
     }
 
     [Theory]
-    [InlineData(25, 7, "Today")]
+    [InlineData(25, 7, "Today 07:00")]
     [InlineData(24, 23, "Yesterday")]
     [InlineData(22, 9, "3 days ago")]
     public void TodaysMessageLabelsRelatedMessagesFromToday(int day, int hour, string expected) =>
         Assert.Equal(expected, InCulture("en", () => RelatedLinks.RelativeDay(Local(11, day, hour), Local(11, 25, 8), Today)));
 
     [Theory]
-    [InlineData(20, "Same day")]
+    [InlineData(20, "Same day 09:00")]
     [InlineData(19, "1 day before")]
     [InlineData(18, "2 days before")]
     [InlineData(21, "1 day after")]
