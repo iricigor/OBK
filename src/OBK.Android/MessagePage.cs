@@ -18,6 +18,8 @@ internal sealed class MessagePage : ContentPage
     private readonly List<Button> actions = [];
     private readonly List<FileCard> fileCards = [];
     private int availabilityVersion;
+    private bool refreshingFiles;
+    private bool refreshFilesAgain;
     private readonly Message message;
     private bool? compactHeader;
     private bool loaded;
@@ -212,12 +214,23 @@ internal sealed class MessagePage : ContentPage
 
     private async Task RefreshFileCardsSafelyAsync()
     {
-        try { await RefreshFileCardsAsync(); }
-        catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
+        // Progress events arrive faster than metadata reads; coalesce them into at most one more pass.
+        if (refreshingFiles) { refreshFilesAgain = true; return; }
+        refreshingFiles = true;
+        try
         {
-            status.Text = error.Message;
-            status.IsVisible = true;
+            do
+            {
+                refreshFilesAgain = false;
+                try { await RefreshFileCardsAsync(); }
+                catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
+                {
+                    status.Text = error.Message;
+                    status.IsVisible = true;
+                }
+            } while (refreshFilesAgain);
         }
+        finally { refreshingFiles = false; }
     }
 
     private async Task RefreshFileCardsAsync()

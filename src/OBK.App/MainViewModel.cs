@@ -31,6 +31,8 @@ public sealed class MainViewModel : ObservableObject
     private InitialDownloadState? downloadState;
     private bool readingDuringDownload;
     private int refreshedAttachmentCount = -1;
+    private bool attachmentRefreshQueued;
+    private bool attachmentRefreshAll;
     private bool goodStatus;
     private bool listUpdating;
     private string status = AppStrings.StatusWelcome;
@@ -885,12 +887,14 @@ public sealed class MainViewModel : ObservableObject
                 await ActivateAccountAsync(download.Account.Url, download.Account.Username, download.Year,
                     download.Account.ChildName, download.Account.SchoolName);
             ApplyDownloadProgress(download, loginProgress);
+            if (ReadingDuringDownload) RefreshDownloadAttachments(download, all: true);
             await AttachmentAvailabilityReady;
             SetStatus(download.State.Status, true);
         }
         catch (ObkException error)
         {
             ApplyDownloadProgress(download, loginProgress);
+            if (ReadingDuringDownload) RefreshDownloadAttachments(download, all: true);
             ReportError(download.State.Error is null ? error.Message : download.State.Status);
             throw;
         }
@@ -934,10 +938,15 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
-    private void RefreshDownloadAttachments(InitialDownload download)
+    /// <summary>
+    /// Updates file availability while the sign-in download continues. Requests during a refresh are coalesced
+    /// into one more pass, and only the open message's files are read until the final pass over the archive.
+    /// </summary>
+    private void RefreshDownloadAttachments(InitialDownload download, bool all = false)
     {
-        var previous = AttachmentAvailabilityReady;
-        AttachmentAvailabilityReady = RefreshDownloadAttachmentsAsync(download, previous);
+        attachmentRefreshAll |= all;
+        if (!AttachmentAvailabilityReady.IsCompleted) { attachmentRefreshQueued = true; return; }
+        AttachmentAvailabilityReady = RefreshDownloadAttachmentsAsync(download);
     }
 
     private void ClearInitialDownloadStatus()
@@ -950,22 +959,28 @@ public sealed class MainViewModel : ObservableObject
         UpdateActions();
     }
 
-    private async Task RefreshDownloadAttachmentsAsync(InitialDownload download, Task previous)
+    private async Task RefreshDownloadAttachmentsAsync(InitialDownload download)
     {
-        await previous;
-        var child = archives.FirstOrDefault(item => Same(item.Login, download.Account));
-        if (child is null) return;
-        try
+        do
         {
-            var info = await Task.Run(() => ReadAttachmentInfo(child.Login.Url, child.Login.Username, child.Items));
-            if (!ReferenceEquals(initialDownload, download) || !archives.Contains(child)) return;
-            child.Info.Clear();
-            foreach (var entry in info) child.Info.Add(entry.Key, entry.Value);
-            foreach (var attachment in attachments.Where(row => Same(row.Account, child.Login)))
-                attachment.UpdateInfo(info.GetValueOrDefault(attachment.Attachment.Identifier));
-            UpdateActions();
-        }
-        catch (ObkException error) { ReportError(error.Message); }
+            attachmentRefreshQueued = false;
+            var all = attachmentRefreshAll;
+            attachmentRefreshAll = false;
+            var child = archives.FirstOrDefault(item => Same(item.Login, download.Account));
+            if (child is null) return;
+            var rows = attachments.Where(row => Same(row.Account, child.Login)).ToArray();
+            try
+            {
+                var info = await Task.Run(() => all ? ReadAttachmentInfo(child.Login.Url, child.Login.Username, child.Items) :
+                    rows.Select(row => row.Attachment.Identifier).Distinct()
+                        .ToDictionary(id => id, id => store.AttachmentInfo(child.Login.Url, child.Login.Username, id)));
+                if (!ReferenceEquals(initialDownload, download) || !archives.Contains(child)) return;
+                foreach (var entry in info) child.Info[entry.Key] = entry.Value;
+                foreach (var row in rows) row.UpdateInfo(info.GetValueOrDefault(row.Attachment.Identifier));
+                UpdateActions();
+            }
+            catch (ObkException error) { ReportError(error.Message); }
+        } while (attachmentRefreshQueued);
     }
 
     /// <summary>
