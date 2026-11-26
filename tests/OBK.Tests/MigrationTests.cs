@@ -390,6 +390,165 @@ public sealed class MigrationTests : IDisposable
     }
 
     [Fact]
+    public async Task InitialLoginConfirmsAuthenticationBeforeMessagesAndSavesMessagesBeforeAttachments()
+    {
+        var store = Store;
+        var attachment = new Attachment { Id = "file", Name = "agenda.pdf" };
+        var messagesRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseMessages = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var attachmentRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseAttachment = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var receivedPages = 0;
+        using var client = new KomensClient(Url, new InitialHandler(async (request, cancellation) =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path == "/api/login") return Json(new { access_token = "synthetic-token" });
+            if (path == "/api/3/user") return Json(new { SchoolOrganizationName = "School" });
+            if (path == "/api/3/komens/messages/received" && receivedPages++ == 0)
+            {
+                messagesRequested.SetResult();
+                await releaseMessages.Task.WaitAsync(cancellation);
+                return Page(Message("one", attachments: [attachment]));
+            }
+            if (path.StartsWith("/api/3/komens/messages/", StringComparison.Ordinal)) return Page();
+            Assert.Equal("/api/3/komens/attachment/file", path);
+            attachmentRequested.SetResult();
+            await releaseAttachment.Task.WaitAsync(cancellation);
+            return new(HttpStatusCode.OK) { Content = new ByteArrayContent("complete"u8.ToArray()) };
+        }));
+        var download = new InitialDownload(new(Url, "u"), year);
+        var running = Task.Run(() => download.RunAsync(client, store, "synthetic-password", false));
+        try
+        {
+            await messagesRequested.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(download.State.Authenticated);
+            Assert.False(download.State.MessagesReady);
+            Assert.False(download.State.CanContinueInBackground);
+            Assert.Null(store.LoadArchive(Url, "u", year));
+
+            releaseMessages.SetResult();
+            await attachmentRequested.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(download.State.CanContinueInBackground);
+            Assert.Equal(0, download.State.CompletedAttachments);
+            Assert.Equal(1, download.State.TotalAttachments);
+            Assert.Equal("one", Assert.Single(store.LoadArchive(Url, "u", year)!.Folders["received"]).Id);
+            Assert.Null(store.AttachmentInfo(Url, "u", attachment.Id));
+
+            releaseAttachment.SetResult();
+            await running;
+            Assert.Equal(InitialDownloadPhase.Complete, download.State.Phase);
+            Assert.Equal(1, download.State.CompletedAttachments);
+            Assert.False(download.State.CanContinueInBackground);
+            Assert.NotNull(store.AttachmentInfo(Url, "u", attachment.Id));
+        }
+        finally
+        {
+            releaseMessages.TrySetResult();
+            releaseAttachment.TrySetResult();
+            await running;
+        }
+    }
+
+    [Fact]
+    public async Task InitialAuthenticationFailureNeverReportsSuccessOrSavesAnAccount()
+    {
+        var store = Store;
+        var download = new InitialDownload(new(Url, "u"), year);
+        var states = new List<InitialDownloadState>();
+        download.Changed += () => states.Add(download.State);
+        using var client = new KomensClient(Url, new FakeHandler(new HttpResponseMessage(HttpStatusCode.Unauthorized)));
+        await Assert.ThrowsAsync<ObkException>(() => download.RunAsync(client, store, "synthetic-password", true));
+        Assert.All(states, state => Assert.False(state.Authenticated));
+        Assert.False(download.State.Running);
+        Assert.False(download.State.CanContinueInBackground);
+        Assert.NotNull(download.State.Error);
+        Assert.Empty(store.KnownLogins());
+        Assert.Null(store.LoadArchive(Url, "u", year));
+    }
+
+    [Fact]
+    public async Task InitialMessageFailureRetainsThePreviousArchiveWithoutOfferingBackground()
+    {
+        var store = Store;
+        var previous = Folders.Empty();
+        previous["received"].Add(Message("previous"));
+        store.SaveArchive(Url, "u", year, "School", previous);
+        var download = new InitialDownload(new(Url, "u"), year);
+        using var client = new KomensClient(Url, new FakeHandler(
+            Json(new { access_token = "synthetic-token" }), Json(new { SchoolOrganizationName = "School" }),
+            new(HttpStatusCode.InternalServerError)));
+        await Assert.ThrowsAsync<ObkException>(() => download.RunAsync(client, store, "synthetic-password", false));
+        Assert.True(download.State.Authenticated);
+        Assert.False(download.State.MessagesReady);
+        Assert.False(download.State.CanContinueInBackground);
+        Assert.Equal(InitialDownloadPhase.Messages, download.State.Phase);
+        Assert.NotNull(download.State.Error);
+        Assert.Equal("previous", Assert.Single(store.LoadArchive(Url, "u", year)!.Folders["received"]).Id);
+    }
+
+    [Fact]
+    public async Task InitialAttachmentFailureKeepsMessagesAndCountsOnlyUniqueCommittedFiles()
+    {
+        var store = Store;
+        var cached = new Attachment { Id = "cached", Name = "cached.pdf" };
+        var completed = new Attachment { Id = "complete", Name = "complete.pdf" };
+        var failed = new Attachment { Id = "failed", Name = "failed.pdf" };
+        await store.SaveAttachmentAsync(Url, "u", cached, new MemoryStream("cached"u8.ToArray()));
+        var download = new InitialDownload(new(Url, "u"), year);
+        var states = new List<InitialDownloadState>();
+        download.Changed += () => states.Add(download.State);
+        var handler = new FakeHandler(
+            Json(new { access_token = "synthetic-token" }), Json(new { SchoolOrganizationName = "School" }),
+            Page(Message("one", attachments: [cached, completed, failed])), Page(),
+            Page(Message("sent", attachments: [completed])), Page(), Page(),
+            new(HttpStatusCode.OK) { Content = new ByteArrayContent("complete"u8.ToArray()) },
+            new(HttpStatusCode.InternalServerError));
+        using var client = new KomensClient(Url, handler);
+        await Assert.ThrowsAsync<ObkException>(() => download.RunAsync(client, store, "synthetic-password", false));
+        Assert.True(download.State.Authenticated);
+        Assert.True(download.State.MessagesReady);
+        Assert.False(download.State.Running);
+        Assert.False(download.State.CanContinueInBackground);
+        Assert.Equal(2, download.State.CompletedAttachments);
+        Assert.Equal(3, download.State.TotalAttachments);
+        Assert.DoesNotContain(states, state => state.CompletedAttachments == 3);
+        Assert.NotNull(download.State.Error);
+        Assert.Equal("one", Assert.Single(store.LoadArchive(Url, "u", year)!.Folders["received"]).Id);
+        Assert.NotNull(store.AttachmentInfo(Url, "u", completed.Id));
+        Assert.Null(store.AttachmentInfo(Url, "u", failed.Id));
+        Assert.Equal(2, handler.Requests.Count(request => request.Uri.AbsolutePath.Contains("/attachment/")));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InitialDownloadWithNoPendingFilesCompletesWithoutOfferingBackground(bool cachedFile)
+    {
+        var store = Store;
+        var attachment = new Attachment { Id = "cached", Name = "cached.pdf" };
+        if (cachedFile)
+            await store.SaveAttachmentAsync(Url, "u", attachment, new MemoryStream("cached"u8.ToArray()));
+        var download = new InitialDownload(new(Url, "u"), year);
+        var states = new List<InitialDownloadState>();
+        download.Changed += () => states.Add(download.State);
+        using var client = new KomensClient(Url, new FakeHandler(
+            Json(new { access_token = "synthetic-token" }), Json(new { SchoolOrganizationName = "School" }),
+            Page(Message("one", attachments: cachedFile ? [attachment] : [])), Page(), Page(), Page()));
+        await download.RunAsync(client, store, "synthetic-password", false);
+        Assert.All(states, state => Assert.False(state.CanContinueInBackground));
+        Assert.Equal(InitialDownloadPhase.Complete, download.State.Phase);
+        Assert.Equal(cachedFile ? 1 : 0, download.State.CompletedAttachments);
+        Assert.Equal(download.State.TotalAttachments, download.State.CompletedAttachments);
+    }
+
+    private sealed class InitialHandler(
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> respond) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            respond(request, cancellationToken);
+    }
+
+    [Fact]
     public async Task FailedReplacementRollsBackAndCorruptExportPreservesDestination()
     {
         var store = Store;

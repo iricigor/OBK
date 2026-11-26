@@ -374,4 +374,72 @@
     <value>на {0} днів пізніше</value>
     <comment>{0} = number of days. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...). Counts forward from the displayed message's date.</comment>
   </data>
+  <data name="DownloadLoginSuccessful" xml:space="preserve">
+    <value>Вхід успішний</value>
+  </data>
+  <data name="DownloadSigningIn" xml:space="preserve">
+    <value>Вхід...</value>
+  </data>
+  <data name="DownloadMessages" xml:space="preserve">
+    <value>Завантаження повідомлень...</value>
+  </data>
+  <data name="DownloadMessagesReady" xml:space="preserve">
+    <value>Повідомлення завантажено.</value>
+  </data>
+  <data name="DownloadAttachments" xml:space="preserve">
+    <value>Завантаження вкладень</value>
+  </data>
+  <data name="DownloadAttachmentCount" xml:space="preserve">
+    <value>Вкладення {0:N0} / {1:N0}</value>
+    <comment>{0} = successfully cached unique attachments; {1} = total unique attachments.</comment>
+  </data>
+  <data name="DownloadAttachmentFile" xml:space="preserve">
+    <value>Завантаження {0}...</value>
+    <comment>{0} = safe attachment filename.</comment>
+  </data>
+  <data name="DownloadInBackground" xml:space="preserve">
+    <value>Завантажувати вкладення у фоновому режимі</value>
+  </data>
+  <data name="DownloadReadMessages" xml:space="preserve">
+    <value>Читати повідомлення</value>
+  </data>
+  <data name="DownloadBackgroundHint" xml:space="preserve">
+    <value>Читайте повідомлення, поки завантажуються вкладення.</value>
+  </data>
+  <data name="DownloadKeepOpen" xml:space="preserve">
+    <value>Залиште OBK відкритим, щоб завершити завантаження.</value>
+  </data>
+  <data name="DownloadBackgroundLimit" xml:space="preserve">
+    <value>Завантаження триває, поки OBK залишається відкритим. Закриття OBK або його призупинення системою у фоні може його перервати.</value>
+  </data>
+  <data name="DownloadComplete" xml:space="preserve">
+    <value>Повідомлення та вкладення завантажено.</value>
+  </data>
+  <data name="DownloadAuthenticationFailed" xml:space="preserve">
+    <value>Помилка входу: {0}</value>
+    <comment>{0} = authentication error.</comment>
+  </data>
+  <data name="DownloadMessagesFailed" xml:space="preserve">
+    <value>Вхід успішний, але повідомлення не вдалося завантажити: {0}</value>
+    <comment>{0} = message or archive preparation error.</comment>
+  </data>
+  <data name="DownloadAttachmentsFailed" xml:space="preserve">
+    <value>Повідомлення готові, але завантаження вкладень не вдалося: {0} Повторіть вхід або оновлення, щоб завершити. Незавантажені файли недоступні офлайн.</value>
+    <comment>{0} = attachment download error.</comment>
+  </data>
+  <data name="DownloadDetails" xml:space="preserve">
+    <value>Подробиці завантаження</value>
+  </data>
+  <data name="DownloadDetailsText" xml:space="preserve">
+    <value>{0}
+{1}
+{2}</value>
+    <comment>{0} = attachment completed/total count; {1} = status or error; {2} = keep-open notice while running.</comment>
+  </data>
+  <data name="DownloadAttachmentPending" xml:space="preserve">
+    <value>Ще недоступно офлайн</value>
+  </data>
+  <data name="DownloadWait" xml:space="preserve">
+    <value>Зачекайте, поки завантажаться повідомлення. Коли почнеться завантаження вкладень, можна вибрати читання у фоновому режимі.</value>
+  </data>
 </root>

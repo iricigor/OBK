@@ -1,5 +1,8 @@
 using OBK.AndroidApp.Localization;
 using OBK.Core;
+#if DEBUG
+using OBK.Verification;
+#endif
 
 namespace OBK.AndroidApp;
 
@@ -12,6 +15,13 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
     public SchoolDirectory Schools { get; } = schools;
     public string AttachmentDirectory { get; } = attachmentDirectory;
     public bool IsVerification { get; private init; }
+    internal InitialDownload? Download { get; private set; }
+    internal bool ReadingDuringDownload { get; private set; }
+    internal event Action? DownloadChanged;
+#if DEBUG
+    internal bool IsInitialDownloadVerification { get; private init; }
+    private InitialDownloadFixture? verificationDownload;
+#endif
     internal static bool Syncing => SyncGate.CurrentCount == 0;
     internal static string DatabasePath => Path.Combine(FileSystem.AppDataDirectory, "obk.sqlite3");
 
@@ -20,8 +30,17 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
         var verification = false;
 #if DEBUG
         verification = Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification", false) == true;
+        var initialVerification = verification &&
+            Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification_initial_download", false) == true;
 #endif
         var path = verification ? Path.Combine(FileSystem.AppDataDirectory, "verification.sqlite3") : DatabasePath;
+#if DEBUG
+        if (initialVerification)
+        {
+            path = Path.Combine(FileSystem.AppDataDirectory, "verification-login.sqlite3");
+            if (File.Exists(path)) File.Delete(path);
+        }
+#endif
         var protection = new AndroidDataProtection(File.Exists(path));
         var check = "OBK encryption check"u8.ToArray();
         if (!protection.Unprotect(protection.Protect(check)).SequenceEqual(check))
@@ -35,11 +54,17 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
         foreach (var file in Directory.EnumerateFiles(directory))
             File.Delete(file);
 #if DEBUG
-        if (verification) await VerificationData.PrepareAsync(store, protection, directory);
+        if (verification && !initialVerification) await VerificationData.PrepareAsync(store, protection, directory);
 #else
         await Task.CompletedTask;
 #endif
-        return new ReaderSession(store, schools, directory) { IsVerification = verification };
+        return new ReaderSession(store, schools, directory)
+        {
+            IsVerification = verification,
+#if DEBUG
+            IsInitialDownloadVerification = initialVerification
+#endif
+        };
     });
 
     public async Task SynchronizeAsync(Login login, string password, bool remember, IProgress<string> progress)
@@ -67,6 +92,69 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
             finally { SyncGate.Release(); }
         }
         finally { ForegroundGate.Release(); }
+    }
+
+    internal async Task SynchronizeInitialAsync(InitialDownload download, string password, bool remember, Action<string> waiting)
+    {
+        if (IsVerification)
+        {
+#if DEBUG
+            if (!IsInitialDownloadVerification) throw new ObkException(AppStrings.ErrorVerificationCannotSync);
+#else
+            throw new ObkException(AppStrings.ErrorVerificationCannotSync);
+#endif
+        }
+        if (!await ForegroundGate.WaitAsync(0)) throw new ObkException(AppStrings.ErrorSyncInProgress);
+        Download = download;
+        ReadingDuringDownload = false;
+        void Changed() => DownloadChanged?.Invoke();
+        download.Changed += Changed;
+        try
+        {
+            if (!await SyncGate.WaitAsync(0))
+            {
+                waiting(AppStrings.StatusWaitingForCheck);
+                await SyncGate.WaitAsync();
+            }
+            try
+            {
+#if DEBUG
+                using var client = new KomensClient(download.Account.Url,
+                    IsInitialDownloadVerification ? verificationDownload = new InitialDownloadFixture(automatic: true) : null,
+                    IsInitialDownloadVerification ? TimeSpan.FromMinutes(2) : null);
+#else
+                using var client = new KomensClient(download.Account.Url);
+#endif
+                await Task.Run(() => download.RunAsync(client, Store, password, remember));
+            }
+            finally { SyncGate.Release(); }
+        }
+        finally
+        {
+            download.Changed -= Changed;
+            ForegroundGate.Release();
+            Changed();
+        }
+    }
+
+    internal void ReadWhileDownloading()
+    {
+        if (Download?.State is not { MessagesReady: true } state ||
+            (state.Running && !state.AttachmentsStarted))
+            throw new ObkException(OBK.Core.Localization.SharedStrings.DownloadWait);
+        ReadingDuringDownload = true;
+        DownloadChanged?.Invoke();
+#if DEBUG
+        verificationDownload?.ContinueAfterOne();
+#endif
+    }
+
+    internal void ClearInitialDownloadStatus()
+    {
+        if (Download?.State.Running == true) throw new ObkException(AppStrings.ErrorSyncInProgress);
+        Download = null;
+        ReadingDuringDownload = false;
+        DownloadChanged?.Invoke();
     }
 
     /// <summary>

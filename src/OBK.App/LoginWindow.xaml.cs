@@ -23,6 +23,9 @@ public partial class LoginWindow : Window
     private SchoolDirectory? schoolDirectory;
     private IReadOnlyList<SavedLoginRow> rememberedProfiles = [];
     private string? selectedSchoolName;
+    private InitialDownloadState? downloadState;
+    private bool enteringReader;
+    internal bool Completed => completed;
     public string StatusText { set => Status.Text = value; }
     internal Task DirectoryReady { get; }
     internal int AvailableSchoolCount => schoolDirectory?.Count ?? 0;
@@ -173,6 +176,7 @@ public partial class LoginWindow : Window
             var remember = Remember.IsChecked == true;
             var childName = OptionalLabel(ChildName.Text);
             SetBusy(true);
+            SetDownloadState(new(InitialDownloadPhase.Authentication));
             Status.Text = AppStrings.LoginConnecting;
             await app.SynchronizeAsync(this, url, username, password, remember, false, childName,
                 selectedSchoolName);
@@ -185,6 +189,32 @@ public partial class LoginWindow : Window
         completed = true;
         Password.Clear();
         Close();
+    }
+
+    internal void SetDownloadState(InitialDownloadState state)
+    {
+        downloadState = state;
+        DownloadPanel.Visibility = Visibility.Visible;
+        LoginSuccess.Visibility = state.Authenticated ? Visibility.Visible : Visibility.Collapsed;
+        MessagesReadyText.Visibility = AttachmentCountText.Visibility = state.MessagesReady ? Visibility.Visible : Visibility.Collapsed;
+        AttachmentCountText.Text = state.AttachmentCount;
+        OfflineButton.Content = state.MessagesReady && state.Error is not null ? SharedStrings.DownloadReadMessages : AppStrings.LoginReadOffline;
+        DownloadProgress.Value = state.Fraction;
+        DownloadProgress.IsIndeterminate = state.Running && !state.MessagesReady && SystemParameters.ClientAreaAnimation;
+        DownloadProgress.Visibility = state.Running || state.MessagesReady ? Visibility.Visible : Visibility.Collapsed;
+        Status.Text = state.Status;
+        BackgroundDownloadPanel.Visibility = state.CanContinueInBackground ? Visibility.Visible : Visibility.Collapsed;
+        BackgroundDownloadButton.IsEnabled = !enteringReader;
+    }
+
+    private async void ReadWhileDownloading(object sender, RoutedEventArgs e)
+    {
+        if (enteringReader || downloadState is not { CanContinueInBackground: true }) return;
+        enteringReader = true;
+        BackgroundDownloadButton.IsEnabled = false;
+        try { await app.ViewModel.ReadWhileDownloadingAsync(); Complete(); }
+        catch (ObkException error) { Status.Text = error.Message; }
+        finally { enteringReader = false; BackgroundDownloadButton.IsEnabled = true; }
     }
 
     private async Task<bool> ActivateOfflineAsync()

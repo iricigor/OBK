@@ -258,7 +258,8 @@ public partial class MainWindow : Window
 
     private void WindowClosing(object? sender, CancelEventArgs e)
     {
-        if (Busy || ViewModel.IsExporting || (switchingLanguage && !replacing))
+        if (ViewModel.Loading || (ViewModel.IsSyncing && !ViewModel.ReadingDuringDownload) ||
+            ViewModel.IsExporting || (switchingLanguage && !replacing))
         {
             e.Cancel = true;
             Updates.CancelRestart();
@@ -331,16 +332,22 @@ public partial class MainWindow : Window
     public Task ActivateAccountAsync(string url, string username, string? childName = null, string? schoolName = null) =>
         ViewModel.ActivateAccountAsync(url, username, childName: childName, schoolName: schoolName);
     public void OfflineStatus() => ViewModel.OfflineStatus();
+    private void ShowDownloadDetails(object sender, RoutedEventArgs e) =>
+        DownloadDetailsPopup.IsOpen = !DownloadDetailsPopup.IsOpen;
     public async Task SynchronizeAsync(LoginWindow login, string url, string username, string password, bool remember,
         bool fullRefresh, string? childName, string? schoolName)
     {
         try
         {
             await ViewModel.SynchronizeAsync(url, username, password, remember, fullRefresh, childName, schoolName,
-                new Progress<string>(text => login.StatusText = text));
-            login.Complete();
+                login.SetDownloadState);
+            if (!login.Completed) login.Complete();
         }
-        catch (ObkException error) { login.StatusText = Localized.Format(AppStrings.LoginSyncFailed, error.Message); }
+        catch (ObkException error)
+        {
+            if (!login.Completed) login.StatusText = ViewModel.DownloadState is { Error: { } failure } state && failure == error.Message
+                ? state.Status : Localized.Format(AppStrings.LoginSyncFailed, error.Message);
+        }
         finally { login.SetBusy(false); }
     }
 
@@ -365,7 +372,7 @@ public partial class MainWindow : Window
 
     private async Task ExportAsync(AttachmentRow row, string action)
     {
-        if (!ViewModel.CanChangeAccount) return;
+        if (!ViewModel.CanUseAttachments) return;
         if (action == "open" && !row.CanOpen)
             throw new ObkException(AppStrings.ErrorAttachmentCannotOpen);
         string? destination = null;
@@ -411,7 +418,7 @@ public partial class MainWindow : Window
 
     private async Task SaveAllAsync(IReadOnlyList<AttachmentRow> rows)
     {
-        if (!ViewModel.CanChangeAccount || rows.Count == 0) return;
+        if (!ViewModel.CanUseAttachments || rows.Count == 0) return;
         var dialog = new OpenFolderDialog { Title = AppStrings.DialogSaveAllTitle };
         if (dialog.ShowDialog(this) != true) return;
         var destinations = new List<string>();
@@ -454,7 +461,7 @@ public partial class MainWindow : Window
     private async void AttachmentMouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed || sender is not Button { DataContext: AttachmentRow { Cached: true } row } ||
-            !ViewModel.CanChangeAccount) return;
+            !ViewModel.CanUseAttachments) return;
         var point = e.GetPosition(this);
         if (Math.Abs(point.X - dragOrigin.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(point.Y - dragOrigin.Y) < SystemParameters.MinimumVerticalDragDistance) return;

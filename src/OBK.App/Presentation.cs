@@ -266,21 +266,37 @@ public static class LinkOpener
     }
 }
 
-public sealed class AttachmentRow(MainViewModel owner, Attachment attachment, AttachmentInfo? info, Login account)
+public sealed class AttachmentRow(MainViewModel owner, Attachment attachment, AttachmentInfo? info, Login account) : ObservableObject
 {
+    private AttachmentInfo? metadata = info;
     public MainViewModel Owner { get; } = owner;
     /// <summary>The child account whose encrypted cache holds the file.</summary>
     public Login Account { get; } = account;
     public Attachment Attachment { get; } = attachment;
-    public string Name => info?.Name ?? Attachment.SafeName;
-    public bool Cached => info is not null;
+    public string Name => metadata?.Name ?? Attachment.SafeName;
+    public bool Cached => metadata is not null;
     public bool CanOpen => Cached && FileNames.CanOpen(Name);
     public string BadgeKey => Palette.FileKey(System.IO.Path.GetExtension(Name));
-    public string Size => info is null ? AppStrings.AttachmentNotDownloaded : FormatSize(info.Size);
+    public string Size => metadata is null ? Owner.AttachmentsPendingFor(Account) ? SharedStrings.DownloadAttachmentPending :
+        AppStrings.AttachmentNotDownloaded : FormatSize(metadata.Size);
     public string Type => System.IO.Path.GetExtension(Name).TrimStart('.').ToUpperInvariant() is { Length: > 0 } type
         ? type.Length <= 4 ? type : AppStrings.AttachmentTypeFile : AppStrings.AttachmentTypeFile;
-    public string Availability => Name + "\n" + (!Cached ? AppStrings.AttachmentAvailabilityNotDownloaded :
+    public string Availability => Name + "\n" + (!Cached ? Owner.AttachmentsPendingFor(Account) ? SharedStrings.DownloadAttachmentPending :
+        AppStrings.AttachmentAvailabilityNotDownloaded :
         CanOpen ? AppStrings.AttachmentAvailabilityOpenable : AppStrings.AttachmentAvailabilitySaveOnly);
+    internal void UpdateInfo(AttachmentInfo? value)
+    {
+        metadata = value;
+        Notify(nameof(Name));
+        Notify(nameof(Cached));
+        Notify(nameof(CanOpen));
+        AvailabilityChanged();
+    }
+    internal void AvailabilityChanged()
+    {
+        Notify(nameof(Size));
+        Notify(nameof(Availability));
+    }
     public static string FormatSize(long bytes) => bytes switch
     {
         < 1024 => Localized.Format(AppStrings.SizeBytes, bytes),

@@ -1,6 +1,7 @@
 using OBK.App.Localization;
 using OBK.Core;
 using OBK.Core.Localization;
+using OBK.Verification;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -291,6 +292,7 @@ public partial class App : Application
                         if (store.LastAccount()!.Username != "installation-check")
                             throw new ObkException("Closing the sign-in window changed the active offline account.");
                     }
+                    await VerifyInitialDownloadAsync(directory, resultPath);
                     if (resultPath is not null) File.WriteAllText(resultPath, "{\"ok\":true}");
                 }
                 catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
@@ -311,6 +313,122 @@ public partial class App : Application
             if (resultPath is not null) File.WriteAllText(resultPath, JsonSerializer.Serialize(new { ok = false, error = error.Message }));
             if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
             Shutdown(1);
+        }
+    }
+
+    /// <summary>
+    /// Drives the real sign-in and reader controls against an in-memory fictional school, pausing after
+    /// authentication, at 1 / 17 attachments, and at 3 / 17 after the explicit background choice.
+    /// </summary>
+    private async Task VerifyInitialDownloadAsync(string directory, string? resultPath)
+    {
+        var store = new LocalStore(Path.Combine(directory, "login", "download.sqlite3"));
+        var window = new MainWindow(store, showLogin: false, enableUpdates: false) { Width = 1280, Height = 760 };
+        var model = window.ViewModel;
+        var profile = new Login(InitialDownloadFixture.Url, "sample.account", ChildName: "Anna", SchoolName: "Example School");
+        var fixture = new InitialDownloadFixture();
+        model.ClientFactory = url => new KomensClient(url, fixture, TimeSpan.FromMinutes(2));
+        LoginWindow? dialog = null;
+        static async Task Within(Task task, string step)
+        {
+            try { await task.WaitAsync(TimeSpan.FromSeconds(30)); }
+            catch (TimeoutException) { throw new ObkException($"Initial download verification timed out waiting for {step}."); }
+        }
+        static async Task<bool> Until(Func<bool> condition)
+        {
+            for (var wait = 0; wait < 1200 && !condition(); wait++) await Task.Delay(25);
+            return condition();
+        }
+        void Snapshot(FrameworkElement surface, string suffix)
+        {
+            if (resultPath is null) return;
+            surface.UpdateLayout();
+            Capture(surface, Path.ChangeExtension(resultPath, suffix));
+        }
+        async Task<MessageRow> SelectTripAsync()
+        {
+            await model.FolderReady;
+            var trip = model.Messages.FirstOrDefault(row => row.Message.Id == "trip") ??
+                throw new ObkException("The downloaded fictional message was not listed in the reader.");
+            model.SelectedMessage = trip;
+            await model.MessageReady;
+            return trip;
+        }
+        try
+        {
+            window.Show();
+            await window.InitializeAsync();
+            await model.Theme.SetAsync("Light");
+            LoginWindow login = new(window, profile, false, "");
+            dialog = login;
+            login.Show();
+            await login.DirectoryReady;
+            login.Password.Password = "fictional-only";
+            login.SignInButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+            await Within(fixture.MessagesRequested, "the message download");
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            if (login.LoginSuccess.Visibility != Visibility.Visible || login.BackgroundDownloadPanel.IsVisible ||
+                model.DownloadState is not { Authenticated: true, MessagesReady: false } ||
+                store.LoadArchive(profile.Url, profile.Username, SchoolYear.Current()) is not null)
+                throw new ObkException("Authentication success was not separate from foreground message downloads.");
+            Snapshot(login, ".login-messages.png");
+            fixture.ContinueMessages();
+            await Within(fixture.OneAttachmentReady, "the first attachment");
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            if (!login.BackgroundDownloadButton.IsVisible ||
+                model.DownloadState is not { CompletedAttachments: 1, TotalAttachments: 17, CanContinueInBackground: true } ||
+                store.AttachmentInfo(profile.Url, profile.Username, "file-2") is not null)
+                throw new ObkException("The sign-in handoff was not offered once attachments started at 1 / 17.");
+            Snapshot(login, ".login-download.light.png");
+            await model.Theme.SetAsync("Dark");
+            Snapshot(login, ".login-download.dark.png");
+            login.BackgroundDownloadButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+            if (!await Until(() => login.Completed) || !model.IsSyncing || model.CanChangeAccount ||
+                !model.CanUseAttachments || !model.ShowDownloadStrip)
+                throw new ObkException("Choosing background did not open the reader while retaining the synchronization guard.");
+            await SelectTripAsync();
+            if (model.VisibleAttachments is not [var cached, var pending, ..] ||
+                !model.OpenAttachmentCommand.CanExecute(cached) || model.OpenAttachmentCommand.CanExecute(pending))
+                throw new ObkException("Cached and pending attachment actions were not distinguished in the background reader.");
+            fixture.ContinueAfterOne();
+            await Within(fixture.ThreeAttachmentsReady, "the third attachment");
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            await model.AttachmentAvailabilityReady;
+            if (model.DownloadState is not { CompletedAttachments: 3 } || !pending.Cached ||
+                !model.OpenAttachmentCommand.CanExecute(pending))
+                throw new ObkException("Committed attachment progress and open-file availability did not update while reading.");
+            model.SearchText = "School trip";
+            await model.FolderReady;
+            if (model.Messages.Count != 1)
+                throw new ObkException("Message search was not usable during attachment downloads.");
+            model.SearchText = "";
+            var selected = await SelectTripAsync();
+            model.ExpandAttachmentsCommand.Execute(null);
+            Snapshot(window, ".reader-download.dark.png");
+            await model.Theme.SetAsync("Light");
+            Snapshot(window, ".reader-download.light.png");
+            window.DownloadDetailsButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+            if (!window.DownloadDetailsPopup.IsOpen || window.DownloadDetailsText.Text != model.DownloadState?.Details)
+                throw new ObkException("Download details did not show the live attachment status.");
+            Snapshot(window.DownloadDetailsCard, ".reader-download.details.png");
+            window.DownloadDetailsPopup.IsOpen = false;
+            window.Width = 880;
+            window.Height = 620;
+            Snapshot(window, ".reader-download.small.png");
+            fixture.ContinueAfterThree();
+            if (!await Until(() => !model.IsSyncing)) throw new ObkException("Attachment downloads did not finish.");
+            await model.AttachmentAvailabilityReady;
+            if (model.ShowDownloadStrip || model.DownloadState is not { Phase: InitialDownloadPhase.Complete, CompletedAttachments: 17 } ||
+                !ReferenceEquals(selected, model.SelectedMessage) || model.VisibleAttachments.Any(file => !file.Cached))
+                throw new ObkException("Attachment completion changed the open message or left downloaded files unavailable.");
+        }
+        finally
+        {
+            fixture.ContinueAll();
+            await Until(() => !model.IsSyncing);
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            if (dialog is { Completed: false }) dialog.Close();
+            window.Close();
         }
     }
 
@@ -410,11 +528,11 @@ public partial class App : Application
         }
     }
 
-    private static void Capture(Window window, string path)
+    private static void Capture(FrameworkElement element, string path)
     {
-        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(window.ActualWidth),
-            (int)Math.Ceiling(window.ActualHeight), 96, 96, PixelFormats.Pbgra32);
-        bitmap.Render(window);
+        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth),
+            (int)Math.Ceiling(element.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(element);
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var file = File.Create(path);

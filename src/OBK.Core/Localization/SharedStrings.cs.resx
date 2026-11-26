@@ -374,4 +374,72 @@
     <value>o {0} dní později</value>
     <comment>{0} = number of days. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...). Counts forward from the displayed message's date.</comment>
   </data>
+  <data name="DownloadLoginSuccessful" xml:space="preserve">
+    <value>Přihlášení úspěšné</value>
+  </data>
+  <data name="DownloadSigningIn" xml:space="preserve">
+    <value>Přihlašování...</value>
+  </data>
+  <data name="DownloadMessages" xml:space="preserve">
+    <value>Stahování zpráv...</value>
+  </data>
+  <data name="DownloadMessagesReady" xml:space="preserve">
+    <value>Zprávy staženy.</value>
+  </data>
+  <data name="DownloadAttachments" xml:space="preserve">
+    <value>Stahování příloh</value>
+  </data>
+  <data name="DownloadAttachmentCount" xml:space="preserve">
+    <value>Přílohy {0:N0} / {1:N0}</value>
+    <comment>{0} = successfully cached unique attachments; {1} = total unique attachments.</comment>
+  </data>
+  <data name="DownloadAttachmentFile" xml:space="preserve">
+    <value>Stahování souboru {0}...</value>
+    <comment>{0} = safe attachment filename.</comment>
+  </data>
+  <data name="DownloadInBackground" xml:space="preserve">
+    <value>Stahovat přílohy na pozadí</value>
+  </data>
+  <data name="DownloadReadMessages" xml:space="preserve">
+    <value>Číst zprávy</value>
+  </data>
+  <data name="DownloadBackgroundHint" xml:space="preserve">
+    <value>Čtěte zprávy, zatímco se přílohy stahují.</value>
+  </data>
+  <data name="DownloadKeepOpen" xml:space="preserve">
+    <value>Pro dokončení stahování nechte OBK otevřený.</value>
+  </data>
+  <data name="DownloadBackgroundLimit" xml:space="preserve">
+    <value>Stahování pokračuje, dokud zůstane OBK otevřený. Zavření OBK nebo jeho pozastavení systémem na pozadí ho může přerušit.</value>
+  </data>
+  <data name="DownloadComplete" xml:space="preserve">
+    <value>Zprávy a přílohy staženy.</value>
+  </data>
+  <data name="DownloadAuthenticationFailed" xml:space="preserve">
+    <value>Přihlášení selhalo: {0}</value>
+    <comment>{0} = authentication error.</comment>
+  </data>
+  <data name="DownloadMessagesFailed" xml:space="preserve">
+    <value>Přihlášení proběhlo úspěšně, ale zprávy se nepodařilo stáhnout: {0}</value>
+    <comment>{0} = message or archive preparation error.</comment>
+  </data>
+  <data name="DownloadAttachmentsFailed" xml:space="preserve">
+    <value>Zprávy jsou připraveny, ale stahování příloh selhalo: {0} Dokončete ho opakováním přihlášení nebo obnovením. Čekající soubory nejsou dostupné offline.</value>
+    <comment>{0} = attachment download error.</comment>
+  </data>
+  <data name="DownloadDetails" xml:space="preserve">
+    <value>Podrobnosti stahování</value>
+  </data>
+  <data name="DownloadDetailsText" xml:space="preserve">
+    <value>{0}
+{1}
+{2}</value>
+    <comment>{0} = attachment completed/total count; {1} = status or error; {2} = keep-open notice while running.</comment>
+  </data>
+  <data name="DownloadAttachmentPending" xml:space="preserve">
+    <value>Zatím není dostupné offline</value>
+  </data>
+  <data name="DownloadWait" xml:space="preserve">
+    <value>Počkejte na stažení zpráv. Jakmile se začnou stahovat přílohy, můžete zvolit čtení na pozadí.</value>
+  </data>
 </root>
