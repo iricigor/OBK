@@ -284,15 +284,15 @@
   </data>
   <data name="ReaderRefreshFailed" xml:space="preserve">
     <value>Failed: {0} Existing offline archives were kept.</value>
-    <comment>Part of the Refresh all summary. {0} = semicolon-separated list of "account: error" entries.</comment>
+    <comment>Part of the refresh summary. {0} = semicolon-separated list of "account: error" entries.</comment>
   </data>
   <data name="ReaderRefreshSignInNeeded" xml:space="preserve">
     <value>Sign in needed: {0}.</value>
-    <comment>Part of the Refresh all summary. {0} = comma-separated account labels without a saved password.</comment>
+    <comment>Part of the refresh summary. {0} = comma-separated account labels without a saved password.</comment>
   </data>
   <data name="ReaderRefreshSummary" xml:space="preserve">
     <value>Refreshed {0} of {1} accounts.</value>
-    <comment>Start of the Refresh all summary. {0} = accounts refreshed successfully, {1} = all known accounts.</comment>
+    <comment>Start of the refresh summary. {0} = accounts refreshed successfully, {1} = accounts in the selected scope.</comment>
   </data>
   <data name="ReaderRetryOpening" xml:space="preserve">
     <value>Retry opening archive</value>

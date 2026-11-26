@@ -859,8 +859,8 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Synchronizes every known account that has a remembered password. Accounts without one are reported;
-    /// the sign-in dialog opens for the current account, or for the first one if nothing could refresh.
+    /// Synchronizes the selected refresh scope. Accounts without a remembered password are reported, and the
+    /// sign-in dialog opens for the current account or the first account that cannot refresh.
     /// </summary>
     public async Task RefreshAllAsync()
     {
