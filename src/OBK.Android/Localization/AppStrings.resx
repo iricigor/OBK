@@ -279,8 +279,8 @@
     <value>Refresh needs attention</value>
   </data>
   <data name="ReaderRefreshAll" xml:space="preserve">
-    <value>Refresh all</value>
-    <comment>Button that refreshes every saved account.</comment>
+    <value>Refresh</value>
+    <comment>Button that downloads new messages for the selected refresh scope.</comment>
   </data>
   <data name="ReaderRefreshFailed" xml:space="preserve">
     <value>Failed: {0} Existing offline archives were kept.</value>
@@ -574,6 +574,9 @@
     <value>Reading</value>
     <comment>Settings section for text size and density.</comment>
   </data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="SettingsAlwaysRefreshAllChildren" xml:space="preserve"><value>Always refresh all children</value></data>
+  <data name="SettingsAlwaysRefreshAllChildrenDescription" xml:space="preserve"><value>Also refresh other saved children when one child is selected</value></data>
   <data name="SettingsSectionAbout" xml:space="preserve">
     <value>About</value>
     <comment>Settings section with the repository link.</comment>

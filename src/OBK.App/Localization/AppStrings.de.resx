@@ -423,7 +423,7 @@ Aktualisieren, um die Schule zu prüfen.</value>
     <comment>Button that downloads new messages.</comment>
   </data>
   <data name="MainRefreshTooltip" xml:space="preserve">
-    <value>Neue Nachrichten für jedes gespeicherte Kind herunterladen</value>
+    <value>Neue Nachrichten für das ausgewählte Kind oder alle Kinder herunterladen</value>
   </data>
   <data name="MainRefreshing" xml:space="preserve">
     <value>Wird aktualisiert...</value>
@@ -590,6 +590,10 @@ Aktualisieren, um die Schule zu prüfen.</value>
   <data name="SettingsAppearanceDescription" xml:space="preserve">
     <value>Design und Lesegröße</value>
   </data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Aktualisieren</value></data>
+  <data name="SettingsRefreshDescription" xml:space="preserve"><value>Auswahl, für welche Kinder Nachrichten geladen werden</value></data>
+  <data name="SettingsAlwaysRefreshAllChildren" xml:space="preserve"><value>Immer alle Kinder aktualisieren</value></data>
+  <data name="SettingsAlwaysRefreshAllChildrenDescription" xml:space="preserve"><value>Auch andere gespeicherte Kinder aktualisieren, wenn nur ein Kind ausgewählt ist</value></data>
   <data name="SettingsBack" xml:space="preserve">
     <value>Zurück zu den Nachrichten</value>
     <comment>Button that closes Settings.</comment>
