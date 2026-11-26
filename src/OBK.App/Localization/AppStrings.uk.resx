@@ -142,10 +142,6 @@
     <value>OBK не вдалося запустити</value>
     <comment>Message box caption when the app cannot open its local data.</comment>
   </data>
-  <data name="ErrorSyncArchiveKept" xml:space="preserve">
-    <value>{0} Наявний автономний архів не замінено.</value>
-    <comment>{0} = synchronization error message.</comment>
-  </data>
   <data name="ErrorUnexpected" xml:space="preserve">
     <value>Неочікувана помилка застосунку ({0}). Перезапустіть OBK; не додавайте облікові дані або вміст повідомлень до звітів про помилки.</value>
     <comment>{0} = technical .NET exception type name.</comment>

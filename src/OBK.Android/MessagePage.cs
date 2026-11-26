@@ -16,11 +16,19 @@ internal sealed class MessagePage : ContentPage
     private readonly Border header = ReaderTheme.Panel(new ContentView(), 16);
     private readonly Label status = new() { IsVisible = false };
     private readonly List<Button> actions = [];
+    private readonly List<FileCard> fileCards = [];
+    private int availabilityVersion;
+    private bool refreshingFiles;
+    private bool refreshFilesAgain;
     private readonly Message message;
     private bool? compactHeader;
     private bool loaded;
     private bool busy;
     private bool loading;
+    private sealed record FileCard(Attachment Attachment, Label Availability, Button Open, Button Share, Grid Actions)
+    {
+        public AttachmentInfo? Info { get; set; }
+    }
     internal bool Busy => busy || loading;
     internal MessagePage Rebuild(Func<Login, MessageRef, Task> open) => new(session, account, item, archive, open);
 
@@ -42,7 +50,10 @@ internal sealed class MessagePage : ContentPage
         UpdateHeader();
         content.Add(header);
         content.Add(status);
-        Content = new ScrollView { Content = content };
+        var layout = new Grid { RowDefinitions = [new(GridLength.Star), new(GridLength.Auto)] };
+        layout.Add(new ScrollView { Content = content });
+        layout.Add(new DownloadStatusView(this) { Session = session }, 0, 1);
+        Content = layout;
         ReaderTheme.Apply(this);
         this.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
     }
@@ -91,7 +102,13 @@ internal sealed class MessagePage : ContentPage
         base.OnAppearing();
         // Settings can be opened on top of this page and change the density.
         UpdateHeader();
-        if (loaded) return;
+        session.DownloadChanged -= DownloadChanged;
+        session.DownloadChanged += DownloadChanged;
+        if (loaded)
+        {
+            await RefreshFileCardsSafelyAsync();
+            return;
+        }
         loaded = true;
         loading = true;
         try
@@ -137,19 +154,19 @@ internal sealed class MessagePage : ContentPage
             }
             foreach (var attachment in message.Attachments)
             {
-                var info = await Task.Run(() => session.Store.AttachmentInfo(account.Url, account.Username, attachment.Identifier));
                 var fileContent = new VerticalStackLayout { Spacing = 8 };
                 fileContent.Add(new Label { Text = attachment.SafeName, FontSize = 14, FontAttributes = FontAttributes.Bold });
                 attachments.Add(ReaderTheme.Panel(fileContent, 12));
-                if (info is null)
-                {
-                    fileContent.Add(ReaderTheme.Metadata(new Label { Text = AppStrings.MessageAttachmentNotDownloaded }));
-                    continue;
-                }
+                var availability = ReaderTheme.Metadata(new Label { Text = SharedStrings.DownloadAttachmentPending });
+                fileContent.Add(availability);
                 var open = new Button { Text = AppStrings.MessageOpenAttachment, IsVisible = FileNames.CanOpen(attachment.SafeName), LineBreakMode = LineBreakMode.WordWrap };
                 var share = ReaderTheme.Subtle(new Button { Text = AppStrings.MessageShareAttachment, LineBreakMode = LineBreakMode.WordWrap });
+                var fileActions = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Star)], ColumnSpacing = 8, IsVisible = false };
+                var card = new FileCard(attachment, availability, open, share, fileActions);
+                fileCards.Add(card);
                 open.Clicked += async (_, _) => await PerformAsync(async () =>
                 {
+                    var info = card.Info ?? throw new ObkException(SharedStrings.ErrorAttachmentNotDownloaded);
                     var path = await session.ExportAsync(account, attachment);
                     var file = AttachmentFile(path, info.ContentType);
                     if (!await Launcher.OpenAsync(new OpenFileRequest(AppStrings.MessageOpenAttachmentChooserTitle, file)))
@@ -157,17 +174,16 @@ internal sealed class MessagePage : ContentPage
                 });
                 share.Clicked += async (_, _) => await PerformAsync(async () =>
                 {
+                    var info = card.Info ?? throw new ObkException(SharedStrings.ErrorAttachmentNotDownloaded);
                     var path = await session.ExportAsync(account, attachment);
                     var file = AttachmentFile(path, info.ContentType);
                     await Share.RequestAsync(new ShareFileRequest(AppStrings.MessageShareAttachmentChooserTitle, new ShareFile(file)));
                 });
-                actions.Add(open);
-                actions.Add(share);
-                var fileActions = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Star)], ColumnSpacing = 8 };
                 fileActions.Add(open, 0);
                 fileActions.Add(share, 1);
                 fileContent.Add(fileActions);
             }
+            await RefreshFileCardsAsync();
             content.Add(ReaderTheme.Metadata(new Label { Text = AppStrings.MessageOfflineNotice }));
             if (message.Attachments.Count > 0)
                 content.Add(ReaderTheme.Metadata(new Label { Text = AppStrings.MessageDecryptedCopyNotice }));
@@ -180,6 +196,66 @@ internal sealed class MessagePage : ContentPage
             await DisplayAlertAsync(AppStrings.MessageReadFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
         }
         finally { loading = false; }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        session.DownloadChanged -= DownloadChanged;
+        availabilityVersion++;
+    }
+
+    private void DownloadChanged() => MainThread.BeginInvokeOnMainThread(async () =>
+    {
+        if (loaded && session.Download is { } download && download.Account.Url == account.Url &&
+            download.Account.Username == account.Username)
+            await RefreshFileCardsSafelyAsync();
+    });
+
+    private async Task RefreshFileCardsSafelyAsync()
+    {
+        // Progress events arrive faster than metadata reads; coalesce them into at most one more pass.
+        if (refreshingFiles) { refreshFilesAgain = true; return; }
+        refreshingFiles = true;
+        try
+        {
+            do
+            {
+                refreshFilesAgain = false;
+                try { await RefreshFileCardsAsync(); }
+                catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
+                {
+                    status.Text = error.Message;
+                    status.IsVisible = true;
+                }
+            } while (refreshFilesAgain);
+        }
+        finally { refreshingFiles = false; }
+    }
+
+    private async Task RefreshFileCardsAsync()
+    {
+        var version = ++availabilityVersion;
+        var cards = fileCards.ToArray();
+        var info = await Task.Run(() => cards.Select(card =>
+            session.Store.AttachmentInfo(account.Url, account.Username, card.Attachment.Identifier)).ToArray());
+        if (version != availabilityVersion) return;
+        var pending = session.Download is { } download && download.Account.Url == account.Url &&
+            download.Account.Username == account.Username && download.State is { MessagesReady: true, Running: true };
+        for (var index = 0; index < cards.Length; index++)
+        {
+            var card = cards[index];
+            card.Info = info[index];
+            card.Actions.IsVisible = card.Info is not null;
+            card.Availability.IsVisible = card.Info is null;
+            card.Availability.Text = pending ? SharedStrings.DownloadAttachmentPending : AppStrings.MessageAttachmentNotDownloaded;
+            card.Open.IsEnabled = card.Share.IsEnabled = card.Info is not null && !busy;
+            if (card.Info is not null && !actions.Contains(card.Open))
+            {
+                actions.Add(card.Open);
+                actions.Add(card.Share);
+            }
+        }
     }
 
     private IReadOnlyList<RelatedLink> FindRelated()

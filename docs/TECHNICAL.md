@@ -161,6 +161,33 @@ unchanged. Attachments stay below related messages and above the body, on
 their own neutral-shaded surface. This band is hidden when there are no files;
 file cards and attachment actions are unchanged.
 
+## Initial sign-in downloads
+
+Windows and Android show an inline **Login successful** confirmation immediately
+after receiving a valid access token, separately from message progress. All
+message folders remain foreground on the sign-in screen and are saved before
+attachments begin. Only then, while an attachment download is active, does
+**Download attachments in background** offer entry to the reader. The original
+task, client and synchronization guard remain alive until files finish or fail;
+there is no second message download or unobserved fire-and-forget task.
+
+The reader shows a compact bottom strip with successfully cached/total unique
+attachments, a reduced-motion-aware activity indication, and details. Android
+also shows it while an individual message is open. Cache hits count as complete,
+but an in-progress or failed file does not count until its encrypted transaction
+commits. Open/share/save actions become available as individual files commit,
+without changing the selected message or its opened state.
+
+Authentication failure has no success confirmation. Message failure retains the
+previous archive; attachment failure retains the newly saved messages and any
+complete files, with distinct errors and retry guidance. Retry sign-in or
+**Refresh** reuses cached files. Refresh keeps its existing account-selection and
+all-or-nothing message-archive behavior.
+
+“Background” is in-app reading only. Closing OBK or Android suspending it can
+interrupt downloads; this flow does not schedule an OS background job. Progress
+remains readable with system animations disabled.
+
 ## Interface text and localization
 
 App-owned interface text lives in `.resx` resource sets. English is the neutral
@@ -452,6 +479,14 @@ $activity = (& $adb -s <serial> shell cmd package resolve-activity --brief cz.ob
 ```
 
 The verification fixture and launch handling are excluded from Release builds.
+To verify the initial download flow without school traffic, also pass
+`--ez obk_verification_initial_download true`. This resets only the dedicated
+fictional `verification-login.sqlite3` database and opens a prefilled example
+sign-in page; enter any fictional password. The fixture pauses after
+authentication (10 s), at 1/17 attachments (until the background button is
+chosen, at most 60 s), and at 3/17 (60 s). To check the dark theme, switch the
+device theme, for example with `adb shell cmd uimode night yes`.
+
 To exercise saved-password status and forgetting in the dedicated accounts page,
 add `--ez obk_verification_saved_password true` to the verification launch once.
 This seeds a fictional password for Anna only in the isolated verification
@@ -1034,9 +1069,11 @@ complete synchronization. Each network request that receives no response within
 10 seconds, or fails to connect, is retried once; HTTP errors such as a rejected
 sign-in are reported immediately without a retry.
 
-Complete synchronizations are cached in `%LOCALAPPDATA%\OBK\obk.sqlite3`,
-separately for each school URL, username, and school year. An interrupted or
-failed sync does not replace the previous archive. **Read offline** opens the
+Synchronizations are cached in `%LOCALAPPDATA%\OBK\obk.sqlite3`,
+separately for each school URL, username, and school year. Refresh does not
+replace the previous archive if any download fails. Initial sign-in saves all
+messages before attachments, so a later attachment failure keeps those messages
+readable and reports missing files separately. **Read offline** opens the
 selected account's existing cache without making network requests.
 
 Sync also downloads every unique attachment referenced by these messages,
@@ -1225,6 +1262,10 @@ size, the corresponding sign-in window, and minimum-size/theme states, for
 verification of the installed executable. Errors fail the process rather than
 reporting success. Installer verification uses a unique directory and uninstall
 registration, without creating shortcuts or changing an existing OBK install.
+The smoke test also drives the real sign-in/reader controls with an isolated
+HTTP fixture, checking success during foreground message loading, the explicit
+1/17 handoff, live 3/17 attachment availability, and completion without resetting
+the selected message. Optional snapshots include these light/dark states.
 
 For manual verification, run the installer normally, launch **OBK** from the
 Start menu, and confirm the login popup appears. Use **Read offline** without

@@ -19,9 +19,25 @@ internal sealed class SignInPage : ContentPage
     private readonly Label status = ReaderTheme.Metadata(new Label { Text = AppStrings.SignInPasswordNotice });
     private readonly Button submit = ReaderTheme.Primary(new Button { Text = AppStrings.SignInSubmitButton });
     private readonly Button manualAddress = ReaderTheme.Subtle(new Button { Text = AppStrings.SignInManualAddressButton });
-    private readonly ActivityIndicator progress = new() { IsVisible = false };
+    private readonly ActivityIndicator progress = new()
+    {
+        IsVisible = false, WidthRequest = 24, HeightRequest = 24, Margin = new Thickness(0, 0, 8, 0), VerticalOptions = LayoutOptions.Center
+    };
+    private readonly Label success = new() { Text = SharedStrings.DownloadLoginSuccessful, FontSize = 18, FontAttributes = FontAttributes.Bold, IsVisible = false };
+    private readonly Label messagesReady = new() { Text = SharedStrings.DownloadMessagesReady, IsVisible = false };
+    private readonly Label attachmentCount = new() { FontAttributes = FontAttributes.Bold, IsVisible = false };
+    private readonly ProgressBar downloadProgress = new() { HeightRequest = 4, IsVisible = false };
+    private readonly Button background = ReaderTheme.Primary(new Button { Text = SharedStrings.DownloadInBackground, LineBreakMode = LineBreakMode.WordWrap, IsVisible = false });
+    private readonly Label backgroundHint = ReaderTheme.Metadata(new Label { Text = SharedStrings.DownloadBackgroundHint, IsVisible = false });
+    private readonly Label keepOpen = ReaderTheme.Metadata(new Label { Text = SharedStrings.DownloadKeepOpen, IsVisible = false });
+    private readonly Button scan = new() { Text = AppStrings.SignInScanFromPc };
+    private readonly VerticalStackLayout downloadPanel;
     private readonly VerticalStackLayout addressFields;
     private bool busy;
+    private InitialDownload? download;
+    private Task? enterReader;
+    private bool handoffRequested;
+    private bool handedOff;
     private readonly Login? initial;
     internal bool Busy => busy;
 
@@ -75,8 +91,21 @@ internal sealed class SignInPage : ContentPage
             ReaderTheme.Apply(schoolResults);
         };
         submit.Clicked += async (_, _) => await SignInAsync();
-        var scan = new Button { Text = AppStrings.SignInScanFromPc };
         scan.Clicked += async (_, _) => { if (!busy) await TransferScanPage.OpenAsync(this, Import); };
+        background.Clicked += async (_, _) =>
+        {
+            if (download?.State.MessagesReady != true) return;
+            background.IsEnabled = false;
+            try { await EnterReaderAsync(); }
+            catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
+            {
+                enterReader = null;
+                handoffRequested = false;
+                status.Text = error.Message;
+                await DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
+            }
+            finally { background.IsEnabled = true; }
+        };
         var remembered = new Grid
         {
             ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)],
@@ -84,7 +113,7 @@ internal sealed class SignInPage : ContentPage
         };
         remembered.Add(remember, 0);
         remembered.Add(new Label { Text = AppStrings.SignInRememberCredentials, FontSize = 14, VerticalOptions = LayoutOptions.Center }, 1);
-        Content = new ScrollView
+        var form = new ScrollView
         {
             Content = new VerticalStackLayout
             {
@@ -99,11 +128,28 @@ internal sealed class SignInPage : ContentPage
                     Field(AppStrings.SignInUsernameLabel, username),
                     Field(AppStrings.SignInPasswordLabel, password),
                     Field(AppStrings.SignInChildLabel, child),
-                    remembered, submit, progress, status,
+                    remembered, submit, ReaderTheme.Metadata(new Label { Text = AppStrings.SignInPasswordNotice }),
                     ReaderTheme.Metadata(new Label { Text = AppStrings.SignInReadOnlyNotice })
                 }
             }
         };
+        success.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.StatusGood, ReaderTheme.DarkStatusGood);
+        progress.SetAppThemeColor(ActivityIndicator.ColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        downloadProgress.SetAppThemeColor(ProgressBar.ProgressColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        SemanticProperties.SetHeadingLevel(success, SemanticHeadingLevel.Level2);
+        var statusRow = new Grid { ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star)] };
+        statusRow.Add(progress);
+        statusRow.Add(status, 1);
+        downloadPanel = new VerticalStackLayout
+        {
+            Padding = 16, Spacing = 8, IsVisible = false,
+            Children = { success, messagesReady, attachmentCount, downloadProgress, statusRow, background, backgroundHint, keepOpen }
+        };
+        downloadPanel.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
+        var layout = new Grid { RowDefinitions = [new(GridLength.Star), new(GridLength.Auto)] };
+        layout.Add(form);
+        layout.Add(downloadPanel, 0, 1);
+        Content = layout;
         ReaderTheme.Apply(this);
     }
 
@@ -139,16 +185,30 @@ internal sealed class SignInPage : ContentPage
         schoolResults.Children.Clear();
         schoolStatus.Text = login.SchoolName ?? "";
         schoolStatus.IsVisible = schoolStatus.Text.Length > 0;
-        status.Text = AppStrings.SignInImported;
+        ShowStatus(AppStrings.SignInImported);
+    }
+
+    // The status shares the anchored download panel, so other messages hide any earlier download state.
+    private void ShowStatus(string text)
+    {
+        success.IsVisible = messagesReady.IsVisible = attachmentCount.IsVisible = background.IsVisible =
+            backgroundHint.IsVisible = keepOpen.IsVisible = downloadProgress.IsVisible = false;
+        status.Text = text;
+        downloadPanel.IsVisible = true;
     }
 
     private async Task SignInAsync()
     {
         if (busy) return;
         busy = true;
+        handoffRequested = handedOff = false;
+        enterReader = null;
+        download = null;
+        ShowStatus(AppStrings.StatusSigningIn);
         submit.IsEnabled = false;
-        progress.IsRunning = true;
-        progress.IsVisible = true;
+        scan.IsEnabled = false;
+        NavigationPage.SetHasBackButton(this, false);
+        progress.IsRunning = progress.IsVisible = ReaderTheme.AnimationsEnabled;
         manualAddress.IsEnabled = false;
         schoolSearch.IsEnabled = url.IsEnabled = username.IsEnabled = password.IsEnabled = child.IsEnabled = remember.IsEnabled = false;
         schoolResults.IsEnabled = false;
@@ -160,28 +220,71 @@ internal sealed class SignInPage : ContentPage
                 throw new ObkException(AppStrings.ErrorEnterUsernameAndPassword);
             var address = KomensClient.NormalizeUrl(url.Text ?? "");
             var login = new Login(address, user, ChildName: string.IsNullOrWhiteSpace(child.Text) ? null : child.Text.Trim());
-            status.Text = AppStrings.StatusSigningIn;
-            await session.SynchronizeAsync(login, secret, remember.IsChecked,
-                new Progress<string>(text => status.Text = text));
-            password.Text = "";
-            if (Navigation.NavigationStack.LastOrDefault() == this)
-                await Navigation.PopAsync();
-            await saved(login);
+            download = new(login, SchoolYear.Current());
+            session.DownloadChanged += DownloadChanged;
+            await session.SynchronizeInitialAsync(download, secret, remember.IsChecked, text => status.Text = text);
+            await EnterReaderAsync();
         }
         catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)
         {
-            status.Text = error.Message;
-            await DisplayAlertAsync(AppStrings.SignInFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
+            if (download is not null) ApplyDownloadState(download.State.Error is null ? download.State with { Error = error.Message } : download.State);
+            else status.Text = error.Message;
+            if (!handoffRequested)
+                await DisplayAlertAsync(download?.State.Authenticated == true ? SharedStrings.DownloadDetails : AppStrings.SignInFailedAlertTitle,
+                    status.Text, AppStrings.AlertOkButton);
+            else if (enterReader is not null) await enterReader;
         }
         finally
         {
             busy = false;
+            session.DownloadChanged -= DownloadChanged;
             submit.IsEnabled = true;
+            scan.IsEnabled = true;
+            NavigationPage.SetHasBackButton(this, true);
             progress.IsRunning = false;
             progress.IsVisible = false;
             manualAddress.IsEnabled = true;
             schoolSearch.IsEnabled = url.IsEnabled = username.IsEnabled = password.IsEnabled = child.IsEnabled = remember.IsEnabled = true;
             schoolResults.IsEnabled = true;
         }
+    }
+
+    private void DownloadChanged() => MainThread.BeginInvokeOnMainThread(() =>
+    {
+        if (!handedOff && download is not null && ReferenceEquals(session.Download, download))
+            ApplyDownloadState(download.State);
+    });
+
+    private void ApplyDownloadState(InitialDownloadState state)
+    {
+        success.IsVisible = state.Authenticated;
+        messagesReady.IsVisible = attachmentCount.IsVisible = downloadProgress.IsVisible = state.MessagesReady;
+        attachmentCount.Text = state.AttachmentCount;
+        downloadProgress.Progress = state.Fraction;
+        progress.IsRunning = progress.IsVisible = state.Running && ReaderTheme.AnimationsEnabled;
+        status.Text = state.Status;
+        background.IsVisible = state.CanContinueInBackground || (state.MessagesReady && state.Error is not null);
+        background.Text = state.Error is null ? SharedStrings.DownloadInBackground : SharedStrings.DownloadReadMessages;
+        backgroundHint.IsVisible = keepOpen.IsVisible = state.CanContinueInBackground;
+    }
+
+    private Task EnterReaderAsync() => enterReader ??= EnterReaderCoreAsync();
+
+    private async Task EnterReaderCoreAsync()
+    {
+        if (download is null) throw new ObkException(SharedStrings.DownloadWait);
+        session.ReadWhileDownloading();
+        handoffRequested = true;
+        await saved(download.Account);
+        password.Text = "";
+        if (Navigation.NavigationStack.LastOrDefault() == this) await Navigation.PopAsync();
+        handedOff = true;
+    }
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (!busy) return base.OnBackButtonPressed();
+        SemanticScreenReader.Default.Announce(SharedStrings.DownloadWait);
+        return true;
     }
 }

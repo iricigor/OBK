@@ -97,7 +97,7 @@ public sealed class App : Application
         if (switchingLanguage) throw new ObkException(SharedStrings.ErrorLanguageBusy);
         var stack = source.Navigation.NavigationStack;
         if (stack.FirstOrDefault() is not ReaderPage reader ||
-            reader.Busy || stack.OfType<SignInPage>().Any(page => page.Busy) ||
+            reader.Busy || reader.InitialDownloadRunning || stack.OfType<SignInPage>().Any(page => page.Busy) ||
             stack.OfType<MessagePage>().Any(page => page.Busy) ||
             stack.OfType<SettingsPage>().Any(page => page.Busy) ||
             stack.OfType<AccountsPage>().Any(page => page.Busy) ||

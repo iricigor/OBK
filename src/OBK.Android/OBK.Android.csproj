@@ -32,6 +32,7 @@
     <!-- 2.10.2.1 matches the AndroidX versions that Microsoft.Maui.Controls 10.0.110 already uses. -->
     <PackageReference Include="Xamarin.AndroidX.Work.Runtime" Version="2.10.2.1" />
     <ProjectReference Include="..\OBK.Core\OBK.Core.csproj" />
+    <Compile Include="..\..\tests\InitialDownloadFixture.cs" Link="Verification\InitialDownloadFixture.cs" Condition="'$(Configuration)' == 'Debug'" />
     <EmbeddedResource Include="..\..\data\schools.json.gz" LogicalName="OBK.schools.json.gz" />
   </ItemGroup>
 </Project>

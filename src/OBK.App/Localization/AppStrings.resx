@@ -142,10 +142,6 @@
     <value>OBK cannot start</value>
     <comment>Message box caption when the app cannot open its local data.</comment>
   </data>
-  <data name="ErrorSyncArchiveKept" xml:space="preserve">
-    <value>{0} Existing offline archive was not replaced.</value>
-    <comment>{0} = synchronization error message.</comment>
-  </data>
   <data name="ErrorUnexpected" xml:space="preserve">
     <value>Unexpected application error ({0}). Restart OBK; do not share credentials or message content in error reports.</value>
     <comment>{0} = technical .NET exception type name.</comment>

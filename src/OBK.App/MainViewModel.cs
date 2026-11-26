@@ -4,6 +4,7 @@ using OBK.Core.Localization;
 using System.ComponentModel;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -26,6 +27,12 @@ public sealed class MainViewModel : ObservableObject
     private bool syncing;
     private bool loading;
     private bool exporting;
+    private InitialDownload? initialDownload;
+    private InitialDownloadState? downloadState;
+    private bool readingDuringDownload;
+    private int refreshedAttachmentCount = -1;
+    private bool attachmentRefreshQueued;
+    private bool attachmentRefreshAll;
     private bool goodStatus;
     private bool listUpdating;
     private string status = AppStrings.StatusWelcome;
@@ -97,7 +104,7 @@ public sealed class MainViewModel : ObservableObject
         SaveAttachmentCommand = ExportCommand("save", export);
         OpenFolderCommand = ExportCommand("folder", export);
         SaveAllCommand = new AsyncCommand(_ => saveAll(attachments), ReportError,
-            _ => CanChangeAccount && attachments.Count > 1 && attachments.All(a => a.Cached));
+            _ => CanUseAttachments && attachments.Count > 1 && attachments.All(a => a.Cached));
         ExpandAttachmentsCommand = new RelayCommand(_ => AttachmentsExpanded = !AttachmentsExpanded);
         Navigation =
         [
@@ -112,7 +119,7 @@ public sealed class MainViewModel : ObservableObject
 
     private AsyncCommand ExportCommand(string action, Func<AttachmentRow, string, Task> export) =>
         new(p => p is AttachmentRow row ? export(row, action) : Task.CompletedTask, ReportError,
-            p => CanChangeAccount && p is AttachmentRow { Cached: true });
+            p => CanUseAttachments && p is AttachmentRow { Cached: true });
 
     public ThemeManager Theme { get; }
     public ICommand RefreshCommand { get; }
@@ -219,6 +226,27 @@ public sealed class MainViewModel : ObservableObject
     public bool Loading { get => loading; private set { if (Set(ref loading, value)) { UpdateActions(); Notify(nameof(EmptyFolder)); } } }
     public bool IsExporting { get => exporting; set { if (Set(ref exporting, value)) UpdateActions(); } }
     public bool CanChangeAccount => !IsSyncing && !Loading && !IsExporting;
+    public bool CanUseAttachments => !Loading && !IsExporting && (!IsSyncing || ReadingDuringDownload);
+    public bool ReadingDuringDownload => readingDuringDownload;
+    public InitialDownloadState? DownloadState
+    {
+        get => downloadState;
+        private set
+        {
+            if (!Set(ref downloadState, value)) return;
+            Notify(nameof(ShowDownloadStrip));
+            Notify(nameof(DownloadActivity));
+            Notify(nameof(DownloadNotice));
+            foreach (var attachment in attachments) attachment.AvailabilityChanged();
+            UpdateActions();
+        }
+    }
+    public bool ShowDownloadStrip => ReadingDuringDownload && DownloadState is { Phase: InitialDownloadPhase.Attachments };
+    public bool DownloadActivity => ShowDownloadStrip && DownloadState is { Running: true } && SystemParameters.ClientAreaAnimation;
+    public string DownloadNotice => DownloadState is { Error: not null } state ? state.Status : SharedStrings.DownloadKeepOpen;
+    public Task AttachmentAvailabilityReady { get; private set; } = Task.CompletedTask;
+    public bool AttachmentsPendingFor(Login owner) => initialDownload is { } download &&
+        Same(download.Account, owner) && download.State is { MessagesReady: true, Running: true };
     public string Status { get => status; private set => Set(ref status, value); }
     public bool GoodStatus { get => goodStatus; private set => Set(ref goodStatus, value); }
     public string Subject { get => subject; private set => Set(ref subject, value); }
@@ -311,6 +339,7 @@ public sealed class MainViewModel : ObservableObject
     private void UpdateActions()
     {
         Notify(nameof(CanChangeAccount));
+        Notify(nameof(CanUseAttachments));
         CommandManager.InvalidateRequerySuggested();
     }
     public void SetStatus(string text, bool ready = false) { Status = text; GoodStatus = ready; }
@@ -763,7 +792,6 @@ public sealed class MainViewModel : ObservableObject
         var key = row.Folder;
         var owner = row.Owner;
         var child = archives.FirstOrDefault(archive => Same(archive.Login, owner));
-        Dictionary<string, AttachmentInfo?> info = child?.Info ?? [];
         var all = child?.Items ?? NoMessages;
         Subject = row.Subject;
         Sender = OneLine(row.Message.SenderName) is { Length: > 0 } name ? name : AppStrings.ReaderNotSupplied;
@@ -785,7 +813,7 @@ public sealed class MainViewModel : ObservableObject
                 var files = row.Message.Attachments.Select(a =>
                 {
                     _ = a.SafeName;
-                    return new AttachmentRow(this, a, info.GetValueOrDefault(a.Identifier), owner);
+                    return new AttachmentRow(this, a, store.AttachmentInfo(owner.Url, owner.Username, a.Identifier), owner);
                 }).ToArray();
                 // Possibly related messages are searched only in the owning child's archive, never across children.
                 var related = MessageInsights.FindRelated(new(row.Message, key),
@@ -826,36 +854,133 @@ public sealed class MainViewModel : ObservableObject
             return schoolName;
         });
 
+    /// <summary>Creates the sign-in client; the smoke test substitutes an in-memory fictional school.</summary>
+    internal Func<string, KomensClient> ClientFactory { get; set; } = url => new KomensClient(url);
+
     public async Task SynchronizeAsync(string url, string username, string password, bool remember, bool fullRefresh,
-        string? childName, string? schoolName, IProgress<string> loginProgress)
+        string? childName, string? schoolName, Action<InitialDownloadState> loginProgress)
+    {
+        using var client = ClientFactory(url);
+        var download = new InitialDownload(new(url, username, ChildName: childName, SchoolName: schoolName), SchoolYear.Current());
+        await SynchronizeAsync(download, client, password, remember, fullRefresh, loginProgress);
+    }
+
+    private async Task SynchronizeAsync(InitialDownload download, KomensClient client, string password, bool remember,
+        bool fullRefresh, Action<InitialDownloadState> loginProgress)
     {
         if (!CanChangeAccount) throw new ObkException(AppStrings.StatusWaitForOperation);
+        initialDownload = download;
+        readingDuringDownload = false;
+        refreshedAttachmentCount = -1;
+        DownloadState = download.State;
         IsSyncing = true;
-        var syncYear = SchoolYear.Current();
-        var progress = new Progress<string>(text =>
+        IProgress<InitialDownloadState> progress = new Progress<InitialDownloadState>(_ =>
         {
-            if (IsSyncing) { SetStatus(text); loginProgress.Report(text); }
+            if (IsSyncing && ReferenceEquals(initialDownload, download)) ApplyDownloadProgress(download, loginProgress);
         });
+        void Changed() => progress.Report(download.State);
+        download.Changed += Changed;
         try
         {
-            using var client = new KomensClient(url);
-            var token = await Task.Run(async () =>
-            {
-                var result = await client.SignInAsync(username, password);
-                store.SaveLogin(url, username, password, remember, childName, schoolName);
-                return result;
-            });
-            await ActivateAccountAsync(url, username, syncYear, childName, schoolName);
-            var schoolLabel = await DownloadAsync(client, token, url, username, syncYear, fullRefresh, progress);
-            await LoadAsync(Account! with { SchoolName = Account!.SchoolName ?? schoolLabel }, syncYear);
-            SetStatus(CacheStatus(), true);
+            await Task.Run(() => download.RunAsync(client, store, password, remember, fullRefresh));
+            if (!ReadingDuringDownload)
+                await ActivateAccountAsync(download.Account.Url, download.Account.Username, download.Year,
+                    download.Account.ChildName, download.Account.SchoolName);
+            ApplyDownloadProgress(download, loginProgress);
+            if (ReadingDuringDownload) RefreshDownloadAttachments(download, all: true);
+            await AttachmentAvailabilityReady;
+            SetStatus(download.State.Status, true);
         }
         catch (ObkException error)
         {
-            ReportError(Localized.Format(AppStrings.ErrorSyncArchiveKept, error.Message));
+            ApplyDownloadProgress(download, loginProgress);
+            if (ReadingDuringDownload) RefreshDownloadAttachments(download, all: true);
+            ReportError(download.State.Error is null ? error.Message : download.State.Status);
             throw;
         }
-        finally { IsSyncing = false; }
+        finally { download.Changed -= Changed; IsSyncing = false; }
+    }
+
+    private void ApplyDownloadProgress(InitialDownload download, Action<InitialDownloadState> loginProgress)
+    {
+        DownloadState = download.State;
+        loginProgress(download.State);
+        if (IsSyncing && !IsExporting) SetStatus(download.State.Status, download.State.Phase == InitialDownloadPhase.Complete);
+        if (!ReadingDuringDownload || refreshedAttachmentCount == download.State.CompletedAttachments) return;
+        refreshedAttachmentCount = download.State.CompletedAttachments;
+        RefreshDownloadAttachments(download);
+    }
+
+    public async Task ReadWhileDownloadingAsync()
+    {
+        if (initialDownload is not { } download || !download.State.MessagesReady || download.State.Error is not null)
+            throw new ObkException(SharedStrings.DownloadWait);
+        readingDuringDownload = true;
+        Notify(nameof(ReadingDuringDownload));
+        Notify(nameof(ShowDownloadStrip));
+        Notify(nameof(DownloadActivity));
+        UpdateActions();
+        try
+        {
+            await ActivateAccountAsync(download.Account.Url, download.Account.Username, download.Year,
+                download.Account.ChildName, download.Account.SchoolName);
+            RefreshDownloadAttachments(download);
+            await AttachmentAvailabilityReady;
+            SetStatus(download.State.Status, download.State.Phase == InitialDownloadPhase.Complete);
+        }
+        catch (ObkException)
+        {
+            readingDuringDownload = false;
+            Notify(nameof(ReadingDuringDownload));
+            Notify(nameof(ShowDownloadStrip));
+            UpdateActions();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Updates file availability while the sign-in download continues. Requests during a refresh are coalesced
+    /// into one more pass, and only the open message's files are read until the final pass over the archive.
+    /// </summary>
+    private void RefreshDownloadAttachments(InitialDownload download, bool all = false)
+    {
+        attachmentRefreshAll |= all;
+        if (!AttachmentAvailabilityReady.IsCompleted) { attachmentRefreshQueued = true; return; }
+        AttachmentAvailabilityReady = RefreshDownloadAttachmentsAsync(download);
+    }
+
+    private void ClearInitialDownloadStatus()
+    {
+        initialDownload = null;
+        readingDuringDownload = false;
+        DownloadState = null;
+        Notify(nameof(ReadingDuringDownload));
+        Notify(nameof(ShowDownloadStrip));
+        UpdateActions();
+    }
+
+    private async Task RefreshDownloadAttachmentsAsync(InitialDownload download)
+    {
+        do
+        {
+            attachmentRefreshQueued = false;
+            var all = attachmentRefreshAll;
+            attachmentRefreshAll = false;
+            var child = archives.FirstOrDefault(item => Same(item.Login, download.Account));
+            if (child is null) return;
+            var rows = attachments.Where(row => Same(row.Account, child.Login)).ToArray();
+            try
+            {
+                var info = await Task.Run(() => all ? ReadAttachmentInfo(child.Login.Url, child.Login.Username, child.Items) :
+                    rows.Select(row => row.Attachment.Identifier).Distinct()
+                        .ToDictionary(id => id, id => store.AttachmentInfo(child.Login.Url, child.Login.Username, id)));
+                if (!ReferenceEquals(initialDownload, download) || !archives.Contains(child)) return;
+                foreach (var entry in info) child.Info[entry.Key] = entry.Value;
+                foreach (var row in rows) row.UpdateInfo(info.GetValueOrDefault(row.Attachment.Identifier));
+                UpdateActions();
+            }
+            catch (ObkException error) { ReportError(error.Message); }
+        } while (attachmentRefreshQueued);
     }
 
     /// <summary>
@@ -865,6 +990,7 @@ public sealed class MainViewModel : ObservableObject
     public async Task RefreshAllAsync()
     {
         if (!CanChangeAccount) return;
+        ClearInitialDownloadStatus();
         var (known, remembered) = await Task.Run(() => (store.KnownLogins(), store.RememberedLogins()));
         if (known.Count == 0) { openLogin(false, null); return; }
         var targets = RefreshScope.Accounts(known, Account, showingAllChildren, Theme.AlwaysRefreshAllChildren);

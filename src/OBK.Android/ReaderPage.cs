@@ -45,6 +45,7 @@ internal sealed class ReaderPage : ContentPage
     private readonly ImageButton refresh = ReaderTheme.Icon("refresh", AppStrings.ReaderRefreshAll);
     private readonly Button language;
     private readonly ActivityIndicator progress = new() { IsVisible = false };
+    private readonly DownloadStatusView downloadStatus;
     private readonly CollectionView messages = new() { SelectionMode = SelectionMode.Single };
     private readonly Label empty = new();
     private readonly Button addChild = ReaderTheme.Primary(new Button { Text = AppStrings.ReaderAccountsSheetAddChild, IsVisible = false });
@@ -65,7 +66,8 @@ internal sealed class ReaderPage : ContentPage
     private ObservableCollection<object> listItems = [];
     private Dictionary<string, List<MessageListItem>> groupRows = [];
     internal bool Busy => busy || reloading;
-    internal bool AccountsAvailable => session is not null && !busy;
+    internal bool InitialDownloadRunning => session?.Download?.State.Running == true;
+    internal bool AccountsAvailable => session is not null && !busy && !InitialDownloadRunning;
     internal int FolderIndex => folderIndex;
     internal IReadOnlyList<string> FolderLabels => folderLabels;
     internal IReadOnlyList<Login> KnownAccounts => known;
@@ -89,6 +91,7 @@ internal sealed class ReaderPage : ContentPage
     public ReaderPage(Action openMenu)
     {
         Title = "OBK";
+        downloadStatus = new(this);
         language = LanguageToolbar.CreateButton(this);
         NavigationPage.SetHasNavigationBar(this, false);
         menu.Clicked += (_, _) => openMenu();
@@ -186,7 +189,7 @@ internal sealed class ReaderPage : ContentPage
         layout.Add(header);
         layout.Add(searchTools, 0, 1);
         layout.Add(messages, 0, 2);
-        layout.Add(footer, 0, 3);
+        layout.Add(new VerticalStackLayout { Spacing = 0, Children = { downloadStatus, footer } }, 0, 3);
         messages.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
         Content = layout;
         ReaderTheme.Apply(this);
@@ -322,6 +325,7 @@ internal sealed class ReaderPage : ContentPage
             initialized = initialized,
             folderIndex = folderIndex
         };
+        rebuilt.downloadStatus.Session = session;
         if (!string.IsNullOrEmpty(search.Text))
         {
             rebuilt.search.Text = search.Text;
@@ -359,6 +363,11 @@ internal sealed class ReaderPage : ContentPage
 
     private void RestoreArchiveStatus()
     {
+        if (session?.ReadingDuringDownload == true && session.Download?.State is { Phase: InitialDownloadPhase.Attachments } state)
+        {
+            status.Text = state.Status;
+            return;
+        }
         var loaded = ScopeArchives().Select(item => item.Archive).OfType<Archive>().ToList();
         status.Text = account is null ? AppStrings.ReaderStatusNoAccounts :
             loaded.Count == 0 ? AppStrings.ReaderStatusNoArchive :
@@ -516,6 +525,14 @@ internal sealed class ReaderPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (session is not null)
+        {
+            session.DownloadChanged -= DownloadChanged;
+            session.DownloadChanged += DownloadChanged;
+            SetBusy(busy);
+            if (session.ReadingDuringDownload) status.Text = session.Download!.State.Status;
+            if ((!InitialDownloadRunning || session.ReadingDuringDownload) && App.TakeInboxRequest()) ShowInbox();
+        }
         if (initialized || busy) return;
         await RunAsync(InitializeAsync);
     }
@@ -523,6 +540,7 @@ internal sealed class ReaderPage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+        if (session is not null) session.DownloadChanged -= DownloadChanged;
         if (refreshStatusTimeout.Pending) RestoreArchiveStatus();
         CancelRefreshStatus();
     }
@@ -530,14 +548,23 @@ internal sealed class ReaderPage : ContentPage
     private async Task InitializeAsync()
     {
         session = await ReaderSession.OpenAsync();
+        downloadStatus.Session = session;
+        session.DownloadChanged += DownloadChanged;
         initialized = true;
         await ReloadAsync();
         if (App.TakeInboxRequest()) ShowInbox();
+#if DEBUG
+        if (session.IsInitialDownloadVerification)
+            await Navigation.PushAsync(new SignInPage(session,
+                new(OBK.Verification.InitialDownloadFixture.Url, "sample.account", ChildName: "Anna"),
+                async saved => await RunAsync(() => ReloadAsync(saved))));
+#endif
     }
 
     /// <summary>Shows Inbox, for all children when there are several, with archives freshly read from this device.</summary>
     internal Task ShowInboxAsync() => RunAsync(async () =>
     {
+        if (InitialDownloadRunning && session?.ReadingDuringDownload != true) return;
         if (!App.TakeInboxRequest()) return;
         if (Navigation.NavigationStack.Count > 1) await Navigation.PopToRootAsync(false);
         if (session is null) await InitializeAsync();
@@ -577,17 +604,23 @@ internal sealed class ReaderPage : ContentPage
     {
         if (value) CancelRefreshStatus();
         busy = value;
-        progress.IsRunning = value;
-        progress.IsVisible = value;
+        progress.IsRunning = progress.IsVisible = value && ReaderTheme.AnimationsEnabled;
         menu.IsEnabled = !value;
-        language.IsEnabled = !value;
-        child.IsEnabled = !value && known.Count > 0;
+        language.IsEnabled = !value && !InitialDownloadRunning;
+        child.IsEnabled = !value && !InitialDownloadRunning && known.Count > 0;
         search.IsEnabled = !value;
         messages.IsEnabled = !value;
         SemanticProperties.SetDescription(refresh, session is null ? AppStrings.ReaderRetryOpening : AppStrings.ReaderRefreshAll);
-        refresh.IsEnabled = !value && (session is null || known.Count > 0);
-        addChild.IsEnabled = !value && session is not null;
+        refresh.IsEnabled = !value && !InitialDownloadRunning && (session is null || known.Count > 0);
+        addChild.IsEnabled = !value && !InitialDownloadRunning && session is not null;
     }
+
+    private void DownloadChanged() => MainThread.BeginInvokeOnMainThread(() =>
+    {
+        SetBusy(busy);
+        if (!busy && session?.ReadingDuringDownload == true && session.Download is { } download)
+            status.Text = download.State.Status;
+    });
 
     private async Task RunAsync(Func<Task> action)
     {
@@ -796,6 +829,7 @@ internal sealed class ReaderPage : ContentPage
     private async Task RefreshAsync()
     {
         if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
+        session.ClearInitialDownloadStatus();
         var saved = await Task.Run(() => session.Store.RememberedLogins());
         var targets = RefreshScope.Accounts(known, account, ShowingAllChildren, ReaderPreferences.AlwaysRefreshAllChildren);
         var failures = new List<string>();

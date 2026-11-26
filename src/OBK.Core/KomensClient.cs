@@ -187,7 +187,8 @@ public sealed class KomensClient : IDisposable
     }
 
     public async Task<int> DownloadAttachmentsAsync(string token, Dictionary<string, List<Message>> folders,
-        LocalStore store, string username, IProgress<string>? progress = null)
+        LocalStore store, string username, IProgress<string>? progress = null,
+        IProgress<AttachmentDownloadProgress>? attachmentProgress = null)
     {
         var attachments = new Dictionary<string, Attachment>();
         foreach (var attachment in folders.Values.SelectMany(m => m).SelectMany(m => m.Attachments))
@@ -195,6 +196,9 @@ public sealed class KomensClient : IDisposable
             _ = attachment.SafeName;
             attachments.TryAdd(attachment.Identifier, attachment);
         }
+        var completed = attachmentProgress is null ? 0 :
+            attachments.Values.Count(attachment => store.AttachmentInfo(BaseUrl, username, attachment.Identifier) is not null);
+        attachmentProgress?.Report(new(completed, attachments.Count));
         var index = 0;
         foreach (var attachment in attachments.Values)
         {
@@ -203,6 +207,7 @@ public sealed class KomensClient : IDisposable
             try
             {
                 if (store.AttachmentInfo(BaseUrl, username, attachment.Identifier) is not null) continue;
+                attachmentProgress?.Report(new(completed, attachments.Count, attachment.SafeName));
                 await RetryAsync(async cancellation =>
                 {
                     using var response = await OpenAsync("/api/3/komens/attachment/" +
@@ -212,6 +217,8 @@ public sealed class KomensClient : IDisposable
                         response.Content.Headers.ContentLength, response.Content.Headers.ContentType?.ToString() ?? "",
                         idleTimeout: requestTimeout);
                 });
+                completed++;
+                attachmentProgress?.Report(new(completed, attachments.Count));
             }
             catch (ObkException error) { throw new ObkException(Localized.Format(SharedStrings.ErrorInAttachment, index, attachments.Count, error.Message)); }
         }

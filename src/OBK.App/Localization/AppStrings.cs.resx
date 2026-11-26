@@ -142,10 +142,6 @@
     <value>OBK nelze spustit</value>
     <comment>Message box caption when the app cannot open its local data.</comment>
   </data>
-  <data name="ErrorSyncArchiveKept" xml:space="preserve">
-    <value>{0} Stávající offline archiv nebyl nahrazen.</value>
-    <comment>{0} = synchronization error message.</comment>
-  </data>
   <data name="ErrorUnexpected" xml:space="preserve">
     <value>Neočekávaná chyba aplikace ({0}). Restartujte OBK; do hlášení chyb neuvádějte přihlašovací údaje ani obsah zpráv.</value>
     <comment>{0} = technical .NET exception type name.</comment>

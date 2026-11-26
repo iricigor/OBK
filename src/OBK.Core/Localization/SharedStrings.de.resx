@@ -374,4 +374,72 @@
     <value>{0} Tage später</value>
     <comment>{0} = number of days. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...). Counts forward from the displayed message's date.</comment>
   </data>
+  <data name="DownloadLoginSuccessful" xml:space="preserve">
+    <value>Anmeldung erfolgreich</value>
+  </data>
+  <data name="DownloadSigningIn" xml:space="preserve">
+    <value>Anmelden...</value>
+  </data>
+  <data name="DownloadMessages" xml:space="preserve">
+    <value>Nachrichten werden heruntergeladen...</value>
+  </data>
+  <data name="DownloadMessagesReady" xml:space="preserve">
+    <value>Nachrichten heruntergeladen.</value>
+  </data>
+  <data name="DownloadAttachments" xml:space="preserve">
+    <value>Anhänge werden heruntergeladen</value>
+  </data>
+  <data name="DownloadAttachmentCount" xml:space="preserve">
+    <value>Anhänge {0:N0} / {1:N0}</value>
+    <comment>{0} = successfully cached unique attachments; {1} = total unique attachments.</comment>
+  </data>
+  <data name="DownloadAttachmentFile" xml:space="preserve">
+    <value>{0} wird heruntergeladen...</value>
+    <comment>{0} = safe attachment filename.</comment>
+  </data>
+  <data name="DownloadInBackground" xml:space="preserve">
+    <value>Anhänge im Hintergrund herunterladen</value>
+  </data>
+  <data name="DownloadReadMessages" xml:space="preserve">
+    <value>Nachrichten lesen</value>
+  </data>
+  <data name="DownloadBackgroundHint" xml:space="preserve">
+    <value>Nachrichten lesen, während die Anhänge heruntergeladen werden.</value>
+  </data>
+  <data name="DownloadKeepOpen" xml:space="preserve">
+    <value>OBK zum Abschließen des Downloads geöffnet lassen.</value>
+  </data>
+  <data name="DownloadBackgroundLimit" xml:space="preserve">
+    <value>Downloads laufen weiter, solange OBK geöffnet bleibt. Das Schließen von OBK oder ein Anhalten durch das System im Hintergrund kann sie unterbrechen.</value>
+  </data>
+  <data name="DownloadComplete" xml:space="preserve">
+    <value>Nachrichten und Anhänge heruntergeladen.</value>
+  </data>
+  <data name="DownloadAuthenticationFailed" xml:space="preserve">
+    <value>Anmeldung fehlgeschlagen: {0}</value>
+    <comment>{0} = authentication error.</comment>
+  </data>
+  <data name="DownloadMessagesFailed" xml:space="preserve">
+    <value>Anmeldung erfolgreich, aber Nachrichten konnten nicht heruntergeladen werden: {0}</value>
+    <comment>{0} = message or archive preparation error.</comment>
+  </data>
+  <data name="DownloadAttachmentsFailed" xml:space="preserve">
+    <value>Nachrichten sind bereit, aber der Download der Anhänge ist fehlgeschlagen: {0} Anmeldung oder Aktualisierung wiederholen. Ausstehende Dateien sind offline nicht verfügbar.</value>
+    <comment>{0} = attachment download error.</comment>
+  </data>
+  <data name="DownloadDetails" xml:space="preserve">
+    <value>Download-Details</value>
+  </data>
+  <data name="DownloadDetailsText" xml:space="preserve">
+    <value>{0}
+{1}
+{2}</value>
+    <comment>{0} = attachment completed/total count; {1} = status or error; {2} = keep-open notice while running.</comment>
+  </data>
+  <data name="DownloadAttachmentPending" xml:space="preserve">
+    <value>Noch nicht offline verfügbar</value>
+  </data>
+  <data name="DownloadWait" xml:space="preserve">
+    <value>Warten, bis die Nachrichten heruntergeladen sind. Sobald die Anhänge starten, können Sie das Lesen im Hintergrund wählen.</value>
+  </data>
 </root>

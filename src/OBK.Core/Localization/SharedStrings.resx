@@ -374,4 +374,72 @@
     <value>{0} days after</value>
     <comment>{0} = number of days. Remaining plural form (Czech: 5 and more; Ukrainian: 0, 5-20, 25-30...). Counts forward from the displayed message's date.</comment>
   </data>
+  <data name="DownloadLoginSuccessful" xml:space="preserve">
+    <value>Login successful</value>
+  </data>
+  <data name="DownloadSigningIn" xml:space="preserve">
+    <value>Signing in...</value>
+  </data>
+  <data name="DownloadMessages" xml:space="preserve">
+    <value>Downloading messages...</value>
+  </data>
+  <data name="DownloadMessagesReady" xml:space="preserve">
+    <value>Messages downloaded.</value>
+  </data>
+  <data name="DownloadAttachments" xml:space="preserve">
+    <value>Downloading attachments</value>
+  </data>
+  <data name="DownloadAttachmentCount" xml:space="preserve">
+    <value>Attachments {0:N0} / {1:N0}</value>
+    <comment>{0} = successfully cached unique attachments; {1} = total unique attachments.</comment>
+  </data>
+  <data name="DownloadAttachmentFile" xml:space="preserve">
+    <value>Downloading {0}...</value>
+    <comment>{0} = safe attachment filename.</comment>
+  </data>
+  <data name="DownloadInBackground" xml:space="preserve">
+    <value>Download attachments in background</value>
+  </data>
+  <data name="DownloadReadMessages" xml:space="preserve">
+    <value>Read messages</value>
+  </data>
+  <data name="DownloadBackgroundHint" xml:space="preserve">
+    <value>Read messages while attachments finish.</value>
+  </data>
+  <data name="DownloadKeepOpen" xml:space="preserve">
+    <value>Keep OBK open to finish downloading.</value>
+  </data>
+  <data name="DownloadBackgroundLimit" xml:space="preserve">
+    <value>Downloads continue while OBK stays open. Closing OBK, or the system pausing it in the background, can interrupt them.</value>
+  </data>
+  <data name="DownloadComplete" xml:space="preserve">
+    <value>Messages and attachments downloaded.</value>
+  </data>
+  <data name="DownloadAuthenticationFailed" xml:space="preserve">
+    <value>Login failed: {0}</value>
+    <comment>{0} = authentication error.</comment>
+  </data>
+  <data name="DownloadMessagesFailed" xml:space="preserve">
+    <value>Login succeeded, but messages could not be downloaded: {0}</value>
+    <comment>{0} = message or archive preparation error.</comment>
+  </data>
+  <data name="DownloadAttachmentsFailed" xml:space="preserve">
+    <value>Messages are ready, but attachment download failed: {0} Retry sign-in or Refresh to finish; pending files are not available offline.</value>
+    <comment>{0} = attachment download error.</comment>
+  </data>
+  <data name="DownloadDetails" xml:space="preserve">
+    <value>Download details</value>
+  </data>
+  <data name="DownloadDetailsText" xml:space="preserve">
+    <value>{0}
+{1}
+{2}</value>
+    <comment>{0} = attachment completed/total count; {1} = status or error; {2} = keep-open notice while running.</comment>
+  </data>
+  <data name="DownloadAttachmentPending" xml:space="preserve">
+    <value>Not available offline yet</value>
+  </data>
+  <data name="DownloadWait" xml:space="preserve">
+    <value>Wait for messages to download. Once attachments start, you can choose to read in the background.</value>
+  </data>
 </root>

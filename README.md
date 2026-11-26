@@ -68,6 +68,12 @@ preview and deleting its local archive.
    **All children** to update every child. **Settings > Refresh > Always refresh
    all children** overrides this choice and is off by default.
 
+Both apps confirm **Login successful** as soon as authentication succeeds.
+Messages finish downloading on the sign-in screen. Once attachments start,
+**Download attachments in background** opens the reader with completed/total
+progress and download details at the bottom. Keep OBK open; closing it or Android
+suspending it can interrupt downloads. Pending files are not available offline.
+
 OBK downloads the current school year (September–August). The interface
 language defaults to a supported system language and can be changed in the app;
 school messages are never translated.

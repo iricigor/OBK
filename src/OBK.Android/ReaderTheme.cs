@@ -7,6 +7,8 @@ namespace OBK.AndroidApp;
 
 internal static class ReaderTheme
 {
+    internal static bool AnimationsEnabled => global::Android.Provider.Settings.Global.GetFloat(
+        Platform.AppContext.ContentResolver, global::Android.Provider.Settings.Global.AnimatorDurationScale, 1) > 0;
     internal static readonly Color Foreground = Color.FromArgb("#1A1A1A");
     internal static readonly Color DarkForeground = Colors.White;
     internal static readonly Color Selection = Color.FromArgb("#EAEFF5");
