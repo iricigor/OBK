@@ -52,6 +52,7 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
         Apply(loaded.Theme);
         allChildren = loaded.AllChildren;
         alwaysRefreshAllChildren = loaded.AlwaysRefreshAllChildren;
+        Notify(nameof(AlwaysRefreshAllChildren));
     }
 
     public async Task ToggleAsync() => await SetAsync(IsDark ? "Light" : "Dark");

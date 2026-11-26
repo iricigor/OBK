@@ -281,7 +281,8 @@ blue new-message counts. The active folder is highlighted and announced in the d
 selecting a folder or child closes it. Account rows show a 40-dp avatar, name, school
 where available, and active status. The 56-dp header avatar overlaps the left end
 of the 48-dp search surface by 4 dp above and below; in the all-children scope it
-shows up to three overlapping child avatars. The refresh icon refreshes all accounts.
+shows up to three overlapping child avatars. The refresh icon follows the selected
+child scope, unless **Always refresh all children** is enabled in Settings.
 The avatar opens a normal chooser page with **All children** and each account's
 identity row (avatar, name, school, username and active status), without management actions.
 
@@ -317,7 +318,8 @@ expire after one minute using monotonic elapsed time; a new operation or leaving
 the reader cancels the pending reset so it cannot overwrite newer state.
 **Settings** groups one-tap segmented controls into **Appearance** (**System**,
 **Light**, **Dark**), **Reading** (**Small / Medium / Large** reading sizes and
-**Compact / Relaxed** list density), **Scheduled checks** (see
+**Compact / Relaxed** list density), **Refresh** (**Always refresh all children**,
+off by default and remembered across restarts), **Scheduled checks** (see
 [Android scheduled checks and notifications](#android-scheduled-checks-and-notifications)),
 **App updates**, and **About** (GitHub repository link). The list uses two lines: a
 single-line, ellipsized subject and right-aligned short date, then an ellipsized
@@ -966,8 +968,10 @@ The sun/moon button switches **Light** and **Dark** immediately, including
 message text, login controls, menus, and window chrome. **Settings > Appearance**
 offers the same choice; both stay in sync. The choice is saved
 per Windows account in `%LOCALAPPDATA%\OBK\appearance.json` and restored on
-startup. It contains only the theme, reading size, list density and the
-**All children** scope choice, not credentials or archive data.
+startup. It contains only the theme, reading size, list density,
+**All children** scope choice, and **Always refresh all children** preference,
+not credentials or archive data. Older settings files default the new preference
+to off.
 
 **Settings**, at the bottom of the sidebar, replaces the message list and
 reading pane with Windows 11-style sections that start collapsed:
@@ -975,6 +979,8 @@ reading pane with Windows 11-style sections that start collapsed:
 - **Appearance**: Light or Dark theme; **Reading size** (Small, Medium, Large)
   scaling the message list and reader text; and **Message list density**
   (Compact, Relaxed) for row spacing. Medium and Relaxed match the original look.
+- **Refresh**: **Always refresh all children**, off by default. When enabled,
+  manual refresh updates every known child even in a single-child view.
 - **Accounts**: each known child or school, with **Rename** for the optional
   child name (empty shows the school name), and **Save password**, or
   **Change password** and **Clear password** when one is saved. Saving or
@@ -994,9 +1000,13 @@ The title bar retains native dragging, resizing, caption controls, and Windows
 Closing the picker returns to the current school unchanged; the active account
 changes only after **Sign in and sync** or **Read offline**.
 
-**Refresh** synchronizes every known account that has a remembered password,
-one after another, then reloads the visible archive. Accounts without a saved
-password are listed in the status bar; the sign-in dialog opens for the current
+**Refresh** synchronizes the selected child, or every known account in
+**All children**. Enabling **Settings > Refresh > Always refresh all children**
+overrides the single-child scope on both platforms; Android scheduled checks
+continue to check all children regardless of this preference.
+Targeted accounts with remembered passwords synchronize one after another,
+then the visible archive reloads. Targeted accounts without a saved password
+are listed in the status bar; the sign-in dialog opens for the current
 account if it needs a password, or for the first account if none could refresh.
 **All children** has no current account, so it opens the dialog only when no
 account could refresh. In that scope, the status bar shows the number of

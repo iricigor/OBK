@@ -28,6 +28,13 @@ public sealed class RefreshScopeTests
     }
 
     [Fact]
+    public void SameUsernameAtAnotherSchoolDoesNotRefresh()
+    {
+        var otherSchool = Anna with { Url = "https://other.example" };
+        Assert.Equal([otherSchool], RefreshScope.Accounts([Anna, otherSchool], otherSchool, false, false));
+    }
+
+    [Fact]
     public void OneChildScopeWithoutAKnownSelectionHasNothingToRefresh()
     {
         Assert.Empty(RefreshScope.Accounts(Known, new Login("https://other.example", "anna", null), false, false));
