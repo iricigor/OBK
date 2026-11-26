@@ -419,7 +419,7 @@ Refresh to check your school.</value>
     <comment>Button that downloads new messages.</comment>
   </data>
   <data name="MainRefreshTooltip" xml:space="preserve">
-    <value>Download new messages for every saved child</value>
+    <value>Download new messages for the selected child or all children</value>
   </data>
   <data name="MainRefreshing" xml:space="preserve">
     <value>Refreshing...</value>
@@ -586,6 +586,10 @@ Refresh to check your school.</value>
   <data name="SettingsAppearanceDescription" xml:space="preserve">
     <value>Theme and reading size</value>
   </data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="SettingsRefreshDescription" xml:space="preserve"><value>Choose which children to download</value></data>
+  <data name="SettingsAlwaysRefreshAllChildren" xml:space="preserve"><value>Always refresh all children</value></data>
+  <data name="SettingsAlwaysRefreshAllChildrenDescription" xml:space="preserve"><value>Also refresh other saved children when one child is selected</value></data>
   <data name="SettingsBack" xml:space="preserve">
     <value>Back to messages</value>
     <comment>Button that closes Settings.</comment>

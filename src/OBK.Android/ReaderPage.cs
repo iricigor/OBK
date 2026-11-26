@@ -135,7 +135,7 @@ internal sealed class ReaderPage : ContentPage
             UpdateSearchLayout();
         };
         ReaderTheme.SetIcon(searchGlyph, "search_muted");
-        refresh.Clicked += async (_, _) => await RunAsync(session is null ? InitializeAsync : RefreshAllAsync);
+        refresh.Clicked += async (_, _) => await RunAsync(session is null ? InitializeAsync : RefreshAsync);
         messages.ItemTemplate = new RowSelector(CreateHeaderTemplate(), CreateMessageTemplate());
         addChild.Clicked += async (_, _) => await OpenSignInAsync();
         messages.EmptyView = new VerticalStackLayout { Padding = 24, Spacing = 12, Children = { empty, addChild } };
@@ -826,15 +826,16 @@ internal sealed class ReaderPage : ContentPage
         session ?? throw new ObkException(AppStrings.ErrorArchiveNotOpen),
         OpenSignInAsync, () => RunAsync(() => ReloadAsync()));
 
-    private async Task RefreshAllAsync()
+    private async Task RefreshAsync()
     {
         if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
         session.ClearInitialDownloadStatus();
         var saved = await Task.Run(() => session.Store.RememberedLogins());
+        var targets = RefreshScope.Accounts(known, account, ShowingAllChildren, ReaderPreferences.AlwaysRefreshAllChildren);
         var failures = new List<string>();
         var missing = new List<Login>();
         var completed = 0;
-        foreach (var login in known)
+        foreach (var login in targets)
         {
             var credentials = saved.FirstOrDefault(item => item.Url == login.Url && item.Username == login.Username);
             if (credentials?.Password is not { } password)
@@ -853,7 +854,7 @@ internal sealed class ReaderPage : ContentPage
             catch (ObkException error) { failures.Add(Localized.Format(AppStrings.ReaderAccountStatus, label, error.Message)); }
         }
         await ReloadAsync();
-        var summaryParts = new List<string> { Localized.Format(AppStrings.ReaderRefreshSummary, completed, known.Count) };
+        var summaryParts = new List<string> { Localized.Format(AppStrings.ReaderRefreshSummary, completed, targets.Count) };
         if (missing.Count > 0)
             summaryParts.Add(Localized.Format(AppStrings.ReaderRefreshSignInNeeded, string.Join(", ", missing.Select(AccountLabelConverter.Label))));
         if (failures.Count > 0)

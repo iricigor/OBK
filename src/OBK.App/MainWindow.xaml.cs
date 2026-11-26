@@ -154,6 +154,7 @@ public partial class MainWindow : Window
             replacement.NavigationColumn.Width = new GridLength(state.NavigationExpanded ? expandedNavigationWidth : IconNavigationWidth);
             replacement.MessageColumn.Width = MessageColumn.Width;
             replacement.AppearanceSection.IsExpanded = AppearanceSection.IsExpanded;
+            replacement.RefreshSection.IsExpanded = RefreshSection.IsExpanded;
             replacement.AccountsSection.IsExpanded = AccountsSection.IsExpanded;
             replacement.AboutSection.IsExpanded = AboutSection.IsExpanded;
             Updates.SetHost(() => !replacement.Busy && !replacement.ViewModel.IsExporting && !replacement.switchingLanguage, replacement.Close);

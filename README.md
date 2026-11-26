@@ -29,7 +29,7 @@ you can read, search, and organize them offline on Windows or Android.
 ## Features
 
 - [**All children and folders in one place**](docs/features/ACCOUNTS.md) –
-  switch between children and schools, refresh every account, and browse
+  switch between children and schools, refresh the selected child or all children, and browse
   Inbox, Noticeboard, Sent, and Excuses. Android can also check hourly and
   notify you about new messages.
 - [**Fast offline reading and organization**](docs/features/ORGANIZE.md) –
@@ -64,7 +64,9 @@ preview and deleting its local archive.
 2. Optionally name the child and remember the password so **Refresh** can
    update that account without asking again.
 3. Add more children or schools from the child/account controls.
-4. Refresh to download new messages for every child.
+4. Refresh to download new messages for the selected child, or choose
+   **All children** to update every child. **Settings > Refresh > Always refresh
+   all children** overrides this choice and is off by default.
 
 Both apps confirm **Login successful** as soon as authentication succeeds.
 Messages finish downloading on the sign-in screen. Once attachments start,

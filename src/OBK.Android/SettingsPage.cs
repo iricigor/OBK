@@ -13,6 +13,8 @@ internal sealed class SettingsPage : ContentPage
     private readonly Label updateStatus = ReaderTheme.Metadata(new Label { Text = AppStrings.UpdateManualNotice });
     private readonly ActivityIndicator updateProgress = new() { IsVisible = false };
     private readonly SwitchRow checks = CreateSwitchRow(AppStrings.SettingsChecks, AppStrings.SettingsChecksDescription);
+    private readonly SwitchRow alwaysRefreshAllChildren =
+        CreateSwitchRow(AppStrings.SettingsAlwaysRefreshAllChildren, AppStrings.SettingsAlwaysRefreshAllChildrenDescription);
     private readonly SwitchRow notifications = CreateSwitchRow(AppStrings.SettingsNotifications, AppStrings.SettingsNotificationsDescription);
     private readonly SwitchRow emptyNotifications =
         CreateSwitchRow(AppStrings.SettingsEmptyNotifications, AppStrings.SettingsEmptyNotificationsDescription);
@@ -46,6 +48,9 @@ internal sealed class SettingsPage : ContentPage
             [AppStrings.SettingsListDensityCompact, AppStrings.SettingsListDensityRelaxed],
             Math.Max(0, Array.IndexOf(ReaderPreferences.ListDensities, ReaderPreferences.ListDensity)),
             index => ReaderPreferences.SetListDensity(ReaderPreferences.ListDensities[index]));
+        alwaysRefreshAllChildren.Toggle.IsToggled = ReaderPreferences.AlwaysRefreshAllChildren;
+        alwaysRefreshAllChildren.Toggle.Toggled += (_, args) =>
+            ReaderPreferences.AlwaysRefreshAllChildren = args.Value;
         var repository = ReaderTheme.StartAlignedButton(new Button
         {
             Text = SharedStrings.RepositoryLink,
@@ -159,6 +164,7 @@ internal sealed class SettingsPage : ContentPage
                         RowTitle(AppStrings.SettingsReadingSize, AppStrings.SettingsReadingSizeDescription), readingSize,
                         new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
                         RowTitle(AppStrings.SettingsListDensity, AppStrings.SettingsListDensityDescription), density),
+                    Section(AppStrings.SettingsRefresh, alwaysRefreshAllChildren.View),
                     Section(AppStrings.SettingsSectionChecks,
                         checks.View, new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
                         notifications.View, notificationsBlocked, new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },

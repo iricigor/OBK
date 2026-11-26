@@ -278,8 +278,8 @@
     <value>Aktualisierung benötigt Aufmerksamkeit</value>
   </data>
   <data name="ReaderRefreshAll" xml:space="preserve">
-    <value>Alle aktualisieren</value>
-    <comment>Button that refreshes every saved account.</comment>
+    <value>Aktualisieren</value>
+    <comment>Button that downloads new messages for the selected refresh scope.</comment>
   </data>
   <data name="ReaderRefreshFailed" xml:space="preserve">
     <value>Fehlgeschlagen: {0} Vorhandene Offline-Archive wurden beibehalten.</value>
@@ -549,6 +549,9 @@
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Lesen</value>
   </data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Aktualisieren</value></data>
+  <data name="SettingsAlwaysRefreshAllChildren" xml:space="preserve"><value>Immer alle Kinder aktualisieren</value></data>
+  <data name="SettingsAlwaysRefreshAllChildrenDescription" xml:space="preserve"><value>Auch andere gespeicherte Kinder aktualisieren, wenn nur ein Kind ausgewählt ist</value></data>
   <data name="SettingsSectionAbout" xml:space="preserve">
     <value>Über</value>
   </data>

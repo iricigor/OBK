@@ -80,6 +80,8 @@ public sealed class MainViewModel : ObservableObject
         SetThemeCommand = new AsyncCommand(p => Theme.SetAsync(p as string ?? ""), ReportError);
         SetReadingSizeCommand = new AsyncCommand(p => Theme.SetReadingSizeAsync(p as string ?? ""), ReportError);
         SetListDensityCommand = new AsyncCommand(p => Theme.SetListDensityAsync(p as string ?? ""), ReportError);
+        ToggleAlwaysRefreshAllChildrenCommand = new AsyncCommand(
+            _ => Theme.SetAlwaysRefreshAllChildrenAsync(!Theme.AlwaysRefreshAllChildren), ReportError);
         OpenSettingsCommand = new RelayCommand(_ => SettingsOpen = true);
         CloseSettingsCommand = new RelayCommand(_ => SettingsOpen = false);
         SwitchSchoolCommand = new RelayCommand(_ => openLogin(true, null), _ => CanChangeAccount);
@@ -123,6 +125,7 @@ public sealed class MainViewModel : ObservableObject
     public ICommand SetThemeCommand { get; }
     public ICommand SetReadingSizeCommand { get; }
     public ICommand SetListDensityCommand { get; }
+    public ICommand ToggleAlwaysRefreshAllChildrenCommand { get; }
     public ICommand OpenSettingsCommand { get; }
     public ICommand CloseSettingsCommand { get; }
     public bool SettingsOpen
@@ -966,8 +969,8 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Synchronizes every known account that has a remembered password. Accounts without one are reported;
-    /// the sign-in dialog opens for the current account, or for the first one if nothing could refresh.
+    /// Synchronizes the selected refresh scope. Accounts without a remembered password are reported, and the
+    /// sign-in dialog opens for the current account or the first account that cannot refresh.
     /// </summary>
     public async Task RefreshAllAsync()
     {
@@ -975,10 +978,11 @@ public sealed class MainViewModel : ObservableObject
         ClearInitialDownloadStatus();
         var (known, remembered) = await Task.Run(() => (store.KnownLogins(), store.RememberedLogins()));
         if (known.Count == 0) { openLogin(false, null); return; }
+        var targets = RefreshScope.Accounts(known, Account, showingAllChildren, Theme.AlwaysRefreshAllChildren);
         string Label(Login login) => login.ChildName ?? login.SchoolName ?? login.Username;
         var ready = new List<Login>();
         var missing = new List<Login>();
-        foreach (var login in known)
+        foreach (var login in targets)
         {
             if (remembered.FirstOrDefault(r => r.Url == login.Url && r.Username == login.Username) is { Password: not null } saved)
                 ready.Add(saved);

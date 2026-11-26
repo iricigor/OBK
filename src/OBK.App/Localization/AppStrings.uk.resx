@@ -419,7 +419,7 @@
     <comment>Button that downloads new messages.</comment>
   </data>
   <data name="MainRefreshTooltip" xml:space="preserve">
-    <value>Завантажити нові повідомлення для кожної збереженої дитини</value>
+    <value>Завантажити нові повідомлення для вибраної дитини або всіх дітей</value>
   </data>
   <data name="MainRefreshing" xml:space="preserve">
     <value>Оновлення...</value>
@@ -586,6 +586,10 @@
   <data name="SettingsAppearanceDescription" xml:space="preserve">
     <value>Тема й розмір тексту для читання</value>
   </data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Оновлення</value></data>
+  <data name="SettingsRefreshDescription" xml:space="preserve"><value>Вибір дітей, для яких завантажувати повідомлення</value></data>
+  <data name="SettingsAlwaysRefreshAllChildren" xml:space="preserve"><value>Завжди оновлювати всіх дітей</value></data>
+  <data name="SettingsAlwaysRefreshAllChildrenDescription" xml:space="preserve"><value>Коли вибрано одну дитину, оновлювати також інших збережених дітей</value></data>
   <data name="SettingsBack" xml:space="preserve">
     <value>Назад до повідомлень</value>
     <comment>Button that closes Settings.</comment>

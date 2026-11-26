@@ -275,8 +275,8 @@
     <value>Obnovení vyžaduje pozornost</value>
   </data>
   <data name="ReaderRefreshAll" xml:space="preserve">
-    <value>Obnovit vše</value>
-    <comment>Button that refreshes every saved account.</comment>
+    <value>Obnovit</value>
+    <comment>Button that downloads new messages for the selected refresh scope.</comment>
   </data>
   <data name="ReaderRefreshFailed" xml:space="preserve">
     <value>Selhalo: {0} Stávající offline archivy byly zachovány.</value>
@@ -546,6 +546,9 @@
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Čtení</value>
   </data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Obnovování</value></data>
+  <data name="SettingsAlwaysRefreshAllChildren" xml:space="preserve"><value>Vždy obnovovat všechny děti</value></data>
+  <data name="SettingsAlwaysRefreshAllChildrenDescription" xml:space="preserve"><value>Při výběru jednoho dítěte obnovit i ostatní uložené děti</value></data>
   <data name="SettingsSectionAbout" xml:space="preserve">
     <value>O aplikaci</value>
   </data>

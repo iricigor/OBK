@@ -325,18 +325,33 @@ public sealed class PresentationTests
                     await theme.ToggleAsync();
                     Assert.Equal(Colors.White, ((SolidColorBrush)surface.Background).Color);
                     var settingsPath = Path.Combine(directory, "appearance.json");
+                    Assert.False(theme.AlwaysRefreshAllChildren);
+                    await theme.SetAlwaysRefreshAllChildrenAsync(true);
                     await theme.SetReadingSizeAsync("Large");
                     await theme.SetListDensityAsync("Compact");
                     Assert.Equal(16.0, (double)application.Resources["ReaderBodySize"]);
                     Assert.Equal(new Thickness(12, 4, 12, 4), (Thickness)application.Resources["ListRowPadding"]);
                     var restored = new ThemeManager(settingsPath);
+                    var refreshSetting = new CheckBox();
+                    refreshSetting.SetBinding(CheckBox.IsCheckedProperty,
+                        new System.Windows.Data.Binding(nameof(ThemeManager.AlwaysRefreshAllChildren))
+                        {
+                            Source = restored, Mode = System.Windows.Data.BindingMode.OneWay
+                        });
                     await restored.InitializeAsync();
                     Assert.True(restored.IsLargeText && restored.IsCompactList && restored.IsLight);
                     Assert.False(restored.AllChildren);
+                    Assert.True(restored.AlwaysRefreshAllChildren);
+                    Assert.True(refreshSetting.IsChecked);
+                    await restored.SetAlwaysRefreshAllChildrenAsync(false);
+                    await theme.InitializeAsync();
+                    Assert.False(theme.AlwaysRefreshAllChildren);
                     await File.WriteAllTextAsync(settingsPath, "{\"Theme\":\"Light\",\"ReadingSize\":\"huge\",\"ListDensity\":\"tiny\"}");
                     await restored.InitializeAsync();
                     Assert.True(restored.IsMediumText && restored.IsRelaxedList);
                     Assert.Null(restored.AllChildren);
+                    Assert.False(restored.AlwaysRefreshAllChildren);
+                    Assert.False(refreshSetting.IsChecked);
                     Assert.Equal(14.0, (double)application.Resources["ReaderBodySize"]);
                     await Assert.ThrowsAsync<ObkException>(() => restored.SetReadingSizeAsync("huge"));
                     await File.WriteAllTextAsync(settingsPath, "{\"Theme\":\"invalid\"}");
@@ -676,6 +691,9 @@ public sealed class PresentationTests
                             throw new TimeoutException("The language button did not rebuild the window.");
                         }
                         LanguageSettings.Apply("en");
+                        main.ViewModel.OpenSettingsCommand.Execute(null);
+                        ((Expander)main.FindName("RefreshSection")).IsExpanded = true;
+                        await appearance.SetAlwaysRefreshAllChildrenAsync(true);
                         foreach (var name in new[] { "Messages", "FolderList" })
                         {
                             var list = (ListBox)main.FindName(name);
@@ -689,6 +707,9 @@ public sealed class PresentationTests
                         main = await ClickLanguageAsync(main);
                         Assert.Equal("cs", LanguageSettings.Code);
                         Assert.Equal("CS", ((TextBlock)main.FindName("LanguageCodeText")).Text);
+                        Assert.True(main.ViewModel.SettingsOpen);
+                        Assert.True(((Expander)main.FindName("RefreshSection")).IsExpanded);
+                        Assert.True(main.ViewModel.Theme.AlwaysRefreshAllChildren);
                         AssertRepositoryLink();
                         Assert.Equal("Odeslané", main.ViewModel.FolderTitle);
                         Assert.Equal("test", main.Account!.Username);
