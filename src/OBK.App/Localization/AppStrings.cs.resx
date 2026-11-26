@@ -423,7 +423,7 @@ Obnovte zprávy a ověřte stav u školy.</value>
     <comment>Button that downloads new messages.</comment>
   </data>
   <data name="MainRefreshTooltip" xml:space="preserve">
-    <value>Stáhnout nové zprávy pro všechny uložené děti</value>
+    <value>Stáhnout nové zprávy pro vybrané nebo všechny děti</value>
   </data>
   <data name="MainRefreshing" xml:space="preserve">
     <value>Obnovování...</value>
@@ -590,6 +590,10 @@ Obnovte zprávy a ověřte stav u školy.</value>
   <data name="SettingsAppearanceDescription" xml:space="preserve">
     <value>Motiv a velikost textu</value>
   </data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Obnovování</value></data>
+  <data name="SettingsRefreshDescription" xml:space="preserve"><value>Volba dětí, u kterých se stahují zprávy</value></data>
+  <data name="SettingsAlwaysRefreshAllChildren" xml:space="preserve"><value>Vždy obnovovat všechny děti</value></data>
+  <data name="SettingsAlwaysRefreshAllChildrenDescription" xml:space="preserve"><value>Při výběru jednoho dítěte obnovit i ostatní uložené děti</value></data>
   <data name="SettingsBack" xml:space="preserve">
     <value>Zpět ke zprávám</value>
     <comment>Button that closes Settings.</comment>

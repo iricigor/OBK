@@ -12,6 +12,7 @@ internal static class ReaderPreferences
     private const string GroupingPreference = "reader_grouping";
     private const string SortPreference = "reader_sort";
     private const string AllChildrenPreference = "reader_all_children";
+    private const string AlwaysRefreshAllChildrenPreference = "always_refresh_all_children";
     private const string ScheduledChecksPreference = "scheduled_checks";
     private const string CheckNotificationsPreference = "scheduled_check_notifications";
     private const string EmptyCheckNotificationsPreference = "scheduled_check_empty_notifications";
@@ -37,6 +38,11 @@ internal static class ReaderPreferences
     {
         get => Preferences.Default.Get(AllChildrenPreference, true);
         set => Preferences.Default.Set(AllChildrenPreference, value);
+    }
+    internal static bool AlwaysRefreshAllChildren
+    {
+        get => Preferences.Default.Get(AlwaysRefreshAllChildrenPreference, false);
+        set => Preferences.Default.Set(AlwaysRefreshAllChildrenPreference, value);
     }
     /// <summary>Hourly background checks; turning them off also turns off both notification settings below.</summary>
     internal static bool ScheduledChecks

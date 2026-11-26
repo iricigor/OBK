@@ -278,8 +278,8 @@
     <value>Оновлення потребує уваги</value>
   </data>
   <data name="ReaderRefreshAll" xml:space="preserve">
-    <value>Оновити все</value>
-    <comment>Button that refreshes every saved account.</comment>
+    <value>Оновити</value>
+    <comment>Button that downloads new messages for the selected refresh scope.</comment>
   </data>
   <data name="ReaderRefreshFailed" xml:space="preserve">
     <value>Помилка: {0} Наявні автономні архіви залишено без змін.</value>
@@ -549,6 +549,9 @@
   <data name="SettingsSectionReading" xml:space="preserve">
     <value>Читання</value>
   </data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Оновлення</value></data>
+  <data name="SettingsAlwaysRefreshAllChildren" xml:space="preserve"><value>Завжди оновлювати всіх дітей</value></data>
+  <data name="SettingsAlwaysRefreshAllChildrenDescription" xml:space="preserve"><value>Коли вибрано одну дитину, оновлювати також інших збережених дітей</value></data>
   <data name="SettingsSectionAbout" xml:space="preserve">
     <value>Про застосунок</value>
   </data>

@@ -160,7 +160,8 @@ public partial class App : Application
                         window.ViewModel.OpenSettingsCommand.Execute(null);
                         window.UpdateLayout();
                         if (window.SettingsPage.Visibility != Visibility.Visible || window.Messages.IsVisible ||
-                            window.AppearanceSection.IsExpanded || window.AccountsSection.IsExpanded || window.AboutSection.IsExpanded)
+                            window.AppearanceSection.IsExpanded || window.RefreshSection.IsExpanded ||
+                            window.AccountsSection.IsExpanded || window.AboutSection.IsExpanded)
                             throw new ObkException("Settings did not open as a page with every section collapsed.");
                         Capture(window, Path.ChangeExtension(resultPath, ".settings.png"));
                         window.AppearanceSection.IsExpanded = true;
@@ -170,6 +171,15 @@ public partial class App : Application
                             throw new ObkException("Choosing Light in Settings did not change the theme.");
                         window.UpdateLayout();
                         Capture(window, Path.ChangeExtension(resultPath, ".settings-appearance.png"));
+                        window.AppearanceSection.IsExpanded = false;
+                        window.RefreshSection.IsExpanded = true;
+                        window.UpdateLayout();
+                        Capture(window, Path.ChangeExtension(resultPath, ".settings-refresh.png"));
+                        await window.ViewModel.Theme.ToggleAsync();
+                        window.UpdateLayout();
+                        Capture(window, Path.ChangeExtension(resultPath, ".settings-refresh-dark.png"));
+                        await window.ViewModel.Theme.ToggleAsync();
+                        window.RefreshSection.IsExpanded = false;
                         var settingsRow = window.ViewModel.Accounts.Single(a => a.Login.Username == "installation-check");
                         if (!settingsRow.PasswordSaved || window.ViewModel.Accounts.Single(a => a.Login.Username == "previous-account").PasswordSaved)
                             throw new ObkException("Settings did not report which accounts have saved passwords.");

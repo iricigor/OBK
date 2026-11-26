@@ -231,6 +231,40 @@ public sealed class ReaderScopeTests
         await vm.OpenedSaved;
     });
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public Task RefreshReportsMissingPasswordsOnlyForItsScope(bool allChildren, bool alwaysRefreshAll) =>
+        RunAsync(async (store, directory) =>
+    {
+        await Task.Run(() =>
+        {
+            store.SaveAccount(School, "anna", "Anna");
+            store.SaveAccount(School, "tomas", "Tomáš");
+            store.SaveArchive(School, "anna", Year, "Sample School", Archive(received: [Make("a1", "Anna notice", 1)]));
+            store.SaveArchive(School, "tomas", Year, "Sample School", Archive(received: [Make("t1", "Tomas notice", 2)]));
+        });
+        var prompts = new List<Login?>();
+        var vm = Reader(store, directory, (_, login) => prompts.Add(login));
+        await vm.ActivateAccountAsync(School, "tomas");
+        await vm.SelectAccountAsync(Child(vm, "tomas"));
+        if (allChildren) await vm.SelectAllChildrenAsync();
+        await vm.Theme.SetAlwaysRefreshAllChildrenAsync(alwaysRefreshAll);
+
+        await vm.RefreshAllAsync();
+        await SettleAsync(vm);
+
+        Assert.Equal(allChildren, vm.ShowingAllChildren);
+        Assert.Contains("Tomáš", vm.Status);
+        if (allChildren || alwaysRefreshAll) Assert.Contains("Anna", vm.Status);
+        else Assert.DoesNotContain("Anna", vm.Status);
+        Assert.False(vm.GoodStatus);
+        Assert.Equal(allChildren ? "anna" : "tomas", Assert.Single(prompts)!.Username);
+        Assert.Equal(allChildren ? 2 : 1, vm.Messages.Count);
+        Assert.Equal("tomas", vm.Account!.Username);
+    });
+
     [Fact]
     public Task MessagesKeepTheirOwningChildForSelectionAttachmentsAndRelatedLinks() => RunAsync(async (store, directory) =>
     {

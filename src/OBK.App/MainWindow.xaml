@@ -793,6 +793,31 @@
                         </StackPanel>
                     </Expander>
 
+                    <Expander x:Name="RefreshSection" Style="{StaticResource SettingsExpander}" AutomationProperties.Name="{x:Static loc:AppStrings.SettingsRefresh}">
+                        <Expander.Header>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE895;" FontSize="20" HorizontalAlignment="Left"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{x:Static loc:AppStrings.SettingsRefresh}" FontSize="14"/>
+                                    <TextBlock Text="{x:Static loc:AppStrings.SettingsRefreshDescription}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Expander.Header>
+                        <Grid Margin="72,14,20,14">
+                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock Text="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildren}" FontSize="13.5"/>
+                                <TextBlock Text="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildrenDescription}" FontSize="12"
+                                           Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <CheckBox Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Theme.AlwaysRefreshAllChildren, Mode=OneWay}"
+                                      Command="{Binding ToggleAlwaysRefreshAllChildrenCommand}"
+                                      ToolTip="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildrenDescription}"
+                                      AutomationProperties.Name="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildren}"/>
+                        </Grid>
+                    </Expander>
+
                     <Expander x:Name="AccountsSection" Style="{StaticResource SettingsExpander}" AutomationProperties.Name="{x:Static loc:AppStrings.SettingsAccounts}">
                         <Expander.Header>
                             <Grid>
