@@ -25,6 +25,6 @@ internal static class AndroidAttachmentLauncher
     }
 }
 
-[Android.App.ContentProvider(["cz.obk.reader.attachments"], Exported = false, GrantUriPermissions = true)]
-[Android.App.MetaData("android.support.FILE_PROVIDER_PATHS", Resource = "@xml/attachment_paths")]
+[global::Android.App.ContentProvider(["cz.obk.reader.attachments"], Exported = false, GrantUriPermissions = true)]
+[global::Android.App.MetaData("android.support.FILE_PROVIDER_PATHS", Resource = "@xml/attachment_paths")]
 public sealed class AttachmentFileProvider : AndroidX.Core.Content.FileProvider;
