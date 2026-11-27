@@ -549,16 +549,53 @@ load, and announces nothing. A running app reloads its archives from the device
 after a check that changed them.
 
 With notifications on, a check with arrivals posts one summary for all children
-on the **New messages** channel. It has a plural-aware title and up to five
-`Child · Subject` lines, newest first; when more arrived, the last line reads
-`+N more`. Children that could not be checked follow (sign-in needed or check
-failed). Each summary has its own ID, so earlier ones remain. With **Also notify
+on the **New messages** channel. A single arrival is titled `Child · Sender`
+(only the child when no sender is supplied) with its subject as text. Several
+arrivals have a plural-aware title and up to five `Child · Sender: Subject` lines
+(`Child · Subject` without a sender), newest first; when more arrived, the last
+line reads `+N more`. Children that could not be checked follow (sign-in needed
+or check failed). The notification time is the newest arrival's sent time. Each
+summary has its own ID, so earlier ones remain. With **Also notify
 when nothing is new**, a check without arrivals instead posts a status on the
 low-importance **Check status** channel, replacing the previous status. Texts use
-the saved interface language. Lines contain message subjects; lock screens set to
-hide sensitive content show only the title. Tapping a notification opens Inbox,
-in **All children** when there are several children, from the offline archives
-without network access. Notifications are local; OBK has no push service.
+the saved interface language. Titles and lines contain child names, senders, and
+subjects; lock screens set to hide sensitive content show only the plural-aware
+count title, without an avatar.
+
+The monochrome OBK small/status-bar icon stays unchanged. Arrival notifications
+also show a large icon rendered from the reader's existing initials, account
+palette, and overlapping-avatar layout: the child's avatar for one child with
+arrivals, or the all-children identity for multiple children with arrivals.
+Children whose check failed do not affect that choice. Colors follow Android's
+notification light/dark mode; status-only notifications keep the neutral icon.
+
+Tapping an arrival notification opens only its affected accounts, in Inbox if
+any arrival was in Inbox, otherwise Noticeboard. This includes arrivals omitted
+from the five-line summary. A temporary reader scope supports a subset of several
+children, with their names in the summary and their avatars in the child selector.
+Explicitly choosing a child or **All children** leaves that temporary scope;
+notification navigation does not overwrite the saved child preference. Status
+notifications, and older notifications without a destination, open all-children
+Inbox. Navigation reloads the device's offline archives without network access.
+
+Each notification has its own immutable pending intent, keyed by notification
+ID, so a newer check cannot replace an older card's destination. Its payload
+contains the folder and SHA-256 account identities derived from school URL and
+username, never passwords or child names; renaming children or duplicate names
+cannot redirect a tap. Accounts since removed are excluded rather than widening
+an arrival notification to unrelated children. Cold starts and taps while OBK
+is running use the same destination; opening Recents does not replay a tap.
+Notifications are local; OBK has no push service.
+
+For manual verification, enable scheduled checks and notifications, then check
+one child's Inbox arrivals, Noticeboard-only arrivals, and arrivals for two of
+three saved children. Expect one card per run with the matching single/group
+avatar, and a tap to open exactly the affected scope in the first arrival folder.
+Post a later card and tap the older one to verify its destination is unchanged.
+Repeat with OBK backgrounded and after stopping its process, with duplicate or
+renamed child labels, in Android light/dark mode, and with lock-screen sensitive
+content hidden. Check that status-only cards remain neutral and open all-children
+Inbox, and that explicit child selection exits the temporary scope.
 
 Android 13 and later require the `POST_NOTIFICATIONS` permission, which OBK
 requests only when the user turns on **New-message notifications**. If it is

@@ -650,6 +650,10 @@
     <value>{0} · {1}</value>
     <comment>Notification line for one new message. {0} = child name; {1} = message subject.</comment>
   </data>
+  <data name="NotificationArrivalFrom" xml:space="preserve">
+    <value>{0} · {1}: {2}</value>
+    <comment>Notification line for one new message. {0} = child name; {1} = sender name; {2} = message subject.</comment>
+  </data>
   <data name="NotificationMoreOne" xml:space="preserve">
     <value>+{0} more</value>
     <comment>Last notification line when not every new message is listed. {0} = number of messages not listed. Singular form (Czech: 1; Ukrainian: 1, 21, 31...).</comment>

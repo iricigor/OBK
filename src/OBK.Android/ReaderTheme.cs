@@ -45,7 +45,7 @@ internal static class ReaderTheme
     internal static readonly Color DarkDangerSurface = Color.FromArgb("#442726");
     internal static readonly Color DisabledForeground = Color.FromArgb("#8A8A8A");
     internal static readonly Color DarkDisabledForeground = Color.FromArgb("#7A7A7A");
-    private static readonly (string LightBackground, string LightText, string DarkBackground, string DarkText)[] AvatarColors =
+    internal static readonly (string LightBackground, string LightText, string DarkBackground, string DarkText)[] AvatarColors =
     [
         ("#E0F2F1", "#00695C", "#163835", "#4DD0E1"),
         ("#E8EAF6", "#3949AB", "#232A4D", "#9FA8FF"),
@@ -98,9 +98,7 @@ internal static class ReaderTheme
     public static Grid GroupAvatar(IReadOnlyList<Login> known, double size)
     {
         var group = new Grid { WidthRequest = size, HeightRequest = size, InputTransparent = true };
-        var positions = known.Count == 2
-            ? new[] { (X: 0.06, Y: 0.14, Size: 0.55), (X: 0.39, Y: 0.30, Size: 0.55) }
-            : [(0.05, 0.11, 0.47), (0.48, 0.11, 0.47), (0.27, 0.48, 0.47)];
+        var positions = GroupAvatarPositions(known.Count);
         foreach (var (login, position) in known.Take(3).Zip(positions))
         {
             var letter = new Label
@@ -121,6 +119,10 @@ internal static class ReaderTheme
         }
         return group;
     }
+
+    internal static (double X, double Y, double Size)[] GroupAvatarPositions(int count) => count == 2
+        ? [(0.06, 0.14, 0.55), (0.39, 0.30, 0.55)]
+        : [(0.05, 0.11, 0.47), (0.48, 0.11, 0.47), (0.27, 0.48, 0.47)];
 
     public static Border Badge(int count)
     {

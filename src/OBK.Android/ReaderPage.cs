@@ -54,6 +54,7 @@ internal sealed class ReaderPage : ContentPage
     private IReadOnlyList<AccountArchive> archives = [];
     private Login? account;
     private bool allChildren = ReaderPreferences.AllChildren;
+    private NotificationDestination? notificationScope;
     private bool busy;
     private bool reloading;
     private bool searching;
@@ -71,8 +72,13 @@ internal sealed class ReaderPage : ContentPage
     internal int FolderIndex => folderIndex;
     internal IReadOnlyList<string> FolderLabels => folderLabels;
     internal IReadOnlyList<Login> KnownAccounts => known;
-    internal bool ShowingAllChildren => allChildren && known.Count > 1;
-    internal Login? ActiveAccount => ShowingAllChildren ? null : account;
+    internal bool ShowingAllChildren => ShowingMultipleChildren && ScopeAccounts.Count == known.Count;
+    internal Login? ActiveAccount => ShowingMultipleChildren ? null : account;
+    private bool ShowingMultipleChildren => ScopeAccounts.Count > 1;
+    private IReadOnlyList<Login> ScopeAccounts => notificationScope is { } destination ? destination.ResolveAccounts(known) :
+        allChildren ? known : known.Where(login => SameAccount(login, account)).ToArray();
+    private string ScopeLabel => ShowingAllChildren ? AppStrings.ReaderAllChildren :
+        string.Join(", ", ScopeAccounts.Select(AccountLabelConverter.Label));
     private readonly RefreshStatusTimeout refreshStatusTimeout = new(TimeProvider.System);
     private readonly IDispatcherTimer refreshStatusTimer;
     private readonly SemaphoreSlim operationGate = new(1, 1);
@@ -322,6 +328,7 @@ internal sealed class ReaderPage : ContentPage
             archives = archives,
             account = account,
             allChildren = allChildren,
+            notificationScope = notificationScope,
             initialized = initialized,
             folderIndex = folderIndex
         };
@@ -357,8 +364,8 @@ internal sealed class ReaderPage : ContentPage
     private static bool SameAccount(Login? left, Login? right) =>
         left is not null && right is not null && left.Url == right.Url && left.Username == right.Username;
 
-    private IEnumerable<AccountArchive> ScopeArchives() => ShowingAllChildren ? archives :
-        archives.Where(item => SameAccount(item.Login, account));
+    private IEnumerable<AccountArchive> ScopeArchives() =>
+        archives.Where(item => ScopeAccounts.Any(login => SameAccount(item.Login, login)));
     private IEnumerable<MessageEntry> ScopeEntries() => ScopeArchives().SelectMany(item => item.Entries);
 
     private void RestoreArchiveStatus()
@@ -412,14 +419,15 @@ internal sealed class ReaderPage : ContentPage
     {
         if (groupAvatar is not null) childArea.Remove(groupAvatar);
         groupAvatar = null;
-        if (ShowingAllChildren)
+        if (ShowingMultipleChildren)
         {
             child.Text = "";
             child.ImageSource = null;
             child.SetAppThemeColor(Button.BackgroundColorProperty, ReaderTheme.Selection, ReaderTheme.DarkSelection);
-            groupAvatar = ReaderTheme.GroupAvatar(known, 56);
+            groupAvatar = ReaderTheme.GroupAvatar(ScopeAccounts, 56);
             childArea.Add(groupAvatar);
-            SemanticProperties.SetDescription(child, AppStrings.ReaderSelectedAllChildren);
+            SemanticProperties.SetDescription(child, ShowingAllChildren ? AppStrings.ReaderSelectedAllChildren :
+                Localized.Format(AppStrings.ReaderSelectedChild, ScopeLabel));
             return;
         }
         var label = account is null ? null : AccountLabelConverter.Label(account);
@@ -466,7 +474,7 @@ internal sealed class ReaderPage : ContentPage
             new SolidColorBrush(searching ? ReaderTheme.DarkAccent : ReaderTheme.DarkStroke));
     }
 
-    private ListGrouping EffectiveGrouping => ReaderPreferences.Grouping is ListGrouping.Child && !ShowingAllChildren
+    private ListGrouping EffectiveGrouping => ReaderPreferences.Grouping is ListGrouping.Child && !ShowingMultipleChildren
         ? ListGrouping.None : ReaderPreferences.Grouping;
 
     private void RenderArrangeOptions()
@@ -482,7 +490,7 @@ internal sealed class ReaderPage : ContentPage
             (ListGrouping.Subject, AppStrings.ReaderOptionSubject)
         })
         {
-            if (value is ListGrouping.Child && !ShowingAllChildren) continue;
+            if (value is ListGrouping.Child && !ShowingMultipleChildren) continue;
             groups.Add(ReaderTheme.Chip(label, value == grouping, (_, _) =>
             {
                 ReaderPreferences.Grouping = value;
@@ -531,7 +539,8 @@ internal sealed class ReaderPage : ContentPage
             session.DownloadChanged += DownloadChanged;
             SetBusy(busy);
             if (session.ReadingDuringDownload) status.Text = session.Download!.State.Status;
-            if ((!InitialDownloadRunning || session.ReadingDuringDownload) && App.TakeInboxRequest()) ShowInbox();
+            if ((!InitialDownloadRunning || session.ReadingDuringDownload) &&
+                App.TakeNotificationRequest() is { } destination) ShowNotification(destination);
         }
         if (initialized || busy) return;
         await RunAsync(InitializeAsync);
@@ -552,7 +561,7 @@ internal sealed class ReaderPage : ContentPage
         session.DownloadChanged += DownloadChanged;
         initialized = true;
         await ReloadAsync();
-        if (App.TakeInboxRequest()) ShowInbox();
+        if (App.TakeNotificationRequest() is { } destination) ShowNotification(destination);
 #if DEBUG
         if (session.IsInitialDownloadVerification)
             await Navigation.PushAsync(new SignInPage(session,
@@ -561,23 +570,27 @@ internal sealed class ReaderPage : ContentPage
 #endif
     }
 
-    /// <summary>Shows Inbox, for all children when there are several, with archives freshly read from this device.</summary>
-    internal Task ShowInboxAsync() => RunAsync(async () =>
+    /// <summary>Opens the tapped notification's child scope and folder using freshly loaded offline archives.</summary>
+    internal Task ShowNotificationAsync() => RunAsync(async () =>
     {
         if (InitialDownloadRunning && session?.ReadingDuringDownload != true) return;
-        if (!App.TakeInboxRequest()) return;
+        if (App.TakeNotificationRequest() is not { } destination) return;
         if (Navigation.NavigationStack.Count > 1) await Navigation.PopToRootAsync(false);
         if (session is null) await InitializeAsync();
         else await ReloadAsync();
-        ShowInbox();
+        ShowNotification(destination);
     });
 
-    private void ShowInbox()
+    private void ShowNotification(NotificationDestination destination)
     {
-        folderIndex = 0;
+        notificationScope = destination;
+        account = ScopeAccounts.FirstOrDefault();
+        folderIndex = Array.IndexOf(FolderKeys, destination.Folder);
         ExitSearch();
-        if (known.Count > 1) SelectAllChildren();
-        else ApplyList();
+        UpdateContext();
+        RestoreArchiveStatus();
+        RenderArrangeOptions();
+        ApplyList();
     }
 
     /// <summary>Reloads archives that a scheduled check saved, without contacting the school or blocking the list.</summary>
@@ -657,8 +670,10 @@ internal sealed class ReaderPage : ContentPage
             return new AccountArchive(login, archive, Entries(login, archive, opened));
         }).ToList());
         known = logins;
+        if (preferred is not null) notificationScope = null;
         var selected = preferred ?? account ?? last;
-        account = known.FirstOrDefault(item => SameAccount(item, selected)) ?? known.FirstOrDefault();
+        account = notificationScope is not null ? ScopeAccounts.FirstOrDefault() :
+            known.FirstOrDefault(item => SameAccount(item, selected)) ?? known.FirstOrDefault();
         if (preferred is not null && account is { } chosen)
             await Task.Run(() => store.SaveAccount(chosen.Url, chosen.Username, chosen.ChildName, chosen.SchoolName));
         UpdateContext();
@@ -690,6 +705,7 @@ internal sealed class ReaderPage : ContentPage
         if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
         var store = session.Store;
         await Task.Run(() => store.SaveAccount(login.Url, login.Username, login.ChildName, login.SchoolName));
+        notificationScope = null;
         allChildren = ReaderPreferences.AllChildren = false;
         account = known.FirstOrDefault(item => SameAccount(item, login)) ?? login;
         UpdateContext();
@@ -700,6 +716,7 @@ internal sealed class ReaderPage : ContentPage
 
     private void SelectAllChildren()
     {
+        notificationScope = null;
         allChildren = ReaderPreferences.AllChildren = true;
         UpdateContext();
         RestoreArchiveStatus();
@@ -742,9 +759,9 @@ internal sealed class ReaderPage : ContentPage
         var grouping = EffectiveGrouping;
         var sort = ReaderPreferences.Sort;
         var today = DateTime.Today;
-        var showOwner = ShowingAllChildren;
+        var showOwner = ShowingMultipleChildren;
         // Another folder, child, arrangement or search expands every group again; reloads keep collapsed groups.
-        var view = string.Join('\n', key, showOwner ? "*" : account is null ? "" : AccountKey(account), grouping, sort, query);
+        var view = string.Join('\n', key, string.Join('|', ScopeAccounts.Select(AccountKey)), grouping, sort, query);
         if (view != collapsedView)
         {
             collapsed.Clear();
@@ -782,7 +799,7 @@ internal sealed class ReaderPage : ContentPage
         }
         messages.ItemsSource = listItems = items;
         summary.Text = Localized.Format(AppStrings.ReaderSearchSummary, groups.Sum(group => group.Rows.Count), folderLabels[folderIndex],
-            showOwner ? AppStrings.ReaderAllChildren : account is null ? "" : AccountLabelConverter.Label(account));
+            ScopeLabel);
         addChild.IsVisible = session is not null && known.Count == 0;
         empty.Text = query.Length > 0 ? AppStrings.ReaderEmptySearch :
             !ScopeArchives().Any(item => item.Archive is not null) ? AppStrings.ReaderEmptyNoArchive : AppStrings.ReaderEmptyFolder;
@@ -831,7 +848,7 @@ internal sealed class ReaderPage : ContentPage
         if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
         session.ClearInitialDownloadStatus();
         var saved = await Task.Run(() => session.Store.RememberedLogins());
-        var targets = RefreshScope.Accounts(known, account, ShowingAllChildren, ReaderPreferences.AlwaysRefreshAllChildren);
+        var targets = ReaderPreferences.AlwaysRefreshAllChildren ? known : ScopeAccounts;
         var failures = new List<string>();
         var missing = new List<Login>();
         var completed = 0;
