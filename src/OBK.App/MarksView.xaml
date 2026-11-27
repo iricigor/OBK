@@ -4,6 +4,21 @@
     xmlns:shared="clr-namespace:OBK.Core.Localization;assembly=OBK.Core"
     xmlns:loc="clr-namespace:OBK.App.Localization">
     <UserControl.Resources>
+        <Style x:Key="MarksRowButton" TargetType="Button" BasedOn="{StaticResource SubtleButton}">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="MarksTab" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="Padding" Value="0,10"/>
@@ -65,22 +80,37 @@
                 <Grid>
                     <TextBlock Text="{Binding EmptyText}" Visibility="{Binding Empty, Converter={StaticResource VisibleIf}}"
                                Margin="12,20" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}"/>
-                    <ListBox ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" IsSynchronizedWithCurrentItem="False"
-                             ItemContainerStyle="{StaticResource SelectableRow}" AutomationProperties.Name="{x:Static shared:SharedStrings.MarksTitle}">
+                    <ListBox x:Name="MarksList" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" IsSynchronizedWithCurrentItem="False"
+                             AutomationProperties.Name="{x:Static shared:SharedStrings.MarksTitle}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource SelectableRow}">
+                                <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAlternate}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource ListAlternateSurface}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Button Command="{Binding DataContext.OpenEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                        Style="{StaticResource SubtleButton}" HorizontalContentAlignment="Stretch" Padding="12,14" AutomationProperties.Name="{Binding AccessibleName}">
+                                        Style="{StaticResource MarksRowButton}" AutomationProperties.Name="{Binding AccessibleName}">
+                                    <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="0,0,0,1" Padding="{DynamicResource ListRowPadding}">
                                     <Grid>
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                        <Border Width="28" Height="28" CornerRadius="14" Margin="0,0,10,0" VerticalAlignment="Top">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" VerticalAlignment="Center" Margin="0,0,4,0"
+                                                 Visibility="{Binding IsNew, Converter={StaticResource VisibleIf}}"/>
+                                        <Border Grid.Column="1" Grid.RowSpan="2" Width="24" Height="24" CornerRadius="12" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                Visibility="{Binding ShowOwner, Converter={StaticResource VisibleIf}}">
                                             <Border.Background>
                                                 <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Bg">
                                                     <Binding Path="OwnerColorKey"/>
                                                     <Binding Path="DataContext.Theme.IsDark" RelativeSource="{RelativeSource AncestorType=Window}"/>
                                                 </MultiBinding>
                                             </Border.Background>
-                                            <TextBlock Text="{Binding OwnerInitials}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding OwnerInitials}" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                 <TextBlock.Foreground>
                                                     <MultiBinding Converter="{StaticResource ThemeBrush}" ConverterParameter="Fg">
                                                         <Binding Path="OwnerColorKey"/>
@@ -89,23 +119,21 @@
                                                 </TextBlock.Foreground>
                                             </TextBlock>
                                         </Border>
-                                        <StackPanel Grid.Column="1">
-                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{Binding Subtitle}" FontSize="12" Margin="0,4,0,0" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{Binding Detail}" FontSize="12" Margin="0,4,0,0" Foreground="{DynamicResource TextSecondary}"/>
-                                            <ItemsControl ItemsSource="{Binding Preview}" Margin="0,6,0,0">
-                                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate><DataTemplate>
-                                                    <Border BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,0,5,0">
-                                                        <TextBlock Text="{Binding Value}" FontSize="12"/>
-                                                    </Border>
-                                                </DataTemplate></ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                            <TextBlock Text="{x:Static shared:SharedStrings.MarksNew}" FontSize="11" Foreground="{DynamicResource Accent}"
-                                                       Visibility="{Binding IsNew, Converter={StaticResource VisibleIf}}" Margin="0,4,0,0"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="2" Text="{Binding Value}" FontSize="20" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center" MaxWidth="90" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Title}" FontSize="{DynamicResource ListSubjectSize}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Title}">
+                                            <TextBlock.Style><Style TargetType="TextBlock">
+                                                <Setter Property="FontWeight" Value="Normal"/>
+                                                <Style.Triggers><DataTrigger Binding="{Binding IsNew}" Value="True"><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger></Style.Triggers>
+                                            </Style></TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Grid.Column="3" Text="{Binding Value}" FontSize="{DynamicResource ListSubjectSize}" FontWeight="SemiBold" Margin="8,0,0,0"
+                                                   HorizontalAlignment="Right" MaxWidth="90" TextTrimming="CharacterEllipsis" ToolTip="{Binding Value}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding RowSubtitle}" FontSize="{DynamicResource ListSenderSize}"
+                                                   Foreground="{DynamicResource TextSecondary}" Margin="{DynamicResource ListLineGap}" TextTrimming="CharacterEllipsis" ToolTip="{Binding RowSubtitle}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding RowDetail}" FontSize="{DynamicResource ListDateSize}"
+                                                   Foreground="{DynamicResource TextSecondary}" Margin="{DynamicResource ListBadgeMargin}" HorizontalAlignment="Right"
+                                                   MaxWidth="140" TextTrimming="CharacterEllipsis" ToolTip="{Binding Detail}"/>
                                     </Grid>
+                                    </Border>
                                 </Button>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

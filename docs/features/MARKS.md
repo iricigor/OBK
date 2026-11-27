@@ -45,6 +45,12 @@ newest first. Choose one child or **All children** using the existing account
 controls (or the child button on Android's marks screen). Search matches
 subjects, children, captions, topics and grade/points text.
 
+Both lists use message-style two-line rows, alternating backgrounds and local
+new-state dots. Child avatars appear only when showing multiple children.
+The existing **Compact / Relaxed** list-density and reading-size settings apply
+to marks immediately, just as they do to messages. Full assessment metadata
+and individual subject grades remain in details rather than adding list rows.
+
 Opening a subject does not acknowledge its assessments. Explicitly open an
 assessment to clear its local **New or changed** indicator and inspect its
 dates, weight or points status, teacher ID, topic and assessment type.

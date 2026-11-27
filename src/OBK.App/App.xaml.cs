@@ -536,6 +536,13 @@ public partial class App : Application
                 await window.ViewModel.Theme.ToggleAsync();
                 window.UpdateLayout();
                 Capture(window, Path.ChangeExtension(path, ".dark.png"));
+                await window.ViewModel.Theme.SetListDensityAsync("Compact");
+                await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                window.UpdateLayout();
+                Capture(window, Path.ChangeExtension(path, ".compact.png"));
+                window.ViewModel.Marks.IsRecent = false;
+                window.UpdateLayout();
+                Capture(window, Path.ChangeExtension(path, ".compact-subjects.png"));
             }
             window.Close();
         }

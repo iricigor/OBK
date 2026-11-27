@@ -109,35 +109,61 @@ internal sealed class MarksPage : ContentPage
         var initial = new Label { FontAttributes = FontAttributes.Bold, HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center };
         var avatar = new Border
         {
-            Content = initial, WidthRequest = 28, HeightRequest = 28, StrokeThickness = 0, VerticalOptions = LayoutOptions.Start,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 14 }
+            Content = initial, WidthRequest = 40, HeightRequest = 40, StrokeThickness = 0, VerticalOptions = LayoutOptions.Center,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 20 }
         };
-        var title = new Label { FontSize = 15, FontAttributes = FontAttributes.Bold };
+        var title = new Label { MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation };
+        title.SetDynamicResource(Label.FontSizeProperty, "ListSubjectSize");
         title.SetBinding(Label.TextProperty, nameof(MarksEntry.Title));
-        var subtitle = ReaderTheme.Metadata(new Label { FontSize = 12 });
-        subtitle.SetBinding(Label.TextProperty, nameof(MarksEntry.Subtitle));
-        var detail = ReaderTheme.Metadata(new Label { FontSize = 12 });
-        detail.SetBinding(Label.TextProperty, nameof(MarksEntry.Detail));
-        var fresh = new Label { Text = SharedStrings.MarksNew, FontSize = 11 };
-        fresh.SetAppThemeColor(Label.TextColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
+        var subtitle = ReaderTheme.Metadata(new Label { MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation }, "ListSenderSize");
+        subtitle.SetBinding(Label.TextProperty, nameof(MarksEntry.RowSubtitle));
+        var detail = ReaderTheme.Metadata(new Label { MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation, MaximumWidthRequest = 130 }, "ListDateSize");
+        detail.SetBinding(Label.TextProperty, nameof(MarksEntry.RowDetail));
+        var fresh = new Border
+        {
+            WidthRequest = 10, HeightRequest = 10, StrokeThickness = 0, VerticalOptions = LayoutOptions.Center,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 5 }
+        };
+        fresh.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
         fresh.SetBinding(IsVisibleProperty, nameof(MarksEntry.IsNew));
-        var value = new Label { FontSize = 20, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center, MaximumWidthRequest = 90 };
+        var value = new Label { FontAttributes = FontAttributes.Bold, MaxLines = 1, LineBreakMode = LineBreakMode.TailTruncation, HorizontalOptions = LayoutOptions.End, MaximumWidthRequest = 90 };
+        value.SetDynamicResource(Label.FontSizeProperty, "ListSubjectSize");
         value.SetBinding(Label.TextProperty, nameof(MarksEntry.Value));
+        var indicators = new HorizontalStackLayout
+        {
+            Spacing = 4, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.Center, Children = { detail, fresh }
+        };
         var grid = new Grid
         {
             ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)],
-            Padding = new Thickness(16, 14), ColumnSpacing = 10
+            RowDefinitions = [new(GridLength.Auto), new(GridLength.Auto)],
+            ColumnSpacing = 8, MinimumHeightRequest = 48
         };
+        grid.SetDynamicResource(Grid.PaddingProperty, "ListRowPadding");
+        grid.SetDynamicResource(Grid.RowSpacingProperty, "ListLineGap");
         grid.Add(avatar);
-        grid.Add(new VerticalStackLayout { Spacing = 4, Children = { title, subtitle, detail, fresh } }, 1);
+        Grid.SetRowSpan(avatar, 2);
+        avatar.SetBinding(IsVisibleProperty, nameof(MarksEntry.ShowOwner));
+        grid.Add(title, 1);
         grid.Add(value, 2);
-        grid.BindingContextChanged += (_, _) =>
+        grid.Add(subtitle, 1, 1);
+        grid.Add(indicators, 2, 1);
+        var item = new Grid { RowDefinitions = [new(GridLength.Auto), new(1)], RowSpacing = 0 };
+        item.Add(grid);
+        item.Add(new BoxView(), 0, 1);
+        item.BindingContextChanged += (_, _) =>
         {
-            if (grid.BindingContext is MarksEntry entry) ReaderTheme.StyleAvatar(avatar, initial, entry.Owner, reader.KnownAccounts, 14);
+            if (item.BindingContext is not MarksEntry entry) return;
+            if (entry.ShowOwner) ReaderTheme.StyleAvatar(avatar, initial, entry.Owner, reader.KnownAccounts, 20);
+            title.FontAttributes = entry.IsNew ? FontAttributes.Bold : FontAttributes.None;
+            title.SetAppThemeColor(Label.TextColorProperty, entry.IsNew ? ReaderTheme.Foreground : ReaderTheme.OpenedForeground,
+                entry.IsNew ? ReaderTheme.DarkForeground : ReaderTheme.DarkOpenedForeground);
+            item.SetAppThemeColor(BackgroundColorProperty,
+                entry.IsAlternate ? ReaderTheme.AlternateSurface : ReaderTheme.Surface,
+                entry.IsAlternate ? ReaderTheme.DarkAlternateSurface : ReaderTheme.DarkSurface);
         };
-        grid.SetAppThemeColor(BackgroundColorProperty, ReaderTheme.Surface, ReaderTheme.DarkSurface);
-        grid.SetBinding(SemanticProperties.DescriptionProperty, nameof(MarksEntry.AccessibleName));
-        return ReaderTheme.Apply(grid);
+        item.SetBinding(SemanticProperties.DescriptionProperty, nameof(MarksEntry.AccessibleName));
+        return ReaderTheme.Apply(item);
     }
 
     private async Task RefreshAsync()

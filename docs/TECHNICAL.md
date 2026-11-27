@@ -72,8 +72,9 @@ dotnet build .\src\OBK.App\OBK.App.csproj -c Release -p:LocalBuild=false
 The command uses a temporary archive that is deleted afterwards.
 
 Use `--marks-screenshot <path.png>` instead to capture fictional marks in
-Subjects, Recent marks and dark mode. The additional captures use
-`.recent.png` and `.dark.png` suffixes. This also uses a temporary encrypted
+Subjects, Recent marks, dark mode and both list densities. The additional
+captures use `.recent.png`, `.dark.png`, `.compact.png` and
+`.compact-subjects.png` suffixes. This also uses a temporary encrypted
 archive and never contacts a school.
 
 ## School directory maintenance

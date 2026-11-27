@@ -80,8 +80,12 @@ public sealed class MarksTests : IDisposable
         Assert.Equal("85/100", match.Value);
         Assert.DoesNotContain("3", MarksEntry.WeightText(match.Assessment!));
         Assert.Single(catalog.Subjects("85/100"));
-        Assert.Equal(2, catalog.Subjects("anna")[0].Preview.Count);
-        Assert.Empty(match.Preview);
+        Assert.Equal("Anna · Mathematics", match.RowSubtitle);
+        Assert.Equal([false, true, false], results.Select(entry => entry.IsAlternate));
+        var singleChild = MarksCatalog.Read(store, [anna]);
+        Assert.All(singleChild.Recent(), entry => Assert.False(entry.ShowOwner));
+        Assert.Equal("Mathematics", Assert.Single(singleChild.Recent("listening")).RowSubtitle);
+        Assert.DoesNotContain("Anna", Assert.Single(singleChild.Subjects()).RowSubtitle);
     }
 
     [Fact]

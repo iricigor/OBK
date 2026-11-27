@@ -6,6 +6,8 @@ public sealed record MarksAccount(Login Owner, MarksArchive? Archive, string? Er
 
 public sealed record MarksEntry(Login Owner, SubjectMarks Subject, MarksArchive Archive, Mark? Assessment = null)
 {
+    public bool ShowOwner { get; init; }
+    public bool IsAlternate { get; init; }
     public string OwnerLabel => Owner.ChildName ?? Owner.SchoolName ?? Owner.Username;
     public string OwnerInitials => AvatarPresentation.Initials(OwnerLabel);
     public string OwnerColorKey => "Avatar" + AvatarPresentation.PaletteIndex(Owner.Url + "|" + Owner.Username);
@@ -24,7 +26,10 @@ public sealed record MarksEntry(Login Owner, SubjectMarks Subject, MarksArchive 
         " · " + WeightText(mark) : CountText;
     public bool IsSubject => Assessment is null;
     public bool NoAssessments => Subject.Marks.Count == 0;
-    public IReadOnlyList<MarksEntry> Preview => IsSubject ? Assessments.Take(4).ToArray() : [];
+    public string RowSubtitle => IsSubject
+        ? ShowOwner ? OwnerLabel + " · " + CountText : CountText
+        : ShowOwner ? Subtitle : Subject.Subject.Name;
+    public string RowDetail => IsSubject ? "" : Detail;
     public string AverageLabel => Subject.PointsOnly || Subject.Marks.Count > 0 && Subject.Marks.All(mark => mark.IsPoints)
         ? SharedStrings.MarksPoints : SharedStrings.MarksAverage;
     public string Provisional => string.IsNullOrWhiteSpace(Subject.TemporaryMark) ? "" :
@@ -75,18 +80,21 @@ public sealed class MarksCatalog(IReadOnlyList<MarksAccount> accounts)
     private IEnumerable<MarksEntry> AllSubjects() => Accounts.Where(account => account.Archive is not null)
         .SelectMany(account => account.Archive!.Data.Subjects.Select(subject => new MarksEntry(account.Owner, subject, account.Archive)));
 
-    public IReadOnlyList<MarksEntry> Subjects(string search = "") => AllSubjects()
+    private IReadOnlyList<MarksEntry> Rows(IEnumerable<MarksEntry> entries) => entries
+        .Select((entry, index) => entry with { ShowOwner = Accounts.Count > 1, IsAlternate = index % 2 == 1 }).ToArray();
+
+    public IReadOnlyList<MarksEntry> Subjects(string search = "") => Rows(AllSubjects()
         .Where(entry => Matches(entry, search))
         .OrderBy(entry => entry.Subject.Subject.Name, StringComparer.Create(LanguageSettings.Culture, true))
         .ThenBy(entry => entry.OwnerLabel, StringComparer.Create(LanguageSettings.Culture, true))
-        .ThenBy(entry => entry.Key, StringComparer.Ordinal).ToArray();
+        .ThenBy(entry => entry.Key, StringComparer.Ordinal));
 
-    public IReadOnlyList<MarksEntry> Recent(string search = "") => AllSubjects()
+    public IReadOnlyList<MarksEntry> Recent(string search = "") => Rows(AllSubjects()
         .SelectMany(entry => entry.Assessments).Where(entry => Matches(entry, search))
         .OrderByDescending(entry => entry.Assessment!.Date)
         .ThenByDescending(entry => entry.Assessment!.Edited)
         .ThenBy(entry => entry.Key, StringComparer.Ordinal)
-        .ThenBy(entry => entry.Assessment!.Id, StringComparer.Ordinal).ToArray();
+        .ThenBy(entry => entry.Assessment!.Id, StringComparer.Ordinal));
 
     private static bool Matches(MarksEntry entry, string search)
     {
