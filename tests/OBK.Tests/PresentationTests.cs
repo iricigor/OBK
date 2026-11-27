@@ -435,6 +435,9 @@ public sealed class PresentationTests
                         AssertRepositoryLink();
                         async Task AssertHelpMenuAsync()
                         {
+                            await main.ViewModel.FolderReady;
+                            await main.ViewModel.MessageReady;
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                             main.UpdateLayout();
                             var button = (Button)main.FindName("HelpButton");
                             var status = (TextBlock)main.FindName("Status");
