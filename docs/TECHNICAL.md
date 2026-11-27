@@ -4,6 +4,58 @@ Developer, maintainer, and security details for OBK (Offline Bakaláři Komens).
 For an overview and installation, see the [README](../README.md). Potential
 future work and its prerequisites are recorded in [Deferred ideas](../DEFERRED_IDEAS.md).
 
+## GitHub Pages user guide
+
+The guide is a dependency-free static HTML/CSS site in `docs\user-guide`.
+Its initial scope is three pages: overview, Windows getting started, and
+Android getting started. Detailed screen/folder guides and light/dark
+screenshots are a separate follow-up. No app build or site-generation step is
+needed.
+
+Stable public destinations:
+
+- Overview: <https://iricigor.github.io/OBK/>
+- Windows start: <https://iricigor.github.io/OBK/windows.html>
+- Android start: <https://iricigor.github.io/OBK/android.html>
+
+Keep these destinations when adding further guide pages: the app's follow-up
+help menus use the platform URLs. Use relative paths for guide navigation and
+assets so they work under the `/OBK/` Pages prefix. Links to source documents
+outside the published guide must use their GitHub URLs.
+
+Run the focused checks from the repository root with Python 3.10 or later:
+
+```powershell
+python -m unittest discover -s .\tools -p "test_check_user_guide.py"
+python .\tools\check_user_guide.py
+```
+
+Preview locally:
+
+```powershell
+python -m http.server 8765 --bind 127.0.0.1 --directory .\docs
+```
+
+Open <http://127.0.0.1:8765/user-guide/>. Navigate to both platform pages, check
+a narrow phone-sized viewport and keyboard navigation, and switch the browser
+or OS light/dark preference. The site follows that preference without scripts,
+external fonts, or analytics. The local preview also exercises navigation from
+a subdirectory rather than only the server root.
+
+In repository **Settings > Pages**, set **Source** to **GitHub Actions**.
+The `User guide` workflow validates required routes, local pages/assets,
+fragments, and page metadata on guide-related PRs. It uploads only
+`docs\user-guide`, and deploys only after a matching push to `main` (or a manual
+run selected on `main`). PRs and manual runs on other branches cannot publish.
+The deploy job alone has `pages: write` and `id-token: write`; action versions
+are pinned to commit hashes. No deployment secret is required.
+
+Selecting GitHub Actions as the source does not itself publish a site. The
+first publication needs the workflow on `main` and a successful deployment.
+After deployment, verify the workflow's URL and all three public routes before
+treating live publication as complete. The checker does not fetch external
+URLs, so release and source-document links also need a manual review.
+
 ## Documentation screenshots
 
 `docs\images\obk-main.png` is rendered from fictional sample data, without
