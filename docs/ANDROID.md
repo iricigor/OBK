@@ -10,6 +10,13 @@ notifications in **Settings > Scheduled checks**.
 
 ![Android message list in light mode](images/android-light-messages.png)
 
+## Marks
+
+The marks feature on the #93 development branch adds **Marks** to the drawer.
+Use its child button, search, and **Subjects / Recent marks** switch to browse;
+tap an assessment for details. Marks have their own refresh and encrypted
+offline snapshots. See [marks behavior and limitations](features/MARKS.md).
+
 ## Install a release APK
 
 1. Open the [latest release](https://github.com/iricigor/OBK/releases/latest)

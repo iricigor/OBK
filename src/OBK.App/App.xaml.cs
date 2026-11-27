@@ -17,9 +17,9 @@ public partial class App : Application
     {
         base.OnStartup(e);
         DispatcherUnhandledException += UnexpectedError;
-        if (e.Args.Length == 2 && e.Args[0] == "--screenshot")
+        if (e.Args.Length == 2 && e.Args[0] is "--screenshot" or "--marks-screenshot")
         {
-            await CaptureDemoAsync(e.Args[1]);
+            await CaptureDemoAsync(e.Args[1], e.Args[0] == "--marks-screenshot");
             return;
         }
         var smoke = e.Args.Contains("--smoke-test");
@@ -443,7 +443,7 @@ public partial class App : Application
     }
 
     /// <summary>Renders fictional sample data for documentation screenshots; no school is contacted.</summary>
-    private async Task CaptureDemoAsync(string path)
+    private async Task CaptureDemoAsync(string path, bool marks = false)
     {
         var directory = Path.Combine(Path.GetTempPath(), "obk-demo-" + Guid.NewGuid().ToString("N"));
         var exitCode = 0;
@@ -504,6 +504,12 @@ public partial class App : Application
                 await store.SaveAttachmentAsync("https://anna.example", "anna", attachment, source, expectedSize: 184320, contentType: "application/pdf");
             }
             var window = new MainWindow(store, showLogin: false, enableUpdates: false) { Width = 1280, Height = 760 };
+            if (marks)
+            {
+                LanguageSettings.Apply("en");
+                AppStrings.Culture = LanguageSettings.Culture;
+                MarksFixture.Prepare(store, store.KnownLogins());
+            }
             MainWindow = window;
             window.Show();
             await window.InitializeAsync();
@@ -511,9 +517,26 @@ public partial class App : Application
             await window.ViewModel.FolderReady;
             window.ViewModel.SelectedMessage = window.ViewModel.Messages.Single(m => m.Message.Id == "grades");
             await window.ViewModel.MessageReady;
+            if (marks)
+            {
+                window.ViewModel.SelectedFolder = window.ViewModel.Navigation.Single(folder => folder.Key == "marks");
+                await window.ViewModel.FolderReady;
+                await window.ViewModel.Marks.OpenAsync(window.ViewModel.Marks.Entries.First(entry => entry.Subject.Subject.Id == "math"));
+            }
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             window.UpdateLayout();
             Capture(window, path);
+            if (marks)
+            {
+                if (!window.MarksPage.IsVisible) throw new ObkException("Marks view was not displayed.");
+                window.ViewModel.Marks.IsRecent = true;
+                window.ViewModel.Marks.SelectedEntry = window.ViewModel.Marks.Entries.First();
+                window.UpdateLayout();
+                Capture(window, Path.ChangeExtension(path, ".recent.png"));
+                await window.ViewModel.Theme.ToggleAsync();
+                window.UpdateLayout();
+                Capture(window, Path.ChangeExtension(path, ".dark.png"));
+            }
             window.Close();
         }
         catch (Exception error) when (error is ObkException or IOException or UnauthorizedAccessException)

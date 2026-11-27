@@ -293,6 +293,9 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
             </DockPanel>
+            <local:MarksView x:Name="MarksPage" Grid.Column="2" Grid.ColumnSpan="3" DataContext="{Binding Marks}"
+                             ListWidth="{Binding Width, ElementName=MessageColumn}"
+                             Visibility="{Binding DataContext.ShowMarks, ElementName=WindowRoot, Converter={StaticResource VisibleIf}}"/>
             <Border Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8"
                     Visibility="{Binding ShowMessages, Converter={StaticResource VisibleIf}}">
                 <DockPanel Margin="8">

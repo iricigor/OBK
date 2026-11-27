@@ -59,6 +59,13 @@ public partial class MainWindow : Window
         CloseCommand = new RelayCommand(_ => Close());
         var theme = appearance ?? new ThemeManager(Path.Combine(Path.GetDirectoryName(store.Path)!, "appearance.json"));
         ViewModel = new MainViewModel(store, theme, OpenLoginDialog, ExportAsync, SaveAllAsync);
+        ViewModel.RequestMarksPassword = login =>
+        {
+            var prompt = new PromptWindow(this, SharedStrings.MarksTitle,
+                SharedStrings.MarksCurrentPeriod, Localized.Format(SharedStrings.MarksPassword, AccountRow.LabelFor(login)),
+                AppStrings.MainRefresh, _ => Task.CompletedTask, password: true);
+            return Task.FromResult(prompt.ShowDialog() == true ? prompt.Value : null);
+        };
         RenameAccountCommand = new RelayCommand(p => { if (p is AccountRow row) RenameAccount(row); },
             p => p is AccountRow && ViewModel.CanChangeAccount);
         SetPasswordCommand = new RelayCommand(p => { if (p is AccountRow row) SetPassword(row); },
@@ -260,7 +267,7 @@ public partial class MainWindow : Window
     private void WindowClosing(object? sender, CancelEventArgs e)
     {
         if (ViewModel.Loading || (ViewModel.IsSyncing && !ViewModel.ReadingDuringDownload) ||
-            ViewModel.IsExporting || (switchingLanguage && !replacing))
+            ViewModel.IsExporting || ViewModel.Marks.Busy || (switchingLanguage && !replacing))
         {
             e.Cancel = true;
             Updates.CancelRestart();

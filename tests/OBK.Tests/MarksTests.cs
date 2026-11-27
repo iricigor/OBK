@@ -55,6 +55,36 @@ public sealed class MarksTests : IDisposable
     };
 
     [Fact]
+    public void CatalogFiltersOwnersSubjectsAndPointsWithoutCombiningAccountsOrInventingWeights()
+    {
+        var store = Store;
+        var anna = new Login(Url, "anna", Password: "not-retained", ChildName: "Anna");
+        var tomas = new Login(Url, "tomas", ChildName: "Tomáš");
+        var points = Mark("points", "85") with
+        {
+            IsPoints = true, Weight = null, MaxPoints = 100, PointsText = "85/100",
+            Caption = "Fictional listening test", MarkDate = "2026-11-26T00:00:00+01:00"
+        };
+        store.SaveMarks(Url, anna.Username, new(Data(Mark(), points), null));
+        store.SaveMarks(Url, tomas.Username, new(Data(Mark()), null));
+        var catalog = MarksCatalog.Read(store, [anna, tomas, new(Url, "missing")]);
+
+        Assert.All(catalog.Accounts, account => Assert.Null(account.Owner.Password));
+        Assert.Contains("missing", catalog.Notice);
+        Assert.Equal(2, catalog.Subjects().Count);
+        Assert.Single(catalog.Subjects("tomas"));
+        var results = catalog.Recent();
+        Assert.Equal(["m1", "m1", "points"], results.Select(entry => entry.Assessment!.Id));
+        Assert.NotEqual(results[0].Key, results[1].Key);
+        var match = Assert.Single(catalog.Recent("listening"));
+        Assert.Equal("85/100", match.Value);
+        Assert.DoesNotContain("3", MarksEntry.WeightText(match.Assessment!));
+        Assert.Single(catalog.Subjects("85/100"));
+        Assert.Equal(2, catalog.Subjects("anna")[0].Preview.Count);
+        Assert.Empty(match.Preview);
+    }
+
+    [Fact]
     public async Task MarksUseAuthenticatedGetAndPreserveTextPointsAndSemester()
     {
         var points = Mark("points", "85") with { IsPoints = true, Weight = null, MaxPoints = 100, PointsText = "85/100" };

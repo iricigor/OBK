@@ -102,7 +102,8 @@ public sealed class App : Application
             stack.OfType<SettingsPage>().Any(page => page.Busy) ||
             stack.OfType<AccountsPage>().Any(page => page.Busy) ||
             stack.OfType<AccountPickerPage>().Any(page => page.Busy) ||
-            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage or AccountsPage or AccountPickerPage)))
+            stack.OfType<MarksDetailPage>().Any(page => page.Busy) ||
+            stack.Skip(1).Any(page => page is not (SignInPage or MessagePage or SettingsPage or AccountsPage or AccountPickerPage or MarksPage or MarksDetailPage)))
             throw new ObkException(SharedStrings.ErrorLanguageBusy);
         switchingLanguage = true;
         try
@@ -121,6 +122,8 @@ public sealed class App : Application
                     SettingsPage => surface.Reader.CreateSettingsPage(),
                     AccountsPage => surface.Reader.CreateAccountsPage(),
                     AccountPickerPage => surface.Reader.CreateAccountPickerPage(),
+                    MarksPage marks => marks.Rebuild(surface.Reader),
+                    MarksDetailPage detail => detail.Rebuild(),
                     _ => throw new ObkException(SharedStrings.ErrorLanguageBusy)
                 };
                 await surface.Navigation.PushAsync(replacement, animated: false);
@@ -163,6 +166,18 @@ public sealed class App : Application
             await reader.AddAccountAsync();
         };
         var folders = new VerticalStackLayout { Spacing = 0 };
+        var marks = ReaderTheme.StartAlignedButton(new Button
+        {
+            Text = SharedStrings.MarksTitle,
+            ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 12)
+        });
+        marks.SetAppTheme<ImageSource>(Button.ImageSourceProperty,
+            ImageSource.FromFile("marks.png"), ImageSource.FromFile("marks_dark.png"));
+        marks.Clicked += async (_, _) =>
+        {
+            flyout.IsPresented = false;
+            await reader.OpenMarksAsync();
+        };
         var folderButtons = new List<Button>();
         var folderBadges = new List<Grid>();
         foreach (var index in Enumerable.Range(0, reader.FolderLabels.Count))
@@ -175,10 +190,12 @@ public sealed class App : Application
             button.SetAppTheme<ImageSource>(Button.ImageSourceProperty,
                 ImageSource.FromFile($"{ReaderPage.FolderIcons[index]}.png"),
                 ImageSource.FromFile($"{ReaderPage.FolderIcons[index]}_dark.png"));
-            button.Clicked += (_, _) =>
+            button.Clicked += async (_, _) =>
             {
+                if (reader.Busy) return;
                 reader.SelectFolder(index);
                 flyout.IsPresented = false;
+                await navigation.PopToRootAsync();
             };
             var badge = new Grid { InputTransparent = true, HorizontalOptions = LayoutOptions.End };
             folders.Add(new Grid { Children = { button, badge } });
@@ -194,16 +211,22 @@ public sealed class App : Application
             if (reader.KnownAccounts.Count > 1)
                 children.Add(ReaderTheme.AllChildrenChoice(reader.KnownAccounts, reader.ShowingAllChildren, reader.NewCountAll, async (_, _) =>
                 {
+                    if (reader.Busy) return;
                     flyout.IsPresented = false;
                     await reader.SelectAllChildrenAsync();
+                    if (reader.CurrentMarks is not null) await reader.OpenMarksAsync();
                 }));
             foreach (var login in reader.KnownAccounts)
                 children.Add(ReaderTheme.AccountChoice(login, reader.KnownAccounts, reader.ActiveAccount, async (_, _) =>
                 {
+                    if (reader.Busy) return;
                     flyout.IsPresented = false;
                     await reader.SelectAccountAsync(login);
+                    if (reader.CurrentMarks is not null) await reader.OpenMarksAsync();
                 }, compact: true, newCount: reader.NewCount(login)));
             children.IsEnabled = reader.AccountsAvailable;
+            marks.IsEnabled = reader.AccountsAvailable;
+            marks.FontAttributes = reader.CurrentMarks is not null ? FontAttributes.Bold : FontAttributes.None;
             for (var index = 0; index < folderButtons.Count; index++)
             {
                 var button = folderButtons[index];
@@ -211,11 +234,12 @@ public sealed class App : Application
                 folderBadges[index].Children.Clear();
                 folderBadges[index].Add(ReaderTheme.Badge(count));
                 button.IsEnabled = !reader.Busy;
-                button.FontAttributes = index == reader.FolderIndex ? FontAttributes.Bold : FontAttributes.None;
+                var selectedFolder = reader.CurrentMarks is null && index == reader.FolderIndex;
+                button.FontAttributes = selectedFolder ? FontAttributes.Bold : FontAttributes.None;
                 button.SetAppThemeColor(Button.BackgroundColorProperty,
-                    index == reader.FolderIndex ? ReaderTheme.Selection : Colors.Transparent,
-                    index == reader.FolderIndex ? ReaderTheme.DarkSelection : Colors.Transparent);
-                var description = index == reader.FolderIndex ?
+                    selectedFolder ? ReaderTheme.Selection : Colors.Transparent,
+                    selectedFolder ? ReaderTheme.DarkSelection : Colors.Transparent);
+                var description = selectedFolder ?
                     Localized.Format(AppStrings.ReaderSelectedFolder, reader.FolderLabels[index]) : reader.FolderLabels[index];
                 SemanticProperties.SetDescription(button, count > 0
                     ? description + ", " + Localized.Format(AppStrings.ReaderNewCount, count) : description);
@@ -242,7 +266,7 @@ public sealed class App : Application
                         },
                         ReaderTheme.Metadata(new Label { Text = AppStrings.ReaderDrawerChildren, FontSize = 12, FontAttributes = FontAttributes.Bold }),
                         children, addChild, new BoxView { HeightRequest = 1 },
-                        folders, new BoxView { HeightRequest = 1 }, accounts, settings
+                        folders, marks, new BoxView { HeightRequest = 1 }, accounts, settings
                     }
                 }
             }

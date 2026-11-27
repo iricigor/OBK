@@ -98,6 +98,6 @@ internal static class AndroidUpdateInstaller
     }
 }
 
-[ContentProvider(["cz.obk.reader.updates"], Exported = false, GrantUriPermissions = true)]
+[ContentProvider(["${applicationId}.updates"], Exported = false, GrantUriPermissions = true)]
 [MetaData("android.support.FILE_PROVIDER_PATHS", Resource = "@xml/update_paths")]
 public sealed class UpdateFileProvider : AndroidX.Core.Content.FileProvider;

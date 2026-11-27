@@ -19,6 +19,13 @@ newer version is ready.
 
 ![OBK on Windows in light mode](images/obk-main.png)
 
+## Marks
+
+The marks feature on the #93 development branch adds **Marks** to navigation.
+Choose **Subjects** or **Recent marks**, filter by child, and open an assessment
+for details. Refresh marks separately from messages; successful snapshots are
+available offline. See [marks behavior and limitations](features/MARKS.md).
+
 ## Preview and source builds
 
 The Actions [Windows workflow](../.github/workflows/windows-build.yml) produces

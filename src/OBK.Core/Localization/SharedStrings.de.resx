@@ -457,4 +457,35 @@
   <data name="ErrorMarksChanged" xml:space="preserve">
     <value>Diese Bewertung wurde während der Aktualisierung geändert oder entfernt. Öffnen Sie die aktuelle Bewertung, um sie lokal zu bestätigen.</value>
   </data>
+  <data name="MarksTitle" xml:space="preserve"><value>Noten</value></data>
+  <data name="MarksSubjects" xml:space="preserve"><value>Fächer</value></data>
+  <data name="MarksRecent" xml:space="preserve"><value>Letzte Noten</value></data>
+  <data name="MarksSearch" xml:space="preserve"><value>Fächer oder Bewertungen suchen</value></data>
+  <data name="MarksAverage" xml:space="preserve"><value>Fachdurchschnitt</value></data>
+  <data name="MarksAssessments" xml:space="preserve"><value>Bewertungen · neueste zuerst</value></data>
+  <data name="MarksAssessment" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="MarksCountOne" xml:space="preserve"><value>{0} Bewertung</value></data>
+  <data name="MarksCountFew" xml:space="preserve"><value>{0} Bewertungen</value></data>
+  <data name="MarksCountMany" xml:space="preserve"><value>{0} Bewertungen</value></data>
+  <data name="MarksNew" xml:space="preserve"><value>Neu oder geändert</value></data>
+  <data name="MarksNoData" xml:space="preserve"><value>Keine Noten heruntergeladen. Aktualisieren Sie die Noten für einen Offline-Datenstand.</value></data>
+  <data name="MarksNoAccounts" xml:space="preserve"><value>Fügen Sie vor dem Herunterladen von Noten ein Kind hinzu.</value></data>
+  <data name="MarksEmpty" xml:space="preserve"><value>Keine Bewertungen im aktuellen Zeitraum des Servers.</value></data>
+  <data name="MarksNoMatches" xml:space="preserve"><value>Keine passenden Fächer oder Bewertungen. Versuchen Sie eine andere Suche.</value></data>
+  <data name="MarksNoSelection" xml:space="preserve"><value>Wählen Sie ein Fach oder eine Bewertung.</value></data>
+  <data name="MarksPeriod" xml:space="preserve"><value>Zeitraum: {0} – {1}</value></data>
+  <data name="MarksCurrentPeriod" xml:space="preserve"><value>Aktueller von der Schule bereitgestellter Zeitraum</value></data>
+  <data name="MarksWeight" xml:space="preserve"><value>Gewichtung: {0}</value></data>
+  <data name="MarksWeightMissing" xml:space="preserve"><value>Keine Gewichtung angegeben</value></data>
+  <data name="MarksPoints" xml:space="preserve"><value>Punktebewertung</value></data>
+  <data name="MarksDate" xml:space="preserve"><value>Bewertet: {0}</value></data>
+  <data name="MarksEdited" xml:space="preserve"><value>Bearbeitet: {0}</value></data>
+  <data name="MarksTeacher" xml:space="preserve"><value>Lehrer-ID: {0}</value></data>
+  <data name="MarksTopic" xml:space="preserve"><value>Thema: {0}</value></data>
+  <data name="MarksProvisional" xml:space="preserve"><value>Vorläufige Note: {0}</value></data>
+  <data name="MarksLimit" xml:space="preserve"><value>Durchschnitte stammen von der Schule und sind keine Zeugnisprognosen. Neu/geändert wird lokal erfasst; das Öffnen bestätigt keine Note bei der Schule.</value></data>
+  <data name="MarksRefreshing" xml:space="preserve"><value>{0}: Noten werden aktualisiert</value></data>
+  <data name="MarksRefreshSummary" xml:space="preserve"><value>Noten für {0} von {1} Konten aktualisiert.</value></data>
+  <data name="MarksPassword" xml:space="preserve"><value>Passwort für {0} (nur für diese Aktualisierung)</value></data>
+  <data name="MarksSynced" xml:space="preserve"><value>Datenstand gespeichert: {0}</value></data>
 </root>

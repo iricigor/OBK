@@ -1,15 +1,15 @@
 # Marks
 
-Implementation is in progress under #93. The shared API/storage foundation is
-implemented, but marks are not available in either app's UI yet.
+Implemented on the draft branch tracked by #93. Windows and Android have native
+marks screens; maintainer verification against a real school is still required.
 
 ## Agreed behavior
 
-Windows and Android will offer **Subjects** and **Recent marks** views, scoped
+Windows and Android offer **Subjects** and **Recent marks** views, scoped
 to one child or all children, with search and assessment details. The feature
-will preserve OBK's existing message navigation and light/dark appearance.
+preserves OBK's existing message navigation and light/dark appearance.
 
-Marks will be downloaded read-only when the account has the `ShowMarks` right,
+Marks are downloaded read-only when the account has the `ShowMarks` right,
 then stored locally with the same encryption as other archived data. A failed
 refresh must preserve the last successful snapshot and report the problem.
 
@@ -17,7 +17,7 @@ Subject averages and textual grades come from the school API. Points-based
 assessments remain distinct, and a missing weight is not replaced with an
 invented value. Teacher IDs are not presented as verified teacher names.
 
-New or changed assessments will be detected locally after an initial baseline.
+New or changed assessments are detected locally after an initial baseline.
 Opening assessment details acknowledges that version locally, without writing
 confirmation or read state to the school.
 
@@ -32,9 +32,34 @@ Komens evaluation classification are outside this implementation.
 
 - [x] Typed API and capability responses with malformed-data checks.
 - [x] Encrypted snapshots and local version acknowledgements.
-- [ ] Windows Subjects/Recent views and details.
-- [ ] Android Subjects/Recent views and details.
-- [ ] Focused checks, documentation and maintainer verification.
+- [x] Windows Subjects/Recent views and details.
+- [x] Android Subjects/Recent views and details.
+- [x] Focused checks and documentation.
+- [ ] Maintainer verification on both platforms and a real school response.
+
+## Using marks
+
+Choose **Marks** in Windows navigation or the Android drawer. **Subjects**
+shows the school's averages; **Recent marks** lists individual assessments,
+newest first. Choose one child or **All children** using the existing account
+controls (or the child button on Android's marks screen). Search matches
+subjects, children, captions, topics and grade/points text.
+
+Opening a subject does not acknowledge its assessments. Explicitly open an
+assessment to clear its local **New or changed** indicator and inspect its
+dates, weight or points status, teacher ID, topic and assessment type.
+Subject notes, provisional grades and the snapshot time appear in details.
+
+Use **Refresh** within Marks to download marks. The existing message refresh,
+initial sign-in download and scheduled checks still download Komens only.
+The **Always refresh all children** preference also applies to marks.
+An account without a remembered password prompts for one for this refresh
+only; it is not saved. Cancelling or a download failure is reported and does
+not erase a previous snapshot. Other children can still refresh successfully.
+
+Existing snapshots remain available offline. The message school-year selector
+does not select a historical marks period: marks always show the latest
+successfully saved period exposed by the school.
 
 ## Shared implementation
 

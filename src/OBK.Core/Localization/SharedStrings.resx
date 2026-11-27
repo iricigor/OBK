@@ -457,4 +457,35 @@
   <data name="ErrorMarksChanged" xml:space="preserve">
     <value>This assessment changed or was removed during refresh. Open the latest assessment to acknowledge it.</value>
   </data>
+  <data name="MarksTitle" xml:space="preserve"><value>Marks</value></data>
+  <data name="MarksSubjects" xml:space="preserve"><value>Subjects</value></data>
+  <data name="MarksRecent" xml:space="preserve"><value>Recent marks</value></data>
+  <data name="MarksSearch" xml:space="preserve"><value>Search subjects or assessments</value></data>
+  <data name="MarksAverage" xml:space="preserve"><value>Subject average</value></data>
+  <data name="MarksAssessments" xml:space="preserve"><value>Assessments · newest first</value></data>
+  <data name="MarksAssessment" xml:space="preserve"><value>Assessment</value></data>
+  <data name="MarksCountOne" xml:space="preserve"><value>{0} assessment</value></data>
+  <data name="MarksCountFew" xml:space="preserve"><value>{0} assessments</value></data>
+  <data name="MarksCountMany" xml:space="preserve"><value>{0} assessments</value></data>
+  <data name="MarksNew" xml:space="preserve"><value>New or changed</value></data>
+  <data name="MarksNoData" xml:space="preserve"><value>No marks downloaded. Refresh marks to save an offline snapshot.</value></data>
+  <data name="MarksNoAccounts" xml:space="preserve"><value>Add a child before downloading marks.</value></data>
+  <data name="MarksEmpty" xml:space="preserve"><value>No assessments in the server's current period.</value></data>
+  <data name="MarksNoMatches" xml:space="preserve"><value>No matching subjects or assessments. Try another search.</value></data>
+  <data name="MarksNoSelection" xml:space="preserve"><value>Select a subject or assessment.</value></data>
+  <data name="MarksPeriod" xml:space="preserve"><value>Period: {0} – {1}</value></data>
+  <data name="MarksCurrentPeriod" xml:space="preserve"><value>Current period exposed by the school</value></data>
+  <data name="MarksWeight" xml:space="preserve"><value>Weight: {0}</value></data>
+  <data name="MarksWeightMissing" xml:space="preserve"><value>Weight not supplied</value></data>
+  <data name="MarksPoints" xml:space="preserve"><value>Points-based assessment</value></data>
+  <data name="MarksDate" xml:space="preserve"><value>Assessed: {0}</value></data>
+  <data name="MarksEdited" xml:space="preserve"><value>Edited: {0}</value></data>
+  <data name="MarksTeacher" xml:space="preserve"><value>Teacher ID: {0}</value></data>
+  <data name="MarksTopic" xml:space="preserve"><value>Topic: {0}</value></data>
+  <data name="MarksProvisional" xml:space="preserve"><value>Provisional grade: {0}</value></data>
+  <data name="MarksLimit" xml:space="preserve"><value>Averages are supplied by the school, not predicted report-card grades. New/changed indicators are local; opening a mark does not confirm it at school.</value></data>
+  <data name="MarksRefreshing" xml:space="preserve"><value>{0}: refreshing marks</value></data>
+  <data name="MarksRefreshSummary" xml:space="preserve"><value>Marks refreshed for {0} of {1} accounts.</value></data>
+  <data name="MarksPassword" xml:space="preserve"><value>Password for {0} (used for this refresh only)</value></data>
+  <data name="MarksSynced" xml:space="preserve"><value>Snapshot saved: {0}</value></data>
 </root>
