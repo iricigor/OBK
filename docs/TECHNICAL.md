@@ -708,6 +708,11 @@ current APK signing certificate(s) as the installed application. Signing-key
 rotation is not supported by this updater; a differently signed preview/release
 is rejected without suggesting data-destructive uninstallation.
 
+APK archive inspection requests both `GET_SIGNING_CERTIFICATES` and the legacy
+`GET_SIGNATURES` flag on all supported Android versions. Some Android parsers
+(including Android 10 and the initial Android 13 implementation) collect archive
+certificates only with the legacy flag; the same exact signer checks still apply.
+
 The app declares `REQUEST_INSTALL_PACKAGES`. Before installer handoff, it explains
 the per-source permission, opens Android's source settings only with consent,
 and rechecks permission on return. A non-exported FileProvider grants read-only

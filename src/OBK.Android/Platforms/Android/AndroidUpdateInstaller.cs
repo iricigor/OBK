@@ -25,7 +25,10 @@ internal static class AndroidUpdateInstaller
         var manager = context.PackageManager ?? throw new ObkException(AppStrings.UpdateInvalidPackage);
         using var installed = manager.GetPackageInfo(context.PackageName!, PackageInfoFlags.SigningCertificates)
             ?? throw new ObkException(AppStrings.UpdateInvalidPackage);
-        using var archive = manager.GetPackageArchiveInfo(path, PackageInfoFlags.SigningCertificates);
+        // Some Android archive parsers collect certificates only when GET_SIGNATURES is also requested.
+#pragma warning disable CS0618
+        using var archive = manager.GetPackageArchiveInfo(path, PackageInfoFlags.SigningCertificates | PackageInfoFlags.Signatures);
+#pragma warning restore CS0618
         if (archive is null || archive.PackageName != installed.PackageName ||
             archive.VersionName != $"1.0.{update.Version.Build}" ||
             archive.LongVersionCode != (long)update.Version.Build + 1 ||
