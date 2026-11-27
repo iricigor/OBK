@@ -32,9 +32,6 @@
   <data name="ErrorEnterUsernameAndPassword" xml:space="preserve">
     <value>Enter your school username and password.</value>
   </data>
-  <data name="ErrorInvalidAttachmentContentType" xml:space="preserve">
-    <value>The attachment has an invalid content type.</value>
-  </data>
   <data name="ErrorInvalidEncryptedFormat" xml:space="preserve">
     <value>Local Android data has an invalid encrypted format.</value>
   </data>
@@ -112,10 +109,6 @@
   <data name="MessageOpenAttachment" xml:space="preserve">
     <value>Open attachment</value>
     <comment>Button that opens an attachment in another app.</comment>
-  </data>
-  <data name="MessageOpenAttachmentChooserTitle" xml:space="preserve">
-    <value>Open attachment</value>
-    <comment>Title of the Android app chooser shown when opening an attachment.</comment>
   </data>
   <data name="MessagePageTitle" xml:space="preserve">
     <value>Message</value>
