@@ -19,6 +19,19 @@ newer version is ready.
 
 ![OBK on Windows in light mode](images/obk-main.png)
 
+## Help and feedback
+
+Select **?** at the bottom right of the main window, beside the version
+indicator. The menu opens above the button: **Get help** opens the
+[Windows user guide](https://iricigor.github.io/OBK/windows.html), and
+**Submit feedback / issue** opens GitHub's new-issue page in your external
+browser. The button also works with Tab and Enter or Space; use the arrow
+keys to choose an action and Escape to dismiss the menu.
+
+These links require an internet connection; they do not send school messages
+or credentials. Never include private message content or passwords in feedback.
+Browser-launch failures appear in OBK's status bar.
+
 ## Preview and source builds
 
 The Actions [Windows workflow](../.github/workflows/windows-build.yml) produces

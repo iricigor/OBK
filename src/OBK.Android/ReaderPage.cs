@@ -44,6 +44,8 @@ internal sealed class ReaderPage : ContentPage
     });
     private readonly ImageButton refresh = ReaderTheme.Icon("refresh", AppStrings.ReaderRefreshAll);
     private readonly Button language;
+    private readonly ImageButton help = ReaderTheme.Icon("help", SharedStrings.HelpMenuName);
+    private global::Android.Widget.PopupMenu? helpMenu;
     private readonly ActivityIndicator progress = new() { IsVisible = false };
     private readonly DownloadStatusView downloadStatus;
     private readonly CollectionView messages = new() { SelectionMode = SelectionMode.Single };
@@ -99,6 +101,9 @@ internal sealed class ReaderPage : ContentPage
         Title = "OBK";
         downloadStatus = new(this);
         language = LanguageToolbar.CreateButton(this);
+        ToolTipProperties.SetText(help, SharedStrings.HelpMenuName);
+        SemanticProperties.SetHint(help, SharedStrings.HelpMenuHint);
+        help.Clicked += (_, _) => OpenHelpMenu();
         NavigationPage.SetHasNavigationBar(this, false);
         menu.Clicked += (_, _) => openMenu();
         closeSearch.Clicked += (_, _) => ExitSearch();
@@ -186,11 +191,12 @@ internal sealed class ReaderPage : ContentPage
         arrangePanel.IsVisible = false;
         searchTools.Add(arrangePanel);
         searchTools.Add(summary);
-        var footer = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 8 };
+        var footer = new Grid { Padding = new Thickness(16, 8), ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto), new(48)], ColumnSpacing = 8 };
         progress.WidthRequest = progress.HeightRequest = 24;
         footer.Add(progress, 0);
         footer.Add(status, 1);
         footer.Add(language, 2);
+        footer.Add(help, 3);
         var layout = new Grid { RowDefinitions = [new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)] };
         layout.Add(header);
         layout.Add(searchTools, 0, 1);
@@ -202,6 +208,61 @@ internal sealed class ReaderPage : ContentPage
         ReaderTheme.Apply(empty);
         UpdateContext();
         SetBusy(false);
+    }
+
+    private void OpenHelpMenu()
+    {
+        if (helpMenu is not null)
+        {
+            helpMenu.Dismiss();
+            return;
+        }
+        if (help.Handler?.PlatformView is not global::Android.Views.View anchor)
+            throw new InvalidOperationException("The help button has no Android view.");
+        var theme = Application.Current!.RequestedTheme == AppTheme.Dark
+            ? global::Android.Resource.Style.ThemeMaterial
+            : global::Android.Resource.Style.ThemeMaterialLight;
+        var context = new global::Android.Views.ContextThemeWrapper(anchor.Context, theme);
+        var popup = new global::Android.Widget.PopupMenu(context, anchor, global::Android.Views.GravityFlags.Right);
+        var items = popup.Menu ?? throw new InvalidOperationException("The help menu has no items collection.");
+        using var guideTitle = new Java.Lang.String(SharedStrings.HelpGetHelp);
+        using var feedbackTitle = new Java.Lang.String(SharedStrings.HelpFeedback);
+        var guide = items.Add(0, 1, 0, guideTitle) ??
+            throw new InvalidOperationException("The help action could not be created.");
+        guide.SetContentDescription(SharedStrings.HelpGetHelp + ". " + SharedStrings.HelpAndroidGuide);
+        var feedback = items.Add(0, 2, 1, feedbackTitle) ??
+            throw new InvalidOperationException("The feedback action could not be created.");
+        feedback.SetContentDescription(SharedStrings.HelpFeedback + ". " + SharedStrings.HelpFeedbackDescription);
+        popup.MenuItemClick += async (_, args) =>
+        {
+            var link = args.Item?.ItemId switch
+            {
+                1 => HelpLinks.AndroidGuide,
+                2 => HelpLinks.Feedback,
+                _ => throw new InvalidOperationException("Unknown help menu action.")
+            };
+            await OpenHelpLinkAsync(link);
+        };
+        popup.DismissEvent += (_, _) => helpMenu = null;
+        helpMenu = popup;
+        popup.Show();
+    }
+
+    private async Task OpenHelpLinkAsync(string link)
+    {
+        help.IsEnabled = false;
+        try
+        {
+            if (!await Browser.OpenAsync(new Uri(link), BrowserLaunchMode.External))
+                throw new ObkException(SharedStrings.HelpBrowserFailed);
+        }
+        catch (Exception error) when (error is ObkException or FeatureNotSupportedException or
+            global::Android.Content.ActivityNotFoundException or Java.Lang.SecurityException)
+        {
+            status.Text = SharedStrings.HelpBrowserFailed;
+            await DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, SharedStrings.HelpBrowserFailed, AppStrings.AlertOkButton);
+        }
+        finally { help.IsEnabled = true; }
     }
 
     private DataTemplate CreateHeaderTemplate() => new(() =>
@@ -549,6 +610,7 @@ internal sealed class ReaderPage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+        helpMenu?.Dismiss();
         if (session is not null) session.DownloadChanged -= DownloadChanged;
         if (refreshStatusTimeout.Pending) RestoreArchiveStatus();
         CancelRefreshStatus();

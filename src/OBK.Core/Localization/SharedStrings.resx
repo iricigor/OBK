@@ -450,4 +450,28 @@
   <data name="Refresh4Hours" xml:space="preserve"><value>4 hours</value></data>
   <data name="Refresh24Hours" xml:space="preserve"><value>24 hours</value></data>
   <data name="ErrorRefreshInterval" xml:space="preserve"><value>The refresh interval is invalid. Choose one of the intervals in Settings.</value></data>
+  <data name="HelpMenuName" xml:space="preserve">
+    <value>Help and feedback</value>
+  </data>
+  <data name="HelpMenuHint" xml:space="preserve">
+    <value>Opens a menu with help and feedback links.</value>
+  </data>
+  <data name="HelpGetHelp" xml:space="preserve">
+    <value>Get help</value>
+  </data>
+  <data name="HelpWindowsGuide" xml:space="preserve">
+    <value>User guide for Windows</value>
+  </data>
+  <data name="HelpAndroidGuide" xml:space="preserve">
+    <value>User guide for Android</value>
+  </data>
+  <data name="HelpFeedback" xml:space="preserve">
+    <value>Submit feedback / issue</value>
+  </data>
+  <data name="HelpFeedbackDescription" xml:space="preserve">
+    <value>Opens GitHub in your browser</value>
+  </data>
+  <data name="HelpBrowserFailed" xml:space="preserve">
+    <value>Could not open the external browser. Check that a browser is installed and try again.</value>
+  </data>
 </root>
