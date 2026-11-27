@@ -488,4 +488,28 @@
   <data name="MarksRefreshSummary" xml:space="preserve"><value>Оцінки оновлено для {0} з {1} облікових записів.</value></data>
   <data name="MarksPassword" xml:space="preserve"><value>Пароль для {0} (лише для цього оновлення)</value></data>
   <data name="MarksSynced" xml:space="preserve"><value>Знімок збережено: {0}</value></data>
+  <data name="HelpMenuName" xml:space="preserve">
+    <value>Довідка та відгуки</value>
+  </data>
+  <data name="HelpMenuHint" xml:space="preserve">
+    <value>Відкриває меню з посиланнями на довідку та відгуки.</value>
+  </data>
+  <data name="HelpGetHelp" xml:space="preserve">
+    <value>Отримати допомогу</value>
+  </data>
+  <data name="HelpWindowsGuide" xml:space="preserve">
+    <value>Посібник користувача для Windows</value>
+  </data>
+  <data name="HelpAndroidGuide" xml:space="preserve">
+    <value>Посібник користувача для Android</value>
+  </data>
+  <data name="HelpFeedback" xml:space="preserve">
+    <value>Надіслати відгук / проблему</value>
+  </data>
+  <data name="HelpFeedbackDescription" xml:space="preserve">
+    <value>Відкриває GitHub у браузері</value>
+  </data>
+  <data name="HelpBrowserFailed" xml:space="preserve">
+    <value>Не вдалося відкрити зовнішній браузер. Перевірте, чи встановлено браузер, і спробуйте ще раз.</value>
+  </data>
 </root>

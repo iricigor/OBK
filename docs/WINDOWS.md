@@ -21,10 +21,23 @@ newer version is ready.
 
 ## Marks
 
-The marks feature on the #93 development branch adds **Marks** to navigation.
+Choose **Marks** in navigation.
 Choose **Subjects** or **Recent marks**, filter by child, and open an assessment
 for details. Refresh marks separately from messages; successful snapshots are
 available offline. See [marks behavior and limitations](features/MARKS.md).
+
+## Help and feedback
+
+Select **?** at the bottom right of the main window, beside the version
+indicator. The menu opens above the button: **Get help** opens the
+[Windows user guide](https://iricigor.github.io/OBK/windows.html), and
+**Submit feedback / issue** opens GitHub's new-issue page in your external
+browser. The button also works with Tab and Enter or Space; use the arrow
+keys to choose an action and Escape to dismiss the menu.
+
+These links require an internet connection; they do not send school messages
+or credentials. Never include private message content or passwords in feedback.
+Browser-launch failures appear in OBK's status bar.
 
 ## Preview and source builds
 

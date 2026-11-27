@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -77,6 +78,8 @@ public partial class MainWindow : Window
         Updates = updates ?? new UpdateManager(new UpdateService(Path.Combine(Path.GetDirectoryName(store.Path)!, "updates")),
             UpdateService.InstalledVersion, () => !Busy && !ViewModel.IsExporting && !switchingLanguage, Close);
         InitializeComponent();
+        HelpButton.ContextMenu.CustomPopupPlacementCallback = (popup, target, _) =>
+            [new CustomPopupPlacement(new Point(target.Width - popup.Width, -popup.Height - 4), PopupPrimaryAxis.Horizontal)];
         Language = System.Windows.Markup.XmlLanguage.GetLanguage(LanguageSettings.Culture.Name);
         var build = BuildIdentity.Current;
         BuildRibbonTimestamp.Text = build.TimestampText;
@@ -117,6 +120,15 @@ public partial class MainWindow : Window
     public Task InitializeAsync() => initialization ??= ViewModel.InitializeAsync();
     private void OpenRepository(object sender, RoutedEventArgs e) =>
         LinkOpener.Open(((Hyperlink)sender).NavigateUri.AbsoluteUri, ViewModel.ReportError);
+
+    private void OpenHelpMenu(object sender, RoutedEventArgs e)
+    {
+        HelpButton.ContextMenu.PlacementTarget = HelpButton;
+        HelpButton.ContextMenu.IsOpen = !HelpButton.ContextMenu.IsOpen;
+    }
+
+    private void OpenHelpLink(object sender, RoutedEventArgs e) =>
+        LinkOpener.Open((string)((MenuItem)sender).Tag, ViewModel.ReportError);
 
     private async void SwitchLanguage(object sender, RoutedEventArgs e)
     {

@@ -12,10 +12,23 @@ notifications in **Settings > Scheduled checks**.
 
 ## Marks
 
-The marks feature on the #93 development branch adds **Marks** to the drawer.
+Choose **Marks** in the drawer.
 Use its child button, search, and **Subjects / Recent marks** switch to browse;
 tap an assessment for details. Marks have their own refresh and encrypted
 offline snapshots. See [marks behavior and limitations](features/MARKS.md).
+
+## Help and feedback
+
+Tap **?** at the bottom right of the app, beside the language control.
+The menu opens above the bottom bar, not in Android's system navigation bar.
+**Get help** opens the [Android user guide](https://iricigor.github.io/OBK/android.html);
+**Submit feedback / issue** opens GitHub's new-issue page in your external
+browser. Tap outside the menu or press Back to dismiss it.
+
+The help button has a 48 dp touch target and does not narrow the search field.
+These links require an internet connection; they do not send school messages
+or credentials. Never include private message content or passwords in feedback.
+If no browser can open a link, OBK shows an error and leaves the reader usable.
 
 ## Install a release APK
 
