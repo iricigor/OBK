@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Get started with OBK, the offline reader for Bakaláři Komens messages on Windows and Android.">
+    <title>OBK user guide</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m4 7 8 6 8-6M8 17h8"/></svg>
+                <strong>OBK</strong><span>User guide</span>
+            </a>
+            <a class="source-link" href="https://github.com/iricigor/OBK">GitHub repository</a>
+        </div>
+    </header>
+    <div class="layout">
+        <aside class="sidebar">
+            <nav aria-label="User guide">
+                <a href="index.html" aria-current="page">Overview</a>
+                <a href="windows.html">Windows</a>
+                <a href="android.html">Android</a>
+            </nav>
+            <p class="scope-note">Getting-started guide.<br>Detailed screen guides and screenshots are still to come.</p>
+        </aside>
+        <main id="content" tabindex="-1">
+            <h1>Your Komens messages, available offline.</h1>
+            <p class="intro">OBK downloads your children's Bakaláři Komens messages and attachments so you can read, search, and organize them on Windows or Android.</p>
+
+            <div class="notice">
+                <p><strong>A reader, not a replacement for Bakaláři.</strong> OBK cannot send messages, replies, excuses, or confirmations. It never marks messages as read on the school server.</p>
+            </div>
+
+            <h2 id="start">Start with your device</h2>
+            <p>Choose the app you are using. Each guide covers installation, your first sign-in, and downloading messages for offline reading.</p>
+            <ul class="platform-links">
+                <li><a href="windows.html">Get started on Windows</a><p>Windows 10 or later. Read messages in a desktop layout and transfer a saved account to Android.</p></li>
+                <li><a href="android.html">Get started on Android</a><p>Android 10 or later. Read on your phone, open attachments, and optionally check for new messages hourly.</p></li>
+            </ul>
+
+            <h2 id="offline">What “offline” means</h2>
+            <p>Sign-in and refresh need a connection to your school's Bakaláři server. Once downloaded, messages and completed attachments remain available without that connection. OBK downloads the current school year, from September through August.</p>
+            <p>Messages finish downloading on the sign-in screen. When attachments begin, <strong>Download attachments in background</strong> lets you enter the reader while files continue downloading. Keep OBK open until the files you need have finished; pending attachments are not yet available offline.</p>
+
+            <h2 id="accounts">Children, folders, and refresh</h2>
+            <p>You can add more than one child or school. Choose a child or <strong>All children</strong>, then browse Inbox, Noticeboard, Sent, and Excuses.</p>
+            <p><strong>Refresh</strong> updates the selected child or all children in the current scope. <strong>Settings &gt; Refresh &gt; Always refresh all children</strong> overrides this choice and is off by default.</p>
+            <p>Search, sorting, grouping, and likely related replies help you find downloaded messages. Opening a message in OBK changes its local “new” state, not its read status at school.</p>
+
+            <h2 id="privacy">Keep school data private</h2>
+            <p>Messages and attachments travel directly between OBK and the school's server over HTTPS. They are not sent to the developer, GitHub, or an OBK cloud service. App update checks connect to GitHub separately.</p>
+            <p>Cached messages, attachments, and remembered passwords are encrypted for the current Windows account or protected through Android Keystore. Some metadata is not encrypted, and opening or exporting an attachment creates an unencrypted copy.</p>
+            <p>If you <a href="https://github.com/iricigor/OBK/issues/new">submit feedback or an issue</a>, include the platform, app version, and steps to reproduce the problem. Never include passwords, private messages, or screenshots containing personal school data.</p>
+
+            <footer class="page-footer">
+                <p>OBK is not an official Bakaláři product. A school may disable the mobile API access it uses.</p>
+                <p><a href="https://github.com/iricigor/OBK/blob/main/docs/TECHNICAL.md">Technical documentation</a> · <a href="https://github.com/iricigor/OBK/blob/main/docs/CODE_SIGNING.md">Signing and privacy policy</a></p>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Install the OBK Android preview, sign in or scan an account from Windows, and read Komens messages offline.">
+    <title>Get started on Android · OBK user guide</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m4 7 8 6 8-6M8 17h8"/></svg>
+                <strong>OBK</strong><span>User guide</span>
+            </a>
+            <a class="source-link" href="https://github.com/iricigor/OBK">GitHub repository</a>
+        </div>
+    </header>
+    <div class="layout">
+        <aside class="sidebar">
+            <nav aria-label="User guide">
+                <a href="index.html">Overview</a>
+                <a href="windows.html">Windows</a>
+                <a href="android.html" aria-current="page">Android</a>
+            </nav>
+            <p class="scope-note">Getting-started guide.<br>Detailed screen guides and screenshots are still to come.</p>
+        </aside>
+        <main id="content" tabindex="-1">
+            <h1>Get started on Android</h1>
+            <p class="intro">Read Komens messages on your phone, including when you are offline. The Android app is a preview and requires Android 10 or later.</p>
+
+            <h2 id="install">Install the preview</h2>
+            <ol>
+                <li>On your phone, open the <a href="https://github.com/iricigor/OBK/releases/latest">official latest release</a>.</li>
+                <li>Download <code>OBK-&lt;version&gt;-android.apk</code> and open it.</li>
+                <li>If Android asks, allow installation from that browser or file manager for this installation. Review the warning and confirm installation.</li>
+            </ol>
+            <div class="notice">
+                <p><strong>Install only a package you trust.</strong> Android preview APKs use development signing, not a trusted public app-store identity. Android may block them or show an unknown-app warning. Do not grant installation access to untrusted sources.</p>
+            </div>
+
+            <h2 id="sign-in">Sign in to your school</h2>
+            <ol>
+                <li>Search for your child's school, or enter its Bakaláři address.</li>
+                <li>Enter your Komens username and password. Optionally name the child and save the password for future refreshes.</li>
+                <li>After <strong>Login successful</strong>, wait for messages to finish downloading.</li>
+                <li>When attachments start, choose <strong>Download attachments in background</strong> to enter the reader, or wait until they finish.</li>
+            </ol>
+            <p>Keep OBK open while files download. Android suspending the app can interrupt a download; pending files are not available offline.</p>
+
+            <h3 id="scan-from-pc">Or scan a saved account from Windows</h3>
+            <p>If you already use OBK on a PC, open <strong>Settings &gt; Accounts &gt; Transfer to Android</strong> on Windows and choose <strong>Scan from PC</strong> on the phone. Follow the encrypted QR transfer and three-word confirmation while the Windows transfer window is open.</p>
+            <p>See the <a href="windows.html">Windows start guide</a> or <a href="https://github.com/iricigor/OBK/blob/main/docs/TECHNICAL.md#transferring-an-account-from-windows-to-android">transfer documentation</a>. No cloud account synchronization is involved.</p>
+
+            <h2 id="read">Read and refresh</h2>
+            <p>Use the navigation menu to choose a child or <strong>All children</strong> and browse Inbox, Noticeboard, Sent, or Excuses. Tap a message to read it and use the search field to find downloaded content.</p>
+            <p><strong>Refresh</strong> updates the selected child or all children in the current scope. <strong>Settings &gt; Refresh &gt; Always refresh all children</strong> can override that choice.</p>
+            <p>Optional hourly checks and notifications can be enabled in <strong>Settings &gt; Scheduled checks</strong>. Notification permission is requested when you enable notifications, not at first sign-in.</p>
+            <p>OBK cannot send replies, excuses, or confirmations, and does not mark messages read on the school server. Use Bakaláři for those actions.</p>
+
+            <h2 id="updates">Update without losing your archive</h2>
+            <p>Install a newer compatible release over the existing app. OBK's updater verifies checksum, package, version, and signing compatibility before opening Android's installer.</p>
+            <p>Do not uninstall an existing app just to update it: uninstalling deletes its local archive and encryption key. A workflow preview signed with a different key may not update the installed app. Read the <a href="https://github.com/iricigor/OBK/blob/main/docs/ANDROID.md">Android installation and signing notes</a> before switching packages.</p>
+
+            <h2 id="help">Need help?</h2>
+            <p><a href="https://github.com/iricigor/OBK/issues/new">Create a GitHub issue</a> with the Android version, OBK version, and reproduction steps. Never include passwords, private messages, or screenshots containing personal school data.</p>
+
+            <footer class="page-footer">
+                <p><a href="index.html">Back to the overview</a> · <a href="https://github.com/iricigor/OBK/blob/main/docs/TECHNICAL.md#android-preview">Android technical documentation</a></p>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
