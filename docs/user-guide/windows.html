@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Install OBK on Windows, sign in to your school, and download Komens messages for offline reading.">
+    <title>Get started on Windows · OBK user guide</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m4 7 8 6 8-6M8 17h8"/></svg>
+                <strong>OBK</strong><span>User guide</span>
+            </a>
+            <a class="source-link" href="https://github.com/iricigor/OBK">GitHub repository</a>
+        </div>
+    </header>
+    <div class="layout">
+        <aside class="sidebar">
+            <nav aria-label="User guide">
+                <a href="index.html">Overview</a>
+                <a href="windows.html" aria-current="page">Windows</a>
+                <a href="android.html">Android</a>
+            </nav>
+            <p class="scope-note">Getting-started guide.<br>Detailed screen guides and screenshots are still to come.</p>
+        </aside>
+        <main id="content" tabindex="-1">
+            <h1>Get started on Windows</h1>
+            <p class="intro">Install OBK, sign in to your school, and keep your children's Komens messages available on your PC. Windows 10 or later is required.</p>
+
+            <h2 id="install">Install the app</h2>
+            <ol>
+                <li>Open the <a href="https://github.com/iricigor/OBK/releases/latest">official latest release</a>.</li>
+                <li>Download <code>OBK-&lt;version&gt;-windows-x64-setup.exe</code> and run the installer.</li>
+                <li>Start <strong>OBK</strong> from the Start menu. Administrator rights and a separate .NET installation are not normally required.</li>
+            </ol>
+            <div class="notice">
+                <p><strong>Windows may show an unknown-publisher warning.</strong> Current Windows releases are unsigned while code-signing enrollment is pending. Download only from the official Releases page and check its published checksums and signing status before approving installation.</p>
+            </div>
+
+            <h2 id="sign-in">Sign in and download</h2>
+            <ol>
+                <li>Search for your child's school, or enter its Bakaláři address.</li>
+                <li>Enter your Komens username and password. Optionally name the child and choose to remember the password for future refreshes.</li>
+                <li>After <strong>Login successful</strong>, wait for messages to finish downloading.</li>
+                <li>When attachments start, choose <strong>Download attachments in background</strong> to enter the reader, or wait for them to finish. Progress and download details remain at the bottom of the reader.</li>
+            </ol>
+            <p>Keep OBK open while downloads continue. Only completed files are available offline. If your school does not allow mobile API access, OBK may be unable to sign in.</p>
+
+            <h2 id="read">Read and refresh</h2>
+            <p>Choose a child or <strong>All children</strong> in the sidebar, then choose Inbox, Noticeboard, Sent, or Excuses. Select a message to read it; use search, sorting, and grouping to find older messages.</p>
+            <p><strong>Refresh</strong> downloads new content for the selected child or all children in the current scope. To always update every child, turn on <strong>Settings &gt; Refresh &gt; Always refresh all children</strong>.</p>
+            <p>OBK is read-only. Sending a reply, excuse, or confirmation still requires Bakaláři. Opening a message here does not mark it read on the school's server.</p>
+
+            <h2 id="android-transfer">Already using Android?</h2>
+            <p>To avoid typing a saved Windows password on your phone, open <strong>Settings &gt; Accounts &gt; Transfer to Android</strong> in Windows OBK and choose <strong>Scan from PC</strong> on Android.</p>
+            <p>The encrypted QR transfer works offline. Follow the three-word confirmation while the transfer window is open. See the <a href="android.html">Android start guide</a> for installation, or the <a href="https://github.com/iricigor/OBK/blob/main/docs/TECHNICAL.md#transferring-an-account-from-windows-to-android">transfer documentation</a> for details.</p>
+
+            <h2 id="updates">Updates and help</h2>
+            <p>OBK checks for updates while it runs and offers <strong>Update and restart</strong> when a newer version is ready.</p>
+            <p>For a problem report, <a href="https://github.com/iricigor/OBK/issues/new">create a GitHub issue</a> with the Windows version, OBK version, and reproduction steps. Do not include passwords, private messages, or personal school data.</p>
+
+            <footer class="page-footer">
+                <p><a href="index.html">Back to the overview</a> · <a href="https://github.com/iricigor/OBK/blob/main/docs/WINDOWS.md">Windows installation notes</a></p>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>

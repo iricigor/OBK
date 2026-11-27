@@ -59,6 +59,10 @@ preview and deleting its local archive.
 
 ## Getting started
 
+The [user guide](https://iricigor.github.io/OBK/) provides an overview and
+getting-started pages for Windows and Android. Detailed screen guides and
+light/dark screenshots will follow.
+
 1. On first start, search for your child's school (or enter its Bakaláři
    address), then sign in with your Komens username and password.
 2. Optionally name the child and remember the password so **Refresh** can
