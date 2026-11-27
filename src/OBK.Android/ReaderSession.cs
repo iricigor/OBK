@@ -104,6 +104,7 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
             throw new ObkException(AppStrings.ErrorVerificationCannotSync);
 #endif
         }
+
         if (!await ForegroundGate.WaitAsync(0)) throw new ObkException(AppStrings.ErrorSyncInProgress);
         Download = download;
         ReadingDuringDownload = false;
@@ -135,6 +136,28 @@ internal sealed class ReaderSession(LocalStore store, SchoolDirectory schools, s
             ForegroundGate.Release();
             Changed();
         }
+    }
+
+    internal async Task RefreshMarksAsync(Login login, string password, Action<string> waiting)
+    {
+        if (IsVerification) throw new ObkException(AppStrings.ErrorVerificationCannotSync);
+        if (!await ForegroundGate.WaitAsync(0)) throw new ObkException(AppStrings.ErrorSyncInProgress);
+        try
+        {
+            if (!await SyncGate.WaitAsync(0))
+            {
+                waiting(AppStrings.StatusWaitingForCheck);
+                await SyncGate.WaitAsync();
+            }
+            try
+            {
+                using var client = new KomensClient(login.Url);
+                var token = await client.SignInAsync(login.Username, password);
+                await client.RefreshMarksAsync(token, Store, login.Username);
+            }
+            finally { SyncGate.Release(); }
+        }
+        finally { ForegroundGate.Release(); }
     }
 
     internal void ReadWhileDownloading()

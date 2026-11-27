@@ -58,6 +58,7 @@ internal static class VerificationData
             throw new ObkException("Verification failed: attachment content did not round-trip.");
         File.Delete(copy);
         store.SaveAccount(url, "anna", "Anna", "Fictional school");
+        OBK.Verification.MarksFixture.Prepare(store, store.KnownLogins());
         if (Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification_saved_password", false) == true)
             store.RememberPassword(url, "anna", "fictional-password");
         if (Platform.CurrentActivity?.Intent?.GetBooleanExtra("obk_verification_new_message", false) == true)

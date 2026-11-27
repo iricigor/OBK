@@ -127,6 +127,62 @@ public sealed class KomensClient : IDisposable
         return field.GetString()!.Trim();
     }
 
+    public async Task<MarksCapabilities> MarksCapabilitiesAsync(string token)
+    {
+        using var result = await JsonAsync("/api/3/user", token);
+        var root = result.RootElement;
+        if (root.ValueKind != JsonValueKind.Object ||
+            !root.TryGetProperty("EnabledModules", out var modules) || modules.ValueKind != JsonValueKind.Array)
+            throw new ObkException(SharedStrings.ErrorMarksCapabilitiesInvalid);
+        var canShow = false;
+        foreach (var module in modules.EnumerateArray())
+        {
+            if (module.ValueKind != JsonValueKind.Object ||
+                !module.TryGetProperty("Module", out var name) || name.ValueKind != JsonValueKind.String ||
+                !module.TryGetProperty("Rights", out var rights) || rights.ValueKind != JsonValueKind.Array ||
+                rights.EnumerateArray().Any(right => right.ValueKind != JsonValueKind.String))
+                throw new ObkException(SharedStrings.ErrorMarksCapabilitiesInvalid);
+            if (name.GetString() == "Marks")
+                canShow |= rights.EnumerateArray().Any(right => right.GetString() == "ShowMarks");
+        }
+        MarksSemester? semester = null;
+        if (root.TryGetProperty("SettingModules", out var settings) && settings.ValueKind != JsonValueKind.Null)
+        {
+            if (settings.ValueKind != JsonValueKind.Object)
+                throw new ObkException(SharedStrings.ErrorMarksCapabilitiesInvalid);
+            if (settings.TryGetProperty("Common", out var common) && common.ValueKind != JsonValueKind.Null)
+            {
+                if (common.ValueKind != JsonValueKind.Object)
+                    throw new ObkException(SharedStrings.ErrorMarksCapabilitiesInvalid);
+                if (common.TryGetProperty("ActualSemester", out var term) && term.ValueKind != JsonValueKind.Null)
+                {
+                    try { semester = term.Deserialize<MarksSemester>(); }
+                    catch (JsonException) { throw new ObkException(SharedStrings.ErrorMarksCapabilitiesInvalid); }
+                    semester?.Validate();
+                }
+            }
+        }
+        return new(canShow, semester);
+    }
+
+    public async Task<MarksDownload> FetchMarksAsync(string token)
+    {
+        var capabilities = await MarksCapabilitiesAsync(token);
+        if (!capabilities.CanShowMarks) throw new ObkException(SharedStrings.ErrorMarksUnavailable);
+        using var result = await JsonAsync("/api/3/marks", token);
+        MarksData data;
+        try { data = result.RootElement.Deserialize<MarksData>() ?? throw new ObkException(SharedStrings.ErrorMarksInvalid); }
+        catch (JsonException) { throw new ObkException(SharedStrings.ErrorMarksInvalid); }
+        data.Validate();
+        return new(data, capabilities.Semester);
+    }
+
+    public async Task<MarksArchive> RefreshMarksAsync(string token, LocalStore store, string username)
+    {
+        var downloaded = await FetchMarksAsync(token);
+        return await Task.Run(() => store.SaveMarks(BaseUrl, username, downloaded));
+    }
+
     public async Task<List<Message>> FetchFolderAsync(
         string token, string folder, SchoolYear year, List<Message>? cached = null, IProgress<string>? progress = null)
     {

@@ -68,9 +68,12 @@ internal sealed class ReaderPage : ContentPage
     private string? collapsedView;
     private ObservableCollection<object> listItems = [];
     private Dictionary<string, List<MessageListItem>> groupRows = [];
-    internal bool Busy => busy || reloading;
+    internal bool Busy => busy || reloading || CurrentMarks?.Busy == true ||
+        Navigation.NavigationStack.OfType<MarksDetailPage>().Any(page => page.Busy);
+    internal MarksPage? CurrentMarks => Navigation.NavigationStack.OfType<MarksPage>().LastOrDefault();
+    internal IReadOnlyList<Login> MarksScope => ScopeAccounts;
     internal bool InitialDownloadRunning => session?.Download?.State.Running == true;
-    internal bool AccountsAvailable => session is not null && !busy && !InitialDownloadRunning;
+    internal bool AccountsAvailable => session is not null && !Busy && !InitialDownloadRunning;
     internal int FolderIndex => folderIndex;
     internal IReadOnlyList<string> FolderLabels => folderLabels;
     internal IReadOnlyList<Login> KnownAccounts => known;
@@ -410,6 +413,17 @@ internal sealed class ReaderPage : ContentPage
     internal Task SelectAccountAsync(Login login) => RunAsync(() => SelectAsync(login));
     internal Task SelectAllChildrenAsync() => RunAsync(() => { SelectAllChildren(); return Task.CompletedTask; });
     internal Task AddAccountAsync() => OpenSignInAsync();
+    internal Task ChangeMarksScopeAsync(Login? login) => login is null ? SelectAllChildrenAsync() : SelectAccountAsync(login);
+    internal Task OpenMarksAsync() => RunAsync(async () =>
+    {
+        if (session is null) throw new ObkException(AppStrings.ErrorArchiveNotOpen);
+        if (CurrentMarks is { } existing)
+        {
+            while (Navigation.NavigationStack.Last() != existing) await Navigation.PopAsync();
+            await existing.LoadScopeAsync();
+        }
+        else await Navigation.PushAsync(new MarksPage(session, this));
+    });
     internal AccountPickerPage CreateAccountPickerPage() => new(known, ActiveAccount, ShowingAllChildren, login => RunAsync(async () =>
     {
         if (login is null) SelectAllChildren();

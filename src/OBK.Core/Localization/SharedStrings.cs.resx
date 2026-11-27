@@ -16,7 +16,7 @@
     <value>Tento účet již není uložen.</value>
   </data>
   <data name="ErrorApiAccessRejected" xml:space="preserve">
-    <value>Přístup k API byl zamítnut (HTTP {0}). Účet nebo token nemusí mít přístup ke Komens.</value>
+    <value>Přístup k API byl zamítnut (HTTP {0}). Účet nebo token nemusí mít přístup k požadovanému modulu.</value>
     <comment>{0} = HTTP status code.</comment>
   </data>
   <data name="ErrorApiRequestFailed" xml:space="preserve">
@@ -442,6 +442,52 @@
   <data name="DownloadWait" xml:space="preserve">
     <value>Počkejte na stažení zpráv. Jakmile se začnou stahovat přílohy, můžete zvolit čtení na pozadí.</value>
   </data>
+  <data name="ErrorMarksInvalid" xml:space="preserve">
+    <value>Odpověď se známkami je neúplná nebo neplatná. Předchozí offline snímek byl zachován.</value>
+  </data>
+  <data name="ErrorMarksCapabilitiesInvalid" xml:space="preserve">
+    <value>Nelze načíst oprávnění účtu ke známkám nebo informace o pololetí.</value>
+  </data>
+  <data name="ErrorMarksUnavailable" xml:space="preserve">
+    <value>Známky nejsou pro tento účet dostupné. Dříve stažené známky zůstávají dostupné offline.</value>
+  </data>
+  <data name="ErrorMarksNotDownloaded" xml:space="preserve">
+    <value>Pro tento účet nebyly staženy žádné známky. Nejprve se přihlaste a obnovte známky.</value>
+  </data>
+  <data name="ErrorMarksChanged" xml:space="preserve">
+    <value>Toto hodnocení bylo během obnovení změněno nebo odstraněno. Pro místní potvrzení otevřete aktuální hodnocení.</value>
+  </data>
+  <data name="MarksTitle" xml:space="preserve"><value>Známky</value></data>
+  <data name="MarksSubjects" xml:space="preserve"><value>Předměty</value></data>
+  <data name="MarksRecent" xml:space="preserve"><value>Poslední známky</value></data>
+  <data name="MarksSearch" xml:space="preserve"><value>Hledat předměty nebo hodnocení</value></data>
+  <data name="MarksAverage" xml:space="preserve"><value>Průměr předmětu</value></data>
+  <data name="MarksAssessments" xml:space="preserve"><value>Hodnocení · od nejnovějších</value></data>
+  <data name="MarksAssessment" xml:space="preserve"><value>Hodnocení</value></data>
+  <data name="MarksCountOne" xml:space="preserve"><value>{0} hodnocení</value></data>
+  <data name="MarksCountFew" xml:space="preserve"><value>{0} hodnocení</value></data>
+  <data name="MarksCountMany" xml:space="preserve"><value>{0} hodnocení</value></data>
+  <data name="MarksNew" xml:space="preserve"><value>Nové nebo změněné</value></data>
+  <data name="MarksNoData" xml:space="preserve"><value>Žádné známky nejsou stažené. Obnovte známky pro uložení offline snímku.</value></data>
+  <data name="MarksNoAccounts" xml:space="preserve"><value>Před stažením známek přidejte dítě.</value></data>
+  <data name="MarksEmpty" xml:space="preserve"><value>V aktuálním období serveru nejsou žádná hodnocení.</value></data>
+  <data name="MarksNoMatches" xml:space="preserve"><value>Žádné odpovídající předměty nebo hodnocení. Zkuste jiné hledání.</value></data>
+  <data name="MarksNoSelection" xml:space="preserve"><value>Vyberte předmět nebo hodnocení.</value></data>
+  <data name="MarksPeriod" xml:space="preserve"><value>Období: {0} – {1}</value></data>
+  <data name="MarksCurrentPeriod" xml:space="preserve"><value>Aktuální období poskytované školou</value></data>
+  <data name="MarksWeight" xml:space="preserve"><value>Váha: {0}</value></data>
+  <data name="MarksWeightMissing" xml:space="preserve"><value>Váha nebyla uvedena</value></data>
+  <data name="MarksPoints" xml:space="preserve"><value>Bodové hodnocení</value></data>
+  <data name="MarksDate" xml:space="preserve"><value>Hodnoceno: {0}</value></data>
+  <data name="MarksEdited" xml:space="preserve"><value>Upraveno: {0}</value></data>
+  <data name="MarksTeacher" xml:space="preserve"><value>ID učitele: {0}</value></data>
+  <data name="MarksTopic" xml:space="preserve"><value>Téma: {0}</value></data>
+  <data name="MarksProvisional" xml:space="preserve"><value>Předběžná známka: {0}</value></data>
+  <data name="MarksLimit" xml:space="preserve"><value>Průměry poskytuje škola, nejde o předpověď vysvědčení. Označení nových/změněných známek je místní; otevření známky ji ve škole nepotvrdí.</value></data>
+  <data name="MarksRefreshing" xml:space="preserve"><value>{0}: obnovování známek</value></data>
+  <data name="MarksRefreshSummary" xml:space="preserve"><value>Známky obnoveny pro {0} z {1} účtů.</value></data>
+  <data name="MarksPassword" xml:space="preserve"><value>Heslo pro {0} (pouze pro toto obnovení)</value></data>
+  <data name="MarksSynced" xml:space="preserve"><value>Snímek uložen: {0}</value></data>
   <data name="RefreshInterval" xml:space="preserve"><value>Interval automatického obnovování</value></data>
   <data name="RefreshOff" xml:space="preserve"><value>Vypnuto</value></data>
   <data name="Refresh15Minutes" xml:space="preserve"><value>15 minut</value></data>

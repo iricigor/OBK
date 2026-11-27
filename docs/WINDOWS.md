@@ -19,6 +19,13 @@ newer version is ready.
 
 ![OBK on Windows in light mode](images/obk-main.png)
 
+## Marks
+
+Choose **Marks** in navigation.
+Choose **Subjects** or **Recent marks**, filter by child, and open an assessment
+for details. Refresh marks separately from messages; successful snapshots are
+available offline. See [marks behavior and limitations](features/MARKS.md).
+
 ## Help and feedback
 
 Select **?** at the bottom right of the main window, beside the version

@@ -10,6 +10,13 @@ notifications in **Settings > Scheduled checks**.
 
 ![Android message list in light mode](images/android-light-messages.png)
 
+## Marks
+
+Choose **Marks** in the drawer.
+Use its child button, search, and **Subjects / Recent marks** switch to browse;
+tap an assessment for details. Marks have their own refresh and encrypted
+offline snapshots. See [marks behavior and limitations](features/MARKS.md).
+
 ## Help and feedback
 
 Tap **?** at the bottom right of the app, beside the language control.

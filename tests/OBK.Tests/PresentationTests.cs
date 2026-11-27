@@ -228,7 +228,7 @@ public sealed class PresentationTests
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "excuses");
                     await WaitForFolderAsync();
                     Assert.Equal("sent-excuse", Assert.Single(vm.Messages).Message.Id);
-                    Assert.Equal(["noticeboard", "received", "sent", "excuses"], vm.Navigation.Select(f => f.Key));
+                    Assert.Equal(["noticeboard", "received", "sent", "excuses", "marks"], vm.Navigation.Select(f => f.Key));
                     vm.SelectedFolder = vm.Navigation.Single(f => f.Key == "noticeboard");
                     await WaitForFolderAsync();
                     Assert.Null(vm.SelectedMessage);
@@ -717,6 +717,57 @@ public sealed class PresentationTests
                             Assert.Equal(accent.Color, ((SolidColorBrush)chrome.BorderBrush).Color);
                             Assert.True(Contrast(accent.Color, ((SolidColorBrush)band.Background).Color) >= 3);
                         }
+                        var previousDensity = main.ViewModel.Theme.ListDensity;
+                        var previousReadingSize = main.ViewModel.Theme.ReadingSize;
+                        await main.ViewModel.Theme.SetReadingSizeAsync("Medium");
+                        OBK.Verification.MarksFixture.Prepare(store, store.KnownLogins());
+                        await main.ViewModel.ActivateAccountAsync("https://school.example", "reader-shades");
+                        var marksList = (ListBox)((MarksView)main.FindName("MarksPage")).FindName("MarksList");
+                        var heights = new Dictionary<string, double>();
+                        foreach (var density in new[] { "Relaxed", "Compact" })
+                        {
+                            await main.ViewModel.Theme.SetListDensityAsync(density);
+                            main.ViewModel.SelectedFolder = main.ViewModel.Navigation.Single(folder => folder.Key == "received");
+                            await main.ViewModel.FolderReady;
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                            main.UpdateLayout();
+                            var messageHeight = RowContainers(messageList).First().ActualHeight;
+                            main.ViewModel.SelectedFolder = main.ViewModel.Navigation.Single(folder => folder.Key == "marks");
+                            await main.ViewModel.FolderReady;
+                            foreach (var recent in new[] { false, true })
+                            {
+                                main.ViewModel.Marks.IsRecent = recent;
+                                await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                                main.UpdateLayout();
+                                var rows = RowContainers(marksList).ToArray();
+                                Assert.NotEmpty(rows);
+                                Assert.All(rows, row => Assert.Equal(messageHeight, row.ActualHeight, precision: 1));
+                                Assert.All(rows, row => Assert.DoesNotContain(Within<Border>(row), avatar => avatar.Width == 24 && avatar.IsVisible));
+                                Assert.All(rows, row => Assert.DoesNotContain(Within<TextBlock>(row), text => text.Text == SharedStrings.MarksNew));
+                                var striped = rows.First(row => ((MarksEntry)row.DataContext).IsAlternate);
+                                Assert.Equal(((SolidColorBrush)main.FindResource("ListAlternateSurface")).Color,
+                                    ((SolidColorBrush)striped.Background).Color);
+                                main.ViewModel.Marks.SelectedEntry = (MarksEntry)rows[0].DataContext;
+                                main.UpdateLayout();
+                                var chrome = (Border)rows[0].Template.FindName("Chrome", rows[0]);
+                                Assert.Equal(((SolidColorBrush)main.FindResource("Selection")).Color, ((SolidColorBrush)chrome.Background).Color);
+                                Assert.Contains(Within<TextBlock>(rows[0]), text => text.Text == ((MarksEntry)rows[0].DataContext).Value &&
+                                    text.FontSize == (double)application.Resources["ListSubjectSize"]);
+                                heights[density] = rows[0].ActualHeight;
+                            }
+                        }
+                        Assert.True(heights["Compact"] < heights["Relaxed"]);
+                        await main.ViewModel.SelectAllChildrenAsync();
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        main.UpdateLayout();
+                        Assert.Contains(RowContainers(marksList).SelectMany(Within<Border>), avatar => avatar.Width == 24 && avatar.IsVisible);
+                        await main.ViewModel.SelectAccountAsync(main.ViewModel.Accounts.Single(account => account.Login.Username == "reader-shades"));
+                        main.ViewModel.SelectedFolder = main.ViewModel.Navigation.Single(folder => folder.Key == "received");
+                        await main.ViewModel.FolderReady;
+                        main.ViewModel.SelectedMessage = main.ViewModel.Messages.Single(row => row.Message.Id == "original");
+                        await main.ViewModel.MessageReady;
+                        await main.ViewModel.Theme.SetListDensityAsync(previousDensity);
+                        await main.ViewModel.Theme.SetReadingSizeAsync(previousReadingSize);
                         main.Width = 880;
                         main.Height = 620;
                         await main.ViewModel.Theme.SetReadingSizeAsync("Large");

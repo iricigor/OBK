@@ -37,8 +37,8 @@ public sealed class ReaderScopeTests
     }
 
     private static MainViewModel Reader(LocalStore store, string directory, Action<bool, Login?>? openLogin = null,
-        Action<AttachmentRow, string>? export = null) =>
-        new(store, new ThemeManager(Path.Combine(directory, "appearance.json")), openLogin ?? ((_, _) => { }),
+        Action<AttachmentRow, string>? export = null, ThemeManager? theme = null) =>
+        new(store, theme ?? new ThemeManager(Path.Combine(directory, "appearance.json")), openLogin ?? ((_, _) => { }),
             (row, action) => { export?.Invoke(row, action); return Task.CompletedTask; }, _ => Task.CompletedTask);
 
     private static async Task SettleAsync(MainViewModel vm)
@@ -97,6 +97,62 @@ public sealed class ReaderScopeTests
     }
 
     [Fact]
+    public Task MarksViewsKeepChildScopeAndAcknowledgeOnlyExplicitAssessmentOpens() => RunAsync(async (store, directory) =>
+    {
+        store.SaveAccount(School, "anna", "Anna", "Sample school");
+        store.SaveAccount(School, "tomas", "Tomáš", "Sample school");
+        OBK.Verification.MarksFixture.Prepare(store, store.KnownLogins());
+        var vm = Reader(store, directory);
+        await vm.ActivateAccountAsync(School, "anna");
+        await SettleAsync(vm);
+        vm.SelectedFolder = Folder(vm, "marks");
+        await SettleAsync(vm);
+        Assert.True(vm.ShowMarks);
+        Assert.False(vm.ShowMessages);
+        Assert.Equal(6, vm.Marks.Entries.Count);
+        Assert.Equal(6, Folder(vm, "marks").NewCount);
+
+        var math = vm.Marks.Entries.Single(entry => entry.Owner.Username == "anna" && entry.Subject.Subject.Id == "math");
+        await vm.Marks.OpenAsync(math);
+        Assert.Equal(6, vm.Marks.NewCount);
+        var newMark = math.Assessments.Single(entry => entry.Assessment!.Id == "new");
+        await vm.Marks.OpenAsync(newMark);
+        Assert.Equal("anna", vm.Marks.SelectedEntry!.Owner.Username);
+        Assert.Equal(5, vm.Marks.NewCount);
+        Assert.Equal(5, Folder(vm, "marks").NewCount);
+        Assert.False(store.LoadMarks(School, "anna")!.IsNew(newMark.Assessment!));
+        Assert.True(store.LoadMarks(School, "tomas")!.IsNew(newMark.Assessment!));
+        OBK.Verification.MarksFixture.Prepare(store, store.KnownLogins());
+        Assert.False(store.LoadMarks(School, "anna")!.IsNew(newMark.Assessment!));
+
+        await vm.SelectAccountAsync(Child(vm, "tomas"));
+        await SettleAsync(vm);
+        Assert.Equal(3, vm.Marks.Entries.Count);
+        Assert.All(vm.Marks.Entries, entry => Assert.Equal("tomas", entry.Owner.Username));
+        vm.Marks.IsRecent = true;
+        vm.Marks.Search = "listening";
+        Assert.Equal("85/100", Assert.Single(vm.Marks.Entries).Value);
+        await vm.Marks.OpenAsync(Assert.Single(vm.Marks.Entries));
+        var state = vm.CaptureState();
+        var restored = Reader(store, directory, theme: vm.Theme);
+        await restored.RestoreStateAsync(state);
+        Assert.True(restored.ShowMarks);
+        Assert.True(restored.Marks.IsRecent);
+        Assert.Equal("listening", restored.Marks.Search);
+        Assert.Single(restored.Marks.Entries);
+        Assert.Equal("tomas", restored.Marks.SelectedSubject!.Owner.Username);
+        Assert.Equal("points", restored.Marks.SelectedAssessment!.Assessment!.Id);
+        Assert.False(restored.Marks.SelectedAssessment.IsNew);
+        restored.Marks.Search = "no such assessment";
+        Assert.True(restored.Marks.Empty);
+        Assert.False(restored.Marks.HasSubject);
+        restored.SelectedFolder = Folder(restored, "received");
+        await SettleAsync(restored);
+        Assert.True(restored.ShowMessages);
+        Assert.False(restored.ShowMarks);
+    });
+
+    [Fact]
     public Task AllChildrenMergesArchivesCountsNewMessagesAndOnlyExplicitSelectionOpensThem() => RunAsync(async (store, directory) =>
     {
         await Task.Run(() =>
@@ -127,7 +183,7 @@ public sealed class ReaderScopeTests
         Assert.Equal([2, 1], vm.Accounts.Select(row => row.NewCount));
         Assert.Equal(3, vm.AllChildrenEntry!.NewCount);
         Assert.Equal("All children, new: 3", vm.AllChildrenEntry!.AccessibleName);
-        Assert.Equal([1, 2, 0, 0], vm.Navigation.Select(folder => folder.NewCount));
+        Assert.Equal([1, 2, 0, 0, 0], vm.Navigation.Select(folder => folder.NewCount));
         Assert.Equal("Inbox, new: 2", Folder(vm, "received").AccessibleName);
         Assert.Equal("New: 2", Folder(vm, "received").NewCountName);
         Assert.Equal("Sent", Folder(vm, "sent").AccessibleName);
@@ -208,7 +264,7 @@ public sealed class ReaderScopeTests
         Assert.Equal("Jana Malá", Row(vm, "anna", "a1").PersonLine);
         Assert.Equal("2 messages", vm.FolderCaption);
         Assert.DoesNotContain("Child:", vm.Metadata);
-        Assert.Equal([1, 0, 0, 0], vm.Navigation.Select(folder => folder.NewCount));
+        Assert.Equal([1, 0, 0, 0, 0], vm.Navigation.Select(folder => folder.NewCount));
         Assert.Equal([1, 0], vm.Accounts.Select(row => row.NewCount));
         Assert.Equal("OBK - Offline Komens - Anna", vm.WindowTitle);
         Assert.StartsWith("Offline archive ready • Synced (5 messages, 0 attachments)", vm.Status);
@@ -251,6 +307,9 @@ public sealed class ReaderScopeTests
         await vm.SelectAccountAsync(Child(vm, "tomas"));
         if (allChildren) await vm.SelectAllChildrenAsync();
         await vm.Theme.SetAlwaysRefreshAllChildrenAsync(alwaysRefreshAll);
+        vm.SelectedFolder = Folder(vm, "marks");
+        await SettleAsync(vm);
+        vm.RequestMarksPassword = _ => throw new InvalidOperationException("Automatic refresh must not request marks credentials.");
 
         var automatic = vm.RefreshAllAsync(automatic: true);
         Assert.True(vm.IsSyncing, "The refresh guard is acquired before the first asynchronous store read.");
@@ -264,7 +323,10 @@ public sealed class ReaderScopeTests
         else Assert.DoesNotContain("Anna", vm.Status);
         Assert.False(vm.IsSyncing);
         Assert.False(vm.GoodStatus);
+        Assert.True(vm.ShowMarks);
 
+        vm.SelectedFolder = Folder(vm, "received");
+        await SettleAsync(vm);
         await vm.RefreshAllAsync();
         await SettleAsync(vm);
 

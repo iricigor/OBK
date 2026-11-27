@@ -173,3 +173,54 @@ manual-only updates. End-to-end updates still require device verification.
 - [Android release signing and APK publication](https://github.com/iricigor/OBK/issues/39)
 - [Android build and verification](docs/TECHNICAL.md#android-preview)
 - [Android package installation permission](https://developer.android.com/reference/android/Manifest.permission#REQUEST_INSTALL_PACKAGES)
+
+## DI-13: Subject grade gauges and weight-scaled assessment bars
+
+**Status:** Deferred follow-up tracked in #97. Not started; recording this idea
+does not authorize implementation or expand marks PR #94.
+
+**Idea:** For a confirmed 1-to-5 grading scale, with 1 best and 5 worst, show an
+average gauge when a subject is selected: green 1.00 at the left and red 5.00
+at the right, with localized decimal separators. Add vertical assessment bars
+whose colors represent grades and whose heights represent their weights.
+
+### What is known
+
+- The marks model preserves original grade text, nullable weights, points-based
+  grading and school-supplied subject averages.
+- These fields do not establish a universal numeric conversion or grading
+  scale. Observing only grades from 1 to 5 is not proof of the full scale.
+- Values for modified grades such as `1-` might be inferred if all contributing
+  assessments, weights and averaging rules are known. This is an unverified
+  hypothesis, not evidence that `1-` means 1.5.
+- Rounded averages may constrain only a range. Missing or excluded assessments,
+  multiple unknown grade symbols and school-specific rules can make inference
+  ambiguous or impossible.
+
+### Why this is deferred
+
+The native marks foundation and its user verification remain separate work.
+Eligibility, chart placement, weight scaling and modified-grade interpretation
+need investigation and scope agreement before numeric visualizations are safe.
+
+### Investigation before implementation
+
+- Define scale eligibility and whether it applies per subject or account.
+- Agree the gauge's average source and bar placement/order/weight scaling.
+- Handle points, mixed/textual grades, modifiers, missing/zero weights and
+  invalid averages without inventing values or hiding the original text.
+- Investigate modified-grade inference using known weighted assessments and
+  rounded averages; distinguish estimates from authoritative API values and
+  reject ambiguous conversions.
+- Preserve Windows/Android density, reading-size settings, offline behavior
+  and account isolation. Provide grade/weight labels, not color alone.
+- Agree scope, use fictional fixtures and obtain user verification before any
+  separately approved merge. Do not publish private school data or credentials.
+
+### References
+
+- [Follow-up tasks and acceptance criteria](https://github.com/iricigor/OBK/issues/97)
+- [Marks foundation](https://github.com/iricigor/OBK/issues/93)
+- [Native marks implementation](https://github.com/iricigor/OBK/pull/94)
+- [Marks data model](src/OBK.Core/Marks.cs)
+- [Current marks behavior](docs/features/MARKS.md)

@@ -71,6 +71,12 @@ dotnet build .\src\OBK.App\OBK.App.csproj -c Release -p:LocalBuild=false
 
 The command uses a temporary archive that is deleted afterwards.
 
+Use `--marks-screenshot <path.png>` instead to capture fictional marks in
+Subjects, Recent marks, dark mode and both list densities. The additional
+captures use `.recent.png`, `.dark.png`, `.compact.png` and
+`.compact-subjects.png` suffixes. This also uses a temporary encrypted
+archive and never contacts a school.
+
 ## School directory maintenance
 
 `data\schools.json.gz` is a gzip-compressed UTF-8 JSON snapshot of the public
@@ -551,7 +557,7 @@ Enter real credentials only on the device, never in issue comments or chat.
 
 For developer-only visual verification, the Debug APK accepts the
 `obk_verification` Boolean launch extra. It uses a separate
-`verification.sqlite3` database with fictional accounts/messages, runs actual
+`verification.sqlite3` database with fictional accounts/messages/marks, runs actual
 Keystore nonce/tamper and archive/attachment checks, and blocks school access.
 Resolve the activity and launch it explicitly:
 
@@ -564,6 +570,29 @@ $activity = (& $adb -s <serial> shell cmd package resolve-activity --brief cz.ob
 ```
 
 The verification fixture and launch handling are excluded from Release builds.
+The marks fixture includes a weighted subject, points-based assessment and empty
+subject. Explicit assessment acknowledgement survives repeated verification
+launches. Marks refresh is blocked in this mode and must leave the snapshot
+intact.
+
+On a shared emulator, build an isolated Debug package rather than replacing
+an existing reader installation:
+
+```powershell
+dotnet build .\src\OBK.Android\OBK.Android.csproj `
+  "-p:AndroidSdkDirectory=$env:ANDROID_HOME" "-p:JavaSdkDirectory=$env:JAVA_HOME" `
+  -p:ApplicationId=cz.obk.marks.preview
+& $adb -s <serial> install --no-incremental -r `
+  .\src\OBK.Android\bin\Debug\net10.0-android\cz.obk.marks.preview-Signed.apk
+$activity = (& $adb -s <serial> shell cmd package resolve-activity --brief cz.obk.marks.preview | Select-Object -Last 1).Trim()
+& $adb -s <serial> shell am start -n $activity --ez obk_verification true
+```
+
+Attachment and update provider authorities follow `${applicationId}`, matching
+the runtime package name so preview and release packages can coexist. Do not
+uninstall the user's existing reader or capture private-school data for visual
+verification.
+
 To verify the initial download flow without school traffic, also pass
 `--ez obk_verification_initial_download true`. This resets only the dedicated
 fictional `verification-login.sqlite3` database and opens a prefilled example

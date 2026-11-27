@@ -77,6 +77,12 @@ public sealed class MainViewModel : ObservableObject
         this.store = store;
         this.openLogin = openLogin;
         Theme = theme;
+        Marks = new MarksViewModel(store, ReportError, RefreshMarksAsync, () => CanChangeAccount);
+        Marks.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MarksViewModel.Busy)) UpdateActions();
+            if (e.PropertyName == nameof(MarksViewModel.NewCount)) UpdateNewCounts();
+        };
         RefreshCommand = new AsyncCommand(_ => RefreshAllAsync(), ReportError, _ => CanChangeAccount);
         ToggleThemeCommand = new AsyncCommand(_ => Theme.ToggleAsync(), ReportError);
         SetThemeCommand = new AsyncCommand(p => Theme.SetAsync(p as string ?? ""), ReportError);
@@ -111,7 +117,8 @@ public sealed class MainViewModel : ObservableObject
             new("noticeboard", Folders.Title("noticeboard"), "\uE789"),
             new("received", Folders.Title("received"), "\uE715"),
             new("sent", Folders.Title("sent"), "\uE724"),
-            new("excuses", SharedStrings.FolderExcuses, "\uE8A5")
+            new("excuses", SharedStrings.FolderExcuses, "\uE8A5"),
+            new("marks", SharedStrings.MarksTitle, "\uE9D5")
         ];
         selectedFolder = Navigation.Single(f => f.Key == "received");
         RefreshFolder();
@@ -122,6 +129,8 @@ public sealed class MainViewModel : ObservableObject
             p => CanUseAttachments && p is AttachmentRow { Cached: true });
 
     public ThemeManager Theme { get; }
+    public MarksViewModel Marks { get; }
+    public Func<Login, Task<string?>>? RequestMarksPassword { get; set; }
     public IReadOnlyList<DisplayOption<int>> RefreshIntervalOptions { get; } =
         RefreshIntervals.Minutes.Select(minutes => new DisplayOption<int>(minutes, RefreshIntervals.Label(minutes))).ToArray();
     public ICommand RefreshCommand { get; }
@@ -135,9 +144,10 @@ public sealed class MainViewModel : ObservableObject
     public bool SettingsOpen
     {
         get => settingsOpen;
-        set { if (Set(ref settingsOpen, value)) Notify(nameof(ShowMessages)); }
+        set { if (Set(ref settingsOpen, value)) { Notify(nameof(ShowMessages)); Notify(nameof(ShowMarks)); } }
     }
-    public bool ShowMessages => !settingsOpen;
+    public bool ShowMarks => !settingsOpen && selectedFolder?.Key == "marks";
+    public bool ShowMessages => !settingsOpen && selectedFolder?.Key != "marks";
     public ICommand SwitchSchoolCommand { get; }
     public ICommand SelectAccountCommand { get; }
     public ICommand SelectAllChildrenCommand { get; }
@@ -195,6 +205,7 @@ public sealed class MainViewModel : ObservableObject
     {
         get
         {
+            if (selectedFolder?.Key == "marks") return Marks.ScopeText;
             var total = FolderItems(selectedFolder?.Key ?? "received").Count();
             var caption = SearchActive ? Localized.Format(AppStrings.MainFolderSearchCount, messages.Count, total) :
                 Localized.Format(AppStrings.MainFolderCount, total);
@@ -227,7 +238,7 @@ public sealed class MainViewModel : ObservableObject
     public bool IsSyncing { get => syncing; private set { if (Set(ref syncing, value)) UpdateActions(); } }
     public bool Loading { get => loading; private set { if (Set(ref loading, value)) { UpdateActions(); Notify(nameof(EmptyFolder)); } } }
     public bool IsExporting { get => exporting; set { if (Set(ref exporting, value)) UpdateActions(); } }
-    public bool CanChangeAccount => !IsSyncing && !Loading && !IsExporting;
+    public bool CanChangeAccount => !IsSyncing && !Loading && !IsExporting && !Marks.Busy;
     public bool CanUseAttachments => !Loading && !IsExporting && (!IsSyncing || ReadingDuringDownload);
     public bool ReadingDuringDownload => readingDuringDownload;
     public InitialDownloadState? DownloadState
@@ -305,6 +316,8 @@ public sealed class MainViewModel : ObservableObject
         {
             if (!Set(ref selectedFolder, value) || value is null) return;
             SettingsOpen = false;
+            Notify(nameof(ShowMessages));
+            Notify(nameof(ShowMarks));
             RefreshFolder();
         }
     }
@@ -404,6 +417,7 @@ public sealed class MainViewModel : ObservableObject
             School = next?.SchoolName ?? loaded.FirstOrDefault(child => Same(child.Login, next))?.Archive?.SchoolName ??
                 AppStrings.MainDefaultSchool;
             UpdateScope();
+            await Marks.LoadAsync(ScopeArchives().Select(child => child.Login).ToArray());
             if ((ScopeKey, year) != previous)
             {
                 selectedMessageIds.Clear();
@@ -485,7 +499,8 @@ public sealed class MainViewModel : ObservableObject
         foreach (var row in accounts) row.NewCount = archives.FirstOrDefault(child => Same(child.Login, row.Login))?.NewCount ?? 0;
         if (allChildrenEntry is { } entry) entry.NewCount = accounts.Sum(row => row.NewCount);
         var scope = ScopeArchives().ToArray();
-        foreach (var folder in Navigation) folder.NewCount = scope.Sum(child => child.NewIn(folder.Key));
+        foreach (var folder in Navigation)
+            folder.NewCount = folder.Key == "marks" ? Marks.NewCount : scope.Sum(child => child.NewIn(folder.Key));
         Notify(nameof(FolderCaption));
     }
 
@@ -531,6 +546,7 @@ public sealed class MainViewModel : ObservableObject
         archives = archives.Select(child => Same(child.Login, login) ? child with { Login = child.Login with { ChildName = label } } : child)
             .ToArray();
         BuildAccounts();
+        await Marks.LoadAsync(ScopeArchives().Select(child => child.Login).ToArray());
         if (showingAllChildren) RefreshFolder();
         SetStatus(label is null ? Localized.Format(AppStrings.StatusChildNameRemoved, login.SchoolName ?? login.Username) :
             Localized.Format(AppStrings.StatusRenamed, label), true);
@@ -590,10 +606,12 @@ public sealed class MainViewModel : ObservableObject
 
     public sealed record ReaderState(Login? Account, SchoolYear Year, string Folder, string Search,
         MessageSort Sort, ListGrouping Grouping, Dictionary<string, MessageKey> MessageIds,
-        bool NavigationExpanded, bool SettingsOpen, bool AttachmentsExpanded);
+        bool NavigationExpanded, bool SettingsOpen, bool AttachmentsExpanded,
+        bool MarksRecent = false, string MarksSearch = "", string? MarksSelectionKey = null, string? MarksAssessmentId = null);
 
     public ReaderState CaptureState() => new(Account, year, SelectedFolder?.Key ?? "received", SearchText,
-        Sort, Grouping, new(selectedMessageIds), NavigationExpanded, SettingsOpen, AttachmentsExpanded);
+        Sort, Grouping, new(selectedMessageIds), NavigationExpanded, SettingsOpen, AttachmentsExpanded, Marks.IsRecent, Marks.Search,
+        Marks.SelectedSubject?.Key, Marks.SelectedAssessment?.Assessment?.Id);
 
     public async Task RestoreStateAsync(ReaderState state)
     {
@@ -610,6 +628,11 @@ public sealed class MainViewModel : ObservableObject
         Notify(nameof(Sort));
         Notify(nameof(Grouping));
         Notify(nameof(SelectedFolder));
+        Notify(nameof(ShowMessages));
+        Notify(nameof(ShowMarks));
+        Marks.IsRecent = state.MarksRecent;
+        Marks.Search = state.MarksSearch;
+        Marks.RestoreSelection(state.MarksSelectionKey, state.MarksAssessmentId);
         FolderReady = RefreshFolderAsync();
         await FolderReady;
         await MessageReady;
@@ -689,6 +712,7 @@ public sealed class MainViewModel : ObservableObject
         Notify(nameof(FolderCaption));
         Notify(nameof(EmptyFolderText));
         Notify(nameof(EmptyFolder));
+        if (key == "marks") return;
         try
         {
             var source = FolderItems(key).ToArray();
@@ -992,6 +1016,7 @@ public sealed class MainViewModel : ObservableObject
     public async Task RefreshAllAsync(bool automatic = false)
     {
         if (!CanChangeAccount) return;
+        if (!automatic && selectedFolder?.Key == "marks") { await RefreshMarksAsync(); return; }
         IsSyncing = true;
         (bool Needed, Login? Account) prompt;
         try { prompt = await RefreshScopeAsync(automatic); }
@@ -1047,5 +1072,48 @@ public sealed class MainViewModel : ObservableObject
         var current = showingAllChildren ? null : Account;
         var prompt = missing.FirstOrDefault(m => Same(m, current)) ?? (ready.Count == 0 ? missing.FirstOrDefault() : null);
         return (!automatic && prompt is not null, prompt);
+    }
+
+    private async Task RefreshMarksAsync()
+    {
+        if (!CanChangeAccount) return;
+        IsSyncing = true;
+        try
+        {
+            var known = await Task.Run(store.KnownLogins);
+            var targets = RefreshScope.Accounts(known, Account, showingAllChildren, Theme.AlwaysRefreshAllChildren);
+            if (targets.Count == 0)
+            {
+                IsSyncing = false;
+                openLogin(true, null);
+                return;
+            }
+            var failures = new List<string>();
+            var completed = 0;
+            foreach (var login in targets)
+            {
+                var label = AccountRow.LabelFor(login);
+                Marks.Status = Localized.Format(SharedStrings.MarksRefreshing, label);
+                try
+                {
+                    var password = login.Password ?? (RequestMarksPassword is { } prompt ? await prompt(login) : null);
+                    if (password is null)
+                    {
+                        failures.Add(Localized.Format(SharedStrings.ErrorInContext, label, SharedStrings.ErrorMissingCredentials));
+                        continue;
+                    }
+                    using var client = new KomensClient(login.Url);
+                    var token = await client.SignInAsync(login.Username, password);
+                    await client.RefreshMarksAsync(token, store, login.Username);
+                    completed++;
+                }
+                catch (ObkException error) { failures.Add(Localized.Format(SharedStrings.ErrorInContext, label, error.Message)); }
+            }
+            await Marks.LoadAsync(ScopeArchives().Select(child => child.Login).ToArray());
+            Marks.Status = Localized.Format(SharedStrings.MarksRefreshSummary, completed, targets.Count) +
+                (failures.Count > 0 ? Environment.NewLine + string.Join(Environment.NewLine, failures) : "");
+            SetStatus(Marks.Status, failures.Count == 0);
+        }
+        finally { IsSyncing = false; }
     }
 }

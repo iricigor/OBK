@@ -35,6 +35,9 @@ public sealed class LocalStore
                 CREATE TABLE IF NOT EXISTS opened_messages (
                     url TEXT NOT NULL, username TEXT NOT NULL, ids BLOB NOT NULL,
                     PRIMARY KEY (url, username));
+                CREATE TABLE IF NOT EXISTS marks (
+                    url TEXT NOT NULL, username TEXT NOT NULL, snapshot BLOB NOT NULL,
+                    PRIMARY KEY (url, username));
                 """;
             command.ExecuteNonQuery();
             return true;
@@ -431,6 +434,77 @@ public sealed class LocalStore
                 parameters: [("$url", url), ("$user", username), ("$ids", payload)]);
             return command.ExecuteNonQuery();
         });
+    }
+
+    public MarksArchive? LoadMarks(string url, string username) => Access(connection =>
+        StoredMarks(connection, KomensClient.NormalizeUrl(url), username));
+
+    private MarksArchive? StoredMarks(SqliteConnection connection, string url, string username,
+        SqliteTransaction? transaction = null)
+    {
+        using var command = Command(connection,
+            "SELECT snapshot FROM marks WHERE url = $url AND username = $user", transaction,
+            ("$url", url), ("$user", username));
+        if (command.ExecuteScalar() is not byte[] payload) return null;
+        var archive = DecodeStored<MarksArchive>(payload);
+        archive.Validate();
+        return archive;
+    }
+
+    public MarksArchive SaveMarks(string url, string username, MarksDownload download)
+    {
+        download.Data.Validate();
+        download.Semester?.Validate();
+        url = KomensClient.NormalizeUrl(url);
+        return Access(connection =>
+        {
+            using var transaction = connection.BeginTransaction();
+            var previous = StoredMarks(connection, url, username, transaction);
+            var current = download.Data.Subjects.SelectMany(subject => subject.Marks).ToArray();
+            var keys = current.Select(mark => mark.Key).ToHashSet(StringComparer.Ordinal);
+            var acknowledged = previous is null
+                ? current.ToDictionary(mark => mark.Key, mark => mark.Version, StringComparer.Ordinal)
+                : previous.Acknowledged.Where(pair => keys.Contains(pair.Key))
+                    .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+            var archive = new MarksArchive
+            {
+                Data = download.Data, Semester = download.Semester,
+                SyncedAt = DateTimeOffset.UtcNow.ToString("O"), Acknowledged = acknowledged
+            };
+            WriteMarks(connection, transaction, url, username, archive);
+            transaction.Commit();
+            return archive;
+        });
+    }
+
+    /// <summary>Acknowledges only the version the user actually opened, never a concurrent refresh.</summary>
+    public void AcknowledgeMark(string url, string username, string subjectId, string id, string version)
+    {
+        url = KomensClient.NormalizeUrl(url);
+        Access(connection =>
+        {
+            using var transaction = connection.BeginTransaction();
+            var archive = StoredMarks(connection, url, username, transaction) ??
+                throw new ObkException(SharedStrings.ErrorMarksNotDownloaded);
+            var mark = archive.Data.Subjects.Where(subject => subject.Subject.Id == subjectId)
+                .SelectMany(subject => subject.Marks).SingleOrDefault(mark => mark.Id == id);
+            if (mark is null || mark.Version != version)
+                throw new ObkException(SharedStrings.ErrorMarksChanged);
+            archive.Acknowledged[mark.Key] = version;
+            WriteMarks(connection, transaction, url, username, archive);
+            transaction.Commit();
+            return true;
+        });
+    }
+
+    private void WriteMarks(SqliteConnection connection, SqliteTransaction transaction,
+        string url, string username, MarksArchive archive)
+    {
+        archive.Validate();
+        using var command = Command(connection,
+            "INSERT OR REPLACE INTO marks VALUES ($url, $user, $snapshot)", transaction,
+            ("$url", url), ("$user", username), ("$snapshot", EncodeStored(archive)));
+        command.ExecuteNonQuery();
     }
 
     public AttachmentInfo? AttachmentInfo(string url, string username, string id) => Access(connection =>

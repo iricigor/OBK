@@ -32,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OBK.Core\OBK.Core.csproj" />
     <Compile Include="..\..\tests\InitialDownloadFixture.cs" Link="Verification\InitialDownloadFixture.cs" />
+    <Compile Include="..\..\tests\MarksFixture.cs" Link="Verification\MarksFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\data\schools.json.gz" LogicalName="OBK.App.Data.schools.json.gz" />

@@ -16,7 +16,7 @@
     <value>Цей обліковий запис більше не збережено.</value>
   </data>
   <data name="ErrorApiAccessRejected" xml:space="preserve">
-    <value>Доступ до API відхилено (HTTP {0}). Обліковий запис або токен може не мати доступу до Komens.</value>
+    <value>Доступ до API відхилено (HTTP {0}). Обліковий запис або токен може не мати доступу до запитаного модуля.</value>
     <comment>{0} = HTTP status code.</comment>
   </data>
   <data name="ErrorApiRequestFailed" xml:space="preserve">
@@ -442,6 +442,52 @@
   <data name="DownloadWait" xml:space="preserve">
     <value>Зачекайте, поки завантажаться повідомлення. Коли почнеться завантаження вкладень, можна вибрати читання у фоновому режимі.</value>
   </data>
+  <data name="ErrorMarksInvalid" xml:space="preserve">
+    <value>Відповідь з оцінками неповна або недійсна. Попередній офлайн-знімок збережено.</value>
+  </data>
+  <data name="ErrorMarksCapabilitiesInvalid" xml:space="preserve">
+    <value>Не вдалося прочитати дозволи облікового запису на оцінки або інформацію про семестр.</value>
+  </data>
+  <data name="ErrorMarksUnavailable" xml:space="preserve">
+    <value>Оцінки недоступні для цього облікового запису. Раніше завантажені оцінки залишаються доступними офлайн.</value>
+  </data>
+  <data name="ErrorMarksNotDownloaded" xml:space="preserve">
+    <value>Для цього облікового запису ще не завантажено оцінок. Спочатку увійдіть і оновіть оцінки.</value>
+  </data>
+  <data name="ErrorMarksChanged" xml:space="preserve">
+    <value>Цю оцінку змінено або видалено під час оновлення. Відкрийте актуальну оцінку, щоб підтвердити її локально.</value>
+  </data>
+  <data name="MarksTitle" xml:space="preserve"><value>Оцінки</value></data>
+  <data name="MarksSubjects" xml:space="preserve"><value>Предмети</value></data>
+  <data name="MarksRecent" xml:space="preserve"><value>Останні оцінки</value></data>
+  <data name="MarksSearch" xml:space="preserve"><value>Шукати предмети або оцінювання</value></data>
+  <data name="MarksAverage" xml:space="preserve"><value>Середня оцінка предмета</value></data>
+  <data name="MarksAssessments" xml:space="preserve"><value>Оцінювання · спочатку найновіші</value></data>
+  <data name="MarksAssessment" xml:space="preserve"><value>Оцінювання</value></data>
+  <data name="MarksCountOne" xml:space="preserve"><value>{0} оцінювання</value></data>
+  <data name="MarksCountFew" xml:space="preserve"><value>{0} оцінювання</value></data>
+  <data name="MarksCountMany" xml:space="preserve"><value>{0} оцінювань</value></data>
+  <data name="MarksNew" xml:space="preserve"><value>Нове або змінене</value></data>
+  <data name="MarksNoData" xml:space="preserve"><value>Оцінки не завантажено. Оновіть оцінки, щоб зберегти офлайн-знімок.</value></data>
+  <data name="MarksNoAccounts" xml:space="preserve"><value>Додайте дитину перед завантаженням оцінок.</value></data>
+  <data name="MarksEmpty" xml:space="preserve"><value>Немає оцінювань у поточному періоді сервера.</value></data>
+  <data name="MarksNoMatches" xml:space="preserve"><value>Немає відповідних предметів або оцінювань. Спробуйте інший пошук.</value></data>
+  <data name="MarksNoSelection" xml:space="preserve"><value>Виберіть предмет або оцінювання.</value></data>
+  <data name="MarksPeriod" xml:space="preserve"><value>Період: {0} – {1}</value></data>
+  <data name="MarksCurrentPeriod" xml:space="preserve"><value>Поточний період, наданий школою</value></data>
+  <data name="MarksWeight" xml:space="preserve"><value>Вага: {0}</value></data>
+  <data name="MarksWeightMissing" xml:space="preserve"><value>Вагу не вказано</value></data>
+  <data name="MarksPoints" xml:space="preserve"><value>Бальне оцінювання</value></data>
+  <data name="MarksDate" xml:space="preserve"><value>Оцінено: {0}</value></data>
+  <data name="MarksEdited" xml:space="preserve"><value>Змінено: {0}</value></data>
+  <data name="MarksTeacher" xml:space="preserve"><value>ID учителя: {0}</value></data>
+  <data name="MarksTopic" xml:space="preserve"><value>Тема: {0}</value></data>
+  <data name="MarksProvisional" xml:space="preserve"><value>Попередня оцінка: {0}</value></data>
+  <data name="MarksLimit" xml:space="preserve"><value>Середні оцінки надає школа, це не прогноз табеля. Нові/змінені оцінки визначаються локально; відкриття не підтверджує оцінку в школі.</value></data>
+  <data name="MarksRefreshing" xml:space="preserve"><value>{0}: оновлення оцінок</value></data>
+  <data name="MarksRefreshSummary" xml:space="preserve"><value>Оцінки оновлено для {0} з {1} облікових записів.</value></data>
+  <data name="MarksPassword" xml:space="preserve"><value>Пароль для {0} (лише для цього оновлення)</value></data>
+  <data name="MarksSynced" xml:space="preserve"><value>Знімок збережено: {0}</value></data>
   <data name="RefreshInterval" xml:space="preserve"><value>Інтервал автоматичного оновлення</value></data>
   <data name="RefreshOff" xml:space="preserve"><value>Вимкнено</value></data>
   <data name="Refresh15Minutes" xml:space="preserve"><value>15 хвилин</value></data>
