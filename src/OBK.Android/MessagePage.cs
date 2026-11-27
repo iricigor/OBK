@@ -168,16 +168,14 @@ internal sealed class MessagePage : ContentPage
                 {
                     var info = card.Info ?? throw new ObkException(SharedStrings.ErrorAttachmentNotDownloaded);
                     var path = await session.ExportAsync(account, attachment);
-                    var file = AttachmentFile(path, info.ContentType);
-                    if (!await Launcher.OpenAsync(new OpenFileRequest(AppStrings.MessageOpenAttachmentChooserTitle, file)))
-                        throw new ObkException(AppStrings.ErrorNoAppForAttachment);
+                    AndroidAttachmentLauncher.Open(path, AttachmentMime.Resolve(attachment.SafeName, info.ContentType));
                 });
                 share.Clicked += async (_, _) => await PerformAsync(async () =>
                 {
                     var info = card.Info ?? throw new ObkException(SharedStrings.ErrorAttachmentNotDownloaded);
                     var path = await session.ExportAsync(account, attachment);
-                    var file = AttachmentFile(path, info.ContentType);
-                    await Share.RequestAsync(new ShareFileRequest(AppStrings.MessageShareAttachmentChooserTitle, new ShareFile(file)));
+                    var file = new ShareFile(path, AttachmentMime.Resolve(attachment.SafeName, info.ContentType));
+                    await Share.RequestAsync(new ShareFileRequest(AppStrings.MessageShareAttachmentChooserTitle, file));
                 });
                 fileActions.Add(open, 0);
                 fileActions.Add(share, 1);
@@ -334,15 +332,6 @@ internal sealed class MessagePage : ContentPage
         open.Clicked += async (_, _) => await PerformAsync(() => openRelated(account, link.Item));
         actions.Add(open);
         return new Grid { MinimumHeightRequest = 48, Children = { card, open } };
-    }
-
-    private static ReadOnlyFile AttachmentFile(string path, string? contentType)
-    {
-        if (string.IsNullOrWhiteSpace(contentType)) return new ReadOnlyFile(path);
-        if (!System.Net.Http.Headers.MediaTypeHeaderValue.TryParse(contentType, out var parsed) ||
-            parsed.MediaType is not { } mime)
-            throw new ObkException(AppStrings.ErrorInvalidAttachmentContentType);
-        return new ReadOnlyFile(path, mime);
     }
 
     private async Task PerformAsync(Func<Task> action)

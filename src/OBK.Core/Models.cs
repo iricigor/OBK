@@ -71,13 +71,7 @@ public sealed class Attachment
 
 public static class FileNames
 {
-    private static readonly HashSet<string> Openable = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".pdf", ".txt", ".csv", ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp",
-        ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp",
-        ".rtf", ".zip"
-    };
-    public static bool CanOpen(string name) => Openable.Contains(Path.GetExtension(name));
+    public static bool CanOpen(string name) => AttachmentMime.IsKnownExtension(name);
     public static string Sanitize(string name)
     {
         name = name.Replace('\\', '/').Split('/')[^1];

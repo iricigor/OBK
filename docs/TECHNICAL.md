@@ -428,9 +428,18 @@ language switching rebuilds this page while retaining the navigation stack.
 Message HTML is parsed into native text rather than loaded into a browser.
 Links open only on an explicit tap. Attachment opening/sharing creates a
 decrypted file in the app-private `attachment-view` cache; these copies are
-deleted on the next app start. Recipient apps and deliberately saved/shared
-copies are outside OBK's control. No Windows `Zone.Identifier` stream is
-created on Android; Windows exports retain that protection.
+deleted on the next app start. **Open** sends Android an `ACTION_VIEW` intent
+for that single file through OBK's dedicated attachment `FileProvider`, with a
+temporary read grant; if no installed app handles it, OBK shows a localized
+error. **Share** uses the system share sheet with the same MIME type. The
+MIME type comes from the filename extension when it is on OBK's openable list
+(which also controls whether **Open** is shown); otherwise OBK uses the
+server's normalized type (parameters such as `charset` removed). It falls back
+to `application/octet-stream` when that type is missing, invalid, generic, or
+risky (HTML, SVG/XML, scripts, APK, executables). Recipient apps and
+deliberately saved/shared copies are outside OBK's control. No Windows
+`Zone.Identifier` stream is created on Android; Windows exports retain that
+protection.
 
 Install the .NET 10 SDK, then the Android workload and its dependencies:
 
@@ -460,7 +469,9 @@ For a connected device, select its serial explicitly:
 ```
 
 Verify school search/sign-in, multiple children, refresh, process restart and
-offline reading, folders/search, attachment opening/sharing, missing-password
+offline reading, folders/search, attachment opening/sharing (a PDF opens in a
+PDF-capable app, and an unsupported type shows an error without crashing),
+missing-password
 and network errors, system Back, dark theme, and enlarged system text.
 Enter real credentials only on the device, never in issue comments or chat.
 

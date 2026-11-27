@@ -32,9 +32,6 @@
   <data name="ErrorEnterUsernameAndPassword" xml:space="preserve">
     <value>Zadejte své školní uživatelské jméno a heslo.</value>
   </data>
-  <data name="ErrorInvalidAttachmentContentType" xml:space="preserve">
-    <value>Příloha má neplatný typ obsahu.</value>
-  </data>
   <data name="ErrorInvalidEncryptedFormat" xml:space="preserve">
     <value>Místní data Androidu mají neplatný šifrovaný formát.</value>
   </data>
@@ -112,10 +109,6 @@
   <data name="MessageOpenAttachment" xml:space="preserve">
     <value>Otevřít přílohu</value>
     <comment>Button that opens an attachment in another app.</comment>
-  </data>
-  <data name="MessageOpenAttachmentChooserTitle" xml:space="preserve">
-    <value>Otevřít přílohu</value>
-    <comment>Title of the Android app chooser shown when opening an attachment.</comment>
   </data>
   <data name="MessagePageTitle" xml:space="preserve">
     <value>Zpráva</value>
