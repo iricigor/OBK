@@ -16,7 +16,7 @@
     <value>Dieses Konto ist nicht mehr gespeichert.</value>
   </data>
   <data name="ErrorApiAccessRejected" xml:space="preserve">
-    <value>API-Zugriff abgelehnt (HTTP {0}). Das Konto oder Token hat möglicherweise keinen Komens-Zugriff.</value>
+    <value>API-Zugriff abgelehnt (HTTP {0}). Das Konto oder Token hat möglicherweise keinen Zugriff auf das angeforderte Modul.</value>
     <comment>{0} = HTTP status code.</comment>
   </data>
   <data name="ErrorApiRequestFailed" xml:space="preserve">
@@ -441,5 +441,20 @@
   </data>
   <data name="DownloadWait" xml:space="preserve">
     <value>Warten, bis die Nachrichten heruntergeladen sind. Sobald die Anhänge starten, können Sie das Lesen im Hintergrund wählen.</value>
+  </data>
+  <data name="ErrorMarksInvalid" xml:space="preserve">
+    <value>Die Notenantwort ist unvollständig oder ungültig. Der vorherige Offline-Datenstand wurde beibehalten.</value>
+  </data>
+  <data name="ErrorMarksCapabilitiesInvalid" xml:space="preserve">
+    <value>Die Notenberechtigungen des Kontos oder die Halbjahresinformationen können nicht gelesen werden.</value>
+  </data>
+  <data name="ErrorMarksUnavailable" xml:space="preserve">
+    <value>Noten sind für dieses Konto nicht verfügbar. Bereits heruntergeladene Noten bleiben offline verfügbar.</value>
+  </data>
+  <data name="ErrorMarksNotDownloaded" xml:space="preserve">
+    <value>Für dieses Konto wurden noch keine Noten heruntergeladen. Melden Sie sich an und aktualisieren Sie zuerst die Noten.</value>
+  </data>
+  <data name="ErrorMarksChanged" xml:space="preserve">
+    <value>Diese Bewertung wurde während der Aktualisierung geändert oder entfernt. Öffnen Sie die aktuelle Bewertung, um sie lokal zu bestätigen.</value>
   </data>
 </root>

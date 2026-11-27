@@ -1,6 +1,7 @@
 # Marks
 
-Implementation is in progress under #93. Marks are not available in the app yet.
+Implementation is in progress under #93. The shared API/storage foundation is
+implemented, but marks are not available in either app's UI yet.
 
 ## Agreed behavior
 
@@ -29,8 +30,31 @@ Komens evaluation classification are outside this implementation.
 
 ## Implementation tasks
 
-- [ ] Typed API and capability responses with malformed-data checks.
-- [ ] Encrypted snapshots and local version acknowledgements.
+- [x] Typed API and capability responses with malformed-data checks.
+- [x] Encrypted snapshots and local version acknowledgements.
 - [ ] Windows Subjects/Recent views and details.
 - [ ] Android Subjects/Recent views and details.
 - [ ] Focused checks, documentation and maintainer verification.
+
+## Shared implementation
+
+`KomensClient.FetchMarksAsync` first checks the account's `ShowMarks` right,
+then retrieves and validates the marks response. `RefreshMarksAsync` saves
+only a successful, validated download. Missing or denied capabilities are
+reported as errors; no empty snapshot is substituted.
+
+`LocalStore.LoadMarks` reads the latest account-scoped snapshot.
+`SaveMarks` stores both marks and acknowledgement versions in an encrypted
+SQLite payload, atomically retaining any previous acknowledgements for
+assessments still present. The initial download is a baseline, even if empty.
+Subsequent arrivals and edits are new until their current version is opened.
+Changes to server unread/confirmation flags alone do not count as edits.
+
+`AcknowledgeMark` requires the exact version the user opened. If a concurrent
+refresh changed or removed it, acknowledgement fails visibly rather than
+marking unseen changes as opened. None of these operations writes to Bakaláři.
+
+The optional semester information is the server's reported current semester,
+not a user-selectable historical period. Unknown API fields are retained in
+the local payload, but only known assessment content participates in local
+change detection. Private payloads are not used in regression fixtures.

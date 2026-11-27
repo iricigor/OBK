@@ -16,7 +16,7 @@
     <value>This account is no longer saved.</value>
   </data>
   <data name="ErrorApiAccessRejected" xml:space="preserve">
-    <value>API access rejected (HTTP {0}). The account or token may not have Komens access.</value>
+    <value>API access rejected (HTTP {0}). The account or token may not have access to the requested module.</value>
     <comment>{0} = HTTP status code.</comment>
   </data>
   <data name="ErrorApiRequestFailed" xml:space="preserve">
@@ -441,5 +441,20 @@
   </data>
   <data name="DownloadWait" xml:space="preserve">
     <value>Wait for messages to download. Once attachments start, you can choose to read in the background.</value>
+  </data>
+  <data name="ErrorMarksInvalid" xml:space="preserve">
+    <value>The marks response is incomplete or invalid. The previous offline snapshot was preserved.</value>
+  </data>
+  <data name="ErrorMarksCapabilitiesInvalid" xml:space="preserve">
+    <value>Cannot read the account's marks permissions or semester information.</value>
+  </data>
+  <data name="ErrorMarksUnavailable" xml:space="preserve">
+    <value>Marks are not available for this account. Any previously downloaded marks remain available offline.</value>
+  </data>
+  <data name="ErrorMarksNotDownloaded" xml:space="preserve">
+    <value>No marks have been downloaded for this account. Sign in and refresh marks first.</value>
+  </data>
+  <data name="ErrorMarksChanged" xml:space="preserve">
+    <value>This assessment changed or was removed during refresh. Open the latest assessment to acknowledge it.</value>
   </data>
 </root>

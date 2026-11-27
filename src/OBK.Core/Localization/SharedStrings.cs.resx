@@ -16,7 +16,7 @@
     <value>Tento účet již není uložen.</value>
   </data>
   <data name="ErrorApiAccessRejected" xml:space="preserve">
-    <value>Přístup k API byl zamítnut (HTTP {0}). Účet nebo token nemusí mít přístup ke Komens.</value>
+    <value>Přístup k API byl zamítnut (HTTP {0}). Účet nebo token nemusí mít přístup k požadovanému modulu.</value>
     <comment>{0} = HTTP status code.</comment>
   </data>
   <data name="ErrorApiRequestFailed" xml:space="preserve">
@@ -441,5 +441,20 @@
   </data>
   <data name="DownloadWait" xml:space="preserve">
     <value>Počkejte na stažení zpráv. Jakmile se začnou stahovat přílohy, můžete zvolit čtení na pozadí.</value>
+  </data>
+  <data name="ErrorMarksInvalid" xml:space="preserve">
+    <value>Odpověď se známkami je neúplná nebo neplatná. Předchozí offline snímek byl zachován.</value>
+  </data>
+  <data name="ErrorMarksCapabilitiesInvalid" xml:space="preserve">
+    <value>Nelze načíst oprávnění účtu ke známkám nebo informace o pololetí.</value>
+  </data>
+  <data name="ErrorMarksUnavailable" xml:space="preserve">
+    <value>Známky nejsou pro tento účet dostupné. Dříve stažené známky zůstávají dostupné offline.</value>
+  </data>
+  <data name="ErrorMarksNotDownloaded" xml:space="preserve">
+    <value>Pro tento účet nebyly staženy žádné známky. Nejprve se přihlaste a obnovte známky.</value>
+  </data>
+  <data name="ErrorMarksChanged" xml:space="preserve">
+    <value>Toto hodnocení bylo během obnovení změněno nebo odstraněno. Pro místní potvrzení otevřete aktuální hodnocení.</value>
   </data>
 </root>
