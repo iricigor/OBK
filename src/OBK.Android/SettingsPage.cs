@@ -12,7 +12,7 @@ internal sealed class SettingsPage : ContentPage
     private readonly Button cancelUpdate = ReaderTheme.Subtle(new Button { Text = AppStrings.ReaderAccountsSheetCancel, IsVisible = false });
     private readonly Label updateStatus = ReaderTheme.Metadata(new Label { Text = AppStrings.UpdateManualNotice });
     private readonly ActivityIndicator updateProgress = new() { IsVisible = false };
-    private readonly SwitchRow checks = CreateSwitchRow(AppStrings.SettingsChecks, AppStrings.SettingsChecksDescription);
+    private readonly Picker refreshInterval = new() { Title = SharedStrings.RefreshInterval, MinimumHeightRequest = 48 };
     private readonly SwitchRow alwaysRefreshAllChildren =
         CreateSwitchRow(AppStrings.SettingsAlwaysRefreshAllChildren, AppStrings.SettingsAlwaysRefreshAllChildrenDescription);
     private readonly SwitchRow notifications = CreateSwitchRow(AppStrings.SettingsNotifications, AppStrings.SettingsNotificationsDescription);
@@ -122,13 +122,16 @@ internal sealed class SettingsPage : ContentPage
         cancelUpdate.Clicked += (_, _) => updateCancellation?.Cancel();
         checkUpdate.CornerRadius = 20;
         checkUpdate.SetAppThemeColor(Button.BorderColorProperty, ReaderTheme.Accent, ReaderTheme.DarkAccent);
-        checks.Toggle.Toggled += (_, args) =>
+        refreshInterval.ItemsSource = RefreshIntervals.Minutes.Select(RefreshIntervals.Label).ToArray();
+        SemanticProperties.SetDescription(refreshInterval, SharedStrings.RefreshInterval);
+        refreshInterval.SelectedIndexChanged += (_, _) =>
         {
-            if (updatingSwitches || args.Value == ReaderPreferences.ScheduledChecks) return;
-            // Turning checks off also saves both notification switches as off; turning them on again leaves those off.
-            ReaderPreferences.ScheduledChecks = args.Value;
-            if (!args.Value) notificationsDenied = false;
-            ScheduledCheck.Schedule(args.Value);
+            if (updatingSwitches || refreshInterval.SelectedIndex < 0) return;
+            var minutes = RefreshIntervals.Minutes[refreshInterval.SelectedIndex];
+            if (minutes == ReaderPreferences.EffectiveRefreshIntervalMinutes) return;
+            ReaderPreferences.SetRefreshInterval(minutes);
+            if (minutes == 0) notificationsDenied = false;
+            ScheduledCheck.Schedule(ReaderPreferences.ScheduledChecks);
             UpdateChecks();
         };
         notifications.Toggle.Toggled += async (_, args) =>
@@ -173,7 +176,8 @@ internal sealed class SettingsPage : ContentPage
                         RowTitle(AppStrings.SettingsListDensity, AppStrings.SettingsListDensityDescription), density),
                     Section(AppStrings.SettingsRefresh, alwaysRefreshAllChildren.View),
                     Section(AppStrings.SettingsSectionChecks,
-                        checks.View, new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
+                        RowTitle(SharedStrings.RefreshInterval, AppStrings.SettingsChecksDescription), refreshInterval,
+                        new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
                         notifications.View, notificationsBlocked, new BoxView { HeightRequest = 1, Margin = new Thickness(0, 8) },
                         emptyNotifications.View, ReaderTheme.Metadata(new Label { Text = AppStrings.SettingsChecksNote, FontSize = 12 })),
                     Section(AppStrings.UpdateHeading,
@@ -266,7 +270,7 @@ internal sealed class SettingsPage : ContentPage
         var checking = ReaderPreferences.ScheduledChecks;
         var notifying = ReaderPreferences.CheckNotifications && allowed;
         updatingSwitches = true;
-        checks.Toggle.IsToggled = checking;
+        refreshInterval.SelectedIndex = RefreshIntervals.Minutes.ToList().IndexOf(ReaderPreferences.EffectiveRefreshIntervalMinutes);
         notifications.Toggle.IsToggled = notifying;
         emptyNotifications.Toggle.IsToggled = notifying && ReaderPreferences.EmptyCheckNotifications;
         updatingSwitches = false;

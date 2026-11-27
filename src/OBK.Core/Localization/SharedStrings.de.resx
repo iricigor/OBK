@@ -442,6 +442,14 @@
   <data name="DownloadWait" xml:space="preserve">
     <value>Warten, bis die Nachrichten heruntergeladen sind. Sobald die Anhänge starten, können Sie das Lesen im Hintergrund wählen.</value>
   </data>
+  <data name="RefreshInterval" xml:space="preserve"><value>Automatisches Aktualisierungsintervall</value></data>
+  <data name="RefreshOff" xml:space="preserve"><value>Aus</value></data>
+  <data name="Refresh15Minutes" xml:space="preserve"><value>15 Minuten</value></data>
+  <data name="Refresh30Minutes" xml:space="preserve"><value>30 Minuten</value></data>
+  <data name="Refresh1Hour" xml:space="preserve"><value>1 Stunde</value></data>
+  <data name="Refresh4Hours" xml:space="preserve"><value>4 Stunden</value></data>
+  <data name="Refresh24Hours" xml:space="preserve"><value>24 Stunden</value></data>
+  <data name="ErrorRefreshInterval" xml:space="preserve"><value>Das Aktualisierungsintervall ist ungültig. Wählen Sie ein Intervall in den Einstellungen.</value></data>
   <data name="HelpMenuName" xml:space="preserve">
     <value>Hilfe und Feedback</value>
   </data>

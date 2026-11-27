@@ -442,6 +442,14 @@
   <data name="DownloadWait" xml:space="preserve">
     <value>Зачекайте, поки завантажаться повідомлення. Коли почнеться завантаження вкладень, можна вибрати читання у фоновому режимі.</value>
   </data>
+  <data name="RefreshInterval" xml:space="preserve"><value>Інтервал автоматичного оновлення</value></data>
+  <data name="RefreshOff" xml:space="preserve"><value>Вимкнено</value></data>
+  <data name="Refresh15Minutes" xml:space="preserve"><value>15 хвилин</value></data>
+  <data name="Refresh30Minutes" xml:space="preserve"><value>30 хвилин</value></data>
+  <data name="Refresh1Hour" xml:space="preserve"><value>1 година</value></data>
+  <data name="Refresh4Hours" xml:space="preserve"><value>4 години</value></data>
+  <data name="Refresh24Hours" xml:space="preserve"><value>24 години</value></data>
+  <data name="ErrorRefreshInterval" xml:space="preserve"><value>Інтервал оновлення недійсний. Виберіть один з інтервалів у Налаштуваннях.</value></data>
   <data name="HelpMenuName" xml:space="preserve">
     <value>Довідка та відгуки</value>
   </data>

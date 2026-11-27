@@ -326,6 +326,8 @@ public sealed class PresentationTests
                     Assert.Equal(Colors.White, ((SolidColorBrush)surface.Background).Color);
                     var settingsPath = Path.Combine(directory, "appearance.json");
                     Assert.False(theme.AlwaysRefreshAllChildren);
+                    Assert.Equal(0, theme.RefreshIntervalMinutes);
+                    await theme.SetRefreshIntervalAsync(240);
                     await theme.SetAlwaysRefreshAllChildrenAsync(true);
                     await theme.SetReadingSizeAsync("Large");
                     await theme.SetListDensityAsync("Compact");
@@ -342,6 +344,10 @@ public sealed class PresentationTests
                     Assert.True(restored.IsLargeText && restored.IsCompactList && restored.IsLight);
                     Assert.False(restored.AllChildren);
                     Assert.True(restored.AlwaysRefreshAllChildren);
+                    Assert.Equal(240, restored.RefreshIntervalMinutes);
+                    await Task.WhenAll(theme.SetRefreshIntervalAsync(15), theme.SetRefreshIntervalAsync(60), theme.SetRefreshIntervalAsync(1440));
+                    await restored.InitializeAsync();
+                    Assert.Equal(1440, restored.RefreshIntervalMinutes);
                     Assert.True(refreshSetting.IsChecked);
                     await restored.SetAlwaysRefreshAllChildrenAsync(false);
                     await theme.InitializeAsync();
@@ -351,9 +357,13 @@ public sealed class PresentationTests
                     Assert.True(restored.IsMediumText && restored.IsRelaxedList);
                     Assert.Null(restored.AllChildren);
                     Assert.False(restored.AlwaysRefreshAllChildren);
+                    Assert.Equal(0, restored.RefreshIntervalMinutes);
                     Assert.False(refreshSetting.IsChecked);
                     Assert.Equal(14.0, (double)application.Resources["ReaderBodySize"]);
                     await Assert.ThrowsAsync<ObkException>(() => restored.SetReadingSizeAsync("huge"));
+                    await Assert.ThrowsAsync<ObkException>(() => restored.SetRefreshIntervalAsync(5));
+                    await File.WriteAllTextAsync(settingsPath, "{\"Theme\":\"Light\",\"RefreshIntervalMinutes\":5}");
+                    await Assert.ThrowsAsync<ObkException>(() => restored.InitializeAsync());
                     await File.WriteAllTextAsync(settingsPath, "{\"Theme\":\"invalid\"}");
                     await Assert.ThrowsAsync<ObkException>(() => theme.InitializeAsync());
                     window.Close();
@@ -377,6 +387,36 @@ public sealed class PresentationTests
                         main.Show();
                         await main.InitializeAsync();
                         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                        var intervalBox = (ComboBox)main.FindName("RefreshIntervalBox");
+                        var automaticTimer = (DispatcherTimer)typeof(MainWindow)
+                            .GetField("automaticRefresh", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                            .GetValue(main)!;
+                        Assert.Equal(0, intervalBox.SelectedValue);
+                        Assert.False(automaticTimer.IsEnabled);
+                        foreach (var minutes in new[] { 15, 30, 60, 240, 1440 })
+                        {
+                            await main.ViewModel.Theme.SetRefreshIntervalAsync(minutes);
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                            Assert.Equal(minutes, intervalBox.SelectedValue);
+                            Assert.Equal(TimeSpan.FromMinutes(minutes), automaticTimer.Interval);
+                            Assert.True(automaticTimer.IsEnabled);
+                        }
+                        Assert.Empty(store.RememberedLogins());
+                        var tickCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                        void RefreshCompleted(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+                        {
+                            if (args.PropertyName == nameof(MainViewModel.IsSyncing) && !main.ViewModel.IsSyncing)
+                                tickCompleted.TrySetResult();
+                        }
+                        main.ViewModel.PropertyChanged += RefreshCompleted;
+                        automaticTimer.Interval = TimeSpan.FromMilliseconds(50);
+                        await tickCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                        main.ViewModel.PropertyChanged -= RefreshCompleted;
+                        Assert.Contains("Sign in needed", main.ViewModel.Status);
+                        intervalBox.SelectedValue = 0;
+                        Assert.Equal(0, main.ViewModel.Theme.RefreshIntervalMinutes);
+                        Assert.False(automaticTimer.IsEnabled);
+                        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                         void AssertRepositoryLink()
                         {
                             main.ViewModel.OpenSettingsCommand.Execute(null);
@@ -395,6 +435,9 @@ public sealed class PresentationTests
                         AssertRepositoryLink();
                         async Task AssertHelpMenuAsync()
                         {
+                            await main.ViewModel.FolderReady;
+                            await main.ViewModel.MessageReady;
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                             main.UpdateLayout();
                             var button = (Button)main.FindName("HelpButton");
                             var status = (TextBlock)main.FindName("Status");
@@ -740,6 +783,7 @@ public sealed class PresentationTests
                         main.ViewModel.OpenSettingsCommand.Execute(null);
                         ((Expander)main.FindName("RefreshSection")).IsExpanded = true;
                         await appearance.SetAlwaysRefreshAllChildrenAsync(true);
+                        await appearance.SetRefreshIntervalAsync(60);
                         foreach (var name in new[] { "Messages", "FolderList" })
                         {
                             var list = (ListBox)main.FindName(name);
@@ -751,6 +795,13 @@ public sealed class PresentationTests
                             list.IsEnabled = true;
                         }
                         main = await ClickLanguageAsync(main);
+                        Assert.False(automaticTimer.IsEnabled, "The old window must not keep a duplicate refresh timer.");
+                        var replacementTimer = (DispatcherTimer)typeof(MainWindow)
+                            .GetField("automaticRefresh", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                            .GetValue(main)!;
+                        Assert.True(replacementTimer.IsEnabled);
+                        Assert.Equal(TimeSpan.FromHours(1), replacementTimer.Interval);
+                        Assert.Equal(60, ((ComboBox)main.FindName("RefreshIntervalBox")).SelectedValue);
                         Assert.Equal("cs", LanguageSettings.Code);
                         Assert.Equal("CS", ((TextBlock)main.FindName("LanguageCodeText")).Text);
                         Assert.True(main.ViewModel.SettingsOpen);
@@ -797,7 +848,14 @@ public sealed class PresentationTests
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Equal("1.5 MB", AttachmentRow.FormatSize(1572864));
                     }
-                    finally { main.Close(); }
+                    finally
+                    {
+                        var closingTimer = (DispatcherTimer)typeof(MainWindow)
+                            .GetField("automaticRefresh", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                            .GetValue(main)!;
+                        main.Close();
+                        Assert.False(closingTimer.IsEnabled);
+                    }
                     completion.SetResult();
                 }
                 catch (Exception error)

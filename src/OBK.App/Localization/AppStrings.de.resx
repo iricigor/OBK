@@ -1014,4 +1014,5 @@ Aktualisieren, um die Schule zu prüfen.</value>
     <value>{0} • Noch nicht heruntergeladen: {1}</value>
     <comment>{0} = archive status for all children; {1} = comma-separated names of children whose archive has not been downloaded yet.</comment>
   </data>
+  <data name="SettingsRefreshIntervalDescription" xml:space="preserve"><value>Ausgewählte Kinder aktualisieren, während OBK läuft. Erfordert gespeicherte Passwörter.</value></data>
 </root>

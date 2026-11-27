@@ -555,7 +555,7 @@
     <value>Kontrolovat nové zprávy</value>
   </data>
   <data name="SettingsChecksDescription" xml:space="preserve">
-    <value>Každou hodinu, i když je aplikace OBK zavřená</value>
+    <value>Kontrolovat všechny děti na pozadí, i když je OBK zavřené. Volba Vypnuto vypne automatické kontroly.</value>
   </data>
   <data name="SettingsNotifications" xml:space="preserve">
     <value>Oznámení o nových zprávách</value>

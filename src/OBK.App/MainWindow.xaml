@@ -805,18 +805,30 @@
                                 </StackPanel>
                             </Grid>
                         </Expander.Header>
-                        <Grid Margin="72,14,20,14">
-                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
-                                <TextBlock Text="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildren}" FontSize="13.5"/>
-                                <TextBlock Text="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildrenDescription}" FontSize="12"
-                                           Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                        <StackPanel>
+                            <Grid Margin="72,14,20,14">
+                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildren}" FontSize="13.5"/>
+                                    <TextBlock Text="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildrenDescription}" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <CheckBox Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Theme.AlwaysRefreshAllChildren, Mode=OneWay}"
+                                          Command="{Binding ToggleAlwaysRefreshAllChildrenCommand}"
+                                          ToolTip="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildrenDescription}"
+                                          AutomationProperties.Name="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildren}"/>
+                            </Grid>
+                            <Border Height="1" Background="{DynamicResource Stroke}" Margin="20,0"/>
+                            <StackPanel Margin="72,14,20,14">
+                                <TextBlock Text="{x:Static shared:SharedStrings.RefreshInterval}" FontSize="13.5" TextWrapping="Wrap"/>
+                                <TextBlock Text="{x:Static loc:AppStrings.SettingsRefreshIntervalDescription}" FontSize="12"
+                                           Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,8" TextWrapping="Wrap"/>
+                                <ComboBox x:Name="RefreshIntervalBox" ItemsSource="{Binding RefreshIntervalOptions}"
+                                          SelectedValuePath="Value" SelectedValue="{Binding Theme.RefreshIntervalMinutes, Mode=OneWay}"
+                                          SelectionChanged="RefreshIntervalChanged" MinHeight="32" MinWidth="160" MaxWidth="240" HorizontalAlignment="Left"
+                                          AutomationProperties.Name="{x:Static shared:SharedStrings.RefreshInterval}"/>
                             </StackPanel>
-                            <CheckBox Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Theme.AlwaysRefreshAllChildren, Mode=OneWay}"
-                                      Command="{Binding ToggleAlwaysRefreshAllChildrenCommand}"
-                                      ToolTip="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildrenDescription}"
-                                      AutomationProperties.Name="{x:Static loc:AppStrings.SettingsAlwaysRefreshAllChildren}"/>
-                        </Grid>
+                        </StackPanel>
                     </Expander>
 
                     <Expander x:Name="AccountsSection" Style="{StaticResource SettingsExpander}" AutomationProperties.Name="{x:Static loc:AppStrings.SettingsAccounts}">

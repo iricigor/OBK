@@ -252,6 +252,19 @@ public sealed class ReaderScopeTests
         if (allChildren) await vm.SelectAllChildrenAsync();
         await vm.Theme.SetAlwaysRefreshAllChildrenAsync(alwaysRefreshAll);
 
+        var automatic = vm.RefreshAllAsync(automatic: true);
+        Assert.True(vm.IsSyncing, "The refresh guard is acquired before the first asynchronous store read.");
+        await vm.RefreshAllAsync(automatic: true);
+        await vm.RefreshAllAsync();
+        await automatic;
+        await SettleAsync(vm);
+        Assert.Empty(prompts);
+        Assert.Contains("Tomáš", vm.Status);
+        if (allChildren || alwaysRefreshAll) Assert.Contains("Anna", vm.Status);
+        else Assert.DoesNotContain("Anna", vm.Status);
+        Assert.False(vm.IsSyncing);
+        Assert.False(vm.GoodStatus);
+
         await vm.RefreshAllAsync();
         await SettleAsync(vm);
 
