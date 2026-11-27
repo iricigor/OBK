@@ -12,15 +12,18 @@ internal sealed record CheckArrival(Message Message, string Folder);
 
 /// <summary>Localized notification templates, passed in so the composition does not depend on Android resources.</summary>
 internal sealed record CheckTexts(
-    string NewOne, string NewFew, string NewMany, string Arrival, string MoreOne, string MoreFew, string MoreMany,
+    string NewOne, string NewFew, string NewMany, string Arrival, string ArrivalFrom, string MoreOne, string MoreFew, string MoreMany,
     string NotCheckedSignIn, string NotCheckedFailed, string NoNewTitle, string NotCheckedTitle, string Checked, string ListAnd);
 
 /// <summary>A notification line; <paramref name="Child"/> is the child label it starts with, shown in bold.</summary>
 internal sealed record CheckLine(string Text, string? Child = null);
 
-/// <summary>An arrival summary, or (<paramref name="IsStatus"/>) an empty-run status that replaces the previous one.</summary>
+/// <summary>
+/// An arrival summary, or (<paramref name="IsStatus"/>) an empty-run status that replaces the previous one.
+/// <paramref name="PublicTitle"/> names no child, sender, or subject; <paramref name="When"/> is the newest arrival's time.
+/// </summary>
 internal sealed record CheckNotification(bool IsStatus, string Title, IReadOnlyList<CheckLine> Lines,
-    NotificationDestination Destination);
+    NotificationDestination Destination, string PublicTitle, DateTimeOffset? When = null);
 
 internal static class ScheduledCheckReport
 {
@@ -48,7 +51,8 @@ internal static class ScheduledCheckReport
 
     /// <summary>
     /// One summary of every child's arrivals, newest first, followed by the children that could not be checked.
-    /// Without arrivals, a status only when <paramref name="reportEmpty"/> is set; null when nothing should be posted.
+    /// A single arrival is titled with its child and sender, above its subject. Without arrivals, a status only
+    /// when <paramref name="reportEmpty"/> is set; null when nothing should be posted.
     /// </summary>
     internal static CheckNotification? Compose(IReadOnlyList<ChildCheck> checks, bool reportEmpty, string time, CheckTexts texts)
     {
@@ -61,25 +65,39 @@ internal static class ScheduledCheckReport
             .OrderByDescending(arrival => arrival.Message.Date).ToList();
         if (arrivals.Count > 0)
         {
-            var shown = arrivals.Count <= MaxArrivalLines ? arrivals.Count : MaxArrivalLines - 1;
-            var lines = arrivals.Take(shown)
-                .Select(arrival => new CheckLine(Localized.Format(texts.Arrival, arrival.Child, OneLine(arrival.Message.Title)), arrival.Child))
-                .ToList();
-            if (shown < arrivals.Count)
-                lines.Add(new CheckLine(Localized.Plural(arrivals.Count - shown, texts.MoreOne, texts.MoreFew, texts.MoreMany)));
+            var count = Localized.Plural(arrivals.Count, texts.NewOne, texts.NewFew, texts.NewMany);
+            var title = count;
+            List<CheckLine> lines;
+            if (arrivals.Count == 1)
+            {
+                var (child, message, _) = arrivals[0];
+                var sender = OneLine(message.SenderName);
+                title = sender.Length > 0 ? Localized.Format(texts.Arrival, child, sender) : child;
+                lines = [new CheckLine(OneLine(message.Title))];
+            }
+            else
+            {
+                var shown = arrivals.Count <= MaxArrivalLines ? arrivals.Count : MaxArrivalLines - 1;
+                lines = arrivals.Take(shown).Select(arrival => new CheckLine(OneLine(arrival.Message.SenderName) is { Length: > 0 } sender
+                        ? Localized.Format(texts.ArrivalFrom, arrival.Child, sender, OneLine(arrival.Message.Title))
+                        : Localized.Format(texts.Arrival, arrival.Child, OneLine(arrival.Message.Title)), arrival.Child))
+                    .ToList();
+                if (shown < arrivals.Count)
+                    lines.Add(new CheckLine(Localized.Plural(arrivals.Count - shown, texts.MoreOne, texts.MoreFew, texts.MoreMany)));
+            }
             var destination = new NotificationDestination(
                 checks.Where(check => check.Arrivals.Count > 0).Select(check => NotificationDestination.AccountId(check.Account))
                     .Distinct(StringComparer.Ordinal).ToArray(),
                 arrivals.Any(arrival => arrival.Folder == "received") ? "received" : "noticeboard");
-            return new(false, Localized.Plural(arrivals.Count, texts.NewOne, texts.NewFew, texts.NewMany),
-                [.. lines, .. notChecked], destination);
+            return new(false, title, [.. lines, .. notChecked], destination, count, arrivals[0].Message.Date);
         }
         if (!reportEmpty || checks.Count == 0) return null;
         var checkedChildren = checks.Where(check => check.Outcome == CheckOutcome.Checked).Select(check => check.Child).ToList();
-        if (checkedChildren.Count == 0) return new(true, texts.NotCheckedTitle, notChecked, NotificationDestination.AllInbox);
+        if (checkedChildren.Count == 0)
+            return new(true, texts.NotCheckedTitle, notChecked, NotificationDestination.AllInbox, texts.NotCheckedTitle);
         return new(true, texts.NoNewTitle,
             [new CheckLine(Localized.Format(texts.Checked, Names(checkedChildren, texts.ListAnd), time)), .. notChecked],
-            NotificationDestination.AllInbox);
+            NotificationDestination.AllInbox, texts.NoNewTitle);
     }
 
     private static string Names(IReadOnlyList<string> names, string and) => names.Count == 1 ? names[0] :

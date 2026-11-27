@@ -10,14 +10,15 @@ namespace OBK.Tests;
 public sealed class ScheduledCheckReportTests
 {
     private static readonly CheckTexts English = new(
-        "{0} new message", "{0} new messages", "{0} new messages", "{0} · {1}", "+{0} more", "+{0} more", "+{0} more",
+        "{0} new message", "{0} new messages", "{0} new messages", "{0} · {1}", "{0} · {1}: {2}", "+{0} more", "+{0} more", "+{0} more",
         "Not checked: {0} (sign-in needed)", "Not checked: {0} (check failed)", "No new messages",
         "Messages were not checked", "Checked {0} at {1}.", "{0} and {1}");
 
-    private static Message Make(string id, int hour = 9) => new()
+    private static Message Make(string id, int hour = 9, string? sender = null) => new()
     {
         Id = id, Title = "Subject " + id, Text = "", Attachments = [],
-        SentDate = new DateTimeOffset(2026, 11, 25, hour, 0, 0, TimeSpan.FromHours(1)).ToString("O")
+        SentDate = new DateTimeOffset(2026, 11, 25, hour, 0, 0, TimeSpan.FromHours(1)).ToString("O"),
+        Sender = sender is null ? default : System.Text.Json.JsonSerializer.SerializeToElement(new { Name = sender })
     };
 
     private static Dictionary<string, List<Message>> Archive(string[] received, string[]? noticeboard = null, string[]? sent = null)
@@ -73,6 +74,8 @@ public sealed class ScheduledCheckReportTests
         ], reportEmpty: false, "16:05", English))!;
         Assert.False(notification.IsStatus);
         Assert.Equal("3 new messages", notification.Title);
+        Assert.Equal("3 new messages", notification.PublicTitle);
+        Assert.Equal(new DateTimeOffset(2026, 11, 25, 11, 0, 0, TimeSpan.FromHours(1)), notification.When);
         Assert.Equal(["Anna · Subject a2", "Tomáš · Subject t1", "Anna · Subject a1",
             "Not checked: Eliška (sign-in needed)", "Not checked: Petr (check failed)"], notification.Lines.Select(line => line.Text));
         Assert.Equal(["Anna", "Tomáš", "Anna", null, null], notification.Lines.Select(line => line.Child));
@@ -111,12 +114,37 @@ public sealed class ScheduledCheckReportTests
     }
 
     [Fact]
+    public void SingleArrivalShowsChildAndSenderAboveTheSubjectButNotOnTheLockScreen()
+    {
+        var notification = InEnglish(() => ScheduledCheckReport.Compose(
+        [
+            Check("Marko", CheckOutcome.Checked, [new CheckArrival(Make("m", sender: "Veronika  Lachnitová"), "received")]),
+            Check("Petr", CheckOutcome.Failed, [])
+        ], false, "16:05", English))!;
+        Assert.Equal("Marko · Veronika Lachnitová", notification.Title);
+        Assert.Equal("1 new message", notification.PublicTitle);
+        Assert.Equal(["Subject m", "Not checked: Petr (check failed)"], notification.Lines.Select(line => line.Text));
+        var anonymous = InEnglish(() => ScheduledCheckReport.Compose(
+            [Check("Marko", CheckOutcome.Checked, [Arrival("m")])], false, "16:05", English))!;
+        Assert.Equal("Marko", anonymous.Title);
+    }
+
+    [Fact]
+    public void SeveralArrivalsListSendersWhenSupplied()
+    {
+        var notification = InEnglish(() => ScheduledCheckReport.Compose(
+            [Check("Anna", CheckOutcome.Checked, [new CheckArrival(Make("a", 10, "Eva Novak"), "received"), Arrival("b", 9)])],
+            false, "16:05", English))!;
+        Assert.Equal(["Anna · Eva Novak: Subject a", "Anna · Subject b"], notification.Lines.Select(line => line.Text));
+    }
+
+    [Fact]
     public void SummaryTitleUsesTheLanguagesPluralForms()
     {
         var czech = English with { NewOne = "{0} nová zpráva", NewFew = "{0} nové zprávy", NewMany = "{0} nových zpráv" };
         string Title(int count) => ScheduledCheckReport.Compose(
             [Check("Anna", CheckOutcome.Checked, Enumerable.Range(1, count).Select(hour => Arrival("m" + hour, hour)).ToArray())],
-            false, "16:05", czech)!.Title;
+            false, "16:05", czech)!.PublicTitle;
         var original = SharedStrings.Culture;
         SharedStrings.Culture = CultureInfo.GetCultureInfo("cs");
         try

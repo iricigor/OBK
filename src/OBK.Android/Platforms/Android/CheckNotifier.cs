@@ -71,8 +71,14 @@ internal static class CheckNotifier
         var style = new NotificationCompat.InboxStyle();
         foreach (var line in notification.Lines) style.AddLine(Styled(line));
         // Shown instead on a lock screen that hides sensitive content: the title, without children or subjects.
-        var lockScreen = Builder(channel, notification.Title, open);
+        var lockScreen = Builder(channel, notification.PublicTitle, open);
         var builder = Builder(channel, notification.Title, open);
+        if (notification.When is { } when)
+            foreach (var each in new[] { lockScreen, builder })
+            {
+                each.SetWhen(when.ToUnixTimeMilliseconds());
+                each.SetShowWhen(true);
+            }
         using var avatar = notification.IsStatus ? null : NotificationAvatar.Create(
             checks.Select(check => check.Account).ToArray(),
             notification.Destination.AccountIds.Count == 1
@@ -143,7 +149,7 @@ internal static class CheckNotifier
 
     private static CheckTexts Texts() => new(
         AppStrings.NotificationNewMessagesOne, AppStrings.NotificationNewMessagesFew, AppStrings.NotificationNewMessagesMany,
-        AppStrings.NotificationArrival, AppStrings.NotificationMoreOne, AppStrings.NotificationMoreFew, AppStrings.NotificationMoreMany,
+        AppStrings.NotificationArrival, AppStrings.NotificationArrivalFrom, AppStrings.NotificationMoreOne, AppStrings.NotificationMoreFew, AppStrings.NotificationMoreMany,
         AppStrings.NotificationNotCheckedSignIn, AppStrings.NotificationNotCheckedFailed, AppStrings.NotificationNoNewTitle,
         AppStrings.NotificationNotCheckedTitle, AppStrings.NotificationChecked, AppStrings.NotificationListAnd);
 }

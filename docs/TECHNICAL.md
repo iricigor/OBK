@@ -538,14 +538,18 @@ load, and announces nothing. A running app reloads its archives from the device
 after a check that changed them.
 
 With notifications on, a check with arrivals posts one summary for all children
-on the **New messages** channel. It has a plural-aware title and up to five
-`Child · Subject` lines, newest first; when more arrived, the last line reads
-`+N more`. Children that could not be checked follow (sign-in needed or check
-failed). Each summary has its own ID, so earlier ones remain. With **Also notify
+on the **New messages** channel. A single arrival is titled `Child · Sender`
+(only the child when no sender is supplied) with its subject as text. Several
+arrivals have a plural-aware title and up to five `Child · Sender: Subject` lines
+(`Child · Subject` without a sender), newest first; when more arrived, the last
+line reads `+N more`. Children that could not be checked follow (sign-in needed
+or check failed). The notification time is the newest arrival's sent time. Each
+summary has its own ID, so earlier ones remain. With **Also notify
 when nothing is new**, a check without arrivals instead posts a status on the
 low-importance **Check status** channel, replacing the previous status. Texts use
-the saved interface language. Lines contain message subjects; lock screens set to
-hide sensitive content show only the title, without an avatar.
+the saved interface language. Titles and lines contain child names, senders, and
+subjects; lock screens set to hide sensitive content show only the plural-aware
+count title, without an avatar.
 
 The monochrome OBK small/status-bar icon stays unchanged. Arrival notifications
 also show a large icon rendered from the reader's existing initials, account
