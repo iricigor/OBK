@@ -461,6 +461,9 @@
   <data name="UpdateReady" xml:space="preserve"><value>Оновлення перевірено. Підтвердьте встановлення в Android.</value></data>
   <data name="UpdateInstall" xml:space="preserve"><value>Установити оновлення</value></data>
   <data name="UpdateNotInstalled" xml:space="preserve"><value>Оновлення не встановлено. Натисніть «Установити оновлення», щоб повторити спробу; автономні дані не змінено.</value></data>
+  <data name="UpdateAutoBlockerTitle" xml:space="preserve"><value>Перевірити Auto Blocker</value></data>
+  <data name="UpdateAutoBlockerExplanation" xml:space="preserve"><value>Оновлення не встановлено. На телефонах Samsung Auto Blocker може блокувати це оновлення. Перевірте Налаштування &gt; Безпека та конфіденційність &gt; Auto Blocker. Відкрити налаштування безпеки Android?</value></data>
+  <data name="UpdateAutoBlockerInstructions" xml:space="preserve"><value>Не вдалося відкрити параметри Android. Відкрийте Налаштування вручну та на телефонах Samsung перевірте Налаштування &gt; Безпека та конфіденційність &gt; Auto Blocker. Поверніться до OBK, щоб повторити встановлення перевіреного оновлення.</value></data>
   <data name="UpdateCancelled" xml:space="preserve"><value>Оновлення скасовано. Можете спробувати ще раз.</value></data>
   <data name="UpdateFailedTitle" xml:space="preserve"><value>Не вдалося оновити OBK</value></data>
   <data name="UpdateInvalidInstalledVersion" xml:space="preserve"><value>Установлена версія застосунку некоректна. Зверніться по допомогу, перш ніж оновлювати.</value></data>

@@ -6,6 +6,13 @@ using OBK.Core;
 
 namespace OBK.AndroidApp;
 
+internal enum AndroidUpdateResult
+{
+    Installed,
+    NotInstalled,
+    PermissionDeclined
+}
+
 internal static class AndroidUpdateInstaller
 {
     internal static Version InstalledVersion =>
@@ -32,7 +39,7 @@ internal static class AndroidUpdateInstaller
             throw new ObkException(AppStrings.UpdateIncompatibleSigner);
     }
 
-    internal static async Task<bool> InstallAsync(string path, AvailableUpdate update, Func<Task<bool>> explainPermission)
+    internal static async Task<AndroidUpdateResult> InstallAsync(string path, AvailableUpdate update, Func<Task<bool>> explainPermission)
     {
         Validate(path, update);
         var activity = Platform.CurrentActivity as MainActivity ?? throw new ObkException(AppStrings.UpdateInstallerUnavailable);
@@ -40,7 +47,7 @@ internal static class AndroidUpdateInstaller
         {
             if (!activity.PackageManager!.CanRequestPackageInstalls())
             {
-                if (!await explainPermission()) return false;
+                if (!await explainPermission()) return AndroidUpdateResult.PermissionDeclined;
                 using var permission = new Intent(global::Android.Provider.Settings.ActionManageUnknownAppSources,
                     global::Android.Net.Uri.Parse($"package:{activity.PackageName}"));
                 await activity.RunForResultAsync(permission);
@@ -56,11 +63,34 @@ internal static class AndroidUpdateInstaller
             intent.AddFlags(ActivityFlags.GrantReadUriPermission);
             intent.PutExtra(Intent.ExtraReturnResult, true);
             await activity.RunForResultAsync(intent);
-            return InstalledVersion >= update.Version;
+            return InstalledVersion >= update.Version
+                ? AndroidUpdateResult.Installed
+                : AndroidUpdateResult.NotInstalled;
         }
         catch (Exception error) when (error is ActivityNotFoundException or Java.Lang.SecurityException or Java.Lang.IllegalArgumentException)
         {
             throw new ObkException(AppStrings.UpdateInstallerUnavailable, error);
+        }
+    }
+
+    internal static bool OpenSecuritySettings()
+    {
+        if (Platform.CurrentActivity is not MainActivity activity) return false;
+        return TryOpenSettings(activity, global::Android.Provider.Settings.ActionSecuritySettings) ||
+            TryOpenSettings(activity, global::Android.Provider.Settings.ActionSettings);
+    }
+
+    private static bool TryOpenSettings(MainActivity activity, string action)
+    {
+        using var intent = new Intent(action);
+        try
+        {
+            activity.StartActivity(intent);
+            return true;
+        }
+        catch (Exception error) when (error is ActivityNotFoundException or Java.Lang.SecurityException or Java.Lang.IllegalArgumentException)
+        {
+            return false;
         }
     }
 }

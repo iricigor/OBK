@@ -726,9 +726,10 @@ language switching is blocked during an update action.
 
 Before merge, verify on Android 10+ in both themes and languages: manual check,
 offline/error recovery, cancelled download, incompatible-preview rejection,
-installation-source permission denial, installer cancellation and successful
-compatible update with accounts/offline data preserved. The live latest-release
-endpoint cannot see unpublished draft assets. Pre-merge production-key verification
+installation-source permission denial, installer cancellation and the Auto Blocker
+recovery prompt (including Settings fallback), and successful compatible update
+with accounts/offline data preserved. The live latest-release endpoint cannot see
+unpublished draft assets. Pre-merge production-key verification
 must therefore include manual installation of staged signed APKs; full in-app
 update verification between published compatible versions follows publication.
 Do not publish an unreviewed branch or replace the production signing key for testing.
