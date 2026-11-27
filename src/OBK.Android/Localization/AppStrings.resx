@@ -579,14 +579,14 @@
   </data>
   <data name="SettingsSectionChecks" xml:space="preserve">
     <value>Scheduled checks</value>
-    <comment>Settings section for hourly background checks and their notifications.</comment>
+    <comment>Settings section for periodic background checks and their notifications.</comment>
   </data>
   <data name="SettingsChecks" xml:space="preserve">
     <value>Check for new messages</value>
-    <comment>Switch that turns hourly background checks on.</comment>
+    <comment>Legacy label for enabling background checks.</comment>
   </data>
   <data name="SettingsChecksDescription" xml:space="preserve">
-    <value>Every hour, also while OBK is closed</value>
+    <value>Check all children in the background, also while OBK is closed. Off disables automatic checks.</value>
   </data>
   <data name="SettingsNotifications" xml:space="preserve">
     <value>New-message notifications</value>

@@ -2,7 +2,7 @@
 
 [Back to README](../README.md#install)
 
-The Android reader supports sign-in, multiple children, refresh, optional hourly
+The Android reader supports sign-in, multiple children, refresh, configurable background
 checks with new-message notifications, offline folders and search, and opening or
 sharing downloaded attachments. It requires Android 10 or later and is currently
 a preview. Notification permission is requested only when you turn on

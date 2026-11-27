@@ -558,7 +558,7 @@
     <value>Перевіряти нові повідомлення</value>
   </data>
   <data name="SettingsChecksDescription" xml:space="preserve">
-    <value>Щогодини, навіть коли OBK закрито</value>
+    <value>Перевіряти всіх дітей у фоновому режимі, навіть коли OBK закрито. Вимкнено зупиняє автоматичні перевірки.</value>
   </data>
   <data name="SettingsNotifications" xml:space="preserve">
     <value>Сповіщення про нові повідомлення</value>

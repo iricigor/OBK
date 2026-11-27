@@ -58,6 +58,7 @@ Subject notes, provisional grades and the snapshot time appear in details.
 
 Use **Refresh** within Marks to download marks. The existing message refresh,
 initial sign-in download and scheduled checks still download Komens only.
+Automatic checks remain Komens-only even while the Marks view is open.
 The **Always refresh all children** preference also applies to marks.
 An account without a remembered password prompts for one for this refresh
 only; it is not saved. Cancelling or a download failure is reported and does

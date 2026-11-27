@@ -5,13 +5,13 @@ using OBK.Core;
 
 namespace OBK.AndroidApp;
 
-/// <summary>Hourly background checks with WorkManager; Android may postpone a run, for example to save battery.</summary>
+/// <summary>Periodic background checks with WorkManager; Android may postpone a run, for example to save battery.</summary>
 internal static class ScheduledCheck
 {
     internal const string LogTag = "OBK.Check";
     private const string WorkName = "obk_scheduled_check";
 
-    /// <summary>Enqueues the hourly check, keeping an existing schedule, or cancels it.</summary>
+    /// <summary>Updates the interval without interrupting running work or resetting its enqueue time, or cancels it.</summary>
     internal static void Schedule(bool enabled)
     {
         var manager = WorkManager.GetInstance(global::Android.App.Application.Context);
@@ -21,9 +21,9 @@ internal static class ScheduledCheck
             return;
         }
         var constraints = new Constraints.Builder().SetRequiredNetworkType(NetworkType.Connected!).Build();
-        var request = PeriodicWorkRequest.Builder.From<ScheduledCheckWorker>(TimeSpan.FromHours(1))
+        var request = PeriodicWorkRequest.Builder.From<ScheduledCheckWorker>(TimeSpan.FromMinutes(ReaderPreferences.RefreshIntervalMinutes))
             .SetConstraints(constraints).Build();
-        manager.EnqueueUniquePeriodicWork(WorkName, ExistingPeriodicWorkPolicy.Keep!, request);
+        manager.EnqueueUniquePeriodicWork(WorkName, ExistingPeriodicWorkPolicy.Update!, request);
     }
 
     /// <summary>Downloads every child with a saved password like Refresh, then posts the enabled notifications.</summary>
@@ -36,6 +36,7 @@ internal static class ScheduledCheck
         var changed = false;
         foreach (var login in store.KnownLogins())
         {
+            if (!ReaderPreferences.ScheduledChecks) break;
             var child = ReaderPage.AccountLabelConverter.Label(login);
             try
             {

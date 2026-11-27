@@ -14,6 +14,7 @@ internal static class ReaderPreferences
     private const string AllChildrenPreference = "reader_all_children";
     private const string AlwaysRefreshAllChildrenPreference = "always_refresh_all_children";
     private const string ScheduledChecksPreference = "scheduled_checks";
+    private const string RefreshIntervalPreference = "refresh_interval_minutes";
     private const string CheckNotificationsPreference = "scheduled_check_notifications";
     private const string EmptyCheckNotificationsPreference = "scheduled_check_empty_notifications";
     internal static readonly string[] ReadingSizes = ["Small", "Medium", "Large"];
@@ -44,7 +45,27 @@ internal static class ReaderPreferences
         get => Preferences.Default.Get(AlwaysRefreshAllChildrenPreference, false);
         set => Preferences.Default.Set(AlwaysRefreshAllChildrenPreference, value);
     }
-    /// <summary>Hourly background checks; turning them off also turns off both notification settings below.</summary>
+    internal static int RefreshIntervalMinutes
+    {
+        get
+        {
+            var minutes = Preferences.Default.Get(RefreshIntervalPreference, 60);
+            RefreshIntervals.Validate(minutes);
+            if (minutes == 0) throw new ObkException(OBK.Core.Localization.SharedStrings.ErrorRefreshInterval);
+            return minutes;
+        }
+    }
+
+    internal static int EffectiveRefreshIntervalMinutes => ScheduledChecks ? RefreshIntervalMinutes : 0;
+
+    internal static void SetRefreshInterval(int minutes)
+    {
+        RefreshIntervals.Validate(minutes);
+        if (minutes > 0) Preferences.Default.Set(RefreshIntervalPreference, minutes);
+        ScheduledChecks = minutes > 0;
+    }
+
+    /// <summary>Background checks; turning them off also turns off both notification settings below.</summary>
     internal static bool ScheduledChecks
     {
         get => Preferences.Default.Get(ScheduledChecksPreference, false);

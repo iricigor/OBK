@@ -30,7 +30,8 @@ you can read, search, and organize them offline on Windows or Android.
 
 - [**All children and folders in one place**](docs/features/ACCOUNTS.md) –
   switch between children and schools, refresh the selected child or all children, and browse
-  Inbox, Noticeboard, Sent, and Excuses. Android can also check hourly and
+  Inbox, Noticeboard, Sent, and Excuses. Both apps offer configurable automatic
+  refresh; Android can also check in the background and
   notify you about new messages.
 - [**Fast offline reading and organization**](docs/features/ORGANIZE.md) –
   search by subject, text, sender, or date; group and sort messages; follow
@@ -71,6 +72,10 @@ light/dark screenshots will follow.
 4. Refresh to download new messages for the selected child, or choose
    **All children** to update every child. **Settings > Refresh > Always refresh
    all children** overrides this choice and is off by default.
+
+Automatic refresh can be set to **Off, 15 minutes, 30 minutes, 1 hour, 4 hours,
+or 24 hours** in Settings. Windows checks only while running; Android background
+timing is approximate. Both require remembered passwords.
 
 Both apps confirm **Login successful** as soon as authentication succeeds.
 Messages finish downloading on the sign-in screen. Once attachments start,

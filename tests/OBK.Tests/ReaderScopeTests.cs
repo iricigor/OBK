@@ -307,7 +307,26 @@ public sealed class ReaderScopeTests
         await vm.SelectAccountAsync(Child(vm, "tomas"));
         if (allChildren) await vm.SelectAllChildrenAsync();
         await vm.Theme.SetAlwaysRefreshAllChildrenAsync(alwaysRefreshAll);
+        vm.SelectedFolder = Folder(vm, "marks");
+        await SettleAsync(vm);
+        vm.RequestMarksPassword = _ => throw new InvalidOperationException("Automatic refresh must not request marks credentials.");
 
+        var automatic = vm.RefreshAllAsync(automatic: true);
+        Assert.True(vm.IsSyncing, "The refresh guard is acquired before the first asynchronous store read.");
+        await vm.RefreshAllAsync(automatic: true);
+        await vm.RefreshAllAsync();
+        await automatic;
+        await SettleAsync(vm);
+        Assert.Empty(prompts);
+        Assert.Contains("Tomáš", vm.Status);
+        if (allChildren || alwaysRefreshAll) Assert.Contains("Anna", vm.Status);
+        else Assert.DoesNotContain("Anna", vm.Status);
+        Assert.False(vm.IsSyncing);
+        Assert.False(vm.GoodStatus);
+        Assert.True(vm.ShowMarks);
+
+        vm.SelectedFolder = Folder(vm, "received");
+        await SettleAsync(vm);
         await vm.RefreshAllAsync();
         await SettleAsync(vm);
 

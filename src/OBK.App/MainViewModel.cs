@@ -131,6 +131,8 @@ public sealed class MainViewModel : ObservableObject
     public ThemeManager Theme { get; }
     public MarksViewModel Marks { get; }
     public Func<Login, Task<string?>>? RequestMarksPassword { get; set; }
+    public IReadOnlyList<DisplayOption<int>> RefreshIntervalOptions { get; } =
+        RefreshIntervals.Minutes.Select(minutes => new DisplayOption<int>(minutes, RefreshIntervals.Label(minutes))).ToArray();
     public ICommand RefreshCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     public ICommand SetThemeCommand { get; }
@@ -1011,13 +1013,22 @@ public sealed class MainViewModel : ObservableObject
     /// Synchronizes the selected refresh scope. Accounts without a remembered password are reported, and the
     /// sign-in dialog opens for the current account or the first account that cannot refresh.
     /// </summary>
-    public async Task RefreshAllAsync()
+    public async Task RefreshAllAsync(bool automatic = false)
     {
         if (!CanChangeAccount) return;
-        if (selectedFolder?.Key == "marks") { await RefreshMarksAsync(); return; }
+        if (!automatic && selectedFolder?.Key == "marks") { await RefreshMarksAsync(); return; }
+        IsSyncing = true;
+        (bool Needed, Login? Account) prompt;
+        try { prompt = await RefreshScopeAsync(automatic); }
+        finally { IsSyncing = false; }
+        if (prompt.Needed) openLogin(false, prompt.Account);
+    }
+
+    private async Task<(bool Needed, Login? Account)> RefreshScopeAsync(bool automatic)
+    {
         ClearInitialDownloadStatus();
         var (known, remembered) = await Task.Run(() => (store.KnownLogins(), store.RememberedLogins()));
-        if (known.Count == 0) { openLogin(false, null); return; }
+        if (known.Count == 0) return (!automatic, null);
         var targets = RefreshScope.Accounts(known, Account, showingAllChildren, Theme.AlwaysRefreshAllChildren);
         string Label(Login login) => login.ChildName ?? login.SchoolName ?? login.Username;
         var ready = new List<Login>();
@@ -1030,28 +1041,23 @@ public sealed class MainViewModel : ObservableObject
         }
         var failures = new List<string>();
         var syncYear = SchoolYear.Current();
-        IsSyncing = true;
-        try
+        for (var i = 0; i < ready.Count; i++)
         {
-            for (var i = 0; i < ready.Count; i++)
+            var login = ready[i];
+            var position = i + 1;
+            string AccountStatus(string text) => ready.Count > 1
+                ? Localized.Format(AppStrings.StatusAccountProgressNumbered, Label(login), position, ready.Count, text)
+                : Localized.Format(AppStrings.StatusAccountProgress, Label(login), text);
+            SetStatus(AccountStatus(AppStrings.StatusSigningIn));
+            var progress = new Progress<string>(text => { if (IsSyncing) SetStatus(AccountStatus(text)); });
+            try
             {
-                var login = ready[i];
-                var position = i + 1;
-                string AccountStatus(string text) => ready.Count > 1
-                    ? Localized.Format(AppStrings.StatusAccountProgressNumbered, Label(login), position, ready.Count, text)
-                    : Localized.Format(AppStrings.StatusAccountProgress, Label(login), text);
-                SetStatus(AccountStatus(AppStrings.StatusSigningIn));
-                var progress = new Progress<string>(text => { if (IsSyncing) SetStatus(AccountStatus(text)); });
-                try
-                {
-                    using var client = new KomensClient(login.Url);
-                    var token = await Task.Run(() => client.SignInAsync(login.Username, login.Password!));
-                    await DownloadAsync(client, token, login.Url, login.Username, syncYear, false, progress);
-                }
-                catch (ObkException error) { failures.Add(Localized.Format(SharedStrings.ErrorInContext, Label(login), error.Message)); }
+                using var client = ClientFactory(login.Url);
+                var token = await Task.Run(() => client.SignInAsync(login.Username, login.Password!));
+                await DownloadAsync(client, token, login.Url, login.Username, syncYear, false, progress);
             }
+            catch (ObkException error) { failures.Add(Localized.Format(SharedStrings.ErrorInContext, Label(login), error.Message)); }
         }
-        finally { IsSyncing = false; }
         await LoadAsync(Account, syncYear);
         var refreshed = ready.Count - failures.Count;
         var summary = new List<string>();
@@ -1065,7 +1071,7 @@ public sealed class MainViewModel : ObservableObject
         // All children has no single current child, so it prompts only when nothing could refresh.
         var current = showingAllChildren ? null : Account;
         var prompt = missing.FirstOrDefault(m => Same(m, current)) ?? (ready.Count == 0 ? missing.FirstOrDefault() : null);
-        if (prompt is not null) openLogin(false, prompt);
+        return (!automatic && prompt is not null, prompt);
     }
 
     private async Task RefreshMarksAsync()

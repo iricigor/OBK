@@ -219,6 +219,28 @@ unchanged. Attachments stay below related messages and above the body, on
 their own neutral-shaded surface. This band is hidden when there are no files;
 file cards and attachment actions are unchanged.
 
+## Automatic refresh intervals
+
+Both platforms offer Off, 15 minutes, 30 minutes, 1 hour, 4 hours, and 24 hours.
+The shared `RefreshIntervals` helper validates the preset values and supplies
+localized labels.
+
+Windows saves `RefreshIntervalMinutes` in `appearance.json`; older files
+default to Off. A window-owned dispatcher timer follows the saved interval and
+is stopped on close, including window replacement during language changes.
+Changing the interval restarts the timer without restarting the app. Checks run
+only while OBK is open, including minimized, and use the selected child scope
+and **Always refresh all children** setting. Automatic and manual refresh share
+a guard acquired before the first asynchronous store read; automatic checks
+skip busy operations and report missing passwords without opening sign-in.
+Manual refresh retains its sign-in prompts. Off stops future timer ticks;
+an already running refresh may finish.
+
+Android persists `refresh_interval_minutes` separately from its existing
+`scheduled_checks` enable preference. Enabled older installations retain the
+1-hour interval and disabled installations stay Off. Android's approximate
+background scheduling and notification behavior are described below.
+
 ## Initial sign-in downloads
 
 Windows and Android show an inline **Login successful** confirmation immediately
@@ -598,17 +620,21 @@ preview signing. No signing key or password belongs in Git.
 
 ### Android scheduled checks and notifications
 
-**Settings > Scheduled checks** offers three nested switches, all off by default:
-**Check for new messages** (every hour, also while OBK is closed),
-**New-message notifications** (needs scheduled checks), and **Also notify when
-nothing is new** (needs notifications). Turning a switch off also turns off,
-and saves off, every switch below it, which is greyed out until its parent is
-on again. The choices are non-sensitive app preferences.
+**Settings > Scheduled checks** offers an **Automatic refresh interval** picker:
+Off, 15 minutes, 30 minutes, 1 hour, 4 hours, or 24 hours. It replaces the
+check-enable switch and retains its saved enabled/disabled state; existing enabled
+checks default to 1 hour. **New-message notifications** needs scheduled checks;
+**Also notify when nothing is new** needs notifications. Off disables and saves
+both notification options as off. They remain off when checks are enabled again.
+Turning notifications off also disables empty-check notifications. Disabled
+options are greyed out until their parent is on again.
 
-Checks use WorkManager unique periodic work (`obk_scheduled_check`) every hour,
-requiring any network connection. Turning checks on schedules the work, app
-start re-ensures it without resetting an existing schedule, and turning checks
-off cancels it. Android may postpone runs, for example in Doze or battery saver,
+Checks use WorkManager unique periodic work (`obk_scheduled_check`) with the
+saved interval, requiring any network connection. `ExistingPeriodicWorkPolicy.Update`
+applies interval changes without duplicating jobs, interrupting running work, or
+resetting its enqueue time. App start re-ensures the schedule; Off cancels it.
+An in-flight download may finish, but no subsequent child is started once checks
+are disabled. Android may postpone runs, for example in Doze or battery saver,
 and may stop a run after about ten minutes, so timing is best-effort. The worker
 (`cz.obk.reader.ScheduledCheckWorker`) opens the same encrypted database as the
 app (never the verification database) and does nothing when it is missing. For

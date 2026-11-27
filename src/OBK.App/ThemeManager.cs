@@ -15,6 +15,8 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
     private string listDensity = "Relaxed";
     private bool? allChildren;
     private bool alwaysRefreshAllChildren;
+    private int refreshIntervalMinutes;
+    private readonly SemaphoreSlim saveGate = new(1, 1);
     public string Theme => theme;
     public string ReadingSize => readingSize;
     public bool IsSmallText => readingSize == "Small";
@@ -30,6 +32,7 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
     /// <summary>The remembered reader scope: true for All children, false for one child, null until chosen.</summary>
     public bool? AllChildren => allChildren;
     public bool AlwaysRefreshAllChildren => alwaysRefreshAllChildren;
+    public int RefreshIntervalMinutes => refreshIntervalMinutes;
 
     public async Task InitializeAsync()
     {
@@ -47,12 +50,15 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
                 throw new ObkException(AppStrings.ThemeErrorRead);
             }
         });
+        RefreshIntervals.Validate(loaded.RefreshIntervalMinutes);
         ApplyScale(loaded.ReadingSize is "Small" or "Large" ? loaded.ReadingSize : "Medium");
         ApplyDensity(loaded.ListDensity == "Compact" ? "Compact" : "Relaxed");
         Apply(loaded.Theme);
         allChildren = loaded.AllChildren;
         alwaysRefreshAllChildren = loaded.AlwaysRefreshAllChildren;
         Notify(nameof(AlwaysRefreshAllChildren));
+        refreshIntervalMinutes = loaded.RefreshIntervalMinutes;
+        Notify(nameof(RefreshIntervalMinutes));
     }
 
     public async Task ToggleAsync() => await SetAsync(IsDark ? "Light" : "Dark");
@@ -98,29 +104,43 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
 
     private async Task SaveAsync()
     {
-        var settings = new ThemeSettings(theme, readingSize, listDensity, allChildren, alwaysRefreshAllChildren);
-        await Task.Run(() =>
+        await saveGate.WaitAsync();
+        try
         {
-            var temporary = settingsPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            try
+            var settings = new ThemeSettings(theme, readingSize, listDensity, allChildren, alwaysRefreshAllChildren, refreshIntervalMinutes);
+            await Task.Run(() =>
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
-                File.WriteAllText(temporary, JsonSerializer.Serialize(settings));
-                File.Move(temporary, settingsPath, overwrite: true);
-            }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-            {
-                throw new ObkException(AppStrings.ThemeErrorSave);
-            }
-            finally
-            {
-                try { if (File.Exists(temporary)) File.Delete(temporary); }
+                var temporary = settingsPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
+                    File.WriteAllText(temporary, JsonSerializer.Serialize(settings));
+                    File.Move(temporary, settingsPath, overwrite: true);
+                }
                 catch (Exception error) when (error is IOException or UnauthorizedAccessException)
                 {
-                    throw new ObkException(AppStrings.ThemeErrorCleanup);
+                    throw new ObkException(AppStrings.ThemeErrorSave);
                 }
-            }
-        });
+                finally
+                {
+                    try { if (File.Exists(temporary)) File.Delete(temporary); }
+                    catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+                    {
+                        throw new ObkException(AppStrings.ThemeErrorCleanup);
+                    }
+                }
+            });
+        }
+        finally { saveGate.Release(); }
+    }
+
+    public async Task SetRefreshIntervalAsync(int minutes)
+    {
+        RefreshIntervals.Validate(minutes);
+        if (refreshIntervalMinutes == minutes) return;
+        refreshIntervalMinutes = minutes;
+        Notify(nameof(RefreshIntervalMinutes));
+        await SaveAsync();
     }
 
     public void Apply(string selected)
@@ -173,5 +193,5 @@ public sealed class ThemeManager(string settingsPath) : ObservableObject
     }
 
     private sealed record ThemeSettings(string Theme, string? ReadingSize = null, string? ListDensity = null,
-        bool? AllChildren = null, bool AlwaysRefreshAllChildren = false);
+        bool? AllChildren = null, bool AlwaysRefreshAllChildren = false, int RefreshIntervalMinutes = 0);
 }
