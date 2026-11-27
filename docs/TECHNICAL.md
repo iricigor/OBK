@@ -716,6 +716,11 @@ installer requires the user's confirmation and enforces APK signature verificati
 OBK does not report success merely because the installer opened: cancellation or
 an unchanged installed version leaves **Install update** available. Updating
 normally replaces the running process; the next launch shows the installed version.
+If the installer returns without installing the update, Settings offers optional
+guidance that Samsung Auto Blocker may be preventing the installation. With consent,
+OBK opens Android Security settings, falling back to the main Settings screen and
+then written navigation instructions; it does not change security settings or
+attempt to diagnose the installer's result.
 Checks/downloads can be cancelled, navigating away cancels network work, and
 language switching is blocked during an update action.
 
