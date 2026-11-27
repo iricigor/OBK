@@ -454,6 +454,9 @@
   <data name="UpdateReady" xml:space="preserve"><value>Update verifiziert. Installation in Android bestätigen.</value></data>
   <data name="UpdateInstall" xml:space="preserve"><value>Update installieren</value></data>
   <data name="UpdateNotInstalled" xml:space="preserve"><value>Das Update wurde nicht installiert. Zum erneuten Versuch „Update installieren“ tippen; Offline-Daten sind unverändert.</value></data>
+  <data name="UpdateAutoBlockerTitle" xml:space="preserve"><value>Auto Blocker prüfen</value></data>
+  <data name="UpdateAutoBlockerExplanation" xml:space="preserve"><value>Das Update wurde nicht installiert. Auf Samsung-Telefonen kann Auto Blocker dieses Update blockieren. Prüfen Sie Einstellungen &gt; Sicherheit und Datenschutz &gt; Auto Blocker. Android-Sicherheitseinstellungen öffnen?</value></data>
+  <data name="UpdateAutoBlockerInstructions" xml:space="preserve"><value>Android-Einstellungen konnten nicht geöffnet werden. Öffnen Sie die Einstellungen manuell und prüfen Sie auf Samsung-Telefonen Einstellungen &gt; Sicherheit und Datenschutz &gt; Auto Blocker. Kehren Sie zu OBK zurück, um das verifizierte Update erneut zu versuchen.</value></data>
   <data name="UpdateCancelled" xml:space="preserve"><value>Update abgebrochen. Ein erneuter Versuch ist möglich.</value></data>
   <data name="UpdateFailedTitle" xml:space="preserve"><value>OBK konnte nicht aktualisiert werden</value></data>
   <data name="UpdateInvalidInstalledVersion" xml:space="preserve"><value>Die installierte App-Version ist ungültig. Vor dem Aktualisieren Hilfe holen.</value></data>

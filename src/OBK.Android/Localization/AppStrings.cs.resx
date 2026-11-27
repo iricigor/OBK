@@ -451,6 +451,9 @@
   <data name="UpdateReady" xml:space="preserve"><value>Aktualizace ověřena. Potvrďte instalaci v Androidu.</value></data>
   <data name="UpdateInstall" xml:space="preserve"><value>Nainstalovat aktualizaci</value></data>
   <data name="UpdateNotInstalled" xml:space="preserve"><value>Aktualizace nebyla nainstalována. Zkuste znovu Nainstalovat aktualizaci; vaše offline data se nezměnila.</value></data>
+  <data name="UpdateAutoBlockerTitle" xml:space="preserve"><value>Zkontrolovat Auto Blocker</value></data>
+  <data name="UpdateAutoBlockerExplanation" xml:space="preserve"><value>Aktualizace nebyla nainstalována. Na telefonech Samsung může Auto Blocker tuto aktualizaci blokovat. Zkontrolujte Nastavení &gt; Zabezpečení a soukromí &gt; Auto Blocker. Otevřít nastavení zabezpečení Androidu?</value></data>
+  <data name="UpdateAutoBlockerInstructions" xml:space="preserve"><value>Nastavení Androidu nelze otevřít. Otevřete je ručně a na telefonech Samsung zkontrolujte Nastavení &gt; Zabezpečení a soukromí &gt; Auto Blocker. Vraťte se do OBK a zkuste ověřenou aktualizaci znovu.</value></data>
   <data name="UpdateCancelled" xml:space="preserve"><value>Aktualizace zrušena. Můžete to zkusit znovu.</value></data>
   <data name="UpdateFailedTitle" xml:space="preserve"><value>OBK se nepodařilo aktualizovat</value></data>
   <data name="UpdateInvalidInstalledVersion" xml:space="preserve"><value>Verze nainstalované aplikace je neplatná. Před aktualizací vyhledejte pomoc.</value></data>

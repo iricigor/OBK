@@ -756,6 +756,11 @@ current APK signing certificate(s) as the installed application. Signing-key
 rotation is not supported by this updater; a differently signed preview/release
 is rejected without suggesting data-destructive uninstallation.
 
+APK archive inspection requests both `GET_SIGNING_CERTIFICATES` and the legacy
+`GET_SIGNATURES` flag on all supported Android versions. Some Android parsers
+(including Android 10 and the initial Android 13 implementation) collect archive
+certificates only with the legacy flag; the same exact signer checks still apply.
+
 The app declares `REQUEST_INSTALL_PACKAGES`. Before installer handoff, it explains
 the per-source permission, opens Android's source settings only with consent,
 and rechecks permission on return. A non-exported FileProvider grants read-only
@@ -764,14 +769,20 @@ installer requires the user's confirmation and enforces APK signature verificati
 OBK does not report success merely because the installer opened: cancellation or
 an unchanged installed version leaves **Install update** available. Updating
 normally replaces the running process; the next launch shows the installed version.
+If the installer returns without installing the update, Settings offers optional
+guidance that Samsung Auto Blocker may be preventing the installation. With consent,
+OBK opens Android Security settings, falling back to the main Settings screen and
+then written navigation instructions; it does not change security settings or
+attempt to diagnose the installer's result.
 Checks/downloads can be cancelled, navigating away cancels network work, and
 language switching is blocked during an update action.
 
 Before merge, verify on Android 10+ in both themes and languages: manual check,
 offline/error recovery, cancelled download, incompatible-preview rejection,
-installation-source permission denial, installer cancellation and successful
-compatible update with accounts/offline data preserved. The live latest-release
-endpoint cannot see unpublished draft assets. Pre-merge production-key verification
+installation-source permission denial, installer cancellation and the Auto Blocker
+recovery prompt (including Settings fallback), and successful compatible update
+with accounts/offline data preserved. The live latest-release endpoint cannot see
+unpublished draft assets. Pre-merge production-key verification
 must therefore include manual installation of staged signed APKs; full in-app
 update verification between published compatible versions follows publication.
 Do not publish an unreviewed branch or replace the production signing key for testing.

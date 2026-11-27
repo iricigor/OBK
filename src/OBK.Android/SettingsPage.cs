@@ -106,11 +106,18 @@ internal sealed class SettingsPage : ContentPage
             installUpdate.Text = AppStrings.UpdateInstall;
             SetUpdateStatus(AppStrings.UpdateReady);
             cancelUpdate.IsVisible = false;
-            var installed = await AndroidUpdateInstaller.InstallAsync(path, update, () =>
+            var result = await AndroidUpdateInstaller.InstallAsync(path, update, () =>
                 DisplayAlertAsync(AppStrings.UpdatePermissionTitle, AppStrings.UpdatePermissionExplanation,
                     AppStrings.UpdateOpenSettings, AppStrings.ReaderAccountsSheetCancel));
+            var installed = result == AndroidUpdateResult.Installed;
             SetUpdateStatus(installed ? AppStrings.UpdateCurrent : AppStrings.UpdateNotInstalled);
             installUpdate.IsVisible = !installed;
+            if (result == AndroidUpdateResult.NotInstalled &&
+                await DisplayAlertAsync(AppStrings.UpdateAutoBlockerTitle, AppStrings.UpdateAutoBlockerExplanation,
+                    AppStrings.UpdateOpenSettings, AppStrings.ReaderAccountsSheetCancel) &&
+                !AndroidUpdateInstaller.OpenSecuritySettings())
+                await DisplayAlertAsync(AppStrings.UpdateAutoBlockerTitle, AppStrings.UpdateAutoBlockerInstructions,
+                    AppStrings.AlertOkButton);
         });
         cancelUpdate.Clicked += (_, _) => updateCancellation?.Cancel();
         checkUpdate.CornerRadius = 20;
