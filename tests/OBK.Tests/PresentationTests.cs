@@ -365,7 +365,13 @@ public sealed class PresentationTests
                     application.Resources["VisibleIf"] = new BooleanVisibilityConverter();
                     application.Resources["AnyTrue"] = new AnyTrueConverter();
                     application.Resources["ThemeBrush"] = new ThemeBrushConverter();
-                    var main = new MainWindow(store, showLogin: false, enableUpdates: false);
+                    // Native popups clamp to the monitor, so keep the geometry fixture on screen.
+                    var workArea = SystemParameters.WorkArea;
+                    var main = new MainWindow(store, showLogin: false, enableUpdates: false)
+                    {
+                        Left = workArea.Left, Top = workArea.Top,
+                        Width = Math.Min(1000, workArea.Width), Height = Math.Min(700, workArea.Height)
+                    };
                     try
                     {
                         main.Show();
