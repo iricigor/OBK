@@ -506,6 +506,13 @@ preview signing. No signing key or password belongs in Git.
 
 ### Android scheduled checks and notifications
 
+Planned in #79: preserve one notification per check, reuse the existing child
+or all-children avatar as its large icon, and retain the neutral monochrome OBK
+small icon. Arrival notifications will open only the affected accounts, using
+stable account identities, in Inbox before Noticeboard. Each card will keep its
+own destination; status-only notifications will retain all-children Inbox.
+Privacy-safe lock-screen versions will omit avatars as well as message details.
+
 **Settings > Scheduled checks** offers three nested switches, all off by default:
 **Check for new messages** (every hour, also while OBK is closed),
 **New-message notifications** (needs scheduled checks), and **Also notify when
