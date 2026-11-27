@@ -15,6 +15,12 @@ On Android, optional hourly checks still check all children independently of
 this setting and can notify you about new messages; Android asks for notification
 permission only when you turn notifications on.
 
+Planned in #95: a saved automatic-refresh interval in Settings, with Off,
+15 minutes, 30 minutes, 1 hour, 4 hours, and 24 hours. Windows will check only
+while running and follow the selected refresh scope; Android will retain its
+all-children background checks with approximate OS-controlled timing. Changing
+the interval will apply without restarting, while manual refresh stays unchanged.
+
 Account controls let you add or rename a child, save or forget a password, and
 transfer a saved account securely from Windows to Android.
 
