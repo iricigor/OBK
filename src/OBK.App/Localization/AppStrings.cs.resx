@@ -1014,4 +1014,5 @@ Obnovte zprávy a ověřte stav u školy.</value>
     <value>{0} • Zatím nestaženo: {1}</value>
     <comment>{0} = archive status for all children; {1} = comma-separated names of children whose archive has not been downloaded yet.</comment>
   </data>
+  <data name="SettingsRefreshIntervalDescription" xml:space="preserve"><value>Obnovovat vybrané děti, když je OBK spuštěné. Vyžaduje uložená hesla.</value></data>
 </root>

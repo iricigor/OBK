@@ -40,6 +40,8 @@ public partial class MainWindow : Window
     private readonly bool enableUpdates;
     private int? cornerPreferenceError;
     private static bool buildAcknowledged;
+    private readonly DispatcherTimer automaticRefresh = new();
+    private bool closed;
 
     public UpdateManager Updates { get; }
     public string LanguageCode => LanguageSettings.Code.ToUpperInvariant();
@@ -82,9 +84,15 @@ public partial class MainWindow : Window
             WindowChrome.GetWindowChrome(this).GlassFrameThickness = new Thickness(1);
         }
         DataContext = ViewModel;
+        automaticRefresh.Tick += AutomaticRefreshTick;
+        theme.PropertyChanged += RefreshSettingsChanged;
         UpdateText.DataContext = UpdateActions.DataContext = Updates;
         Closed += (_, _) =>
         {
+            closed = true;
+            automaticRefresh.Stop();
+            automaticRefresh.Tick -= AutomaticRefreshTick;
+            theme.PropertyChanged -= RefreshSettingsChanged;
             if (replacing) return;
             Updates.OnExit();
             Updates.Dispose();
@@ -170,9 +178,38 @@ public partial class MainWindow : Window
     private async void WindowLoaded(object sender, RoutedEventArgs e)
     {
         await InitializeAsync();
+        UpdateRefreshSchedule();
         if (cornerPreferenceError is { } error)
             ViewModel.ReportError(Localized.Format(AppStrings.ErrorRoundedCorners, error));
         if (showLogin && ViewModel.Accounts.Count == 0) OpenLoginDialog(true);
+    }
+
+    private void RefreshSettingsChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(ThemeManager.RefreshIntervalMinutes)) UpdateRefreshSchedule();
+    }
+
+    private void UpdateRefreshSchedule()
+    {
+        automaticRefresh.Stop();
+        if (closed || !IsLoaded || ViewModel.Theme.RefreshIntervalMinutes == 0) return;
+        automaticRefresh.Interval = TimeSpan.FromMinutes(ViewModel.Theme.RefreshIntervalMinutes);
+        automaticRefresh.Start();
+    }
+
+    private async void AutomaticRefreshTick(object? sender, EventArgs args)
+    {
+        if (closed || openingLogin || switchingLanguage || !ViewModel.CanChangeAccount ||
+            ViewModel.Accounts.Count == 0 || ViewModel.Theme.RefreshIntervalMinutes == 0) return;
+        try { await ViewModel.RefreshAllAsync(automatic: true); }
+        catch (ObkException error) { ViewModel.ReportError(error.Message); }
+    }
+
+    private async void RefreshIntervalChanged(object sender, SelectionChangedEventArgs args)
+    {
+        if (((ComboBox)sender).SelectedValue is not int minutes) return;
+        try { await ViewModel.Theme.SetRefreshIntervalAsync(minutes); }
+        catch (ObkException error) { ViewModel.ReportError(error.Message); }
     }
 
     private void UpdateMenuClick(object sender, RoutedEventArgs e) => Updates.MenuOpen = !Updates.MenuOpen;

@@ -53,7 +53,11 @@ public sealed class App : Application
             var failure = await ApplySavedLanguageAsync();
             var surface = BuildNavigation();
             window.Page = surface.Shell;
-            if (ReaderPreferences.ScheduledChecks) ScheduledCheck.Schedule(true);
+            try { ScheduledCheck.Schedule(ReaderPreferences.ScheduledChecks); }
+            catch (ObkException error)
+            {
+                await surface.Reader.DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, error.Message, AppStrings.AlertOkButton);
+            }
             if (failure is not null)
                 await surface.Reader.DisplayAlertAsync(AppStrings.ReaderOperationFailedAlertTitle, failure, AppStrings.AlertOkButton);
         };

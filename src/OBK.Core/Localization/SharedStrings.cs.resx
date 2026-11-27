@@ -442,4 +442,12 @@
   <data name="DownloadWait" xml:space="preserve">
     <value>Počkejte na stažení zpráv. Jakmile se začnou stahovat přílohy, můžete zvolit čtení na pozadí.</value>
   </data>
+  <data name="RefreshInterval" xml:space="preserve"><value>Interval automatického obnovování</value></data>
+  <data name="RefreshOff" xml:space="preserve"><value>Vypnuto</value></data>
+  <data name="Refresh15Minutes" xml:space="preserve"><value>15 minut</value></data>
+  <data name="Refresh30Minutes" xml:space="preserve"><value>30 minut</value></data>
+  <data name="Refresh1Hour" xml:space="preserve"><value>1 hodina</value></data>
+  <data name="Refresh4Hours" xml:space="preserve"><value>4 hodiny</value></data>
+  <data name="Refresh24Hours" xml:space="preserve"><value>24 hodin</value></data>
+  <data name="ErrorRefreshInterval" xml:space="preserve"><value>Interval obnovování je neplatný. Vyberte některý z intervalů v Nastavení.</value></data>
 </root>

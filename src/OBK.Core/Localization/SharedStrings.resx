@@ -442,4 +442,12 @@
   <data name="DownloadWait" xml:space="preserve">
     <value>Wait for messages to download. Once attachments start, you can choose to read in the background.</value>
   </data>
+  <data name="RefreshInterval" xml:space="preserve"><value>Automatic refresh interval</value></data>
+  <data name="RefreshOff" xml:space="preserve"><value>Off</value></data>
+  <data name="Refresh15Minutes" xml:space="preserve"><value>15 minutes</value></data>
+  <data name="Refresh30Minutes" xml:space="preserve"><value>30 minutes</value></data>
+  <data name="Refresh1Hour" xml:space="preserve"><value>1 hour</value></data>
+  <data name="Refresh4Hours" xml:space="preserve"><value>4 hours</value></data>
+  <data name="Refresh24Hours" xml:space="preserve"><value>24 hours</value></data>
+  <data name="ErrorRefreshInterval" xml:space="preserve"><value>The refresh interval is invalid. Choose one of the intervals in Settings.</value></data>
 </root>

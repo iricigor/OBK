@@ -558,7 +558,7 @@
     <value>Nach neuen Nachrichten suchen</value>
   </data>
   <data name="SettingsChecksDescription" xml:space="preserve">
-    <value>Stündlich, auch wenn OBK geschlossen ist</value>
+    <value>Alle Kinder im Hintergrund prüfen, auch wenn OBK geschlossen ist. Aus deaktiviert automatische Prüfungen.</value>
   </data>
   <data name="SettingsNotifications" xml:space="preserve">
     <value>Benachrichtigungen zu neuen Nachrichten</value>
