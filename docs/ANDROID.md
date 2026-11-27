@@ -10,6 +10,19 @@ notifications in **Settings > Scheduled checks**.
 
 ![Android message list in light mode](images/android-light-messages.png)
 
+## Help and feedback
+
+Tap **?** at the bottom right of the app, beside the language control.
+The menu opens above the bottom bar, not in Android's system navigation bar.
+**Get help** opens the [Android user guide](https://iricigor.github.io/OBK/android.html);
+**Submit feedback / issue** opens GitHub's new-issue page in your external
+browser. Tap outside the menu or press Back to dismiss it.
+
+The help button has a 48 dp touch target and does not narrow the search field.
+These links require an internet connection; they do not send school messages
+or credentials. Never include private message content or passwords in feedback.
+If no browser can open a link, OBK shows an error and leaves the reader usable.
+
 ## Install a release APK
 
 1. Open the [latest release](https://github.com/iricigor/OBK/releases/latest)

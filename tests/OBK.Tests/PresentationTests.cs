@@ -387,6 +387,44 @@ public sealed class PresentationTests
                             main.ViewModel.CloseSettingsCommand.Execute(null);
                         }
                         AssertRepositoryLink();
+                        async Task AssertHelpMenuAsync()
+                        {
+                            main.UpdateLayout();
+                            var button = (Button)main.FindName("HelpButton");
+                            var status = (TextBlock)main.FindName("Status");
+                            var version = (TextBlock)main.FindName("UpdateText");
+                            var statusBounds = status.TransformToAncestor(main).TransformBounds(new Rect(status.RenderSize));
+                            Assert.True(status.ActualWidth > 0);
+                            Assert.True(button.TransformToAncestor(main).Transform(new Point()).X >
+                                version.TransformToAncestor(main).Transform(new Point(version.ActualWidth, 0)).X);
+                            Assert.Equal(SharedStrings.HelpMenuName, AutomationProperties.GetName(button));
+                            Assert.True(button.Focus());
+                            ((IInvokeProvider)new ButtonAutomationPeer(button).GetPattern(PatternInterface.Invoke)).Invoke();
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                            var menu = button.ContextMenu;
+                            Assert.True(menu.IsOpen);
+                            Assert.True(menu.IsKeyboardFocusWithin);
+                            var actions = menu.Items.OfType<MenuItem>().ToArray();
+                            Assert.Equal([HelpLinks.WindowsGuide, HelpLinks.Feedback], actions.Select(item => item.Tag));
+                            Assert.Equal([SharedStrings.HelpGetHelp, SharedStrings.HelpFeedback],
+                                actions.Select(AutomationProperties.GetName));
+                            Assert.True(menu.PointToScreen(new Point(0, menu.ActualHeight)).Y <=
+                                button.PointToScreen(new Point()).Y);
+                            Assert.InRange(menu.PointToScreen(new Point(menu.ActualWidth, 0)).X -
+                                button.PointToScreen(new Point(button.ActualWidth, 0)).X, -2, 2);
+                            Assert.Equal(((SolidColorBrush)main.FindResource("Surface")).Color,
+                                ((SolidColorBrush)menu.Background).Color);
+                            var background = ((SolidColorBrush)menu.Background).Color;
+                            foreach (var text in Within<TextBlock>(menu).Where(text => text.FontFamily.Source == "Segoe UI"))
+                                Assert.True(Contrast(((SolidColorBrush)text.Foreground).Color, background) >= 4.5);
+                            menu.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(menu),
+                                Environment.TickCount, Key.Escape) { RoutedEvent = Keyboard.KeyDownEvent });
+                            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                            Assert.False(menu.IsOpen);
+                            Assert.True(button.IsKeyboardFocused);
+                            Assert.Equal(statusBounds, status.TransformToAncestor(main).TransformBounds(new Rect(status.RenderSize)));
+                        }
+                        await AssertHelpMenuAsync();
 
                         // Two children open together by default: badges, owner avatars, and opening only by user action.
                         await Task.Run(() =>
@@ -589,6 +627,7 @@ public sealed class PresentationTests
                         {
                             main.ViewModel.Theme.Apply(mode);
                             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                            await AssertHelpMenuAsync();
                             main.UpdateLayout();
                             var rows = RowContainers(messageList).ToArray();
                             Assert.Equal(2, rows.Length);
@@ -633,6 +672,7 @@ public sealed class PresentationTests
                         main.Height = 620;
                         await main.ViewModel.Theme.SetReadingSizeAsync("Large");
                         main.UpdateLayout();
+                        await AssertHelpMenuAsync();
                         Assert.Equal(header.ActualWidth, band.ActualWidth);
                         Assert.True(band.ActualHeight > 0);
                         main.ViewModel.OpenRelatedCommand.Execute(Assert.Single(main.ViewModel.Related));
@@ -712,6 +752,7 @@ public sealed class PresentationTests
                         Assert.True(main.ViewModel.Theme.AlwaysRefreshAllChildren);
                         AssertRepositoryLink();
                         Assert.Equal("Odeslané", main.ViewModel.FolderTitle);
+                        await AssertHelpMenuAsync();
                         Assert.Equal("test", main.Account!.Username);
                         Assert.Equal("sent Sep", main.ViewModel.SearchText);
                         Assert.Equal(MessageSort.Sender, main.ViewModel.Sort);
@@ -729,6 +770,7 @@ public sealed class PresentationTests
                         Assert.Equal("uk", LanguageSettings.Code);
                         Assert.Equal("UK", ((TextBlock)main.FindName("LanguageCodeText")).Text);
                         AssertRepositoryLink();
+                        await AssertHelpMenuAsync();
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Equal("20 листопада 2026 р. 14:09",
                             new DateTime(2026, 11, 20, 14, 9, 0).ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));
@@ -737,6 +779,7 @@ public sealed class PresentationTests
                         Assert.Equal("de", LanguageSettings.Code);
                         Assert.Equal("DE", ((TextBlock)main.FindName("LanguageCodeText")).Text);
                         AssertRepositoryLink();
+                        await AssertHelpMenuAsync();
                         Assert.Equal("sent-old", main.ViewModel.SelectedMessage!.Message.Id);
                         Assert.Equal("20. November 2026 14:09",
                             new DateTime(2026, 11, 20, 14, 9, 0).ToString(SharedStrings.DateLongFormat, LanguageSettings.Culture));

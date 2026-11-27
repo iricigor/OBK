@@ -442,4 +442,28 @@
   <data name="DownloadWait" xml:space="preserve">
     <value>Počkejte na stažení zpráv. Jakmile se začnou stahovat přílohy, můžete zvolit čtení na pozadí.</value>
   </data>
+  <data name="HelpMenuName" xml:space="preserve">
+    <value>Nápověda a zpětná vazba</value>
+  </data>
+  <data name="HelpMenuHint" xml:space="preserve">
+    <value>Otevře nabídku s odkazy na nápovědu a zpětnou vazbu.</value>
+  </data>
+  <data name="HelpGetHelp" xml:space="preserve">
+    <value>Získat nápovědu</value>
+  </data>
+  <data name="HelpWindowsGuide" xml:space="preserve">
+    <value>Uživatelská příručka pro Windows</value>
+  </data>
+  <data name="HelpAndroidGuide" xml:space="preserve">
+    <value>Uživatelská příručka pro Android</value>
+  </data>
+  <data name="HelpFeedback" xml:space="preserve">
+    <value>Zpětná vazba / problém</value>
+  </data>
+  <data name="HelpFeedbackDescription" xml:space="preserve">
+    <value>Otevře GitHub v prohlížeči</value>
+  </data>
+  <data name="HelpBrowserFailed" xml:space="preserve">
+    <value>Externí prohlížeč se nepodařilo otevřít. Zkontrolujte, zda je nainstalovaný prohlížeč, a zkuste to znovu.</value>
+  </data>
 </root>

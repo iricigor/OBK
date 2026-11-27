@@ -442,4 +442,28 @@
   <data name="DownloadWait" xml:space="preserve">
     <value>Warten, bis die Nachrichten heruntergeladen sind. Sobald die Anhänge starten, können Sie das Lesen im Hintergrund wählen.</value>
   </data>
+  <data name="HelpMenuName" xml:space="preserve">
+    <value>Hilfe und Feedback</value>
+  </data>
+  <data name="HelpMenuHint" xml:space="preserve">
+    <value>Öffnet ein Menü mit Links zu Hilfe und Feedback.</value>
+  </data>
+  <data name="HelpGetHelp" xml:space="preserve">
+    <value>Hilfe erhalten</value>
+  </data>
+  <data name="HelpWindowsGuide" xml:space="preserve">
+    <value>Benutzerhandbuch für Windows</value>
+  </data>
+  <data name="HelpAndroidGuide" xml:space="preserve">
+    <value>Benutzerhandbuch für Android</value>
+  </data>
+  <data name="HelpFeedback" xml:space="preserve">
+    <value>Feedback / Problem melden</value>
+  </data>
+  <data name="HelpFeedbackDescription" xml:space="preserve">
+    <value>Öffnet GitHub im Browser</value>
+  </data>
+  <data name="HelpBrowserFailed" xml:space="preserve">
+    <value>Der externe Browser konnte nicht geöffnet werden. Prüfen Sie, ob ein Browser installiert ist, und versuchen Sie es erneut.</value>
+  </data>
 </root>
