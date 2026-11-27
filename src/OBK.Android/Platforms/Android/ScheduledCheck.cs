@@ -41,17 +41,17 @@ internal static class ScheduledCheck
             {
                 if (await ReaderSession.CheckAsync(store, login) is not { } result)
                 {
-                    checks.Add(new(child, CheckOutcome.SignInNeeded, []));
+                    checks.Add(new(login, child, CheckOutcome.SignInNeeded, []));
                     continue;
                 }
-                checks.Add(new(child, CheckOutcome.Checked, ScheduledCheckReport.Arrivals(result.Before, result.After, result.Opened)));
+                checks.Add(new(login, child, CheckOutcome.Checked, ScheduledCheckReport.Arrivals(result.Before, result.After, result.Opened)));
                 changed |= ScheduledCheckReport.Changed(result.Before, result.After);
             }
             // Any failure is named in the notification, and the remaining children are still checked.
             catch (Exception error)
             {
                 global::Android.Util.Log.Warn(LogTag, $"A child could not be checked: {error.GetType().FullName}");
-                checks.Add(new(child, CheckOutcome.Failed, []));
+                checks.Add(new(login, child, CheckOutcome.Failed, []));
             }
         }
         if (changed && Application.Current is App app)

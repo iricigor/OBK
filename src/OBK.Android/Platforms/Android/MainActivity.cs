@@ -12,25 +12,57 @@ namespace OBK.AndroidApp;
 public sealed class MainActivity : MauiAppCompatActivity
 {
     private const int UpdateRequest = 7401;
+    private const string HandledNotificationState = "obk_handled_notification";
     private TaskCompletionSource<Result>? updateResult;
+    private string? handledNotification;
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        if (savedInstanceState is null && OpensInbox(Intent)) App.RequestInbox();
+        handledNotification = savedInstanceState?.GetString(HandledNotificationState);
+        if (savedInstanceState is null || (Intent?.DataString ?? CheckNotifier.OpenInboxAction) != handledNotification)
+            RequestNotification(Intent);
         base.OnCreate(savedInstanceState);
+    }
+
+    protected override void OnSaveInstanceState(Bundle outState)
+    {
+        outState.PutString(HandledNotificationState, handledNotification);
+        base.OnSaveInstanceState(outState);
     }
 
     protected override async void OnNewIntent(Intent? intent)
     {
         base.OnNewIntent(intent);
-        if (!OpensInbox(intent) || Microsoft.Maui.Controls.Application.Current is not App app) return;
-        App.RequestInbox();
-        await app.ShowRequestedInboxAsync();
+        if (Microsoft.Maui.Controls.Application.Current is not App app || !RequestNotification(intent)) return;
+        Intent = intent;
+        await app.ShowRequestedNotificationAsync();
     }
 
     // A check notification was tapped; reopening OBK from Recents repeats its intent and is ignored.
     private static bool OpensInbox(Intent? intent) => intent?.Action == CheckNotifier.OpenInboxAction &&
         !intent.Flags.HasFlag(ActivityFlags.LaunchedFromHistory);
+
+    private bool RequestNotification(Intent? intent)
+    {
+        if (!OpensInbox(intent) || Destination(intent!) is not { } destination) return false;
+        handledNotification = intent!.DataString ?? CheckNotifier.OpenInboxAction;
+        App.RequestNotification(destination);
+        return true;
+    }
+
+    private static NotificationDestination? Destination(Intent intent)
+    {
+        try
+        {
+            return NotificationDestination.FromPayload(intent.GetStringArrayExtra(CheckNotifier.AccountsExtra),
+                intent.GetStringExtra(CheckNotifier.FolderExtra));
+        }
+        catch (InvalidDataException)
+        {
+            global::Android.Util.Log.Warn(ScheduledCheck.LogTag, "A notification had an invalid destination; ignoring its navigation request.");
+            return null;
+        }
+    }
 
     internal async Task<Result> RunForResultAsync(Intent intent)
     {

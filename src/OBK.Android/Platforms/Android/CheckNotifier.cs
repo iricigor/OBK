@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content;
+using Android.Content.Res;
 using Android.Text;
 using Android.Text.Style;
 using AndroidX.Core.App;
@@ -12,6 +13,8 @@ namespace OBK.AndroidApp;
 internal static class CheckNotifier
 {
     internal const string OpenInboxAction = "cz.obk.reader.OPEN_INBOX";
+    internal const string AccountsExtra = "cz.obk.reader.NOTIFICATION_ACCOUNTS";
+    internal const string FolderExtra = "cz.obk.reader.NOTIFICATION_FOLDER";
     private const string NewMessagesChannel = "new_messages";
     private const string StatusChannel = "check_status";
     private const int StatusId = 1;
@@ -62,11 +65,21 @@ internal static class CheckNotifier
         var manager = NotificationManagerCompat.From(Context)!;
         CreateChannels(manager);
         var channel = notification.IsStatus ? StatusChannel : NewMessagesChannel;
+        var id = notification.IsStatus ? StatusId : Preferences.Default.Get(LastIdPreference, StatusId) + 1;
+        if (!notification.IsStatus) Preferences.Default.Set(LastIdPreference, id);
+        using var open = OpenDestination(id, notification.Destination);
         var style = new NotificationCompat.InboxStyle();
         foreach (var line in notification.Lines) style.AddLine(Styled(line));
         // Shown instead on a lock screen that hides sensitive content: the title, without children or subjects.
-        var lockScreen = Builder(channel, notification.Title);
-        var builder = Builder(channel, notification.Title);
+        var lockScreen = Builder(channel, notification.Title, open);
+        var builder = Builder(channel, notification.Title, open);
+        using var avatar = notification.IsStatus ? null : NotificationAvatar.Create(
+            checks.Select(check => check.Account).ToArray(),
+            notification.Destination.AccountIds.Count == 1
+                ? checks.First(check => NotificationDestination.AccountId(check.Account) == notification.Destination.AccountIds[0]).Account
+                : null,
+            (Context.Resources!.Configuration!.UiMode & UiMode.NightMask) == UiMode.NightYes);
+        if (avatar is not null) builder.SetLargeIcon(avatar);
         builder.SetContentText(notification.Lines.FirstOrDefault()?.Text);
         builder.SetStyle(style);
         builder.SetPublicVersion(lockScreen.Build());
@@ -77,18 +90,16 @@ internal static class CheckNotifier
             return;
         }
         manager.Cancel(StatusId);
-        var id = Preferences.Default.Get(LastIdPreference, StatusId) + 1;
-        Preferences.Default.Set(LastIdPreference, id);
         manager.Notify(id, built);
     }
 
-    private static NotificationCompat.Builder Builder(string channel, string title)
+    private static NotificationCompat.Builder Builder(string channel, string title, PendingIntent? open)
     {
         var builder = new NotificationCompat.Builder(Context, channel);
         builder.SetSmallIcon(Resource.Drawable.obk_notification);
         builder.SetColor(global::Android.Graphics.Color.ParseColor("#0F6CBD").ToArgb());
         builder.SetContentTitle(title);
-        builder.SetContentIntent(OpenInbox());
+        builder.SetContentIntent(open);
         builder.SetAutoCancel(true);
         return builder;
     }
@@ -110,12 +121,15 @@ internal static class CheckNotifier
         }
     }
 
-    private static PendingIntent? OpenInbox()
+    private static PendingIntent? OpenDestination(int id, NotificationDestination destination)
     {
-        var intent = new Intent(Context, typeof(MainActivity));
+        using var intent = new Intent(Context, typeof(MainActivity));
         intent.SetAction(OpenInboxAction);
+        intent.SetData(global::Android.Net.Uri.Parse("obk://notification/" + Guid.NewGuid().ToString("N")));
+        intent.PutExtra(AccountsExtra, destination.AccountIds.ToArray());
+        intent.PutExtra(FolderExtra, destination.Folder);
         intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTop | ActivityFlags.SingleTop);
-        return PendingIntent.GetActivity(Context, 0, intent, PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent);
+        return PendingIntent.GetActivity(Context, id, intent, PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent);
     }
 
     private static SpannableString Styled(CheckLine line)

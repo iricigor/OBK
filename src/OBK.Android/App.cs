@@ -7,7 +7,7 @@ namespace OBK.AndroidApp;
 public sealed class App : Application
 {
     private bool switchingLanguage;
-    private static bool inboxRequested;
+    private static NotificationDestination? notificationRequested;
     private static string LanguagePath => Path.Combine(FileSystem.AppDataDirectory, "language.json");
     internal const string AppearancePreference = "reader_appearance";
     public App()
@@ -77,17 +77,17 @@ public sealed class App : Application
     private ReaderPage? CurrentReader =>
         Windows.FirstOrDefault()?.Page is FlyoutPage { Detail: NavigationPage { RootPage: ReaderPage reader } } ? reader : null;
 
-    /// <summary>Remembers a tapped check notification; the reader shows Inbox for all children once it is ready.</summary>
-    internal static void RequestInbox() => inboxRequested = true;
+    /// <summary>Remembers a tapped check notification until the offline reader is ready.</summary>
+    internal static void RequestNotification(NotificationDestination destination) => notificationRequested = destination;
 
-    internal static bool TakeInboxRequest()
+    internal static NotificationDestination? TakeNotificationRequest()
     {
-        var requested = inboxRequested;
-        inboxRequested = false;
+        var requested = notificationRequested;
+        notificationRequested = null;
         return requested;
     }
 
-    internal Task ShowRequestedInboxAsync() => CurrentReader?.ShowInboxAsync() ?? Task.CompletedTask;
+    internal Task ShowRequestedNotificationAsync() => CurrentReader?.ShowNotificationAsync() ?? Task.CompletedTask;
 
     /// <summary>A scheduled check saved new messages; a running reader shows them without contacting the school.</summary>
     internal Task ArchivesChangedAsync() => CurrentReader?.ReloadFromStoreAsync() ?? Task.CompletedTask;

@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="..\..\src\OBK.Android\RefreshStatusTimeout.cs" Link="RefreshStatusTimeout.cs" />
     <Compile Include="..\..\src\OBK.Android\ScheduledCheckReport.cs" Link="ScheduledCheckReport.cs" />
+    <Compile Include="..\..\src\OBK.Android\NotificationDestination.cs" Link="NotificationDestination.cs" />
     <Using Include="System.IO" />
     <Using Include="System.Net.Http" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

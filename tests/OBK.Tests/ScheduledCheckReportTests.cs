@@ -37,7 +37,12 @@ public sealed class ScheduledCheckReportTests
         finally { SharedStrings.Culture = original; }
     }
 
-    private static IEnumerable<string> Ids(IEnumerable<Message> messages) => messages.Select(message => message.Id);
+    private static IEnumerable<string> Ids(IEnumerable<CheckArrival> arrivals) => arrivals.Select(arrival => arrival.Message.Id);
+
+    private static CheckArrival Arrival(string id, int hour = 9, string folder = "received") => new(Make(id, hour), folder);
+
+    private static ChildCheck Check(string child, CheckOutcome outcome, CheckArrival[] arrivals) =>
+        new(new Login("https://school.example", child, ChildName: child), child, outcome, arrivals);
 
     [Fact]
     public void ArrivalsAreUnopenedInboxAndNoticeboardMessagesTheCheckAdded()
@@ -61,10 +66,10 @@ public sealed class ScheduledCheckReportTests
     {
         var notification = InEnglish(() => ScheduledCheckReport.Compose(
         [
-            new("Anna", CheckOutcome.Checked, [Make("a1", hour: 8), Make("a2", hour: 11)]),
-            new("Tomáš", CheckOutcome.Checked, [Make("t1", hour: 10)]),
-            new("Eliška", CheckOutcome.SignInNeeded, []),
-            new("Petr", CheckOutcome.Failed, [])
+            Check("Anna", CheckOutcome.Checked, [Arrival("a1", hour: 8), Arrival("a2", hour: 11)]),
+            Check("Tomáš", CheckOutcome.Checked, [Arrival("t1", hour: 10)]),
+            Check("Eliška", CheckOutcome.SignInNeeded, []),
+            Check("Petr", CheckOutcome.Failed, [])
         ], reportEmpty: false, "16:05", English))!;
         Assert.False(notification.IsStatus);
         Assert.Equal("3 new messages", notification.Title);
@@ -76,9 +81,9 @@ public sealed class ScheduledCheckReportTests
     [Fact]
     public void LongSummariesEndWithTheNumberOfFurtherMessages()
     {
-        var arrivals = Enumerable.Range(1, 7).Select(hour => Make("m" + hour, hour)).ToArray();
+        var arrivals = Enumerable.Range(1, 7).Select(hour => Arrival("m" + hour, hour)).ToArray();
         var notification = InEnglish(() =>
-            ScheduledCheckReport.Compose([new("Anna", CheckOutcome.Checked, arrivals)], false, "16:05", English))!;
+            ScheduledCheckReport.Compose([Check("Anna", CheckOutcome.Checked, arrivals)], false, "16:05", English))!;
         Assert.Equal(ScheduledCheckReport.MaxArrivalLines, notification.Lines.Count);
         Assert.Equal("Anna · Subject m7", notification.Lines[0].Text);
         Assert.Equal("+3 more", notification.Lines[^1].Text);
@@ -89,8 +94,8 @@ public sealed class ScheduledCheckReportTests
     {
         List<ChildCheck> quiet =
         [
-            new("Anna", CheckOutcome.Checked, []), new("Tomáš", CheckOutcome.Checked, []),
-            new("Petr", CheckOutcome.Checked, []), new("Eliška", CheckOutcome.SignInNeeded, [])
+            Check("Anna", CheckOutcome.Checked, []), Check("Tomáš", CheckOutcome.Checked, []),
+            Check("Petr", CheckOutcome.Checked, []), Check("Eliška", CheckOutcome.SignInNeeded, [])
         ];
         Assert.Null(ScheduledCheckReport.Compose(quiet, reportEmpty: false, "16:05", English));
         var status = InEnglish(() => ScheduledCheckReport.Compose(quiet, reportEmpty: true, "16:05", English))!;
@@ -98,8 +103,11 @@ public sealed class ScheduledCheckReportTests
         Assert.Equal("No new messages", status.Title);
         Assert.Equal(["Checked Anna, Tomáš and Petr at 16:05.", "Not checked: Eliška (sign-in needed)"],
             status.Lines.Select(line => line.Text));
-        var failed = InEnglish(() => ScheduledCheckReport.Compose([new("Anna", CheckOutcome.Failed, [])], true, "16:05", English))!;
+        Assert.Empty(status.Destination.AccountIds);
+        Assert.Equal("received", status.Destination.Folder);
+        var failed = InEnglish(() => ScheduledCheckReport.Compose([Check("Anna", CheckOutcome.Failed, [])], true, "16:05", English))!;
         Assert.Equal("Messages were not checked", failed.Title);
+        Assert.Empty(failed.Destination.AccountIds);
     }
 
     [Fact]
@@ -107,7 +115,7 @@ public sealed class ScheduledCheckReportTests
     {
         var czech = English with { NewOne = "{0} nová zpráva", NewFew = "{0} nové zprávy", NewMany = "{0} nových zpráv" };
         string Title(int count) => ScheduledCheckReport.Compose(
-            [new("Anna", CheckOutcome.Checked, Enumerable.Range(1, count).Select(hour => Make("m" + hour, hour)).ToArray())],
+            [Check("Anna", CheckOutcome.Checked, Enumerable.Range(1, count).Select(hour => Arrival("m" + hour, hour)).ToArray())],
             false, "16:05", czech)!.Title;
         var original = SharedStrings.Culture;
         SharedStrings.Culture = CultureInfo.GetCultureInfo("cs");
@@ -119,4 +127,73 @@ public sealed class ScheduledCheckReportTests
         }
         finally { SharedStrings.Culture = original; }
     }
+
+    [Fact]
+    public void DestinationUsesOnlyChildrenWithArrivalsEvenWhenOtherChecksFail()
+    {
+        var anna = Check("Anna", CheckOutcome.Checked, [Arrival("a", folder: "noticeboard")]);
+        var failed = Check("Petr", CheckOutcome.Failed, []);
+        var quiet = Check("Eva", CheckOutcome.Checked, []);
+        var notification = InEnglish(() => ScheduledCheckReport.Compose([anna, failed, quiet], false, "16:05", English))!;
+        Assert.Equal([NotificationDestination.AccountId(anna.Account)], notification.Destination.AccountIds);
+        Assert.Equal("noticeboard", notification.Destination.Folder);
+        Assert.Single(notification.Destination.ResolveAccounts([anna.Account, failed.Account, quiet.Account]));
+    }
+
+    [Fact]
+    public void InboxWinsOverNewerNoticeboardArrivalsEvenOutsideDisplayedLines()
+    {
+        var anna = Check("Anna", CheckOutcome.Checked,
+            Enumerable.Range(10, 7).Select(hour => Arrival("n" + hour, hour, "noticeboard")).ToArray());
+        var tomas = Check("Tomas", CheckOutcome.Checked, [Arrival("old-inbox", hour: 8)]);
+        var notification = InEnglish(() => ScheduledCheckReport.Compose([anna, tomas], false, "16:05", English))!;
+        Assert.Equal("received", notification.Destination.Folder);
+        Assert.Equal([NotificationDestination.AccountId(anna.Account), NotificationDestination.AccountId(tomas.Account)],
+            notification.Destination.AccountIds);
+        Assert.DoesNotContain(notification.Lines, line => line.Text.Contains("old-inbox"));
+    }
+
+    [Fact]
+    public void ArrivalFolderSurvivesDeduplicationAndOpenedMessageFiltering()
+    {
+        var arrivals = ScheduledCheckReport.Arrivals(Archive([]),
+            Archive(["shared", "read"], noticeboard: ["shared", "notice"]), new HashSet<string> { "read" });
+        Assert.Equal(["shared", "notice"], Ids(arrivals));
+        Assert.Equal(["received", "noticeboard"], arrivals.Select(arrival => arrival.Folder));
+    }
+
+    [Fact]
+    public void DuplicateChildNamesDoNotMergeDifferentAccounts()
+    {
+        var first = Check("Anna", CheckOutcome.Checked, [Arrival("a")]);
+        var second = first with { Account = first.Account with { Url = "https://other.example" } };
+        var notification = InEnglish(() => ScheduledCheckReport.Compose([first, second], false, "16:05", English))!;
+        Assert.Equal(2, notification.Destination.AccountIds.Count);
+        Assert.Equal([first.Account, second.Account], notification.Destination.ResolveAccounts([first.Account, second.Account]));
+    }
+
+    [Fact]
+    public void DestinationPayloadSurvivesRenamingAndNeverIncludesCredentials()
+    {
+        var login = new Login("https://school.example", "parent", "not-a-real-password", "Anna");
+        var other = login with { Username = "other", ChildName = "Anna" };
+        var id = NotificationDestination.AccountId(login);
+        var destination = NotificationDestination.FromPayload([id, id], "noticeboard");
+        var renamed = login with { ChildName = "Renamed child", Password = null };
+        Assert.Single(destination.AccountIds);
+        Assert.Equal(id, NotificationDestination.AccountId(renamed));
+        Assert.DoesNotContain(login.Username, id);
+        Assert.DoesNotContain(login.Password!, id);
+        Assert.Equal([renamed], destination.ResolveAccounts([other, renamed]));
+        Assert.Empty(destination.ResolveAccounts([other]));
+        Assert.Equal([other, renamed], NotificationDestination.FromPayload(null, null).ResolveAccounts([other, renamed]));
+    }
+
+    [Theory]
+    [InlineData(null, "received")]
+    [InlineData(new string[0], "noticeboard")]
+    [InlineData(new string[0], "sent")]
+    [InlineData(new string[] { "invalid-account" }, "received")]
+    public void MalformedDestinationsAreRejectedInsteadOfBroadeningScope(string[]? ids, string folder) =>
+        Assert.Throws<InvalidDataException>(() => NotificationDestination.FromPayload(ids, folder));
 }
